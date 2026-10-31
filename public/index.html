@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¿Cuánto me conoces?</title>
+<style>
+:root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--ac2:#7c4dff;--ok:#1f9d63;--ko:#d6453d;--bd:#eadfe6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}
+:root[data-theme="dark"]{--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:30px;line-height:1.15;margin:8px 0 6px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 8px;font-size:22px}
+p{margin:0 0 12px}
+.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;margin:14px 0}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut)}
+.bar{height:8px;background:var(--bd);border-radius:8px;overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .25s}
+.kick{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ac);font-weight:700;margin-bottom:4px}
+.q{font-size:21px;font-weight:650;line-height:1.3;margin:0 0 16px}
+.who{font-size:14px;color:var(--mut);margin-bottom:10px}
+button{font:inherit;cursor:pointer}
+.opt{display:block;width:100%;text-align:left;padding:14px 16px;margin:8px 0;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx)}
+.opt:active,.opt:hover{border-color:var(--ac)}
+.btn{display:block;width:100%;padding:14px;border:0;border-radius:14px;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff;font-weight:700;margin-top:10px}
+.btn[disabled]{opacity:.45}
+.btn.sec{background:transparent;color:var(--tx);border:1.5px solid var(--bd)}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;padding:0;font-size:14px}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;margin:6px 0 10px}
+.big{font-size:64px;font-weight:800;text-align:center;line-height:1;margin:6px 0}
+.center{text-align:center}
+.score{display:flex;gap:10px}
+.score div{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;text-align:center}
+.score b{display:block;font-size:26px}
+ul{list-style:none;padding:0;margin:0}
+li{padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid var(--bd);background:var(--card);font-size:15px}
+li.ok{border-left:5px solid var(--ok)}
+li.ko{border-left:5px solid var(--ko)}
+li small{display:block;color:var(--mut)}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// ---------- Banco de preguntas (generado de forma determinista) ----------
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1));var x=a[i];a[i]=a[j];a[j]=x}return a}
+var R=rng(7);
+
+var PC={
+Comida:'Pizza,Sushi,Hamburguesa,Paella,Tortilla de patatas,Tacos,Pasta',
+Bebida:'Café,Té,Cerveza,Vino,Refresco,Zumo,Agua con gas',
+Plan:'Cine,Senderismo,Cena con amigos,Maratón de series,Fiesta,Museo,Videojuegos',
+Destino:'Playa,Montaña,Ciudad,Campo,Crucero,Camping,Isla desierta',
+Ambiente:'Frío,Calor,Lluvia,Nieve,Niebla,Sol,Viento',
+Animal:'Perro,Gato,Caballo,Delfín,Águila,Lobo,Pulpo',
+Música:'Pop,Rock,Reggaetón,Clásica,Flamenco,Electrónica,Rap',
+Superpoder:'Volar,Invisibilidad,Teletransporte,Leer mentes,Superfuerza,Viajar en el tiempo,Hablar con animales',
+Dulce:'Chocolate,Helado,Tarta,Churros,Galletas,Gominolas,Fruta',
+Transporte:'Coche,Moto,Bici,Tren,Avión,Barco,Caminar',
+'Momento del día':'Amanecer,Mediodía,Atardecer,Noche,Madrugada,Siesta,Sobremesa',
+Hobby:'Leer,Cocinar,Deporte,Dibujar,Fotografía,Jardinería,Bailar'};
+
+var FV=`Tu postre favorito|Flan,Tarta de queso,Helado,Tiramisú,Brownie,Fruta
+Tu desayuno ideal|Tostadas,Cereales,Bollería,Huevos,Fruta,Solo café
+Tu comida de domingo|Paella,Asado,Cocido,Pasta,Barbacoa,Tapeo
+Tu fruta favorita|Fresa,Mango,Sandía,Manzana,Melocotón,Uvas
+Tu snack favorito|Patatas fritas,Frutos secos,Chocolate,Pipas,Palomitas,Aceitunas
+Tu cocina del mundo favorita|Italiana,Japonesa,Mexicana,India,Española,Tailandesa
+Tu color favorito|Azul,Verde,Rojo,Negro,Amarillo,Morado
+Tu género de película favorito|Comedia,Terror,Acción,Drama,Ciencia ficción,Animación
+Tu música para viajar en coche|Pop,Rock,Reggaetón,Clásicos de los 80,Flamenco,Indie
+Tu tipo de libro favorito|Novela,Ensayo,Cómic,Fantasía,Policíaco,Biografía
+Tu deporte favorito para ver|Fútbol,Baloncesto,Tenis,Motor,Ciclismo,Pádel
+Tu deporte para practicar|Correr,Natación,Gimnasio,Pádel,Senderismo,Yoga
+Tu rincón favorito de casa|Sofá,Cocina,Terraza,Cama,Escritorio,Balcón
+Tu app más usada|WhatsApp,Instagram,YouTube,TikTok,Spotify,Mapas
+Tu red social favorita|Instagram,TikTok,X,LinkedIn,YouTube,Ninguna
+Tu forma de relajarte|Dormir,Pasear,Música,Series,Leer,Cocinar
+Tu día favorito de la semana|Viernes,Sábado,Domingo,Jueves,Miércoles,Martes
+Tu momento favorito del día|Amanecer,Mañana,Tarde,Atardecer,Noche,Madrugada
+Tu destino soñado|Japón,Nueva York,Islandia,Maldivas,Roma,Australia
+Tu tipo de vacaciones|Playa,Montaña,Ciudad,Rural,Aventura,Crucero
+Tu alojamiento ideal|Hotel de lujo,Casa rural,Camping,Apartamento,Caravana,Cabaña
+Tu medio de transporte para viajar|Avión,Tren,Coche,Barco,Moto,Autocaravana
+Tu mascota ideal|Perro,Gato,Pájaro,Conejo,Pez,Ninguna
+Tu animal favorito|León,Delfín,Búho,Elefante,Lobo,Pingüino
+Tu asignatura favorita en el cole|Matemáticas,Lengua,Historia,Educación física,Música,Ciencias
+Lo que querías ser de pequeño/a|Futbolista,Médico/a,Profesor/a,Astronauta,Artista,Bombero/a
+Tu estilo de videojuego|Aventura,Deportes,Estrategia,Plataformas,Disparos,Simulación
+Tu bebida para una cena|Vino,Cerveza,Agua,Refresco,Cóctel,Vermut
+Tu bebida caliente|Café,Té,Chocolate,Infusión,Leche,Colacao
+Tu café|Solo,Con leche,Cortado,Descafeinado,Capuchino,No tomo
+Tu pizza favorita|Margarita,Pepperoni,Cuatro quesos,Barbacoa,Hawaiana,Vegetal
+Tu sabor de helado|Chocolate,Fresa,Vainilla,Pistacho,Limón,Stracciatella
+Tu tapa favorita|Tortilla,Croquetas,Jamón,Patatas bravas,Calamares,Ensaladilla
+Tu plato de pasta|Carbonara,Boloñesa,Pesto,Lasaña,Macarrones con queso,Al pomodoro
+Tu aroma favorito|Café,Mar,Hierba mojada,Pan recién hecho,Lavanda,Libro nuevo
+Tu estilo de ropa|Casual,Deportivo,Elegante,Urbano,Vintage,Cómodo
+Tu calzado favorito|Zapatillas,Botas,Sandalias,Zapatos,Chanclas,Mocasines
+La cualidad que más valoras|Honestidad,Humor,Lealtad,Generosidad,Inteligencia,Paciencia
+Tu mayor defecto|Impaciente,Despistado/a,Perfeccionista,Tozudo/a,Desordenado/a,Dormilón/a
+Tu mayor miedo|Alturas,Arañas,Oscuridad,Soledad,Hablar en público,Serpientes
+Tu papel en una fiesta|Alma de la fiesta,En la barra,Bailando,Charlando en un rincón,Me voy pronto,Hago de DJ
+Tu ritual de la mañana|Café,Ducha,Móvil,Ejercicio,Desayuno largo,Ninguno
+Tu década musical favorita|Los 70,Los 80,Los 90,Los 2000,Los 2010,La actual
+Tu género de serie favorito|Comedia,Drama,Thriller,Documental,Anime,Reality
+Tu domingo lluvioso ideal|Manta y peli,Cocinar,Leer,Dormir,Videojuegos,Salir igualmente
+Tu regalo ideal|Experiencia,Tecnología,Libro,Ropa,Dinero,Detalle casero
+Tu cena ideal|En casa,Restaurante,Tapeo,Pizza a domicilio,Barbacoa,Cena de gala
+Tu forma de comunicarte|Llamada,WhatsApp,Audio,Videollamada,En persona,Correo
+Tu momento para entrenar|Mañana,Mediodía,Tarde,Noche,Fin de semana,Nunca
+Tu flor favorita|Rosa,Girasol,Tulipán,Margarita,Lavanda,Orquídea
+Tu paisaje favorito|Playa,Bosque,Desierto,Montaña nevada,Campo de flores,Lago
+Tu festividad favorita|Navidad,Semana Santa,Verano,Año Nuevo,Tu cumpleaños,Fiestas del pueblo
+Tu golosina favorita|Gominolas,Chocolate,Regaliz,Chicle,Caramelos,Pipas
+Tu música para trabajar|Silencio,Lo-fi,Clásica,Pop,Rock,Podcast
+Tu sitio favorito para comer|En casa,Chiringuito,Bar del barrio,Restaurante,Picnic,Terraza
+Tu manera de viajar|Con plan,Improvisando,Con guía,En grupo,En solitario,En pareja
+Tu juego de mesa favorito|Parchís,Monopoly,Cartas,Ajedrez,Dominó,Trivial
+El idioma que te falta aprender|Inglés,Francés,Italiano,Alemán,Japonés,Portugués`.split('\n');
+
+var ST=`Me duermo viendo películas
+Llego tarde a casi todo
+Hablo solo/a cuando nadie me oye
+Me cuesta decir que no
+Prefiero quedarme en casa que salir
+Madrugo sin problema
+Dejo todo para última hora
+Lloro viendo películas
+Canto en la ducha
+Me pierdo con facilidad
+Guardo cosas por si acaso
+Soy muy competitivo/a
+Me da vergüenza bailar en público
+Contesto rápido a los mensajes
+Tengo la casa ordenada
+Me gusta planificarlo todo
+Improviso mucho
+Pido perdón con facilidad
+Soy rencoroso/a
+Me enfado rápido
+Me tomo las críticas muy a pecho
+Me río de mis propios chistes
+Cocino bien
+Me da pereza cocinar
+Pido siempre lo mismo en el restaurante
+Pruebo comidas nuevas sin miedo
+Me gusta el picante
+No soporto esperar
+Pierdo las llaves o el móvil a menudo
+Siempre voy justo/a de batería
+Duermo con ruido de fondo
+Necesito café para funcionar
+Soy más de noche que de día
+Madrugo también los fines de semana
+Hago la cama todos los días
+Dejo la ropa en una silla
+Me gusta el silencio
+Pongo música en cuanto llego a casa
+Veo series en versión original
+Si tengo una duda, la busco al momento
+Leo las instrucciones antes de montar algo
+Me gustan las sorpresas
+Recuerdo siempre los cumpleaños
+Me cuesta guardar un secreto
+Se me da bien mentir
+Me pongo nervioso/a al hablar en público
+Me gusta ser el centro de atención
+Prefiero escuchar que hablar
+Hago amigos fácilmente
+Tardo en confiar en la gente
+Mando audios largos
+Odio las llamadas de teléfono
+Tengo miles de fotos en el móvil
+Hago muchas fotos cuando viajo
+Viajo con la maleta justa
+Hago la maleta a última hora
+Me mareo en los viajes
+Me da miedo volar
+Me gustan los parques de atracciones
+Prefiero mar que montaña
+Me encanta la Navidad
+Me gusta regalar más que recibir
+Soy ahorrador/a
+Me cuesta gastar dinero en mí
+Compro por impulso
+Comparo precios antes de comprar
+Hago listas de todo
+Tengo demasiadas pestañas abiertas
+Se me olvida dónde aparco
+Me quedo mirando el techo antes de dormir
+Hago la siesta
+Me despierto antes de que suene la alarma
+Pospongo la alarma varias veces
+Me ducho por la mañana
+Tardo mucho en arreglarme
+Me visto en cinco minutos
+Me gusta ir a la moda
+Tengo una prenda favorita que uso demasiado
+Colecciono algo
+Soy supersticioso/a
+Creo en el destino
+Me fío de mi intuición
+Pienso demasiado las cosas
+Me lanzo sin pensar
+Soy optimista
+Veo el vaso medio vacío
+Me estreso con facilidad
+Mantengo la calma en las crisis
+Me río con facilidad
+Me cuesta pedir ayuda
+Ayudo a quien lo necesita aunque no pueda
+Me gusta el deporte
+Prefiero ver deporte que practicarlo
+Odio el gimnasio
+Salgo a caminar para despejarme
+Me gustan los animales
+Me llevo bien con los niños
+Soy muy familiar
+Hablo con mi familia casi todos los días
+Me gustan las reuniones grandes
+Prefiero planes pequeños
+La comida casera es insuperable
+Soy buen/a conductor/a
+Me desespera el tráfico
+Pierdo la paciencia al volante
+Prefiero conducir que ir de copiloto
+Me gusta el bricolaje
+Soy manitas
+Me da pereza limpiar
+Plancho mi ropa
+Tengo plantas en casa
+Se me mueren las plantas
+Me gusta la lluvia
+Odio el calor
+Odio el frío
+Me encanta la nieve
+Me baño aunque el agua esté helada
+Sé nadar muy bien
+Tengo buen sentido del humor
+Hago imitaciones
+Toco un instrumento
+Me gustaría aprender a tocar un instrumento
+Sé bailar
+Me sé las canciones de memoria
+Voy a conciertos
+Sigo algún deporte con pasión
+Juego a videojuegos
+Leo todas las semanas
+Termino todos los libros que empiezo
+Veo la tele mientras uso el móvil
+Siempre veo un capítulo más
+Me gustan los documentales
+Me gustan las películas de terror
+Me asusto con facilidad
+Me gusta ir al cine
+Hablo durante las películas
+Me gusta el teatro
+Me gustan los museos
+Me interesa la historia
+Me gusta debatir
+Sigo las noticias a diario
+Uso mucho las redes sociales
+Subo historias a menudo
+Las redes me enganchan más de lo que quisiera
+Uso la inteligencia artificial a diario
+Me encanta la tecnología
+Cambio de móvil a menudo
+Cuido el medio ambiente
+Reciclo todo
+Voy a pie siempre que puedo
+Me gusta la naturaleza
+Me gusta ver amanecer
+Disfruto de un buen atardecer
+Soy de ciudad
+Viviría en el campo
+Me gustaría vivir en otro país
+Hablo más de dos idiomas
+Me gusta aprender idiomas
+Soy muy curioso/a
+Me cuesta concentrarme
+Trabajo mejor bajo presión
+Siempre llego pronto a las citas
+Soy muy trabajador/a
+Me cuesta desconectar del trabajo
+Siempre estoy pensando en nuevas ideas de negocio
+Me gusta liderar
+Prefiero trabajar en equipo
+Prefiero trabajar solo/a
+Delego con facilidad
+Soy perfeccionista
+Me da igual que algo no quede perfecto
+Cumplo siempre lo que prometo
+Soy una persona muy puntual
+Me cuesta olvidar errores del pasado
+Pienso mucho en el futuro
+Vivo el presente
+Echo de menos mi infancia
+Cuento siempre las mismas anécdotas
+Tengo una anécdota vergonzosa que nunca cuento
+Ronco al dormir
+Hablo en sueños
+Me acuerdo de mis sueños
+Tengo pesadillas a menudo
+Me da miedo la oscuridad
+Me dan miedo las alturas
+Me dan asco los bichos
+No soporto la sangre
+Aguanto bien el dolor
+Me hago el/la fuerte aunque esté mal
+Me gusta que me mimen
+Me cuesta decir te quiero
+Soy muy cariñoso/a
+Me gusta el contacto físico
+Abrazo mucho
+Me gustan las cenas románticas
+Me emocionan los pequeños detalles
+Me hacen llorar los finales felices
+Perdono con facilidad
+Doy segundas oportunidades`.split('\n');
+
+var SC=`Si me tocara la lotería, lo primero sería|Viajar|Invertir|Invitar a todos|Ahorrar
+Ante un imprevisto, yo|Improviso|Hago un plan|Pido ayuda|Espero
+Mi fin de semana ideal es|Una escapada|Plan con amigos|Casa y sofá|Aventura
+En un atasco|Pongo música|Pongo un podcast|Me desespero|Llamo a alguien
+Si recibo un mensaje a medianoche|Contesto|Lo veo mañana|Me desvelo|Lo ignoro
+Ante una crítica, mi primera reacción es|Defenderme|Reflexionar|Callarme|Reírme
+Si me pierdo en una ciudad|Pido indicaciones|Uso el móvil|Sigo andando|Me paro a pensar
+Para ahorrar prefiero|Cuenta aparte|Hucha|Invertir|Gastar menos
+Para elegir restaurante|Miro reseñas|Pido recomendación|Al azar|Voy al de siempre
+En una discusión yo|Razono|Me enfado|Me callo|Cambio de tema
+Para celebrar un éxito|Cena especial|Fiesta|Me hago un regalo|Lo celebro en silencio
+Si tengo un día libre inesperado|Duermo|Salgo|Me pongo al día|Hago algo nuevo
+Antes de un viaje|Planifico todo|Lo básico|Nada|Pido consejos
+Para aprender algo nuevo|Vídeos|Libros|Practicando|Con alguien
+Si un amigo me pide un favor tarde|Voy|Pregunto el motivo|Busco alternativa|Digo que no puedo
+Mi regalo típico|Tecnología|Experiencia|Algo hecho a mano|Tarjeta regalo
+En una cena de empresa|Soy el alma|Soy discreto/a|Me voy pronto|Hago contactos
+Mi móvil suele estar|Sin sonido|Siempre en la mano|Sobre la mesa|Perdido
+Para ir a un sitio nuevo|GPS|Pregunto|Memoria|Sigo a alguien
+Si me quedo sin plan un sábado|Llamo a alguien|Netflix|Salgo solo/a|Duermo
+Mi mayor lujo|Tiempo libre|Viajar|Comer bien|Dormir
+En una boda visto|Clásico|Cómodo|Atrevido|Lo de siempre
+Lo primero que hago al despertar|Mirar el móvil|Mirar el reloj|Nada|Tomar café
+Cuando algo sale mal|Busco solución|Me frustro|Pido ayuda|Lo dejo estar
+Para las compras prefiero|Online|Tienda|Segunda mano|Solo lo imprescindible
+Si tuviera que hablar en público mañana|Disfruto|Me preparo mucho|Improviso|Me bloqueo
+Mi mayor motivación es|Dinero|Libertad|Reconocimiento|Familia
+En un grupo de amigos soy|El organizador|El gracioso|El que escucha|El que propone
+Si me regalan algo que no me gusta|Lo digo|Sonrío|Lo cambio|Lo guardo
+Mi ocio ideal con amigos|Juegos de mesa|Cenar|Deporte|Viaje
+Mi superpoder en el trabajo|Organización|Creatividad|Comunicación|Resistencia
+Si tuviera que vivir en otro país|Japón|Italia|Estados Unidos|Portugal
+Mi plan perfecto de domingo|Comida familiar|Naturaleza|Peli y manta|Ir a un mercado
+Si me ofrecen un puesto mejor lejos|Acepto|Lo pienso mucho|Rechazo|Negocio
+Mi comida de última hora|Pizza|Bocadillo|Tortilla|Cereales
+Ante una oferta tentadora|Compro|Espero|Comparo|Paso
+Para una primera cita|Cena|Paseo|Cine|Actividad
+Si me dan un millón de seguidores|Lo disfruto|Lo monetizo|Me asusto|No cambio nada
+Mi mayor sueño|Libertad financiera|Viajar|Proyecto propio|Vida tranquila`.split('\n');
+
+var need=500-FV.length-ST.length-SC.length;
+var per=Math.ceil(need/12),pairs=[];
+Object.keys(PC).forEach(function(k){
+  var a=PC[k].split(','),all=[];
+  for(var i=0;i<a.length;i++)for(var j=i+1;j<a.length;j++)all.push(R()<.5?[a[i],a[j]]:[a[j],a[i]]);
+  shuffle(all,R).slice(0,per).forEach(function(p){pairs.push({k:k,q:'¿Qué prefieres?',s:p.join(' / '),o:p})});
+});
+pairs=shuffle(pairs,R).slice(0,need);
+var QN=[].concat(pairs,
+  FV.map(function(l){var p=l.split('|');return{k:'Favoritos',q:p[0],s:p[0],o:shuffle(p[1].split(','),R).slice(0,4)}}),
+  ST.map(function(s){return{k:'¿Es verdad en tu caso?',q:s,s:s,o:['Sí, soy así','No, para nada','Depende']}}),
+  SC.map(function(l){var p=l.split('|');return{k:'Situación',q:p[0],s:p[0],o:p.slice(1)}}));
+// ---------- Modo profundo (500 preguntas independientes) ----------
+var R2=rng(11);
+var PD={
+'Qué es lo más importante en la vida':'Libertad,Seguridad,Amor,Éxito,Amistad,Honestidad,Paz interior',
+'Qué te define más':'Tu trabajo,Tu familia,Tus amistades,Tus valores,Tus logros,Tus sueños,Tu forma de querer',
+'Qué te haría más feliz':'Más tiempo,Más dinero,Más calma,Más amor,Más aventuras,Más reconocimiento,Más libertad',
+'Qué te cuesta más':'Perdonar,Pedir ayuda,Decir no,Mostrarte vulnerable,Soltar el control,Confiar,Pedir perdón',
+'Qué es lo que más temes':'Fracasar,Estar solo/a,Arrepentirme,Perder a alguien,Que me olviden,No cumplir mis sueños,Decepcionar',
+'Qué lamentarías más':'No haberlo intentado,Haber perdido el tiempo,No haber dicho te quiero,No haber viajado,No haber cuidado a los míos,Haber vivido con miedo,No haber sido yo mismo/a',
+'Qué es lo que más admiras':'Valentía,Bondad,Inteligencia,Humildad,Constancia,Creatividad,Sinceridad',
+'Qué valoras más en una relación':'Confianza,Respeto,Pasión,Complicidad,Estabilidad,Libertad,Comunicación',
+'Qué necesitas para sanar':'Tiempo,Hablar,Soledad,Compañía,Hacer deporte,Escribir,Llorar',
+'Cómo reaccionas ante un cambio':'Lo busco,Lo temo,Lo acepto,Lo evito,Lo planifico,Lo improviso,Me adapto'};
+var PL=`Lo que más te marcó de tu infancia|La familia,El colegio,Los amigos,Los veranos,Una mudanza,Un lugar concreto
+Lo que más aprendiste de tu familia|Esfuerzo,Humor,Unión,Respeto,Cariño,Independencia
+Lo que más valoras en un amigo|Lealtad,Humor,Sinceridad,Estar siempre,Saber escuchar,Ser auténtico/a
+Lo que más te duele|Una traición,La indiferencia,Una mentira,Una injusticia,Un reproche,Que me ignoren
+Lo que más te enfada|Las mentiras,La impuntualidad,La falta de respeto,La injusticia,La hipocresía,Que no me escuchen
+Lo que más te hace llorar|Una película,Una canción,Un recuerdo,Un reencuentro,La nostalgia,Algo muy bonito
+Lo que más echas de menos|Mi infancia,A alguien concreto,Un lugar,Una época,Mi libertad,Nada
+Lo que más paz te da|La naturaleza,La música,Mi gente,Estar solo/a,El mar,Dormir
+Lo que más te inspira|La gente valiente,La naturaleza,La música,Una historia real,Mi familia,Un reto
+Lo que más miedo te da perder|Mi salud,A mis seres queridos,Mi libertad,Mi trabajo,Mi tranquilidad,Mis recuerdos
+Lo que más te cuesta perdonar|Una traición,Una mentira,Un desprecio,Una promesa rota,Un abandono,Una burla
+Lo que más te enorgullece|Mi familia,Mi trabajo,Mi carácter,Mis amistades,Lo que he superado,Mis logros
+Lo que más cambiarías de tu pasado|Una decisión,Una discusión,Una oportunidad,Una despedida,Nada,Mi forma de reaccionar
+Lo que más te gustaría conseguir|Estabilidad,Libertad,Reconocimiento,Un proyecto propio,Una gran familia,Paz interior
+Cuando estás triste|Me aíslo,Hablo con alguien,Lloro,Me distraigo,Hago deporte,Duermo
+Cuando tienes miedo|Me paralizo,Ataco,Huyo,Lo hablo,Lo analizo,Me río
+Lo que más necesitas cuando fallas|Comprensión,Silencio,Un consejo,Un abrazo,Tiempo,Distraerme
+Lo que más te cuesta mostrar|Debilidad,Cariño,Enfado,Inseguridad,Tristeza,Ilusión
+Lo que más te hace sentir querido/a|Palabras,Abrazos,Tiempo juntos,Detalles,Que me escuchen,Que me cuiden
+Lo que más te hace sentir libre|Viajar,Conducir,Estar solo/a,La naturaleza,El dinero,Decir no
+Lo que más te define|Constancia,Sensibilidad,Humor,Ambición,Lealtad,Curiosidad
+Lo que más te gustaría que dijeran de ti|Era buena persona,Era auténtico/a,Era divertido/a,Era valiente,Era leal,Dejó huella
+El consejo que te darías a ti mismo/a|Disfruta más,Confía más,Sé paciente,Atrévete,Cuídate,Pide ayuda
+Lo que más cambiarías de ti|Mi paciencia,Mi inseguridad,Mi orden,Mi constancia,Mi carácter,Mi timidez
+La decisión que más te costó|Cambiar de ciudad,Dejar algo,Empezar algo,Perdonar,Alejarme de alguien,Asumir un riesgo
+El recuerdo que más atesoras|Un viaje,Una persona,Una celebración,Un momento de calma,Un logro,Un reencuentro
+El sentimiento que más te cuesta gestionar|Ansiedad,Enfado,Tristeza,Culpa,Envidia,Soledad
+Lo que te hace sentir más vulnerable|Pedir ayuda,Hablar de lo que siento,Equivocarme,Depender de alguien,Fracasar,Que me vean llorar
+Lo que te motiva a levantarte cada día|Mi familia,Mis proyectos,El dinero,La curiosidad,El deber,Las ganas de mejorar
+Para ti el éxito es|Ser feliz,Tener dinero,Tener libertad,Ser reconocido/a,Vivir en paz,Dejar huella
+Lo que más te cuesta soltar|El pasado,El control,Un rencor,A una persona,Una idea,Un miedo
+Lo que te hace sentir culpable|Decir no,Fallar,Descuidar a los míos,Descansar,Gastar,Perder el tiempo
+Lo que más feliz te haría hoy|Un abrazo,Un viaje,Una charla sincera,Un día libre,Una buena noticia,Un buen plan
+Lo que necesitas para sentirte seguro/a|Estabilidad,Mi gente,Dinero,Salud,Un plan,Confianza
+Lo que te quita el sueño|El futuro,El trabajo,Mi familia,El dinero,El pasado,Duermo bien
+Cuando alguien te hace daño|Lo digo,Me alejo,Lo olvido,Me lo guardo,Pido explicaciones,Lo perdono
+Cuando te sientes solo/a|Llamo a alguien,Salgo,Me refugio en algo,Me pongo música,Me meto en el trabajo,Lo aguanto
+Tu mayor lección de vida|Todo pasa,La gente cambia,El tiempo vale más que el dinero,Hay que atreverse,Nada es para siempre,Lo importante es la salud
+Lo que cambiarías del mundo|Las desigualdades,Las guerras,El egoísmo,La prisa,La falta de empatía,El consumismo
+Para ti el amor es|Compromiso,Cuidado,Pasión,Libertad,Amistad profunda,Compañía
+Cómo prefieres que te digan las cosas|Con sinceridad total,Con tacto,Por escrito,En persona,Con humor,Con tiempo
+Lo que te cambió la vida|Un viaje,Una pérdida,Una decisión,Un encuentro,Un fracaso,Un logro
+Lo más valiente que has hecho|Dejar algo,Empezar algo,Pedir perdón,Decir lo que pienso,Viajar solo/a,Perdonar
+A quién acudes con un problema|A mi pareja,A mi madre o padre,A un amigo,A nadie,A un hermano,A mí mismo/a
+Cuando piensas en el futuro sientes|Ilusión,Miedo,Calma,Ansiedad,Curiosidad,Indiferencia
+Lo que te gustaría haber aprendido antes|A decir no,A confiar,A gestionar el dinero,A disfrutar,A pedir ayuda,A soltar
+Tu sueño pendiente|Un viaje,Un proyecto,Un cambio de vida,Una casa,Un reencuentro,Algo creativo
+Cómo te gustaría ser recordado/a|Por mi bondad,Por mi humor,Por mi obra,Por mi lealtad,Por mi valentía,Por mi cariño
+Tu mayor aprendizaje de un error|Pensar antes,Pedir perdón,Confiar menos,Confiar más,Aceptarme,Pedir ayuda
+Lo que más te cuesta en una relación|Comunicar,Ceder,Confiar,Mostrar cariño,Pedir perdón,Compartir espacio
+Lo que más viva te hace sentir|Viajar,Una buena charla,Un reto,El deporte,La música,Enamorarme
+En tus peores días necesitas|Silencio,Compañía,Una canción,Comida,Dormir,Un paseo`.split('\n');
+var DS=`Lloro con facilidad
+Me cuesta mostrar lo que siento
+Guardo rencor durante mucho tiempo
+Me siento más tranquilo/a que hace unos años
+Me siento feliz con la vida que llevo
+Tengo miedo a decepcionar a los demás
+Me siento solo/a aunque esté acompañado/a
+Me cuesta pedir perdón
+Me cuesta aceptar un cumplido
+Me comparo con los demás
+Siento envidia sana con frecuencia
+Pienso a menudo en lo que podría haber sido
+Me agobio con facilidad
+Necesito tiempo a solas para recargarme
+Me cuesta soltar el control
+Necesito sentirme útil para estar bien
+Me siento orgulloso/a de quién soy
+Me juzgo más duro/a que a los demás
+Tengo una voz interior muy crítica
+Me cuesta perdonarme los errores
+Siento nostalgia con frecuencia
+Pienso mucho en cómo me ven los demás
+Me da miedo envejecer
+Me da miedo perder a mis seres queridos
+Me da miedo no cumplir mis sueños
+Me da miedo el fracaso
+Me da miedo hacer el ridículo
+Me da miedo quedarme solo/a
+Me cuesta confiar en la gente nueva
+Me cuesta creer que merezco cosas buenas
+Me cuesta descansar sin sentirme culpable
+Me cuesta quedarme quieto/a
+Me siento más seguro/a que hace cinco años
+He cambiado mucho en los últimos años
+Siento que aún no he encontrado mi lugar
+Siento que mi vida va por buen camino
+Siento que me conozco bien
+A veces no sé qué quiero realmente
+He llorado por una canción
+Lloro de alegría con facilidad
+Me cuesta decir lo que pienso por no herir
+Prefiero evitar un conflicto que afrontarlo
+Digo la verdad aunque duela
+Me cuesta poner límites
+Me cuesta decir te quiero
+Necesito palabras de cariño
+Necesito detalles para sentirme querido/a
+Prefiero que me escuchen a que me aconsejen
+Cuido mucho a mis amistades
+Tengo pocos amigos pero muy buenos
+He perdido amistades por no cuidarlas
+Echo de menos a alguien ahora mismo
+He perdonado algo que creía imperdonable
+He pedido perdón primero aunque tuviera razón
+Me dolió una traición que nunca olvidaré
+Me cuesta alejarme de quien me hace daño
+Doy más de lo que recibo
+Me cuesta recibir ayuda
+Me siento responsable de la felicidad de los demás
+Hago de mediador/a en los conflictos
+Soy la persona a la que todos piden consejo
+Me cuesta hablar de mis problemas
+Me desahogo con alguien de confianza
+Me gustaría hablar más con mi familia
+Me gustaría pasar más tiempo con mis amigos
+Tengo una conversación pendiente con alguien
+Tengo algo que le diría a alguien si tuviera valor
+Me cuesta mostrarme vulnerable ante otros
+Busco la aprobación de los demás
+Me importa lo que piensen de mí
+Me gusta cuidar a los demás
+Me cuesta recibir cariño
+Pienso en mis seres queridos con frecuencia
+Admiro a alguien de mi familia
+Me gustaría ser mejor hijo/a o hermano/a
+Siento que mi familia me entiende
+Siento que mis amigos me conocen de verdad
+Soy muy distinto/a con la gente que no conozco
+Cambio según con quién esté
+Me cuesta ser yo mismo/a con desconocidos
+Creo que todo pasa por algo
+Creo que hay que vivir sin arrepentimientos
+Creo en las segundas oportunidades
+Creo que la gente puede cambiar
+Creo que el dinero da libertad pero no felicidad
+Creo que el tiempo es lo más valioso
+Creo que la honestidad es innegociable
+Creo que la amabilidad es una forma de fuerza
+Creo que hay que arriesgarse más
+Creo que las mejores decisiones se toman con el corazón
+Creo que mi mayor reto soy yo mismo/a
+Me gustaría dejar huella en el mundo
+Me gustaría vivir de otra manera
+Me gustaría tener más tiempo para mí
+Me gustaría ser más valiente
+Me gustaría ser más paciente
+Me gustaría ser más disciplinado/a
+Me gustaría ser más espontáneo/a
+Me gustaría perdonarme más
+Me gustaría cambiar de rumbo
+Me gustaría escribir mi historia algún día
+Tengo un sueño que no he contado a nadie
+Tengo un sueño que sigo persiguiendo
+He renunciado a algún sueño
+Me arrepiento de algo que no hice
+Me arrepiento de algo que sí hice
+Me pregunto a menudo qué sentido tiene todo
+Pienso en el paso del tiempo con frecuencia
+Pienso en qué pasará dentro de diez años
+Vivo con prisa
+Vivo más para el futuro que para el presente
+Vivo de acuerdo con mis valores
+Mis decisiones importantes las tomo con la cabeza
+Mis decisiones importantes las tomo con el corazón
+Me considero una buena persona
+Me considero una persona fuerte
+Me considero una persona sensible
+Me considero una persona intensa
+Me considero una persona difícil de conocer
+Me considero una persona agradecida
+Tuve una infancia feliz
+Recuerdo mi infancia con cariño
+Me gustaría volver a un momento concreto de mi vida
+Tengo un recuerdo que me emociona siempre
+Hay una canción que me transporta a otra época
+Guardo objetos de personas importantes
+Conservo cartas o mensajes que me importan
+Hay un lugar donde me siento en casa
+Me he sentido incomprendido/a
+Me he sentido fuera de lugar en algún momento
+Me han roto el corazón
+He roto el corazón de alguien
+He tenido que empezar de cero alguna vez
+He superado algo que creí imposible
+He cambiado mucho desde mi adolescencia
+Le daría un abrazo a mi yo adolescente
+Me avergüenzo de algo que hice
+Hay algo de mi pasado que prefiero no recordar
+Aprendí algo importante de un fracaso
+He tenido una etapa difícil que me hizo más fuerte
+Aprendí mucho de mis padres
+Mis padres influyeron mucho en cómo soy
+Me parezco a mi padre o a mi madre más de lo que quisiera
+Mis abuelos fueron importantes para mí
+He tenido un maestro que me marcó
+He tenido un amigo que me cambió la vida
+He conocido a alguien que me hizo ver el mundo distinto
+Un libro me ha cambiado la forma de pensar
+Una película me ha marcado de verdad
+Un viaje me cambió la forma de ver las cosas
+Me siento en paz conmigo
+A veces me siento agotado/a emocionalmente
+Siento que doy mucho a los demás y poco a mí
+Me cuido lo suficiente
+Duermo mal cuando algo me preocupa
+Me cuesta desconectar la mente
+Pienso demasiado antes de dormir
+Necesito mis rutinas para estar bien
+Me agobia el desorden
+Me siento más yo mismo/a en la naturaleza
+Reflexiono sobre mi día antes de dormir
+Escribo mis pensamientos
+Hablo conmigo mismo/a cuando tengo un problema
+Me hablo con cariño
+Me premio cuando consigo algo
+Me castigo mentalmente cuando me equivoco
+Me bloqueo bajo presión
+Me crezco ante los retos
+Me aburro con facilidad
+Me da pereza empezar pero luego disfruto
+Dejo las cosas a medias
+Me cuesta terminar lo que empiezo
+Me cuesta tomar decisiones
+Me cuesta cambiar de opinión
+Me cuesta reconocer que me equivoco
+Me cuesta aceptar que no puedo con todo
+Me cuesta delegar
+Me cuesta pedir lo que necesito
+Me cuesta decir que estoy mal
+Escondo mis problemas para no preocupar
+Me hago el fuerte cuando por dentro estoy mal
+Me enfado conmigo mismo/a
+Me enfado más de lo que muestro
+Me ofendo con facilidad
+Soy más sensible de lo que parezco
+Soy más tímido/a de lo que parezco
+Soy más inseguro/a de lo que parezco
+Soy más fuerte de lo que parezco
+Soy más divertido/a con confianza
+Soy más serio/a de lo que la gente piensa
+Soy muy autoexigente
+Soy mi mayor crítico/a
+Soy muy perfeccionista conmigo mismo/a
+Soy tranquilo/a por fuera y nervioso/a por dentro
+Soy muy intuitivo/a
+Soy muy observador/a
+Soy muy detallista
+Soy muy empático/a
+Soy muy reservado/a con mi vida privada
+Soy muy abierto/a con mi vida privada
+Quiero cambiar algo importante en mi vida pronto
+Quiero formar o ampliar mi familia
+Quiero vivir en otro sitio algún día
+Quiero montar un proyecto propio
+Quiero dedicar más tiempo a lo que me apasiona
+Quiero viajar mucho más
+Quiero aprender algo nuevo este año
+Quiero tener una vida tranquila
+Quiero tener una vida llena de aventuras
+Quiero reconciliarme con alguien
+Quiero ser un buen ejemplo para otros
+Quiero que me recuerden como alguien bueno
+Quiero mejorar mi forma de comunicarme
+Quiero ser más constante
+Quiero perder el miedo a lo que opinen de mí
+Quiero cuidar más de mi salud
+Quiero estar más presente con los míos
+Quiero cumplir una promesa que me hice
+Quiero perdonar a alguien
+Quiero que alguien me perdone
+Quiero más tiempo libre
+Quiero más estabilidad
+Quiero más libertad
+Quiero más calma
+Me veo feliz dentro de diez años
+Me veo en otro país dentro de diez años
+Me veo con mi propio negocio dentro de diez años
+Me veo rodeado de gente querida dentro de diez años
+Me veo más sabio/a dentro de diez años
+Creo en el amor para toda la vida
+Me enamoro con facilidad
+Me cuesta enamorarme
+Necesito espacio incluso con quien quiero
+Me da miedo comprometerme
+Me da miedo que me hagan daño
+Me cuesta confiar plenamente en una pareja
+Soy celoso/a
+Perdonaría una mentira grande si hay arrepentimiento
+Prefiero una pareja que me haga reír a una que me impresione
+Prefiero una pareja tranquila a una apasionada
+Creo que el amor se cuida cada día
+Me gusta decir te quiero a menudo
+Me gusta que me digan te quiero a menudo
+Recuerdo mi primer amor con cariño
+Me quedo con las ganas de decir lo que siento
+Doy el primer paso en el amor
+Valoro más la confianza que la pasión
+Una buena conversación me enamora más que un buen físico
+He estado enamorado/a de alguien que no me correspondía
+He dejado ir a alguien que me importaba
+He vuelto con alguien después de dejarlo
+Creo en las almas gemelas
+Mi trabajo me da sentido
+Mi trabajo me estresa más de lo que debería
+Me siento reconocido/a en lo que hago
+Haría lo que hago aunque no me pagaran
+Me da miedo no estar a la altura profesionalmente
+A veces me sobrepasan las responsabilidades
+Siento que podría dar más de mí
+Me asusta empezar de cero profesionalmente
+Prefiero la estabilidad a la ambición
+Prefiero arriesgar a quedarme con la duda
+Me cuesta desconectar los fines de semana
+Mi mayor miedo profesional es fracasar
+Trabajo más por necesidad que por pasión
+Me gusta ayudar a otros a crecer
+Me siento orgulloso/a de lo que he construido
+Siento que he dejado cosas por el camino por trabajar
+Me gustaría tener más tiempo para mi familia
+Me gustaría tener más tiempo para mis sueños
+Creo que el trabajo no define a una persona
+Me siento más yo mismo/a fuera del trabajo
+Cuando algo sale mal en el trabajo me lo llevo a casa
+Me cuesta aceptar el fracaso profesional
+He pensado en dejarlo todo y empezar algo distinto
+He cometido un error que no olvido
+Admiro a alguien en lo profesional
+Mentiría para proteger a alguien que quiero
+Diría la verdad aunque me costara una amistad
+Defiendo mis ideas aunque sea el único
+Sé escuchar opiniones contrarias
+Ayudaría a un desconocido aunque me costara algo
+Perdonaría a quien me falló si se arrepiente de verdad
+Me cuesta juzgar a los demás sin conocerlos
+He juzgado mal a alguien y lo reconocí
+Me dejo llevar por la primera impresión
+Creo que la suerte existe
+Creo que el esfuerzo siempre compensa
+Creo que la vida es injusta a veces
+Creo que merece la pena ser bueno
+Creo que ser auténtico es más importante que gustar
+Creo que cada persona hace lo que puede
+Creo que hay que decir las cosas a tiempo
+Creo que el silencio también hace daño
+Creo que pedir ayuda es de valientes
+Creo que debería llorar más
+Creo que sé más de lo que digo`.split('\n');
+var dneed=500-PL.length-DS.length,dper=Math.ceil(dneed/10),dp=[];
+Object.keys(PD).forEach(function(k){var a=PD[k].split(','),all=[];for(var i=0;i<a.length;i++)for(var j=i+1;j<a.length;j++)all.push(R2()<.5?[a[i],a[j]]:[a[j],a[i]]);shuffle(all,R2).slice(0,dper).forEach(function(p){dp.push({k:'Elige una',q:'¿'+k+'?',s:k+': '+p.join(' / '),o:p})})});
+dp=shuffle(dp,R2).slice(0,dneed);
+var QD=[].concat(dp,
+  PL.map(function(l){var p=l.split('|');return{k:'Sobre ti',q:p[0],s:p[0],o:shuffle(p[1].split(','),R2).slice(0,4)}}),
+  DS.map(function(s){return{k:'Profundo',q:s,s:s,o:['Sí, me pasa','A veces','No, para nada']}}));
+var QS=QN,ROUNDS=Math.floor(QN.length/10),MODE='normal';
+function setMode(m){MODE=m;QS=m==='profundo'?QD:QN;ROUNDS=Math.floor(QS.length/10)}
+
+// ---------- Estado ----------
+var S=null,app=document.getElementById('app');
+function KEY(m){return m==='profundo'?'cuanto-me-conoces-v1-profundo':'cuanto-me-conoces-v1'}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function save(){try{localStorage.setItem(S.online?'cmc-online':S.remote?'cmc-remote':KEY(S.mode),JSON.stringify(S))}catch(e){}}
+function load(m){try{return JSON.parse(localStorage.getItem(KEY(m)))}catch(e){return null}}
+function ids(){return S.order.slice(S.round*10,S.round*10+10)}
+function ans(){return S.round%2}
+function gue(){return 1-S.round%2}
+function nm(i){return esc(S.names[i])}
+function pct(i){return S.played[i]?Math.round(S.scores[i]/S.played[i]*100):0}
+
+function board(){
+  return '<div class="score"><div><span class="mut">'+nm(0)+'</span><b>'+S.scores[0]+'</b><span class="mut">'+pct(0)+'% aciertos</span></div><div><span class="mut">'+nm(1)+'</span><b>'+S.scores[1]+'</b><span class="mut">'+pct(1)+'% aciertos</span></div></div>';
+}
+function head(){
+  return '<div class="top"><span>Ronda '+(S.round+1)+' de '+ROUNDS+'</span><button class="link" data-a="end">Terminar</button></div>';
+}
+
+// ---------- Online (sala con código, sin apps extra) ----------
+var RM=null,NR=null,OMSG='';
+function makeWsRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return {join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,pres={},arr=[],subs=[],done=false,closed=false,retry=0,cid=Math.random().toString(36).slice(2);
+    var room={
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn);return function(){subs=subs.filter(function(x){return x!==fn})}},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}
+    };
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello'){id=m.id}
+        else if(m.t==='peers'){
+          arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,sameTab:q.id===id,kind:'viewer',guest:false,by:null,presence:q.p||{},updatedAt:Date.now()}});
+          if(!done){done=true;resolve(room)}
+          subs.slice().forEach(function(f){f({peers:arr})});
+        }
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}
+      };
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();
+    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},70000);
+  })}};
+}
+RM=makeWsRoom();
+function homeKeep(){var ids=['n0','n1','on','oc','rn','rc'],v=ids.map(function(i){var e=document.getElementById(i);return e?e.value:''});home();ids.forEach(function(i,k){var e=document.getElementById(i);if(e)e.value=v[k]})}
+function loadOn(){try{return JSON.parse(localStorage.getItem('cmc-online'))}catch(e){return null}}
+function mkOrder(seed){return shuffle(QS.map(function(_,i){return i}),rng(seed))}
+function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function otherPeer(){if(!NR)return null;var ps=NR.peers();for(var i=0;i<ps.length;i++){var p=ps[i];if(!p.isMe&&p.kind==='viewer'&&p.presence&&p.presence.n)return p}return null}
+function pub(){if(!NR||!S||!S.online)return;var p={n:S.names[S.online.me],h:S.online.me,rd:S.round,st:S.ost||'',g:S.gstr||null,res:S.res||null};if(S.online.me===0){p.m=S.mode;p.sd=S.online.seed}NR.presence(p).catch(function(){})}
+function createRoom(){
+  var n=(document.getElementById('on').value||'').trim()||'Jugador 1',seed=Math.floor(Math.random()*16777215)+1;
+  S={mode:MODE,names:[n,'…'],order:mkOrder(seed),round:0,i:0,scores:[0,0],played:[0,0],answers:[],guesses:[],phase:'lobby',online:{code:newCode(),me:0,seed:seed}};
+  enter();
+}
+function joinRoom(){
+  var n=(document.getElementById('on').value||'').trim()||'Jugador 2',code=(document.getElementById('oc').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!code){OMSG='Escribe el código de sala.';homeKeep();return}
+  S={mode:MODE,names:['…',n],order:null,round:0,i:0,scores:[0,0],played:[0,0],answers:[],guesses:[],phase:'lobby',online:{code:code,me:1,seed:0}};
+  enter();
+}
+function enter(){
+  if(!RM){OMSG='Online no disponible en este navegador.';S=null;home();return}
+  OMSG='';setPhase(S.phase||'lobby');
+  RM.join('cmc-'+S.online.code).then(function(r){NR=r;NR.onPeers(syncOnline);pub();syncOnline()}).catch(function(e){OMSG='No se pudo entrar a la sala ('+((e&&e.code)||'error')+').';S=null;home()});
+}
+function syncOnline(){
+  if(!S||!S.online||!NR)return;
+  var me=S.online.me,o=otherPeer(),pr=o&&o.presence;
+  if(pr&&pr.n)S.names[1-me]=String(pr.n).slice(0,20);
+  if(S.phase==='lobby'){
+    if(!pr)return;
+    if(me===1){if(pr.h!==0||!pr.sd)return;if(!S.order){S.mode=pr.m==='profundo'?'profundo':'normal';setMode(S.mode);S.online.seed=pr.sd|0;S.order=mkOrder(S.online.seed)}}
+    setPhase('intro');return;
+  }
+  if(S.phase!=='await'||!pr)return;
+  var a=S.round%2===me;
+  if(!a&&S.ost==='wait'&&pr.rd===S.round&&pr.st==='done'){S.i=0;S.ost='gue';pub();setPhase('guess');return}
+  if(a&&S.ost==='done'&&pr.rd===S.round&&pr.st==='gdone'&&typeof pr.g==='string'&&pr.g.length===10){S.guesses=pr.g.split('').map(Number);onlineFin(true)}
+  else if(!a&&S.ost==='gdone'&&pr.res&&pr.res.rd===S.round&&typeof pr.res.a==='string'&&pr.res.a.length===10){S.answers=pr.res.a.split('').map(Number);onlineFin(false)}
+}
+function onlineFin(isAns){
+  var n=0;S.answers.forEach(function(x,k){if(x===S.guesses[k])n++});
+  var g=isAns?1-S.online.me:S.online.me;S.scores[g]+=n;S.played[g]+=10;S.ost='res';
+  if(isAns)S.res={rd:S.round,a:S.answers.join(''),n:n};
+  pub();setPhase('result');
+}
+function onlineAnswered(){S.ost='done';pub();setPhase('await');syncOnline()}
+function onlineGuessed(){S.gstr=S.guesses.join('');S.ost='gdone';pub();setPhase('await');syncOnline()}
+function lobbyV(){
+  var host=S.online.me===0,c=esc(S.online.code.toUpperCase());
+  app.innerHTML='<div class="card center"><div class="kick">Sala online</div>'+(host?'<h2>Código: <span style="letter-spacing:.12em">'+c+'</span></h2><p class="mut">Pásale este código a la otra persona y espera a que se una…</p>':'<h2>Entrando…</h2><p class="mut">Conectando con la sala '+c+'. Esperando al anfitrión…</p>')+'<button class="btn sec" data-a="new">Cancelar</button></div>';
+}
+function introOn(){
+  var me=S.online.me,a=S.round%2===me;
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Ronda '+(S.round+1)+' · Sala '+esc(S.online.code.toUpperCase())+'</div><h2>'+(a?'Te toca responder':'Te toca adivinar')+'</h2><p class="mut">'+(a?nm(1-me)+' intentará adivinar lo que contestes.':'Esperarás a que '+nm(1-me)+' responda y después adivinarás sus respuestas.')+'</p><button class="btn" data-a="o-go">Estoy listo/a</button></div>'+board();
+}
+function awaitV(){
+  var me=S.online.me,a=S.round%2===me,msg=a?nm(1-me)+' está adivinando tus respuestas…':(S.ost==='wait'?nm(1-me)+' está respondiendo…':nm(1-me)+' está revisando tus respuestas…');
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Sala '+esc(S.online.code.toUpperCase())+'</div><h2>Esperando</h2><p class="mut">'+msg+'</p></div>'+board();
+}
+
+// ---------- A distancia sin sesión (códigos) ----------
+function loadRem(){try{return JSON.parse(localStorage.getItem('cmc-remote'))}catch(e){return null}}
+function cleanName(n){return String(n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x20-\x7b\x7d-\x7e]/g,'').slice(0,20)||'Jugador'}
+function enc(t,seed){var r=rng(seed),o='';for(var i=0;i<t.length;i++){var k=Math.floor(r()*256),c=(t.charCodeAt(i)&255)^k;o+=(c<16?'0':'')+c.toString(16)}return o.replace(/(.{4})(?=.)/g,'$1-')}
+function dec(h,seed){h=String(h).toLowerCase().replace(/[^0-9a-f]/g,'');if(!h||h.length%2)return null;var r=rng(seed),o='';for(var i=0;i<h.length;i+=2){var k=Math.floor(r()*256);o+=String.fromCharCode(parseInt(h.substr(i,2),16)^k)}return o}
+function remoteStart(create){
+  var n=cleanName((document.getElementById('rn').value||'').trim()||(create?'Jugador 1':'Jugador 2')),code=(document.getElementById('rc').value||'').trim().toLowerCase(),seed,mode,me;
+  if(create){mode=MODE;seed=Math.floor(Math.random()*900000)+100000;me=0}
+  else{var m=code.match(/^([cp])-?(\d{6})$/);if(!m){OMSG='Escribe el código de partida (ejemplo: c-123456).';homeKeep();return}mode=m[1]==='p'?'profundo':'normal';seed=+m[2];me=1}
+  OMSG='';setMode(mode);
+  S={mode:mode,names:me?['La otra persona',n]:[n,'La otra persona'],order:mkOrder(seed),round:0,i:0,scores:[0,0],played:[0,0],answers:[],guesses:[],phase:'intro',remote:{me:me,seed:seed,code:(mode==='profundo'?'p':'c')+'-'+seed}};
+  setPhase('intro');
+}
+function remoteAnswered(){var me=S.remote.me;S.rcode=enc(S.round+'|'+S.answers.join('')+'|'+S.scores[me]+'|'+S.played[me]+'|'+cleanName(S.names[me]),S.remote.seed);setPhase('rcode')}
+function copyCode(){var b=document.querySelector('[data-a="r-copy"]');try{navigator.clipboard.writeText(S.rcode).then(function(){b.textContent='Copiado ✓'},function(){b.textContent='Selecciona el código y cópialo'})}catch(e){b.textContent='Selecciona el código y cópialo'}}
+function reveal(){
+  var t=dec(document.getElementById('rcode').value,S.remote.seed),m=t&&t.match(/^(\d+)\|(\d{10})\|(\d+)\|(\d+)\|(.{1,20})$/);
+  if(!m){S.rerr='Ese código no es válido. Cópialo completo, tal como te lo han enviado.';rpasteV();return}
+  if(+m[1]!==S.round){S.rerr='Ese código es de la ronda '+(+m[1]+1)+' y ahora toca la ronda '+(S.round+1)+'.';rpasteV();return}
+  var me=S.remote.me,ot=1-me,n=0;
+  S.answers=m[2].split('').map(Number);
+  S.answers.forEach(function(x,k){if(x===S.guesses[k])n++});
+  S.scores[me]+=n;S.played[me]+=10;S.scores[ot]=+m[3];S.played[ot]=+m[4];S.names[ot]=m[5];S.rerr='';
+  setPhase('result');
+}
+function introR(){
+  var me=S.remote.me,a=S.round%2===me,o=nm(1-me),c=esc(S.remote.code.toUpperCase());
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Ronda '+(S.round+1)+' · Partida '+c+'</div><h2>'+(a?'Te toca responder':'Te toca adivinar')+'</h2><p class="mut">'+(a?'Responde con sinceridad. Al terminar tendrás un código para enviarselo a '+o+'.':'Adivina lo que respondió '+o+'. Al terminar pegarás el código que te envíe para ver el resultado.')+'</p>'+(S.round===0&&me===0?'<p class="mut" style="font-size:14px">Pásale el código de partida <b>'+c+'</b> a la otra persona para que se una.</p>':'')+'<button class="btn" data-a="r-go">Estoy listo/a</button></div>'+board();
+}
+function rcodeV(){
+  var o=nm(1-S.remote.me),last=S.round+1>=ROUNDS;
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Código de respuestas</div><div style="font-size:20px;font-weight:700;word-break:break-all;line-height:1.4;margin:8px 0">'+esc(S.rcode)+'</div><button class="btn" data-a="r-copy">Copiar código</button><p class="mut" style="margin:12px 0 0">Envíaselo a '+o+' (por WhatsApp, por ejemplo). Con él verá cuánto te conoce cuando termine de adivinar.</p></div>'+board()+'<button class="btn sec" data-a="'+(last?'end':'next')+'">'+(last?'Ver resultado final':'Siguiente ronda')+'</button>';
+}
+function rpasteV(){
+  var o=nm(1-S.remote.me);
+  app.innerHTML=head()+'<div class="card"><div class="kick">Ver resultado</div><h2>Pega el código de '+o+'</h2><p class="mut">Es el código de respuestas de la ronda '+(S.round+1)+' que te ha enviado '+o+'. Si aún no te lo ha mandado, puedes cerrar y volver más tarde: tu partida queda guardada.</p><textarea id="rcode" rows="3" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit" placeholder="xxxx-xxxx-xxxx…"></textarea>'+(S.rerr?'<p style="color:var(--ko);font-size:14px">'+esc(S.rerr)+'</p>':'')+'<button class="btn" data-a="r-reveal">Ver resultado</button></div>'+board();
+}
+
+// ---------- Pantallas ----------
+function sel(m){return MODE===m?'border-color:var(--ac);background:rgba(224,69,123,.1);font-weight:700':''}
+function home(){
+  var old3=loadRem();if(old3&&(!old3.remote||old3.phase==='final'))old3=null;
+  var old2=loadOn();if(old2&&(!old2.online||old2.phase==='final'))old2=null;
+  var old=load(MODE),can=old&&old.phase&&old.phase!=='final'&&old.order;
+  app.innerHTML='<h1>¿Cuánto me conoces?</h1><p class="mut">'+QS.length+' preguntas, rondas de 10. Uno responde en secreto y el otro intenta adivinar sus respuestas. Después, se cambian los papeles.</p>'
+  +'<div class="card"><div class="kick">Modo de juego</div><button class="opt" data-m="normal" style="'+sel('normal')+'">Clásico · 500 preguntas ligeras y divertidas</button><button class="opt" data-m="profundo" style="'+sel('profundo')+'">Profundo · 500 preguntas personales para conocerse de verdad</button><label>Jugador 1<input id="n0" maxlength="20" placeholder="Nombre"></label><label>Jugador 2<input id="n1" maxlength="20" placeholder="Nombre"></label>'
+  +'<button class="btn" data-a="start">Empezar partida</button>'
+  +(can?'<button class="btn sec" data-a="resume">Continuar partida guardada ('+esc(old.names[0])+' y '+esc(old.names[1])+', ronda '+(old.round+1)+')</button>':'')+'</div>'
+  +'<div class="card"><div class="kick">A distancia sin sesión</div><p class="mut" style="font-size:14px">Funciona solo con el enlace, sin iniciar sesión. Cada uno juega en su móvil a su ritmo y se pasan por WhatsApp un código al final de cada ronda.</p><label>Tu nombre<input id="rn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="rcreate">Crear partida (modo '+(MODE==='profundo'?'Profundo':'Clásico')+')</button><label>Código de partida<input id="rc" maxlength="9" placeholder="Ej: c-123456" autocapitalize="none"></label><button class="btn sec" data-a="rjoin">Unirme con código de partida</button>'+(old3?'<button class="btn sec" data-a="rreconnect">Continuar partida a distancia ('+esc(old3.remote.code.toUpperCase())+', ronda '+(old3.round+1)+')</button>':'')+(OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'')+'</div>'
+  +'<div class="card"><div class="kick">Jugar online en directo</div><p class="mut" style="font-size:14px">Cada uno en su móvil, con un código de sala. Solo hace falta el enlace. Si el servidor estaba dormido, la primera conexión puede tardar medio minuto.</p><label>Tu nombre<input id="on" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="create"'+(RM?'':' disabled')+'>Crear sala (modo '+(MODE==='profundo'?'Profundo':'Clásico')+')</button><label>Código de sala<input id="oc" maxlength="8" placeholder="Ej: k7f3m" autocapitalize="none"></label><button class="btn sec" data-a="join"'+(RM?'':' disabled')+'>Unirme con código</button>'+(old2?'<button class="btn sec" data-a="reconnect">Reconectar a la sala '+esc(old2.online.code.toUpperCase())+'</button>':'')+(OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'')+(RM?'':'<p class="mut" style="font-size:14px">El modo online no está disponible en este navegador.</p>')+'</div>'
+  +'<p class="mut center" style="font-size:14px">Si juegan en un solo dispositivo, se lo pasan entre rondas.</p>';
+}
+function intro(){if(S.online)return introOn();if(S.remote)return introR();
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Ronda '+(S.round+1)+'</div><h2>Responde '+nm(ans())+'</h2><p class="mut">'+nm(gue())+', no mires la pantalla. Responde con sinceridad: luego te toca adivinar.</p><button class="btn" data-a="go-answer">Estoy listo/a</button></div>'+board();
+}
+function question(mode){
+  var list=ids(),Q=QS[list[S.i]];
+  var who=mode==='a'?nm(ans())+' responde':nm(gue())+' adivina lo que respondió '+nm(ans());
+  app.innerHTML=head()+'<div class="bar"><i style="width:'+(S.i/10*100)+'%"></i></div><div class="top"><span>Pregunta '+(S.i+1)+' de 10</span></div>'
+  +'<div class="card"><div class="who">'+who+'</div><div class="kick">'+esc(Q.k)+'</div><p class="q">'+esc(Q.q)+'</p>'
+  +Q.o.map(function(t,j){return '<button class="opt" data-j="'+j+'">'+esc(t)+'</button>'}).join('')+'</div>';
+}
+function pass(){
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Cambio de turno</div><h2>Pasa el dispositivo a '+nm(gue())+'</h2><p class="mut">Ahora adivina lo que respondió '+nm(ans())+' en las mismas 10 preguntas.</p><button class="btn" data-a="go-guess">Empezar a adivinar</button></div>';
+}
+function result(){
+  var list=ids(),n=0,rows='';
+  list.forEach(function(id,k){var Q=QS[id],ok=S.answers[k]===S.guesses[k];if(ok)n++;
+    rows+='<li class="'+(ok?'ok':'ko')+'"><b>'+esc(Q.s)+'</b><small>'+nm(ans())+' respondió: '+esc(Q.o[S.answers[k]])+'</small><small>'+nm(gue())+' adivinó: '+esc(Q.o[S.guesses[k]])+(ok?' ✓':' ✗')+'</small></li>'});
+  var msg=n>=9?'¡Telepatía total!':n>=7?'¡Te conoce de sobra!':n>=5?'Vas por buen camino':n>=3?'Hay que conocerse más':'Casi desconocidos…';
+  var last=S.round+1>=ROUNDS;
+  app.innerHTML=head()+'<div class="card center"><div class="kick">Resultado de la ronda</div><div class="big">'+n+'/10</div><h2>'+msg+'</h2><p class="mut">'+nm(gue())+' acertó '+n+' de las respuestas de '+nm(ans())+'.</p></div>'+board()
+  +'<ul>'+rows+'</ul>'
+  +(last?'<button class="btn" data-a="end">Ver resultado final</button>':'<button class="btn" data-a="next">Siguiente ronda (ahora responde '+nm(gue())+')</button>');
+}
+function final(){
+  S.phase='final';save();
+  var a=pct(0),b=pct(1),t=S.played[0]+S.played[1];
+  var txt=!t?'Aún no se ha jugado ninguna ronda.':a===b?'Empate: se conocen exactamente igual de bien.':(a>b?nm(0)+' conoce mejor a '+nm(1):nm(1)+' conoce mejor a '+nm(0))+'.';
+  var avg=t?Math.round((S.scores[0]+S.scores[1])/t*100):0;
+  app.innerHTML='<h1>Resultado final</h1><div class="card center"><div class="big">'+avg+'%</div><p class="mut">de aciertos entre los dos</p><h2>'+txt+'</h2></div>'+board()
+  +(S.online||S.remote?'':'<button class="btn" data-a="keep">Seguir jugando</button>')+'<button class="btn sec" data-a="new">Nueva partida</button>';
+}
+
+function show(){
+  if(S.phase==='rcode')rcodeV();
+  else if(S.phase==='rpaste')rpasteV();
+  else if(S.phase==='lobby')lobbyV();
+  else if(S.phase==='await')awaitV();
+  else if(S.phase==='intro')intro();
+  else if(S.phase==='answer')question('a');
+  else if(S.phase==='pass')pass();
+  else if(S.phase==='guess')question('g');
+  else if(S.phase==='result')result();
+  else final();
+}
+function setPhase(p){S.phase=p;save();show();window.scrollTo(0,0)}
+
+app.addEventListener('click',function(e){
+  var m=e.target.closest('[data-m]');
+  if(m){setMode(m.getAttribute('data-m'));homeKeep();return}
+  var o=e.target.closest('[data-j]');
+  if(o&&S){
+    var j=+o.getAttribute('data-j');
+    if(S.phase==='answer'){S.answers.push(j);S.i++;if(S.i>=10){S.i=0;if(S.online)onlineAnswered();else if(S.remote)remoteAnswered();else setPhase('pass')}else{save();show()}}
+    else if(S.phase==='guess'){S.guesses.push(j);S.i++;
+      if(S.i>=10&&S.online){S.i=0;onlineGuessed()}
+      else if(S.i>=10&&S.remote){S.i=0;setPhase('rpaste')}
+      else if(S.i>=10){var n=0;S.answers.forEach(function(x,k){if(x===S.guesses[k])n++});var g=gue();S.scores[g]+=n;S.played[g]+=10;S.i=0;setPhase('result')}
+      else{save();show()}}
+    return;
+  }
+  var b=e.target.closest('[data-a]');if(!b)return;
+  var a=b.getAttribute('data-a');
+  if(a==='start'){
+    var n0=document.getElementById('n0').value.trim()||'Jugador 1',n1=document.getElementById('n1').value.trim()||'Jugador 2';
+    var order=shuffle(QS.map(function(_,i){return i}),rng(Date.now()&0xffffff));
+    S={mode:MODE,names:[n0,n1],order:order,round:0,i:0,scores:[0,0],played:[0,0],answers:[],guesses:[],phase:'intro'};
+    setPhase('intro');
+  }
+  else if(a==='resume'){S=load(MODE);S.mode=MODE;show()}
+  else if(a==='go-answer'){S.i=0;S.answers=[];S.guesses=[];setPhase('answer')}
+  else if(a==='go-guess'){S.i=0;setPhase('guess')}
+  else if(a==='rcreate')remoteStart(true);
+  else if(a==='rjoin')remoteStart(false);
+  else if(a==='rreconnect'){S=loadRem();if(S){setMode(S.mode);show()}}
+  else if(a==='r-go'){S.i=0;S.answers=[];S.guesses=[];setPhase(S.round%2===S.remote.me?'answer':'guess')}
+  else if(a==='r-copy')copyCode();
+  else if(a==='r-reveal')reveal();
+  else if(a==='create')createRoom();
+  else if(a==='join')joinRoom();
+  else if(a==='reconnect'){S=loadOn();if(S){setMode(S.mode);enter()}}
+  else if(a==='o-go'){
+    S.i=0;S.answers=[];S.guesses=[];S.gstr=null;S.res=null;
+    if(S.round%2===S.online.me){S.ost='ans';pub();setPhase('answer')}
+    else{S.ost='wait';pub();setPhase('await');syncOnline()}
+  }
+  else if(a==='next'){S.round++;S.i=0;S.answers=[];S.guesses=[];S.gstr=null;S.res=null;S.ost='';S.rcode=null;S.rerr='';if(S.online)pub();setPhase('intro')}
+  else if(a==='end'){final()}
+  else if(a==='keep'){
+    if(S.answers.length===10&&S.guesses.length===10&&S.round+1<ROUNDS){S.round++}
+    else if(S.guesses.length<10&&S.answers.length===10){}
+    S.i=0;S.answers=[];S.guesses=[];setPhase('intro');
+  }
+  else if(a==='new'){try{localStorage.removeItem(S.online?'cmc-online':S.remote?'cmc-remote':KEY(S.mode))}catch(e2){}if(NR){NR.leave().catch(function(){});NR=null}S=null;home()}
+});
+home();
+</script>
+</body>
+</html>

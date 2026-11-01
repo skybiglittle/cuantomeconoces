@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'public', 'index.html');
 const ROOM_RE = /^[a-z0-9][a-z0-9_.-]{0,47}$/;
 const MAX_PLAYERS = 2;
+const MAX_GROUP = 200; // salas de grupo: sin límite práctico (tope técnico de seguridad)
 const MAX_PRESENCE_BYTES = 4096;
 
 const server = http.createServer((req, res) => {
@@ -55,6 +56,13 @@ function leave(ws) {
   else broadcast(name);
 }
 
+// Agrupa los cambios de presencia (60 ms) para no saturar con muchos jugadores.
+const pending = new Map();
+function schedule(name) {
+  if (pending.has(name)) return;
+  pending.set(name, setTimeout(() => { pending.delete(name); broadcast(name); }, 60));
+}
+
 wss.on('connection', (ws) => {
   ws.pid = 'p' + nextId++;
   ws.alive = true;
@@ -83,7 +91,7 @@ wss.on('connection', (ws) => {
       for (const w of [...set]) {
         if (w.readyState !== 1) { set.delete(w); w.room = null; }
       }
-      if (set.size >= MAX_PLAYERS) {
+      if (set.size >= (name.startsWith('cmg-') ? MAX_GROUP : MAX_PLAYERS)) {
         if (set.size === 0) rooms.delete(name);
         return send(ws, { t: 'err', code: 'room_full' });
       }
@@ -103,7 +111,7 @@ wss.on('connection', (ws) => {
       }
       if (Buffer.byteLength(JSON.stringify(next)) > MAX_PRESENCE_BYTES) return;
       ws.pres = next;
-      broadcast(ws.room);
+      schedule(ws.room);
     }
   });
 

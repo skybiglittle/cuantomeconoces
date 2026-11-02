@@ -1936,7 +1936,7 @@ function tabsHtml(){return '<div class="seg tabs"><button data-tab="grupo"'+(TAB
 function api(method,path,body){
   var h={'Content-Type':'application/json'};if(EK)h['x-admin-code']=EK;
   return fetch(path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
-    return r.json().catch(function(){return{}}).then(function(d){if(!r.ok)throw d;return d})});
+    return r.json().catch(function(){throw{error:'no_api'}}).then(function(d){if(!r.ok||!d||typeof d!=='object')throw d||{error:'server'};return d})});
 }
 function modeArr(m){return m==='profundo'?QD:m==='gracioso'?QG:QN}
 function applyCQ(list){
@@ -1950,7 +1950,7 @@ function readDraft(){
   var d=DRF||{id:null};d.k=k.value;d.q=document.getElementById('eq').value;
   d.o=[].slice.call(document.querySelectorAll('.eo')).map(function(i){return i.value});DRF=d;return d;
 }
-function errMsg(e){return e&&e.error==='too_many'?'Demasiados intentos. Espera unos minutos.':e&&e.error==='unauthorized'?'Código incorrecto.':e&&e.error==='invalid'?'Datos no válidos (revisa longitudes y opciones).':'No se pudo conectar con el servidor.'}
+function errMsg(e){return e&&e.error==='no_api'?'El servidor no tiene activada la API del editor: sube el server.js nuevo y questions-api.js y redespliega.':e&&e.error==='no_database'?'Falta DATABASE_URL en Render (Environment).':e&&e.error==='too_many'?'Demasiados intentos. Espera unos minutos.':e&&e.error==='unauthorized'?'Código incorrecto.':e&&e.error==='invalid'?'Datos no válidos (revisa longitudes y opciones).':'No se pudo conectar con el servidor.'}
 function reloadCQ(){return api('GET','/api/questions').then(function(d){applyCQ(d.questions)})}
 function renderEditor(h){
   app.classList.remove('still');

@@ -118,7 +118,10 @@ li.rk .sc{font-weight:800;font-size:18px}
 .opt.mine{border-color:var(--ac);background:rgba(224,69,123,.1)}
 .opt.right{border-color:var(--ok);background:rgba(31,157,99,.14)}
 .seg.tabs{margin:10px 0 0}
-.seg.tabs button{font-weight:600;padding:12px}
+.seg.tabs button{font-weight:600;padding:12px 4px;font-size:14px}
+.eds label{display:block;margin-top:10px;font-size:14px}
+.eds li .seg{margin-top:8px}
+.eds li .seg button{padding:6px;font-size:13px}
 .or{text-align:center;color:var(--mut);font-size:13px;margin:14px 0 4px}
 .combo{text-align:center;font-weight:700;color:var(--ac);margin-top:8px;animation:pop .4s both}
 .vo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between}
@@ -1643,7 +1646,8 @@ function home(){
   app.classList.remove('still');
   var t=TAB==='test',oldG=gLoad();if(oldG&&oldG.ph==='end')oldG=null;
   var msg=OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'';
-  var h='<h1>¿Cuánto me conoces?</h1><div class="seg tabs"><button data-tab="grupo"'+(t?'':' class="on"')+'>👥 Multijugador</button><button data-tab="test"'+(t?' class="on"':'')+'>🧪 Pruebas</button></div>';
+  var h='<h1>¿Cuánto me conoces?</h1>'+tabsHtml();
+  if(TAB==='edit'){renderEditor(h);return}
   if(!t){
     app.innerHTML=h+'<div class="card"><div class="kick">Modo grupo · sin límite de jugadores</div><p class="mut" style="font-size:14px">Cada pregunta le toca a un jugador: responde sobre sí mismo y el resto adivina, viendo en directo lo que eligen los demás. Con cuenta atrás, comodines, rondas de oro, votaciones, combos y preguntas de los propios jugadores.</p><div class="kick" style="margin-top:14px">Tipo de preguntas</div>'+seg()
     +'<label style="display:block;margin-top:12px">Tu nombre<input id="gn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="g-create"'+(RM?'':' disabled')+'>Crear sala</button><div class="or">o únete a una sala</div><input id="gc" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-a="g-join"'+(RM?'':' disabled')+'>Unirme</button>'
@@ -1923,7 +1927,80 @@ app.addEventListener('click',function(e){
   else if(t.closest('[data-dx]')){D.mine=[];dRedraw()}
 });
 new MutationObserver(fx).observe(app,{childList:true});
-home();
+
+// ---------- Preguntas propias + editor (pestaña protegida por código) ----------
+var CQ=[],EK='',EM='normal',EMSG='',EOK=false,DRF=null;
+var EMODES=[['normal','Clásico'],['profundo','Profundo'],['gracioso','Gracioso']];
+function ea(t){return esc(t).replace(/"/g,'&quot;')}
+function tabsHtml(){return '<div class="seg tabs"><button data-tab="grupo"'+(TAB==='grupo'?' class="on"':'')+'>👥 Multijugador</button><button data-tab="test"'+(TAB==='test'?' class="on"':'')+'>🧪 Pruebas</button><button data-tab="edit"'+(TAB==='edit'?' class="on"':'')+'>✏️ Editor</button></div>'}
+function api(method,path,body){
+  var h={'Content-Type':'application/json'};if(EK)h['x-admin-code']=EK;
+  return fetch(path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
+    return r.json().catch(function(){return{}}).then(function(d){if(!r.ok)throw d;return d})});
+}
+function modeArr(m){return m==='profundo'?QD:m==='gracioso'?QG:QN}
+function applyCQ(list){
+  CQ=Array.isArray(list)?list:[];
+  [QN,QD,QG].forEach(function(a){for(var i=a.length-1;i>=0;i--)if(a[i].c)a.splice(i,1)});
+  CQ.forEach(function(x){modeArr(x.mode).push({k:x.k,q:x.q,s:x.q,o:x.o,c:x.id})});
+  ROUNDS=Math.floor(QS.length/10);
+}
+function readDraft(){
+  var k=document.getElementById('ek');if(!k)return DRF;
+  var d=DRF||{id:null};d.k=k.value;d.q=document.getElementById('eq').value;
+  d.o=[].slice.call(document.querySelectorAll('.eo')).map(function(i){return i.value});DRF=d;return d;
+}
+function errMsg(e){return e&&e.error==='too_many'?'Demasiados intentos. Espera unos minutos.':e&&e.error==='unauthorized'?'Código incorrecto.':e&&e.error==='invalid'?'Datos no válidos (revisa longitudes y opciones).':'No se pudo conectar con el servidor.'}
+function reloadCQ(){return api('GET','/api/questions').then(function(d){applyCQ(d.questions)})}
+function renderEditor(h){
+  app.classList.remove('still');
+  if(!EK){
+    app.innerHTML=h+'<div class="card eds"><div class="kick">Editor de preguntas</div><p class="mut" style="font-size:14px">Zona privada. Introduce el código para añadir, editar o borrar preguntas.</p><input id="ecode" type="password" inputmode="numeric" autocomplete="off" placeholder="Código"><button class="btn" data-e="login">Entrar</button>'+(EMSG?'<p style="color:var(--ko);font-size:14px">'+esc(EMSG)+'</p>':'')+'</div>';
+    return;
+  }
+  var list=CQ.filter(function(x){return x.mode===EM}),cats={};
+  modeArr(EM).forEach(function(q){cats[q.k]=1});
+  var dl=Object.keys(cats).sort().map(function(c){return '<option value="'+ea(c)+'">'}).join('');
+  var d=DRF||{id:null,k:'',q:'',o:['','','','']};
+  var modes='<div class="seg">'+EMODES.map(function(m){return '<button data-e="mode" data-v="'+m[0]+'"'+(EM===m[0]?' class="on"':'')+'>'+m[1]+'</button>'}).join('')+'</div>';
+  var form='<div class="card eds"><div class="kick">'+(d.id?'Editando pregunta #'+d.id:'Nueva pregunta')+' · '+modeName(EM)+'</div>'
+    +'<label>Categoría<input id="ek" list="ecats" maxlength="40" value="'+ea(d.k)+'" placeholder="Ej: Favoritos"></label><datalist id="ecats">'+dl+'</datalist>'
+    +'<label>Pregunta<input id="eq" maxlength="120" value="'+ea(d.q)+'" placeholder="Ej: ¿Cuál es tu comida favorita?"></label>'
+    +[0,1,2,3].map(function(i){return '<label>Opción '+(i+1)+(i<2?'':' (opcional)')+'<input class="eo" maxlength="40" value="'+ea(d.o[i]||'')+'"></label>'}).join('')
+    +'<button class="btn" data-e="save">'+(d.id?'Guardar cambios':'Añadir pregunta')+'</button>'+(d.id?'<button class="btn sec" data-e="cancel">Cancelar edición</button>':'')
+    +(EMSG?'<p style="font-size:14px;color:'+(EOK?'var(--ok)':'var(--ko)')+'">'+esc(EMSG)+'</p>':'')+'</div>';
+  var by={};list.forEach(function(x){(by[x.k]=by[x.k]||[]).push(x)});
+  var rows=Object.keys(by).sort().map(function(c){return '<div class="kick" style="margin-top:14px">'+esc(c)+' ('+by[c].length+')</div><ul>'+by[c].map(function(x){return '<li><b>'+esc(x.q)+'</b><small>'+x.o.map(esc).join(' · ')+'</small><div class="seg"><button data-e="edit" data-id="'+x.id+'">✏️ Editar</button><button data-e="del" data-id="'+x.id+'">🗑 Borrar</button></div></li>'}).join('')+'</ul>'}).join('');
+  app.innerHTML=h+'<div class="card eds"><div class="kick">Editor de preguntas</div><p class="mut" style="font-size:14px;margin:0">Las que añadas se suman a las originales y se guardan para siempre. Modo:</p>'+modes+'</div>'+form
+    +'<div class="card eds"><div class="kick">Tus preguntas en modo '+modeName(EM)+' ('+list.length+')</div>'+(rows||'<p class="mut" style="font-size:14px">Aún no has añadido ninguna en este modo.</p>')+'</div><button class="btn sec" data-e="exit">Cerrar el editor</button>';
+}
+app.addEventListener('click',function(e){
+  var b=e.target.closest('[data-e]');if(!b||TAB!=='edit')return;
+  var a=b.getAttribute('data-e'),id=+b.getAttribute('data-id');
+  if(a==='login'){
+    EK=(document.getElementById('ecode').value||'').trim();EMSG='';
+    api('POST','/api/questions/auth').then(reloadCQ).then(function(){EMSG='';home()}).catch(function(er){EK='';EMSG=errMsg(er);home()});
+  }else if(a==='mode'){readDraft();if(DRF&&DRF.id)DRF=null;EM=b.getAttribute('data-v');EMSG='';home()}
+  else if(a==='cancel'){DRF=null;EMSG='';home()}
+  else if(a==='exit'){EK='';DRF=null;EMSG='';TAB='grupo';home()}
+  else if(a==='edit'){
+    var x=CQ.filter(function(q){return q.id===id})[0];if(!x)return;
+    EM=x.mode;DRF={id:x.id,k:x.k,q:x.q,o:x.o.concat(['','','','']).slice(0,4)};EMSG='';home();window.scrollTo(0,0);
+  }else if(a==='del'){
+    if(!confirm('¿Borrar esta pregunta para siempre?'))return;
+    readDraft();
+    api('DELETE','/api/questions/'+id).then(reloadCQ).then(function(){if(DRF&&DRF.id===id)DRF=null;EMSG='Pregunta borrada';EOK=true;home()}).catch(function(er){EMSG=errMsg(er);EOK=false;home()});
+  }else if(a==='save'){
+    var d=readDraft(),o=d.o.map(function(v){return v.trim()}).filter(Boolean);
+    if(!d.k.trim()||!d.q.trim()){EMSG='Falta la categoría o la pregunta.';EOK=false;home();return}
+    if(o.length<2){EMSG='Pon al menos 2 opciones.';EOK=false;home();return}
+    var body={mode:EM,k:d.k.trim(),q:d.q.trim(),o:o};
+    (d.id?api('PUT','/api/questions/'+d.id,body):api('POST','/api/questions',body)).then(reloadCQ).then(function(){DRF=null;EMSG='Guardado ✅';EOK=true;home()}).catch(function(er){EMSG=errMsg(er);EOK=false;home()});
+  }
+});
+var started=false;function go(){if(started)return;started=true;home()}
+fetch('/api/questions').then(function(r){return r.json()}).then(function(d){applyCQ(d.questions)}).catch(function(){}).then(go);
+setTimeout(go,4000);
 </script>
 </body>
 </html>

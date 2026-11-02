@@ -1,5 +1,5 @@
 # ¿Cuánto me conoces? — versión para Render
-
+BACKUPCREARPEGUNTAS EN ESTA VERSION FUNCIONA LO DE CRAER EN LA BASE DE DATOS
 Contenido:
 - `public/index.html`  la app (modos: local, a distancia por códigos, online en directo de 2 y modo grupo sin límite de jugadores)
 - `server.js`          servidor Node: sirve la app y conecta las salas en directo por WebSocket (2 jugadores por sala y sin límite práctico en las de grupo)

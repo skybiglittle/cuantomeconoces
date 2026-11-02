@@ -4,6 +4,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
+const { handle: questionsApi } = require('./questions-api');
 
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'public', 'index.html');
@@ -12,7 +13,9 @@ const MAX_PLAYERS = 2;
 const MAX_GROUP = 200; // salas de grupo: sin límite práctico (tope técnico de seguridad)
 const MAX_PRESENCE_BYTES = 4096;
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  // API de preguntas propias (editor): /api/questions
+  if (await questionsApi(req, res)) return;
   if (req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     return res.end('ok');

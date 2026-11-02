@@ -126,6 +126,7 @@ li.rk .sc{font-weight:800;font-size:18px}
 .vrow{display:flex;align-items:center}
 .vc{font-weight:800;color:var(--ac)}
 .qm select{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;margin:6px 0 10px}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dg .opt{padding:8px;text-align:center;margin:0}.dg .opt[disabled]{opacity:.45}.dcv{width:100%;max-width:260px;aspect-ratio:1;border-radius:10px;background:#fff;display:block;margin:0 auto 6px;touch-action:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -1201,7 +1202,7 @@ function makeWsRoom(){
   })}};
 }
 RM=makeWsRoom();
-function homeKeep(){var ids=['n0','n1','on','oc','rn','rc','gn','gc'],v=ids.map(function(i){var e=document.getElementById(i);return e?e.value:''});home();ids.forEach(function(i,k){var e=document.getElementById(i);if(e)e.value=v[k]})}
+function homeKeep(){var ids=['n0','n1','on','oc','rn','rc','gn','gc','dn','dc'],v=ids.map(function(i){var e=document.getElementById(i);return e?e.value:''});home();ids.forEach(function(i,k){var e=document.getElementById(i);if(e)e.value=v[k]})}
 function loadOn(){try{return JSON.parse(localStorage.getItem('cmc-online'))}catch(e){return null}}
 function mkOrder(seed){return shuffle(QS.map(function(_,i){return i}),rng(seed))}
 function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
@@ -1646,7 +1647,8 @@ function home(){
   if(!t){
     app.innerHTML=h+'<div class="card"><div class="kick">Modo grupo · sin límite de jugadores</div><p class="mut" style="font-size:14px">Cada pregunta le toca a un jugador: responde sobre sí mismo y el resto adivina, viendo en directo lo que eligen los demás. Con cuenta atrás, comodines, rondas de oro, votaciones, combos y preguntas de los propios jugadores.</p><div class="kick" style="margin-top:14px">Tipo de preguntas</div>'+seg()
     +'<label style="display:block;margin-top:12px">Tu nombre<input id="gn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="g-create"'+(RM?'':' disabled')+'>Crear sala</button><div class="or">o únete a una sala</div><input id="gc" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-a="g-join"'+(RM?'':' disabled')+'>Unirme</button>'
-    +(oldG?'<button class="btn sec" data-a="g-reconnect">Reconectar al grupo '+esc(oldG.code.toUpperCase())+'</button>':'')+msg+'</div>';
+    +(oldG?'<button class="btn sec" data-a="g-reconnect">Reconectar al grupo '+esc(oldG.code.toUpperCase())+'</button>':'')+msg+'</div>'
+    +'<div class="card"><div class="kick">🎨 Dibuja y adivina · 3 o más jugadores</div><p class="mut" style="font-size:14px">Dibuja un concepto, mezcla todos los dibujos y adivina de quién es cada uno. Con retos de dibujo, pistas y desvelado final en directo.</p><label style="display:block">Tu nombre<input id="dn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-da="dcreate"'+(RM?'':' disabled')+'>Crear sala de dibujo</button><div class="or">o únete a una sala</div><input id="dc" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-da="djoin"'+(RM?'':' disabled')+'>Unirme</button></div>';
     return;
   }
   var old3=loadRem();if(old3&&(!old3.remote||old3.phase==='final'))old3=null;
@@ -1787,6 +1789,139 @@ function fx(){
   var b=app.querySelector('.big[data-n]');if(b)countUp(b);
   var c=app.querySelector('[data-confetti]');if(c&&!c.dataset.done){c.dataset.done=1;confetti()}
 }
+// ---------- 🎨 Dibuja y adivina ----------
+var DW='Un lunes por la mañana|El verano perfecto|Tu mayor miedo|Una fiesta sorpresa|Tu casa soñada|La felicidad|Un monstruo bajo la cama|Tu superpoder|Un domingo de lluvia|El amor|La vergüenza|Una cita desastrosa|Tu mascota ideal|El fin del mundo|Una tortilla de patatas|Un viaje en avión|Tu yo del futuro|Un examen sorpresa|Un fantasma tímido|La siesta|Un atasco|Tu comida favorita|Un robot en el trabajo|El gimnasio en enero|Una isla desierta|El móvil sin batería|La Navidad|Un dragón en el metro|Madrugar|Tu peor pesadilla|Una boda|El WiFi caído|Tu plan perfecto|Un alien de vacaciones|La resaca|Tu cumpleaños|Un gato sospechoso|Tu héroe favorito'.split('|');
+var DCOL=['#222222','#e0457b','#2b7bff','#1f9d63','#ffb020','#7c4dff','#ffffff'];
+var DCH=['Dibujo libre','Una sola línea · no levantes el dedo','A ciegas · no verás tu trazo'];
+var AB='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
+var D=null,DR=null,dTimer=null,DT=75000,VT=25000,DMAX=360;
+function dEnc(st){return st.map(function(s){return AB[s.c]+AB[s.w]+s.p.map(function(q){return AB[q[0]]+AB[q[1]]}).join('')}).join('|')}
+function dDec(t){if(!t)return[];return t.split('|').map(function(x){var p=[];for(var i=2;i+1<x.length;i+=2)p.push([AB.indexOf(x[i]),AB.indexOf(x[i+1])]);return{c:AB.indexOf(x[0]),w:AB.indexOf(x[1]),p:p}})}
+function dDraw(cv,st){var x=cv.getContext('2d'),k=cv.width/64;x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.lineCap='round';x.lineJoin='round';
+  st.forEach(function(s){x.strokeStyle=x.fillStyle=DCOL[s.c]||'#222';x.lineWidth=s.w*k;x.beginPath();
+    if(s.p.length===1){x.arc((s.p[0][0]+.5)*k,(s.p[0][1]+.5)*k,s.w*k/2,0,7);x.fill()}
+    else{s.p.forEach(function(q,i){var X=(q[0]+.5)*k,Y=(q[1]+.5)*k;i?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke()}})}
+function dRedraw(){if(D.cv)dDraw(D.cv,D.ch===2&&!D.sent?[]:D.mine)}
+function dTot(){return D.mine.reduce(function(a,s){return a+s.p.length},0)}
+function dBind(cv){
+  var down=false,cur=null;
+  function pt(e){var r=cv.getBoundingClientRect();return[Math.max(0,Math.min(63,Math.floor((e.clientX-r.left)/r.width*64))),Math.max(0,Math.min(63,Math.floor((e.clientY-r.top)/r.height*64)))]}
+  cv.addEventListener('pointerdown',function(e){e.preventDefault();if(D.sent||(D.ch===1&&D.mine.length>=1)||dTot()>=DMAX)return;down=true;try{cv.setPointerCapture(e.pointerId)}catch(x){}cur={c:D.col,w:D.wid,p:[pt(e)]};D.mine.push(cur);dRedraw()});
+  cv.addEventListener('pointermove',function(e){if(!down||!cur)return;var q=pt(e),l=cur.p[cur.p.length-1];if((q[0]===l[0]&&q[1]===l[1])||dTot()>=DMAX)return;cur.p.push(q);dRedraw()});
+  ['pointerup','pointercancel'].forEach(function(n){cv.addEventListener(n,function(){down=false;cur=null;var f=document.getElementById('dfill');if(f)f.textContent=Math.round(dTot()/DMAX*100)+'% del lienzo'})});
+}
+function dTools(){document.querySelectorAll('[data-dk]').forEach(function(b){b.style.outline=+b.getAttribute('data-dk')===D.col?'3px solid var(--ac)':'none'});var t=document.getElementById('dthk');if(t)t.textContent=D.wid>3?'Grueso':'Fino'}
+function dPeers(){if(!DR)return[];return DR.peers().filter(function(p){return p.presence&&p.presence.dm}).map(function(p){return{id:p.peer,me:p.isMe,p:p.presence}})}
+function dBy(ps,k){return ps.filter(function(x){return x.p.k===k})[0]}
+function dOrd(){return shuffle(D.ro.slice(),rng(D.sd||1))}
+function dPub(){
+  if(!DR||!D)return;
+  var p={n:D.name,k:D.me,dm:1,dr:D.sent?D.dr:null,dw:D.sent?D.wd:null,dv:D.votes.join(',')};
+  if(D.host){p.h=1;p.ph=D.ph;p.ro=D.ro;p.ch=D.ch;p.sd=D.sd;p.rd=D.rd;p.rv=D.rv}else{p.h=null;p.ph=null;p.ro=null;p.ch=null;p.sd=null;p.rd=null;p.rv=null}
+  DR.presence(p).catch(function(){});
+}
+function dStart(create){
+  if(!RM){OMSG='Online no disponible en este navegador.';homeKeep();return}
+  var name=(document.getElementById('dn').value||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador'),code=create?newCode():(document.getElementById('dc').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!code){OMSG='Escribe el código de la sala de dibujo.';homeKeep();return}
+  D={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',ro:[],ch:0,sd:create?Math.floor(Math.random()*16777215)+1:0,rd:0,rv:0,votes:[],sent:false,dr:'',wd:-1,opts:[],mine:[],col:0,wid:2,cur:'',rk:'',rh:'',t0:Date.now(),nh:0,cv:null};
+  OMSG='';dTimer=setInterval(dTick,500);dRender();
+  RM.join('cmd-'+D.code).then(function(r){DR=r;DR.onPeers(dSync);dPub();dSync()}).catch(function(e){dLeave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar a la sala.')});
+}
+function dLeave(msg){if(DR){DR.leave().catch(function(){});DR=null}if(dTimer){clearInterval(dTimer);dTimer=null}D=null;OMSG=msg||'';app.classList.remove('still');home()}
+function dEnter(){
+  var key=D.ph+'|'+D.rd;if(D.cur===key)return;D.cur=key;D.t0=Date.now();
+  if(D.ph==='draw'){D.sent=false;D.dr='';D.mine=[];D.votes=[];D.wd=-1;D.col=0;D.wid=2;D.rh='';var o=[];while(o.length<3){var i=Math.floor(Math.random()*DW.length);if(o.indexOf(i)<0)o.push(i)}D.opts=o;dPub()}
+  else if(D.ph==='vote'){if(D.votes.length<=D.rd)D.votes[D.rd]=(D.ro[D.rd]===D.me?'*':'-');dPub()}
+}
+function dSync(){
+  if(!D||!DR)return;
+  if(!D.host){var hp=null;dPeers().forEach(function(x){if(x.p.h===1)hp=x.p});
+    if(hp){D.nh=0;D.ph=hp.ph||'lobby';D.ro=hp.ro||[];D.ch=hp.ch||0;D.sd=hp.sd||0;D.rd=hp.rd||0;D.rv=hp.rv||0}else D.nh=D.nh||Date.now()}
+  dEnter();dRender();
+}
+function dSend(){if(!D||D.sent||D.ph!=='draw')return;if(D.wd<0)D.wd=D.opts[0];D.sent=true;D.dr=dEnc(D.mine);D.rh='';dPub();dSync()}
+function dVote(k){
+  if(!D||D.ph!=='vote'||D.ro.indexOf(D.me)<0||D.ro[D.rd]===D.me||k===D.me||D.ro.indexOf(k)<0)return;
+  if(D.votes.some(function(v,i){return i!==D.rd&&v===k}))return;
+  D.votes[D.rd]=k;dPub();dRender();
+}
+function dTick(){
+  if(!D||!DR)return;
+  var ps=dPeers(),now=Date.now(),b=document.getElementById('tb'),el=now-D.t0;
+  if(D.ph==='draw'){
+    if(b)b.style.width=Math.max(0,100-el/DT*100)+'%';
+    if(!D.sent&&el>DT)dSend();
+    var sn=ps.filter(function(x){return x.p.dr!==null&&x.p.dr!==undefined}).length,st=document.getElementById('dst');if(st)st.textContent='Han enviado '+sn+' de '+ps.length+'…';
+    if(D.host&&ps.length&&(sn===ps.length||el>DT+6000)){
+      D.ro=D.ro.filter(function(k){var x=dBy(ps,k);return x&&x.p.dr!==null&&x.p.dr!==undefined});
+      D.rd=0;D.ph=D.ro.length<2?'end':'vote';D.rv=0;dPub();dSync()}
+  }else if(D.ph==='vote'){
+    if(b)b.style.width=Math.max(0,100-el/VT*100)+'%';
+    var act=ps.filter(function(x){return D.ro.indexOf(x.p.k)>-1}),vd=act.filter(function(x){var v=(x.p.dv||'').split(',')[D.rd];return v!==undefined&&v!=='-'}).length,s2=document.getElementById('dst');
+    if(s2)s2.textContent='Han votado '+vd+' de '+act.length;
+    if(D.host&&act.length&&((vd===act.length&&el>1200)||el>VT+3000)){
+      if(D.rd+1>=D.ro.length){D.ph='end';D.rv=0}else D.rd++;dPub();dSync()}
+  }
+  if(!D.host&&D.nh&&now-D.nh>15000)dRender();
+}
+function dScore(ps){
+  var s={},f={},V={};D.ro.forEach(function(k){s[k]=0;f[k]=[]});
+  ps.forEach(function(x){V[x.p.k]=(x.p.dv||'').split(',')});
+  D.ro.forEach(function(T,r){D.ro.forEach(function(x){if(x===T||!V[x])return;if(V[x][r]===T){s[x]+=2;f[T].push(x)}else s[T]+=1})});
+  return{s:s,f:f};
+}
+function dPaint(key,html,cb){
+  if(D.rh===html)return;var same=D.rk===key;D.rk=key;D.rh=html;app.classList.toggle('still',same);app.innerHTML=html;if(!same)window.scrollTo(0,0);
+  app.querySelectorAll('canvas[data-ds]').forEach(function(c){dDraw(c,dDec(c.getAttribute('data-ds')))});if(cb)cb();
+}
+function dRender(){
+  if(!D)return;
+  var ps=dPeers(),warn=(!D.host&&D.nh&&Date.now()-D.nh>15000)?'<p class="center" style="color:var(--ko)">⚠️ El anfitrión se ha desconectado.</p>':'';
+  var top='<div class="top"><span>🎨 Sala '+esc(D.code.toUpperCase())+'</span><button class="link" data-da="leave">Salir</button></div>',tb='<div class="tbar"><i id="tb" style="width:100%"></i></div>';
+  if(D.ph==='lobby'){
+    var pills=ps.map(function(x){return '<span class="pill">'+av(x.p.n)+esc(x.p.n)+(x.p.h===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('');
+    dPaint('dl','<h1>Dibuja y adivina</h1><div class="card center"><div class="kick">Sala de dibujo</div><h2>Código: <span style="letter-spacing:.12em">'+esc(D.code.toUpperCase())+'</span></h2><p class="mut">Cada uno elige un concepto, lo dibuja y todos los dibujos se mezclan. Luego, por turnos, hay que adivinar de quién es cada uno. Mínimo 3 jugadores.</p></div><div class="card"><div class="kick">Jugadores ('+ps.length+')</div><div class="pl">'+pills+'</div></div>'
+    +(D.host?'<button class="btn" data-da="start"'+(ps.length<3?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn+'<button class="btn sec" data-da="leave">Salir</button>');
+  }else if(D.ph==='draw'){
+    if(D.sent)dPaint('dw',top+'<div class="card center"><h2>¡Dibujo enviado! ✅</h2><p class="mut" id="dst"></p><span class="dots"><i></i><i></i><i></i></span></div>'+warn);
+    else if(D.wd<0)dPaint('dch',top+tb+'<div class="gold" style="background:linear-gradient(90deg,#ffd1dc,#ffeef3,#ffd1dc);background-size:200% 100%;color:#9b1c47">🎲 Reto: '+DCH[D.ch]+'</div><div class="card"><div class="kick">Elige qué dibujar</div>'+D.opts.map(function(i){return '<button class="opt" data-dw="'+i+'">'+esc(DW[i])+'</button>'}).join('')+'<p class="mut" style="font-size:14px;margin:8px 0 0">El concepto se mostrará junto a tu dibujo: ¡es una pista sobre ti!</p></div>'+warn);
+    else dPaint('dd',top+tb+'<div class="gold" style="background:linear-gradient(90deg,#ffd1dc,#ffeef3,#ffd1dc);background-size:200% 100%;color:#9b1c47">🎲 '+DCH[D.ch]+'</div><div class="card center"><div class="kick">Dibuja</div><p class="q" style="margin-bottom:10px">'+esc(DW[D.wd])+'</p><canvas id="dcv" class="dcv" width="320" height="320"></canvas><p class="mut" id="dfill" style="font-size:12px;margin:0 0 8px">0% del lienzo</p><div class="seg">'+DCOL.map(function(c,i){return '<button data-dk="'+i+'" style="background:'+c+';border-radius:50%;flex:none;width:34px;height:34px;padding:0;border:1.5px solid var(--bd)"></button>'}).join('')+'</div><div class="seg"><button data-dt="1" id="dthk">Fino</button><button data-du="1">↩ Deshacer</button><button data-dx="1">🗑 Borrar</button></div><button class="btn" data-da="send">Enviar dibujo</button></div>'+warn,
+      function(){D.cv=document.getElementById('dcv');dBind(D.cv);dRedraw();dTools()});
+  }else if(D.ph==='vote'){
+    var T=D.ro[D.rd],isT=T===D.me,inn=D.ro.indexOf(D.me)>-1,cur=D.votes[D.rd],used=D.votes.filter(function(v,i){return i!==D.rd&&v&&v!=='-'&&v!=='*'});
+    var cells=dOrd().map(function(k){var x=dBy(ps,k);if(!x)return'';var me=k===D.me,u=used.indexOf(k)>-1,dis=isT||me||u||!inn;
+      return '<button class="opt'+(cur===k?' mine':'')+'" data-dv="'+esc(k)+'"'+(dis?' disabled':'')+'><canvas class="dcv" width="256" height="256" data-ds="'+esc(x.p.dr||'')+'"></canvas><small class="mut">'+esc(DW[x.p.dw]||'')+(me?' · tuyo':u?' · ya asignado':'')+'</small></button>'}).join('');
+    dPaint('dv'+D.rd+'|'+(cur||''),top+'<div class="top"><span>Ronda '+(D.rd+1)+' de '+D.ro.length+'</span></div>'+tb+'<div class="card"><div class="kick">¿Quién lo dibujó?</div><p class="q">'+(isT?'Esta ronda va sobre ti: ¡a ver cómo te encuentran!':'¿Cuál es el dibujo de '+esc(nameOf(ps,T))+'?')+'</p><div class="dg">'+cells+'</div><p class="mut" id="dst" style="font-size:14px;margin:10px 0 0"></p><p class="mut" style="font-size:12px;margin:4px 0 0">+2 si aciertas · +1 para el dibujante por cada jugador que no lo encuentre · cada dibujo solo se puede asignar una vez · nada se desvela hasta el final</p></div>'+warn);
+  }else{
+    var sc=dScore(ps),ord=dOrd(),rv=Math.min(D.rv,ord.length),all=rv>=ord.length;
+    var cards=ord.map(function(k,i){var x=dBy(ps,k);if(!x)return'';var open=i<rv,f=sc.f[k]||[];
+      return '<div class="card center"><canvas class="dcv" width="256" height="256" data-ds="'+esc(x.p.dr||'')+'"></canvas>'+(open?'<div>'+av(x.p.n)+'<b>'+esc(x.p.n)+'</b> · '+esc(DW[x.p.dw]||'')+'</div><small class="mut">'+(f.length?'✓ Lo encontraron: '+f.map(function(q){return esc(nameOf(ps,q))}).join(', '):'🕵️ Nadie lo encontró: +'+(D.ro.length-1)+' para el dibujante')+'</small>':'<b>❓ ¿De quién será?</b>')+'</div>'}).join('');
+    var rank='',aw='';
+    if(all){
+      var r=D.ro.slice().sort(function(a,b){return sc.s[b]-sc.s[a]});
+      rank='<div class="card" data-confetti="1"><div class="kick">Clasificación</div><ul>'+r.map(function(k,i){return '<li class="rk" style="--d:'+(i*60)+'ms"><span>'+av(nameOf(ps,k))+'<b>'+(i+1)+'. '+esc(nameOf(ps,k))+'</b></span><span class="sc">'+sc.s[k]+'</span></li>'}).join('')+'</ul></div>';
+      var hi=D.ro.slice().sort(function(a,b){return sc.f[b].length-sc.f[a].length})[0],lo=D.ro.slice().sort(function(a,b){return sc.f[a].length-sc.f[b].length})[0];
+      aw='<div class="card"><div class="kick">Premios</div><p style="margin:4px 0">🎯 Más reconocible: <b>'+esc(nameOf(ps,hi))+'</b> ('+sc.f[hi].length+')</p><p style="margin:4px 0">🕵️ Más misterioso: <b>'+esc(nameOf(ps,lo))+'</b> ('+sc.f[lo].length+')</p></div>';
+    }
+    dPaint('de'+rv,'<h1>Desvelando…</h1>'+cards+rank+aw+(D.host&&!all?'<button class="btn" data-da="rev">Desvelar el siguiente</button>':(!all?'<p class="mut center">El anfitrión va desvelando los dibujos…</p>':''))+warn+'<button class="btn sec" data-da="leave">Salir</button>');
+  }
+}
+app.addEventListener('click',function(e){
+  var t=e.target,b=t.closest('[data-da]'),a=b&&b.getAttribute('data-da');
+  if(a==='dcreate'){dStart(true);return}if(a==='djoin'){dStart(false);return}
+  if(!D)return;
+  if(a==='leave')dLeave();
+  else if(a==='start'&&D.host&&D.ph==='lobby'){var ps=dPeers();if(ps.length<3)return;D.ro=shuffle(ps.map(function(x){return x.p.k}),rng(D.sd));D.ch=Math.floor(Math.random()*3);D.ph='draw';D.rd=0;D.rv=0;dPub();dSync()}
+  else if(a==='send')dSend();
+  else if(a==='rev'&&D.host){D.rv++;dPub();dSync()}
+  else if((b=t.closest('[data-dv]'))&&!b.disabled)dVote(b.getAttribute('data-dv'));
+  else if(b=t.closest('[data-dw]')){D.wd=+b.getAttribute('data-dw');D.rh='';dRender()}
+  else if(b=t.closest('[data-dk]')){D.col=+b.getAttribute('data-dk');dTools()}
+  else if(t.closest('[data-dt]')){D.wid=D.wid>3?2:5;dTools()}
+  else if(t.closest('[data-du]')){D.mine.pop();dRedraw()}
+  else if(t.closest('[data-dx]')){D.mine=[];dRedraw()}
+});
 new MutationObserver(fx).observe(app,{childList:true});
 home();
 </script>

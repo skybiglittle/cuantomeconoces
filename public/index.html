@@ -134,1020 +134,12 @@ li.rk .sc{font-weight:800;font-size:18px}
 </style>
 </head>
 <body>
-<main id="app"></main>
+<main id="app"><div class="card"><p class="mut" style="margin:0">Cargando preguntas…</p></div></main>
 <script>
 // ---------- Banco de preguntas (generado de forma determinista) ----------
 function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function shuffle(a,r){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1));var x=a[i];a[i]=a[j];a[j]=x}return a}
-var R=rng(7);
-
-var PC={
-Comida:'Pizza,Sushi,Hamburguesa,Paella,Tortilla de patatas,Tacos,Pasta',
-Bebida:'Café,Té,Cerveza,Vino,Refresco,Zumo,Agua con gas',
-Plan:'Cine,Senderismo,Cena con amigos,Maratón de series,Fiesta,Museo,Videojuegos',
-Destino:'Playa,Montaña,Ciudad,Campo,Crucero,Camping,Isla desierta',
-Ambiente:'Frío,Calor,Lluvia,Nieve,Niebla,Sol,Viento',
-Animal:'Perro,Gato,Caballo,Delfín,Águila,Lobo,Pulpo',
-Música:'Pop,Rock,Reggaetón,Clásica,Flamenco,Electrónica,Rap',
-Superpoder:'Volar,Invisibilidad,Teletransporte,Leer mentes,Superfuerza,Viajar en el tiempo,Hablar con animales',
-Dulce:'Chocolate,Helado,Tarta,Churros,Galletas,Gominolas,Fruta',
-Transporte:'Coche,Moto,Bici,Tren,Avión,Barco,Caminar',
-'Momento del día':'Amanecer,Mediodía,Atardecer,Noche,Madrugada,Siesta,Sobremesa',
-Hobby:'Leer,Cocinar,Deporte,Dibujar,Fotografía,Jardinería,Bailar'};
-
-var FV=`Tu postre favorito|Flan,Tarta de queso,Helado,Tiramisú,Brownie,Fruta
-Tu desayuno ideal|Tostadas,Cereales,Bollería,Huevos,Fruta,Solo café
-Tu comida de domingo|Paella,Asado,Cocido,Pasta,Barbacoa,Tapeo
-Tu fruta favorita|Fresa,Mango,Sandía,Manzana,Melocotón,Uvas
-Tu snack favorito|Patatas fritas,Frutos secos,Chocolate,Pipas,Palomitas,Aceitunas
-Tu cocina del mundo favorita|Italiana,Japonesa,Mexicana,India,Española,Tailandesa
-Tu color favorito|Azul,Verde,Rojo,Negro,Amarillo,Morado
-Tu género de película favorito|Comedia,Terror,Acción,Drama,Ciencia ficción,Animación
-Tu música para viajar en coche|Pop,Rock,Reggaetón,Clásicos de los 80,Flamenco,Indie
-Tu tipo de libro favorito|Novela,Ensayo,Cómic,Fantasía,Policíaco,Biografía
-Tu deporte favorito para ver|Fútbol,Baloncesto,Tenis,Motor,Ciclismo,Pádel
-Tu deporte para practicar|Correr,Natación,Gimnasio,Pádel,Senderismo,Yoga
-Tu rincón favorito de casa|Sofá,Cocina,Terraza,Cama,Escritorio,Balcón
-Tu app más usada|WhatsApp,Instagram,YouTube,TikTok,Spotify,Mapas
-Tu red social favorita|Instagram,TikTok,X,LinkedIn,YouTube,Ninguna
-Tu forma de relajarte|Dormir,Pasear,Música,Series,Leer,Cocinar
-Tu día favorito de la semana|Viernes,Sábado,Domingo,Jueves,Miércoles,Martes
-Tu momento favorito del día|Amanecer,Mañana,Tarde,Atardecer,Noche,Madrugada
-Tu destino soñado|Japón,Nueva York,Islandia,Maldivas,Roma,Australia
-Tu tipo de vacaciones|Playa,Montaña,Ciudad,Rural,Aventura,Crucero
-Tu alojamiento ideal|Hotel de lujo,Casa rural,Camping,Apartamento,Caravana,Cabaña
-Tu medio de transporte para viajar|Avión,Tren,Coche,Barco,Moto,Autocaravana
-Tu mascota ideal|Perro,Gato,Pájaro,Conejo,Pez,Ninguna
-Tu animal favorito|León,Delfín,Búho,Elefante,Lobo,Pingüino
-Tu asignatura favorita en el cole|Matemáticas,Lengua,Historia,Educación física,Música,Ciencias
-Lo que querías ser de pequeño/a|Futbolista,Médico/a,Profesor/a,Astronauta,Artista,Bombero/a
-Tu estilo de videojuego|Aventura,Deportes,Estrategia,Plataformas,Disparos,Simulación
-Tu bebida para una cena|Vino,Cerveza,Agua,Refresco,Cóctel,Vermut
-Tu bebida caliente|Café,Té,Chocolate,Infusión,Leche,Colacao
-Tu café|Solo,Con leche,Cortado,Descafeinado,Capuchino,No tomo
-Tu pizza favorita|Margarita,Pepperoni,Cuatro quesos,Barbacoa,Hawaiana,Vegetal
-Tu sabor de helado|Chocolate,Fresa,Vainilla,Pistacho,Limón,Stracciatella
-Tu tapa favorita|Tortilla,Croquetas,Jamón,Patatas bravas,Calamares,Ensaladilla
-Tu plato de pasta|Carbonara,Boloñesa,Pesto,Lasaña,Macarrones con queso,Al pomodoro
-Tu aroma favorito|Café,Mar,Hierba mojada,Pan recién hecho,Lavanda,Libro nuevo
-Tu estilo de ropa|Casual,Deportivo,Elegante,Urbano,Vintage,Cómodo
-Tu calzado favorito|Zapatillas,Botas,Sandalias,Zapatos,Chanclas,Mocasines
-La cualidad que más valoras|Honestidad,Humor,Lealtad,Generosidad,Inteligencia,Paciencia
-Tu mayor defecto|Impaciente,Despistado/a,Perfeccionista,Tozudo/a,Desordenado/a,Dormilón/a
-Tu mayor miedo|Alturas,Arañas,Oscuridad,Soledad,Hablar en público,Serpientes
-Tu papel en una fiesta|Alma de la fiesta,En la barra,Bailando,Charlando en un rincón,Me voy pronto,Hago de DJ
-Tu ritual de la mañana|Café,Ducha,Móvil,Ejercicio,Desayuno largo,Ninguno
-Tu década musical favorita|Los 70,Los 80,Los 90,Los 2000,Los 2010,La actual
-Tu género de serie favorito|Comedia,Drama,Thriller,Documental,Anime,Reality
-Tu domingo lluvioso ideal|Manta y peli,Cocinar,Leer,Dormir,Videojuegos,Salir igualmente
-Tu regalo ideal|Experiencia,Tecnología,Libro,Ropa,Dinero,Detalle casero
-Tu cena ideal|En casa,Restaurante,Tapeo,Pizza a domicilio,Barbacoa,Cena de gala
-Tu forma de comunicarte|Llamada,WhatsApp,Audio,Videollamada,En persona,Correo
-Tu momento para entrenar|Mañana,Mediodía,Tarde,Noche,Fin de semana,Nunca
-Tu flor favorita|Rosa,Girasol,Tulipán,Margarita,Lavanda,Orquídea
-Tu paisaje favorito|Playa,Bosque,Desierto,Montaña nevada,Campo de flores,Lago
-Tu festividad favorita|Navidad,Semana Santa,Verano,Año Nuevo,Tu cumpleaños,Fiestas del pueblo
-Tu golosina favorita|Gominolas,Chocolate,Regaliz,Chicle,Caramelos,Pipas
-Tu música para trabajar|Silencio,Lo-fi,Clásica,Pop,Rock,Podcast
-Tu sitio favorito para comer|En casa,Chiringuito,Bar del barrio,Restaurante,Picnic,Terraza
-Tu manera de viajar|Con plan,Improvisando,Con guía,En grupo,En solitario,En pareja
-Tu juego de mesa favorito|Parchís,Monopoly,Cartas,Ajedrez,Dominó,Trivial
-El idioma que te falta aprender|Inglés,Francés,Italiano,Alemán,Japonés,Portugués`.split('\n');
-
-var ST=`Me duermo viendo películas
-Llego tarde a casi todo
-Hablo solo/a cuando nadie me oye
-Me cuesta decir que no
-Prefiero quedarme en casa que salir
-Madrugo sin problema
-Dejo todo para última hora
-Lloro viendo películas
-Canto en la ducha
-Me pierdo con facilidad
-Guardo cosas por si acaso
-Soy muy competitivo/a
-Me da vergüenza bailar en público
-Contesto rápido a los mensajes
-Tengo la casa ordenada
-Me gusta planificarlo todo
-Improviso mucho
-Pido perdón con facilidad
-Soy rencoroso/a
-Me enfado rápido
-Me tomo las críticas muy a pecho
-Me río de mis propios chistes
-Cocino bien
-Me da pereza cocinar
-Pido siempre lo mismo en el restaurante
-Pruebo comidas nuevas sin miedo
-Me gusta el picante
-No soporto esperar
-Pierdo las llaves o el móvil a menudo
-Siempre voy justo/a de batería
-Duermo con ruido de fondo
-Necesito café para funcionar
-Soy más de noche que de día
-Madrugo también los fines de semana
-Hago la cama todos los días
-Dejo la ropa en una silla
-Me gusta el silencio
-Pongo música en cuanto llego a casa
-Veo series en versión original
-Si tengo una duda, la busco al momento
-Leo las instrucciones antes de montar algo
-Me gustan las sorpresas
-Recuerdo siempre los cumpleaños
-Me cuesta guardar un secreto
-Se me da bien mentir
-Me pongo nervioso/a al hablar en público
-Me gusta ser el centro de atención
-Prefiero escuchar que hablar
-Hago amigos fácilmente
-Tardo en confiar en la gente
-Mando audios largos
-Odio las llamadas de teléfono
-Tengo miles de fotos en el móvil
-Hago muchas fotos cuando viajo
-Viajo con la maleta justa
-Hago la maleta a última hora
-Me mareo en los viajes
-Me da miedo volar
-Me gustan los parques de atracciones
-Prefiero mar que montaña
-Me encanta la Navidad
-Me gusta regalar más que recibir
-Soy ahorrador/a
-Me cuesta gastar dinero en mí
-Compro por impulso
-Comparo precios antes de comprar
-Hago listas de todo
-Tengo demasiadas pestañas abiertas
-Se me olvida dónde aparco
-Me quedo mirando el techo antes de dormir
-Hago la siesta
-Me despierto antes de que suene la alarma
-Pospongo la alarma varias veces
-Me ducho por la mañana
-Tardo mucho en arreglarme
-Me visto en cinco minutos
-Me gusta ir a la moda
-Tengo una prenda favorita que uso demasiado
-Colecciono algo
-Soy supersticioso/a
-Creo en el destino
-Me fío de mi intuición
-Pienso demasiado las cosas
-Me lanzo sin pensar
-Soy optimista
-Veo el vaso medio vacío
-Me estreso con facilidad
-Mantengo la calma en las crisis
-Me río con facilidad
-Me cuesta pedir ayuda
-Ayudo a quien lo necesita aunque no pueda
-Me gusta el deporte
-Prefiero ver deporte que practicarlo
-Odio el gimnasio
-Salgo a caminar para despejarme
-Me gustan los animales
-Me llevo bien con los niños
-Soy muy familiar
-Hablo con mi familia casi todos los días
-Me gustan las reuniones grandes
-Prefiero planes pequeños
-La comida casera es insuperable
-Soy buen/a conductor/a
-Me desespera el tráfico
-Pierdo la paciencia al volante
-Prefiero conducir que ir de copiloto
-Me gusta el bricolaje
-Soy manitas
-Me da pereza limpiar
-Plancho mi ropa
-Tengo plantas en casa
-Se me mueren las plantas
-Me gusta la lluvia
-Odio el calor
-Odio el frío
-Me encanta la nieve
-Me baño aunque el agua esté helada
-Sé nadar muy bien
-Tengo buen sentido del humor
-Hago imitaciones
-Toco un instrumento
-Me gustaría aprender a tocar un instrumento
-Sé bailar
-Me sé las canciones de memoria
-Voy a conciertos
-Sigo algún deporte con pasión
-Juego a videojuegos
-Leo todas las semanas
-Termino todos los libros que empiezo
-Veo la tele mientras uso el móvil
-Siempre veo un capítulo más
-Me gustan los documentales
-Me gustan las películas de terror
-Me asusto con facilidad
-Me gusta ir al cine
-Hablo durante las películas
-Me gusta el teatro
-Me gustan los museos
-Me interesa la historia
-Me gusta debatir
-Sigo las noticias a diario
-Uso mucho las redes sociales
-Subo historias a menudo
-Las redes me enganchan más de lo que quisiera
-Uso la inteligencia artificial a diario
-Me encanta la tecnología
-Cambio de móvil a menudo
-Cuido el medio ambiente
-Reciclo todo
-Voy a pie siempre que puedo
-Me gusta la naturaleza
-Me gusta ver amanecer
-Disfruto de un buen atardecer
-Soy de ciudad
-Viviría en el campo
-Me gustaría vivir en otro país
-Hablo más de dos idiomas
-Me gusta aprender idiomas
-Soy muy curioso/a
-Me cuesta concentrarme
-Trabajo mejor bajo presión
-Siempre llego pronto a las citas
-Soy muy trabajador/a
-Me cuesta desconectar del trabajo
-Siempre estoy pensando en nuevas ideas de negocio
-Me gusta liderar
-Prefiero trabajar en equipo
-Prefiero trabajar solo/a
-Delego con facilidad
-Soy perfeccionista
-Me da igual que algo no quede perfecto
-Cumplo siempre lo que prometo
-Soy una persona muy puntual
-Me cuesta olvidar errores del pasado
-Pienso mucho en el futuro
-Vivo el presente
-Echo de menos mi infancia
-Cuento siempre las mismas anécdotas
-Tengo una anécdota vergonzosa que nunca cuento
-Ronco al dormir
-Hablo en sueños
-Me acuerdo de mis sueños
-Tengo pesadillas a menudo
-Me da miedo la oscuridad
-Me dan miedo las alturas
-Me dan asco los bichos
-No soporto la sangre
-Aguanto bien el dolor
-Me hago el/la fuerte aunque esté mal
-Me gusta que me mimen
-Me cuesta decir te quiero
-Soy muy cariñoso/a
-Me gusta el contacto físico
-Abrazo mucho
-Me gustan las cenas románticas
-Me emocionan los pequeños detalles
-Me hacen llorar los finales felices
-Perdono con facilidad
-Doy segundas oportunidades`.split('\n');
-
-var SC=`Si me tocara la lotería, lo primero sería|Viajar|Invertir|Invitar a todos|Ahorrar
-Ante un imprevisto, yo|Improviso|Hago un plan|Pido ayuda|Espero
-Mi fin de semana ideal es|Una escapada|Plan con amigos|Casa y sofá|Aventura
-En un atasco|Pongo música|Pongo un podcast|Me desespero|Llamo a alguien
-Si recibo un mensaje a medianoche|Contesto|Lo veo mañana|Me desvelo|Lo ignoro
-Ante una crítica, mi primera reacción es|Defenderme|Reflexionar|Callarme|Reírme
-Si me pierdo en una ciudad|Pido indicaciones|Uso el móvil|Sigo andando|Me paro a pensar
-Para ahorrar prefiero|Cuenta aparte|Hucha|Invertir|Gastar menos
-Para elegir restaurante|Miro reseñas|Pido recomendación|Al azar|Voy al de siempre
-En una discusión yo|Razono|Me enfado|Me callo|Cambio de tema
-Para celebrar un éxito|Cena especial|Fiesta|Me hago un regalo|Lo celebro en silencio
-Si tengo un día libre inesperado|Duermo|Salgo|Me pongo al día|Hago algo nuevo
-Antes de un viaje|Planifico todo|Lo básico|Nada|Pido consejos
-Para aprender algo nuevo|Vídeos|Libros|Practicando|Con alguien
-Si un amigo me pide un favor tarde|Voy|Pregunto el motivo|Busco alternativa|Digo que no puedo
-Mi regalo típico|Tecnología|Experiencia|Algo hecho a mano|Tarjeta regalo
-En una cena de empresa|Soy el alma|Soy discreto/a|Me voy pronto|Hago contactos
-Mi móvil suele estar|Sin sonido|Siempre en la mano|Sobre la mesa|Perdido
-Para ir a un sitio nuevo|GPS|Pregunto|Memoria|Sigo a alguien
-Si me quedo sin plan un sábado|Llamo a alguien|Netflix|Salgo solo/a|Duermo
-Mi mayor lujo|Tiempo libre|Viajar|Comer bien|Dormir
-En una boda visto|Clásico|Cómodo|Atrevido|Lo de siempre
-Lo primero que hago al despertar|Mirar el móvil|Mirar el reloj|Nada|Tomar café
-Cuando algo sale mal|Busco solución|Me frustro|Pido ayuda|Lo dejo estar
-Para las compras prefiero|Online|Tienda|Segunda mano|Solo lo imprescindible
-Si tuviera que hablar en público mañana|Disfruto|Me preparo mucho|Improviso|Me bloqueo
-Mi mayor motivación es|Dinero|Libertad|Reconocimiento|Familia
-En un grupo de amigos soy|El organizador|El gracioso|El que escucha|El que propone
-Si me regalan algo que no me gusta|Lo digo|Sonrío|Lo cambio|Lo guardo
-Mi ocio ideal con amigos|Juegos de mesa|Cenar|Deporte|Viaje
-Mi superpoder en el trabajo|Organización|Creatividad|Comunicación|Resistencia
-Si tuviera que vivir en otro país|Japón|Italia|Estados Unidos|Portugal
-Mi plan perfecto de domingo|Comida familiar|Naturaleza|Peli y manta|Ir a un mercado
-Si me ofrecen un puesto mejor lejos|Acepto|Lo pienso mucho|Rechazo|Negocio
-Mi comida de última hora|Pizza|Bocadillo|Tortilla|Cereales
-Ante una oferta tentadora|Compro|Espero|Comparo|Paso
-Para una primera cita|Cena|Paseo|Cine|Actividad
-Si me dan un millón de seguidores|Lo disfruto|Lo monetizo|Me asusto|No cambio nada
-Mi mayor sueño|Libertad financiera|Viajar|Proyecto propio|Vida tranquila`.split('\n');
-
-var need=500-FV.length-ST.length-SC.length;
-var per=Math.ceil(need/12),pairs=[];
-Object.keys(PC).forEach(function(k){
-  var a=PC[k].split(','),all=[];
-  for(var i=0;i<a.length;i++)for(var j=i+1;j<a.length;j++)all.push(R()<.5?[a[i],a[j]]:[a[j],a[i]]);
-  shuffle(all,R).slice(0,per).forEach(function(p){pairs.push({k:k,q:'¿Qué prefieres?',s:p.join(' / '),o:p})});
-});
-pairs=shuffle(pairs,R).slice(0,need);
-var QN=[].concat(pairs,
-  FV.map(function(l){var p=l.split('|');return{k:'Favoritos',q:p[0],s:p[0],o:shuffle(p[1].split(','),R).slice(0,4)}}),
-  ST.map(function(s){return{k:'¿Es verdad en tu caso?',q:s,s:s,o:['Sí, soy así','No, para nada','Depende']}}),
-  SC.map(function(l){var p=l.split('|');return{k:'Situación',q:p[0],s:p[0],o:p.slice(1)}}));
-// ---------- Modo profundo (500 preguntas independientes) ----------
-var R2=rng(11);
-var PD={
-'Qué es lo más importante en la vida':'Libertad,Seguridad,Amor,Éxito,Amistad,Honestidad,Paz interior',
-'Qué te define más':'Tu trabajo,Tu familia,Tus amistades,Tus valores,Tus logros,Tus sueños,Tu forma de querer',
-'Qué te haría más feliz':'Más tiempo,Más dinero,Más calma,Más amor,Más aventuras,Más reconocimiento,Más libertad',
-'Qué te cuesta más':'Perdonar,Pedir ayuda,Decir no,Mostrarte vulnerable,Soltar el control,Confiar,Pedir perdón',
-'Qué es lo que más temes':'Fracasar,Estar solo/a,Arrepentirme,Perder a alguien,Que me olviden,No cumplir mis sueños,Decepcionar',
-'Qué lamentarías más':'No haberlo intentado,Haber perdido el tiempo,No haber dicho te quiero,No haber viajado,No haber cuidado a los míos,Haber vivido con miedo,No haber sido yo mismo/a',
-'Qué es lo que más admiras':'Valentía,Bondad,Inteligencia,Humildad,Constancia,Creatividad,Sinceridad',
-'Qué valoras más en una relación':'Confianza,Respeto,Pasión,Complicidad,Estabilidad,Libertad,Comunicación',
-'Qué necesitas para sanar':'Tiempo,Hablar,Soledad,Compañía,Hacer deporte,Escribir,Llorar',
-'Cómo reaccionas ante un cambio':'Lo busco,Lo temo,Lo acepto,Lo evito,Lo planifico,Lo improviso,Me adapto'};
-var PL=`Lo que más te marcó de tu infancia|La familia,El colegio,Los amigos,Los veranos,Una mudanza,Un lugar concreto
-Lo que más aprendiste de tu familia|Esfuerzo,Humor,Unión,Respeto,Cariño,Independencia
-Lo que más valoras en un amigo|Lealtad,Humor,Sinceridad,Estar siempre,Saber escuchar,Ser auténtico/a
-Lo que más te duele|Una traición,La indiferencia,Una mentira,Una injusticia,Un reproche,Que me ignoren
-Lo que más te enfada|Las mentiras,La impuntualidad,La falta de respeto,La injusticia,La hipocresía,Que no me escuchen
-Lo que más te hace llorar|Una película,Una canción,Un recuerdo,Un reencuentro,La nostalgia,Algo muy bonito
-Lo que más echas de menos|Mi infancia,A alguien concreto,Un lugar,Una época,Mi libertad,Nada
-Lo que más paz te da|La naturaleza,La música,Mi gente,Estar solo/a,El mar,Dormir
-Lo que más te inspira|La gente valiente,La naturaleza,La música,Una historia real,Mi familia,Un reto
-Lo que más miedo te da perder|Mi salud,A mis seres queridos,Mi libertad,Mi trabajo,Mi tranquilidad,Mis recuerdos
-Lo que más te cuesta perdonar|Una traición,Una mentira,Un desprecio,Una promesa rota,Un abandono,Una burla
-Lo que más te enorgullece|Mi familia,Mi trabajo,Mi carácter,Mis amistades,Lo que he superado,Mis logros
-Lo que más cambiarías de tu pasado|Una decisión,Una discusión,Una oportunidad,Una despedida,Nada,Mi forma de reaccionar
-Lo que más te gustaría conseguir|Estabilidad,Libertad,Reconocimiento,Un proyecto propio,Una gran familia,Paz interior
-Cuando estás triste|Me aíslo,Hablo con alguien,Lloro,Me distraigo,Hago deporte,Duermo
-Cuando tienes miedo|Me paralizo,Ataco,Huyo,Lo hablo,Lo analizo,Me río
-Lo que más necesitas cuando fallas|Comprensión,Silencio,Un consejo,Un abrazo,Tiempo,Distraerme
-Lo que más te cuesta mostrar|Debilidad,Cariño,Enfado,Inseguridad,Tristeza,Ilusión
-Lo que más te hace sentir querido/a|Palabras,Abrazos,Tiempo juntos,Detalles,Que me escuchen,Que me cuiden
-Lo que más te hace sentir libre|Viajar,Conducir,Estar solo/a,La naturaleza,El dinero,Decir no
-Lo que más te define|Constancia,Sensibilidad,Humor,Ambición,Lealtad,Curiosidad
-Lo que más te gustaría que dijeran de ti|Era buena persona,Era auténtico/a,Era divertido/a,Era valiente,Era leal,Dejó huella
-El consejo que te darías a ti mismo/a|Disfruta más,Confía más,Sé paciente,Atrévete,Cuídate,Pide ayuda
-Lo que más cambiarías de ti|Mi paciencia,Mi inseguridad,Mi orden,Mi constancia,Mi carácter,Mi timidez
-La decisión que más te costó|Cambiar de ciudad,Dejar algo,Empezar algo,Perdonar,Alejarme de alguien,Asumir un riesgo
-El recuerdo que más atesoras|Un viaje,Una persona,Una celebración,Un momento de calma,Un logro,Un reencuentro
-El sentimiento que más te cuesta gestionar|Ansiedad,Enfado,Tristeza,Culpa,Envidia,Soledad
-Lo que te hace sentir más vulnerable|Pedir ayuda,Hablar de lo que siento,Equivocarme,Depender de alguien,Fracasar,Que me vean llorar
-Lo que te motiva a levantarte cada día|Mi familia,Mis proyectos,El dinero,La curiosidad,El deber,Las ganas de mejorar
-Para ti el éxito es|Ser feliz,Tener dinero,Tener libertad,Ser reconocido/a,Vivir en paz,Dejar huella
-Lo que más te cuesta soltar|El pasado,El control,Un rencor,A una persona,Una idea,Un miedo
-Lo que te hace sentir culpable|Decir no,Fallar,Descuidar a los míos,Descansar,Gastar,Perder el tiempo
-Lo que más feliz te haría hoy|Un abrazo,Un viaje,Una charla sincera,Un día libre,Una buena noticia,Un buen plan
-Lo que necesitas para sentirte seguro/a|Estabilidad,Mi gente,Dinero,Salud,Un plan,Confianza
-Lo que te quita el sueño|El futuro,El trabajo,Mi familia,El dinero,El pasado,Duermo bien
-Cuando alguien te hace daño|Lo digo,Me alejo,Lo olvido,Me lo guardo,Pido explicaciones,Lo perdono
-Cuando te sientes solo/a|Llamo a alguien,Salgo,Me refugio en algo,Me pongo música,Me meto en el trabajo,Lo aguanto
-Tu mayor lección de vida|Todo pasa,La gente cambia,El tiempo vale más que el dinero,Hay que atreverse,Nada es para siempre,Lo importante es la salud
-Lo que cambiarías del mundo|Las desigualdades,Las guerras,El egoísmo,La prisa,La falta de empatía,El consumismo
-Para ti el amor es|Compromiso,Cuidado,Pasión,Libertad,Amistad profunda,Compañía
-Cómo prefieres que te digan las cosas|Con sinceridad total,Con tacto,Por escrito,En persona,Con humor,Con tiempo
-Lo que te cambió la vida|Un viaje,Una pérdida,Una decisión,Un encuentro,Un fracaso,Un logro
-Lo más valiente que has hecho|Dejar algo,Empezar algo,Pedir perdón,Decir lo que pienso,Viajar solo/a,Perdonar
-A quién acudes con un problema|A mi pareja,A mi madre o padre,A un amigo,A nadie,A un hermano,A mí mismo/a
-Cuando piensas en el futuro sientes|Ilusión,Miedo,Calma,Ansiedad,Curiosidad,Indiferencia
-Lo que te gustaría haber aprendido antes|A decir no,A confiar,A gestionar el dinero,A disfrutar,A pedir ayuda,A soltar
-Tu sueño pendiente|Un viaje,Un proyecto,Un cambio de vida,Una casa,Un reencuentro,Algo creativo
-Cómo te gustaría ser recordado/a|Por mi bondad,Por mi humor,Por mi obra,Por mi lealtad,Por mi valentía,Por mi cariño
-Tu mayor aprendizaje de un error|Pensar antes,Pedir perdón,Confiar menos,Confiar más,Aceptarme,Pedir ayuda
-Lo que más te cuesta en una relación|Comunicar,Ceder,Confiar,Mostrar cariño,Pedir perdón,Compartir espacio
-Lo que más viva te hace sentir|Viajar,Una buena charla,Un reto,El deporte,La música,Enamorarme
-En tus peores días necesitas|Silencio,Compañía,Una canción,Comida,Dormir,Un paseo`.split('\n');
-var DS=`Lloro con facilidad
-Me cuesta mostrar lo que siento
-Guardo rencor durante mucho tiempo
-Me siento más tranquilo/a que hace unos años
-Me siento feliz con la vida que llevo
-Tengo miedo a decepcionar a los demás
-Me siento solo/a aunque esté acompañado/a
-Me cuesta pedir perdón
-Me cuesta aceptar un cumplido
-Me comparo con los demás
-Siento envidia sana con frecuencia
-Pienso a menudo en lo que podría haber sido
-Me agobio con facilidad
-Necesito tiempo a solas para recargarme
-Me cuesta soltar el control
-Necesito sentirme útil para estar bien
-Me siento orgulloso/a de quién soy
-Me juzgo más duro/a que a los demás
-Tengo una voz interior muy crítica
-Me cuesta perdonarme los errores
-Siento nostalgia con frecuencia
-Pienso mucho en cómo me ven los demás
-Me da miedo envejecer
-Me da miedo perder a mis seres queridos
-Me da miedo no cumplir mis sueños
-Me da miedo el fracaso
-Me da miedo hacer el ridículo
-Me da miedo quedarme solo/a
-Me cuesta confiar en la gente nueva
-Me cuesta creer que merezco cosas buenas
-Me cuesta descansar sin sentirme culpable
-Me cuesta quedarme quieto/a
-Me siento más seguro/a que hace cinco años
-He cambiado mucho en los últimos años
-Siento que aún no he encontrado mi lugar
-Siento que mi vida va por buen camino
-Siento que me conozco bien
-A veces no sé qué quiero realmente
-He llorado por una canción
-Lloro de alegría con facilidad
-Me cuesta decir lo que pienso por no herir
-Prefiero evitar un conflicto que afrontarlo
-Digo la verdad aunque duela
-Me cuesta poner límites
-Me cuesta decir te quiero
-Necesito palabras de cariño
-Necesito detalles para sentirme querido/a
-Prefiero que me escuchen a que me aconsejen
-Cuido mucho a mis amistades
-Tengo pocos amigos pero muy buenos
-He perdido amistades por no cuidarlas
-Echo de menos a alguien ahora mismo
-He perdonado algo que creía imperdonable
-He pedido perdón primero aunque tuviera razón
-Me dolió una traición que nunca olvidaré
-Me cuesta alejarme de quien me hace daño
-Doy más de lo que recibo
-Me cuesta recibir ayuda
-Me siento responsable de la felicidad de los demás
-Hago de mediador/a en los conflictos
-Soy la persona a la que todos piden consejo
-Me cuesta hablar de mis problemas
-Me desahogo con alguien de confianza
-Me gustaría hablar más con mi familia
-Me gustaría pasar más tiempo con mis amigos
-Tengo una conversación pendiente con alguien
-Tengo algo que le diría a alguien si tuviera valor
-Me cuesta mostrarme vulnerable ante otros
-Busco la aprobación de los demás
-Me importa lo que piensen de mí
-Me gusta cuidar a los demás
-Me cuesta recibir cariño
-Pienso en mis seres queridos con frecuencia
-Admiro a alguien de mi familia
-Me gustaría ser mejor hijo/a o hermano/a
-Siento que mi familia me entiende
-Siento que mis amigos me conocen de verdad
-Soy muy distinto/a con la gente que no conozco
-Cambio según con quién esté
-Me cuesta ser yo mismo/a con desconocidos
-Creo que todo pasa por algo
-Creo que hay que vivir sin arrepentimientos
-Creo en las segundas oportunidades
-Creo que la gente puede cambiar
-Creo que el dinero da libertad pero no felicidad
-Creo que el tiempo es lo más valioso
-Creo que la honestidad es innegociable
-Creo que la amabilidad es una forma de fuerza
-Creo que hay que arriesgarse más
-Creo que las mejores decisiones se toman con el corazón
-Creo que mi mayor reto soy yo mismo/a
-Me gustaría dejar huella en el mundo
-Me gustaría vivir de otra manera
-Me gustaría tener más tiempo para mí
-Me gustaría ser más valiente
-Me gustaría ser más paciente
-Me gustaría ser más disciplinado/a
-Me gustaría ser más espontáneo/a
-Me gustaría perdonarme más
-Me gustaría cambiar de rumbo
-Me gustaría escribir mi historia algún día
-Tengo un sueño que no he contado a nadie
-Tengo un sueño que sigo persiguiendo
-He renunciado a algún sueño
-Me arrepiento de algo que no hice
-Me arrepiento de algo que sí hice
-Me pregunto a menudo qué sentido tiene todo
-Pienso en el paso del tiempo con frecuencia
-Pienso en qué pasará dentro de diez años
-Vivo con prisa
-Vivo más para el futuro que para el presente
-Vivo de acuerdo con mis valores
-Mis decisiones importantes las tomo con la cabeza
-Mis decisiones importantes las tomo con el corazón
-Me considero una buena persona
-Me considero una persona fuerte
-Me considero una persona sensible
-Me considero una persona intensa
-Me considero una persona difícil de conocer
-Me considero una persona agradecida
-Tuve una infancia feliz
-Recuerdo mi infancia con cariño
-Me gustaría volver a un momento concreto de mi vida
-Tengo un recuerdo que me emociona siempre
-Hay una canción que me transporta a otra época
-Guardo objetos de personas importantes
-Conservo cartas o mensajes que me importan
-Hay un lugar donde me siento en casa
-Me he sentido incomprendido/a
-Me he sentido fuera de lugar en algún momento
-Me han roto el corazón
-He roto el corazón de alguien
-He tenido que empezar de cero alguna vez
-He superado algo que creí imposible
-He cambiado mucho desde mi adolescencia
-Le daría un abrazo a mi yo adolescente
-Me avergüenzo de algo que hice
-Hay algo de mi pasado que prefiero no recordar
-Aprendí algo importante de un fracaso
-He tenido una etapa difícil que me hizo más fuerte
-Aprendí mucho de mis padres
-Mis padres influyeron mucho en cómo soy
-Me parezco a mi padre o a mi madre más de lo que quisiera
-Mis abuelos fueron importantes para mí
-He tenido un maestro que me marcó
-He tenido un amigo que me cambió la vida
-He conocido a alguien que me hizo ver el mundo distinto
-Un libro me ha cambiado la forma de pensar
-Una película me ha marcado de verdad
-Un viaje me cambió la forma de ver las cosas
-Me siento en paz conmigo
-A veces me siento agotado/a emocionalmente
-Siento que doy mucho a los demás y poco a mí
-Me cuido lo suficiente
-Duermo mal cuando algo me preocupa
-Me cuesta desconectar la mente
-Pienso demasiado antes de dormir
-Necesito mis rutinas para estar bien
-Me agobia el desorden
-Me siento más yo mismo/a en la naturaleza
-Reflexiono sobre mi día antes de dormir
-Escribo mis pensamientos
-Hablo conmigo mismo/a cuando tengo un problema
-Me hablo con cariño
-Me premio cuando consigo algo
-Me castigo mentalmente cuando me equivoco
-Me bloqueo bajo presión
-Me crezco ante los retos
-Me aburro con facilidad
-Me da pereza empezar pero luego disfruto
-Dejo las cosas a medias
-Me cuesta terminar lo que empiezo
-Me cuesta tomar decisiones
-Me cuesta cambiar de opinión
-Me cuesta reconocer que me equivoco
-Me cuesta aceptar que no puedo con todo
-Me cuesta delegar
-Me cuesta pedir lo que necesito
-Me cuesta decir que estoy mal
-Escondo mis problemas para no preocupar
-Me hago el fuerte cuando por dentro estoy mal
-Me enfado conmigo mismo/a
-Me enfado más de lo que muestro
-Me ofendo con facilidad
-Soy más sensible de lo que parezco
-Soy más tímido/a de lo que parezco
-Soy más inseguro/a de lo que parezco
-Soy más fuerte de lo que parezco
-Soy más divertido/a con confianza
-Soy más serio/a de lo que la gente piensa
-Soy muy autoexigente
-Soy mi mayor crítico/a
-Soy muy perfeccionista conmigo mismo/a
-Soy tranquilo/a por fuera y nervioso/a por dentro
-Soy muy intuitivo/a
-Soy muy observador/a
-Soy muy detallista
-Soy muy empático/a
-Soy muy reservado/a con mi vida privada
-Soy muy abierto/a con mi vida privada
-Quiero cambiar algo importante en mi vida pronto
-Quiero formar o ampliar mi familia
-Quiero vivir en otro sitio algún día
-Quiero montar un proyecto propio
-Quiero dedicar más tiempo a lo que me apasiona
-Quiero viajar mucho más
-Quiero aprender algo nuevo este año
-Quiero tener una vida tranquila
-Quiero tener una vida llena de aventuras
-Quiero reconciliarme con alguien
-Quiero ser un buen ejemplo para otros
-Quiero que me recuerden como alguien bueno
-Quiero mejorar mi forma de comunicarme
-Quiero ser más constante
-Quiero perder el miedo a lo que opinen de mí
-Quiero cuidar más de mi salud
-Quiero estar más presente con los míos
-Quiero cumplir una promesa que me hice
-Quiero perdonar a alguien
-Quiero que alguien me perdone
-Quiero más tiempo libre
-Quiero más estabilidad
-Quiero más libertad
-Quiero más calma
-Me veo feliz dentro de diez años
-Me veo en otro país dentro de diez años
-Me veo con mi propio negocio dentro de diez años
-Me veo rodeado de gente querida dentro de diez años
-Me veo más sabio/a dentro de diez años
-Creo en el amor para toda la vida
-Me enamoro con facilidad
-Me cuesta enamorarme
-Necesito espacio incluso con quien quiero
-Me da miedo comprometerme
-Me da miedo que me hagan daño
-Me cuesta confiar plenamente en una pareja
-Soy celoso/a
-Perdonaría una mentira grande si hay arrepentimiento
-Prefiero una pareja que me haga reír a una que me impresione
-Prefiero una pareja tranquila a una apasionada
-Creo que el amor se cuida cada día
-Me gusta decir te quiero a menudo
-Me gusta que me digan te quiero a menudo
-Recuerdo mi primer amor con cariño
-Me quedo con las ganas de decir lo que siento
-Doy el primer paso en el amor
-Valoro más la confianza que la pasión
-Una buena conversación me enamora más que un buen físico
-He estado enamorado/a de alguien que no me correspondía
-He dejado ir a alguien que me importaba
-He vuelto con alguien después de dejarlo
-Creo en las almas gemelas
-Mi trabajo me da sentido
-Mi trabajo me estresa más de lo que debería
-Me siento reconocido/a en lo que hago
-Haría lo que hago aunque no me pagaran
-Me da miedo no estar a la altura profesionalmente
-A veces me sobrepasan las responsabilidades
-Siento que podría dar más de mí
-Me asusta empezar de cero profesionalmente
-Prefiero la estabilidad a la ambición
-Prefiero arriesgar a quedarme con la duda
-Me cuesta desconectar los fines de semana
-Mi mayor miedo profesional es fracasar
-Trabajo más por necesidad que por pasión
-Me gusta ayudar a otros a crecer
-Me siento orgulloso/a de lo que he construido
-Siento que he dejado cosas por el camino por trabajar
-Me gustaría tener más tiempo para mi familia
-Me gustaría tener más tiempo para mis sueños
-Creo que el trabajo no define a una persona
-Me siento más yo mismo/a fuera del trabajo
-Cuando algo sale mal en el trabajo me lo llevo a casa
-Me cuesta aceptar el fracaso profesional
-He pensado en dejarlo todo y empezar algo distinto
-He cometido un error que no olvido
-Admiro a alguien en lo profesional
-Mentiría para proteger a alguien que quiero
-Diría la verdad aunque me costara una amistad
-Defiendo mis ideas aunque sea el único
-Sé escuchar opiniones contrarias
-Ayudaría a un desconocido aunque me costara algo
-Perdonaría a quien me falló si se arrepiente de verdad
-Me cuesta juzgar a los demás sin conocerlos
-He juzgado mal a alguien y lo reconocí
-Me dejo llevar por la primera impresión
-Creo que la suerte existe
-Creo que el esfuerzo siempre compensa
-Creo que la vida es injusta a veces
-Creo que merece la pena ser bueno
-Creo que ser auténtico es más importante que gustar
-Creo que cada persona hace lo que puede
-Creo que hay que decir las cosas a tiempo
-Creo que el silencio también hace daño
-Creo que pedir ayuda es de valientes
-Creo que debería llorar más
-Creo que sé más de lo que digo`.split('\n');
-var dneed=500-PL.length-DS.length,dper=Math.ceil(dneed/10),dp=[];
-Object.keys(PD).forEach(function(k){var a=PD[k].split(','),all=[];for(var i=0;i<a.length;i++)for(var j=i+1;j<a.length;j++)all.push(R2()<.5?[a[i],a[j]]:[a[j],a[i]]);shuffle(all,R2).slice(0,dper).forEach(function(p){dp.push({k:'Elige una',q:'¿'+k+'?',s:k+': '+p.join(' / '),o:p})})});
-dp=shuffle(dp,R2).slice(0,dneed);
-var QD=[].concat(dp,
-  PL.map(function(l){var p=l.split('|');return{k:'Sobre ti',q:p[0],s:p[0],o:shuffle(p[1].split(','),R2).slice(0,4)}}),
-  DS.map(function(s){return{k:'Profundo',q:s,s:s,o:['Sí, me pasa','A veces','No, para nada']}}));
-// ---------- Modo gracioso (500 preguntas independientes) ----------
-var R3=rng(23);
-var PG={
-'Comida rara':'Pizza con piña,Helado de ajo,Sopa fría,Pan con chocolate y sal,Cereales con zumo,Macarrones con kétchup,Tortilla sin cebolla',
-'Superpoder inútil':'Hablar con las palomas,Encontrar siempre el mando,Brillar en la oscuridad,Saber la hora sin reloj,Hacer pitidos a voluntad,Cambiar el color de tus calcetines,Ser inmune a los mosquitos',
-'Vida absurda':'Vivir en un barco,Vivir en un faro,Vivir en una caravana,Vivir en una cueva con wifi,Vivir en un castillo con goteras,Vivir en un autobús,Vivir en una casa del árbol',
-'Mascota imposible':'Un pulpo,Una cabra,Un pingüino,Un loro maleducado,Un capibara,Una llama,Un mapache',
-'Pequeño desastre':'Pisar un Lego,Quedarte sin batería,Mojarte los calcetines,Perder las llaves,Quedarte sin wifi,Estornudar en un silencio total,Que el móvil caiga boca abajo',
-'Disfraz':'Dinosaurio hinchable,Pollo gigante,Superhéroe con capa corta,Pirata,Astronauta,Mago,Patata',
-'Trabajo absurdo':'Probador de toboganes,Catador de pizzas,Probador de colchones,Detective de calcetines,Doble de acción,Inventor de memes,Domador de dragones',
-'Talento oculto':'Cantar en la ducha como un tenor,Bailar sin ritmo con confianza,Hacer imitaciones horribles,Contar chistes malos,Hacer ruidos de animales,Beatbox desafinado,Magia que siempre falla',
-'Cena con':'Un fantasma simpático,Un pirata,Un alienígena,Un robot sin filtro,Un dragón,Un mago torpe,Un gato que habla',
-'Prohibición':'Sin café nunca más,Sin pizza nunca más,Sin música,Sin redes un año,Sin bromas,Sin siesta,Sin móvil un mes',
-'Transporte raro':'Monopatín eléctrico,Tractor,Globo aerostático,Camello,Triciclo,Barca de remos,Tirolina',
-'Ruido':'Risa de foca,Estornudo de gato,Hipo constante,Ronquido de oso,Pitido de tetera,Tos de pato,Aplauso mojado'};
-var FG=`Si fueras un electrodoméstico serías|Tostadora,Lavadora,Microondas,Aspiradora,Frigorífico,Ventilador
-Si fueras un animal serías|Perezoso,Gato,Pulpo,Delfín,Mapache,Pingüino
-Si fueras un personaje de dibujos serías|Un pirata torpe,Un robot cascarrabias,Un gato listillo,Un dinosaurio vago,Un mago despistado,Un perro fiestero
-Tu superpoder más inútil sería|Hablar con palomas,Oler el pan a lo lejos,Aplaudir con los pies,Encontrar siempre el mando,Saber la hora sin reloj,Hacer pitidos
-Tu comida del apocalipsis|Latas de atún,Galletas,Pasta cruda,Chocolate,Palomitas,Un bocadillo eterno
-Tu mayor talento oculto|Imitaciones,Beatbox,Chistes malos,El baile del pollo,Silbar,Hacer reír
-Tu forma de llegar a una fiesta|Con confeti,Con una pizza,Disfrazado/a,Bailando,Con un chiste,A escondidas
-Tu banda sonora al entrar a un sitio|Música épica,Una de película,Reggaetón,Tambores,Silencio incómodo,Trompetas
-Tu excusa favorita para llegar tarde|Mucho tráfico,Se me pegaron las sábanas,Me perdí,El gato,El despertador,Una cola enorme
-Tu reacción ante una araña|Grito,Huida,Foto,Zapatilla,Pido ayuda,La miro fijamente
-Tu peor hábito|Interrumpir,Posponer,Hablar con la boca llena,Dejar puertas abiertas,Perder cosas,Llegar tarde
-Tu mueble favorito|Sofá,Cama,Silla gaming,Hamaca,Mesa camilla,Puf
-Tu apodo ideal|El Rayo,La Máquina,El Jefe,Churro,Bombón,Patata
-Tu emoji favorito|😂,😭,🥹,🔥,🙃,🤔
-Tu postura para dormir|De lado,Boca arriba,Boca abajo,Hecho/a un ovillo,Cruzado/a en la cama,Con un pie fuera
-Tu bebida de superhéroe|Café doble,Zumo mágico,Cola,Agua con burbujas,Té,Batido de plátano
-Tu primer día en una isla desierta|Construir una cabaña,Buscar comida,Gritar auxilio,Hacer una hoguera,Dormir,Hacerme un selfie
-Tu estilo bailando|Robot,Mover solo los brazos,Paso de abuelo,Perreo,Saltitos,Estatua
-Tu reacción cuando te cantan cumpleaños|Me escondo,Sonrío,Aplaudo,Soplo rápido,Bailo,Lloro de risa
-Tu cena a las 3 de la mañana|Cereales,Pizza fría,Tortilla,Galletas,Fruta,Helado
-Tu comida que nunca falla|Tortilla,Pizza,Pasta,Croquetas,Hamburguesa,Patatas
-Tu miedo más tonto|Sorpresas,Globos,Muñecos,Hormigas,Escaleras oscuras,Pisar charcos
-Tu manía más rara|Ordenar por colores,Contar pasos,Evitar las rayas del suelo,Hablar con objetos,Revisar la puerta,Dar vueltas
-Tu grito de guerra|¡Vamos!,¡Allá voy!,¡Yuju!,¡Esto es lo mío!,¡A por ello!,¡Ñam!
-Tu personaje secundario favorito|El mejor amigo gracioso,El villano,El mayordomo,La abuela,El perro,El vecino cotilla
-Tu excusa con el móvil|Sin batería,Sin cobertura,Silenciado,Modo avión,Se me cayó,No lo vi
-Tu estilo de selfie|Cara de pato,Sonrisa,Misterio,Guiño,Ceño fruncido,Foto de espaldas
-Tu serie del domingo|Comedia,Misterio,Reality,Dibujos,Documental,Cocina
-Tu faceta de karaoke|Soy una estrella,Desafino pero disfruto,Solo duetos,No canto,Canto bajito,Lo doy todo
-Tu nombre de grupo musical|Los Despeinados,Calcetines Voladores,Pizza Cósmica,Tortilla Rock,Gatos al Poder,Café con Leche
-Tu postre de supervivencia|Helado,Chocolate,Galletas,Flan,Tarta,Fruta
-Tu bocadillo ideal|Jamón,Tortilla,Calamares,Lomo con queso,Atún,Crema de cacao
-Tu truco de magia|Hacer desaparecer un calcetín,Adivinar cartas,Sacar una moneda,Hacer aparecer pizza,Leer la mente,Que falle todo
-Tu cumpleaños perfecto|Fiesta sorpresa,Cena tranquila,Viaje,Barbacoa,Sin celebrar,Karaoke
-Tu gadget imprescindible|Móvil,Auriculares,Cargador,Mando de la tele,Reloj,Linterna
-Tu truco para dormir|Contar ovejas,Música,Serie,Libro,Silencio,Ventilador
-Tu planta ideal|Cactus,Girasol,Bonsái,Helecho,Una que no hay que regar,Una que habla
-Tu forma de huir de un plan|Dolor de cabeza,Reunión inventada,Llamada falsa,Batería muerta,Tengo que cuidar al gato,Digo que sí y no voy
-Tu animal de compañía en el trabajo|Perro,Gato,Hámster,Pez,Loro,Ninguno
-Tu comida de cine|Palomitas,Nachos,Chuches,Pizza,Helado,Nada
-Tu look de domingo|Pijama,Chándal,Manta,Zapatillas de casa,Ropa de estar por casa,Albornoz
-Tu forma de elegir qué ver en la tele|Rápido,Tardo una hora,Lo de siempre,Elige otro,Pongo música,Me duermo
-Tu actitud ante comida nueva|Pruebo todo,Con cautela,Un trocito,Solo si huele bien,Ni loco/a,Depende de quién cocine
-Tu mayor logro doméstico|Una tortilla perfecta,Montar un mueble,Plegar sábanas,Mantener viva una planta,Arreglar algo,Que no pase nada
-Tu mensaje típico de WhatsApp|Audio largo,Un emoji,Jajaja,Ok,Luego te llamo,Un meme
-Tu papel en el grupo familiar|Silencio total,Memes,Buenos días,Cadenas,Fotos,Preguntas raras
-Tu forma de tropezar|Con gracia,Con ruido,Con testigos,En escaleras,Con bandeja,Sin motivo
-Tu planazo del sábado|Cena y peli,Fiesta,Ruta,Videojuegos,Mercadillo,Siesta
-Tu forma de despedirte|Larga,Rápida,A la francesa,Con abrazo,Con chiste,Con audio
-Tu pelo al levantarte|Bien,Salvaje,Pegado,Con una pluma,Con vida propia,Con una onda rara
-Tu estornudo|Silencioso,Épico,Doble,En tres partes,Contenido,Contagioso
-Tu risa|Escandalosa,Silenciosa,Con ronquidos,Contagiosa,Corta,Con lágrimas
-Tu momento más vergonzoso|Saludar a quien no me saluda,Llamar por otro nombre,Hablar mal de alguien a su lado,Resbalar,Una risa a destiempo,Un mensaje al grupo equivocado
-Tu peor consejo|Hazlo mañana,Sin pensar,Improvisa,Confía en el GPS,Qué más da,Compra ahora
-Tu secreto mejor guardado|Un antojo,Una canción,Un programa,Una manía,Un miedo,Un hábito
-Tu mejor excusa para no hacer deporte|Me duele el hombro,Mañana empiezo,Llueve,Me falta energía,No encuentro zapatillas,Ya hice algo hoy
-Tu forma de pedir en un bar|Lo de siempre,Lo que haya,Con muchos detalles,Lo que pide otro,Un menú entero,A ver qué sale
-Tu cumplido favorito|Qué guapo/a,Qué listo/a,Qué gracioso/a,Qué buena gente,Qué bien cocinas,Qué puntual
-Tu truco anti-aburrimiento|Móvil,Libro,Dormir,Dibujar,Cantar,Hablar solo/a
-Tu lema de vida|Mañana será otro día,Lo importante es pasarlo bien,Todo saldrá bien,Sin prisa,A lo hecho pecho,Ya se verá`.split('\n');
-var SG=`Me he reído en un momento muy inapropiado
-Me he quedado dormido/a viendo algo emocionante
-He hablado con una mascota como si me entendiera
-He saludado a alguien que no me saludaba a mí
-He mandado un mensaje a la persona equivocada
-He dicho tú también cuando no tocaba
-He confundido a un desconocido con un conocido
-Me he caído delante de mucha gente
-He fingido que no veía a alguien por la calle
-He esperado a que se fuera alguien para entrar en un sitio
-He abierto la nevera sin saber qué buscaba
-He entrado en una habitación y he olvidado a qué iba
-He buscado el móvil mientras lo tenía en la mano
-He puesto el despertador solo para pulsar posponer
-He dicho enseguida voy y he tardado una hora
-He comido algo del suelo antes de los cinco segundos
-He cantado en el coche con toda mi alma
-He bailado solo/a en casa con la música a tope
-He ensayado una conversación en la ducha
-He ganado una discusión imaginaria
-He hablado solo/a por la calle sin darme cuenta
-He fingido hablar por teléfono para evitar a alguien
-He ido a un sitio y he vuelto sin hacer nada
-Tengo una excusa lista por si acaso
-He aplaudido cuando aterriza el avión
-He llorado con un anuncio
-He aguantado la risa en un sitio muy serio
-He tenido un ataque de risa sin motivo
-He compartido un meme sin gracia
-Me sé de memoria anuncios antiguos
-Me sé canciones sin saber qué dice la letra
-Tengo una lista de reproducción para cada estado de ánimo
-Pongo voces a mis mascotas
-Le pongo nombre a mis cosas
-Le hablo al coche
-Le hablo a la tele
-Le doy las gracias a los asistentes de voz
-Digo perdón cuando alguien me pisa
-Pido perdón a las puertas cuando me choco con ellas
-Hago ruidos de efectos especiales sin darme cuenta
-Me río de mis propios chistes más que de los de otros
-Cuento el mismo chiste varias veces
-Mis chistes son muy malos
-Se me da bien hacer reír
-Se me da fatal guardar un secreto con cara seria
-Sonrío cuando me regañan
-Me pongo rojo/a con facilidad
-Me da la risa tonta cuando estoy nervioso/a
-En las fotos siempre salgo con los ojos cerrados
-Para un selfie necesito diez intentos
-Borro más fotos de las que guardo
-Hago capturas de pantalla de todo
-Tengo mil notas en el móvil que nunca leo
-Tengo cien pestañas abiertas
-Tengo apps que nunca uso
-Tengo un cajón lleno de cables que no sé de qué son
-Guardo bolsas de plástico por si acaso
-Guardo ropa que no me pongo hace años
-Tengo un calcetín desparejado desde hace meses
-Me compro ropa y no me la pongo
-Compro cosas que luego no uso
-Voy al súper por una cosa y salgo con diez
-Me pierdo en el súper
-Siempre pillo la cola más lenta
-Pierdo el ticket justo cuando lo necesito
-Me da pereza contestar llamadas
-Dejo audios sin escuchar durante días
-Escucho los audios a doble velocidad
-Me da vergüenza pedir la cuenta
-Me cuesta decidir qué pedir
-Siempre pido lo mismo que otro
-Me arrepiento de lo que pido
-Pico del plato de los demás
-Me como el último trozo sin preguntar
-Dejo siempre un bocado por educación
-Digo no tengo hambre y me como tu plato
-Mojo galletas en la leche hasta que se deshacen
-Me gusta el pan con todo
-Como pizza fría sin remordimientos
-Pongo kétchup a casi todo
-Pruebo cosas picantes aunque luego me arrepienta
-Me quemo la lengua con la primera cucharada
-Soplo la comida mucho más de lo necesario
-Me lavo los dientes pensando en otra cosa
-Canto a pleno pulmón en la ducha
-Me ducho con agua muy caliente
-Me ducho con agua muy fría
-Tardo mucho en la ducha
-Pienso mis mejores ideas en la ducha
-Me despierto antes de que suene el despertador y me enfado
-Me duermo en cuanto toco la cama
-Me cuesta mucho levantarme
-Dormiría hasta las doce todos los días
-Duermo con calcetines
-Duermo con la tele puesta
-Me destapo y me vuelvo a tapar mil veces
-Duermo mejor en el sofá que en la cama
-Me quedo despierto/a hasta tarde sin motivo
-Hago listas de cosas pendientes y no las hago
-Lo dejo todo para el último momento y me sale bien
-Aprendo mejor con prisa
-Soy la persona más puntual de mi grupo
-Soy la persona más despistada de mi grupo
-Soy el/la que siempre trae el cargador
-Soy el/la que siempre pierde algo
-Soy el/la que anima las cenas
-Soy el/la que cuenta anécdotas larguísimas
-Soy el/la que se pasa de largo en el viaje
-Soy el/la que decide el plan
-Soy el/la que dice yo me adapto y luego se queja
-Soy el/la que siempre tiene hambre
-Soy el/la que siempre tiene frío
-Soy el/la que siempre tiene calor
-Soy el/la que hace las fotos del grupo
-Me pierdo con el GPS puesto
-Hago caso al GPS aunque me lleve a un camino de tierra
-Me río cuando alguien se tropieza aunque no debería
-Me río cuando alguien se equivoca de nombre
-Me da la risa cuando alguien dice algo mal
-Me pongo nervioso/a si me miran al comer
-Me pongo nervioso/a cuando cantan cumpleaños
-Me encanta que me canten cumpleaños
-Odio abrir regalos delante de la gente
-Pongo cara de sorpresa cuando no me gusta un regalo
-Reciclo regalos
-Regalo cosas que me gustarían a mí
-Compro regalos de última hora
-Escondo mis regalos para que no los encuentren
-Me cuesta guardar una sorpresa
-Me encanta el olor de los libros nuevos
-Los perros me caen mejor que algunas personas
-Tengo una canción que canto fatal pero con orgullo
-Tengo una canción que me hace bailar sin querer
-Tengo un baile especial para celebrar
-Hago el baile de la victoria cuando gano
-Me tomo muy en serio los juegos de mesa
-Hago trampas en los juegos si nadie mira
-Me enfado perdiendo al parchís
-Me encanta ganar
-Me da igual ganar o perder
-Me hago el/la distraído/a para no limpiar
-Hago como que no oigo cuando me piden algo
-Dejo los platos para otro día
-Cocino mejor cuando nadie me mira
-Me sale bien la tortilla
-Se me quema el arroz
-Se me sale la leche al hervir
-Hago café y se me enfría
-Caliento la comida y me olvido de ella en el microondas
-Pongo la lavadora y me olvido de ella
-Pierdo calcetines y no sé cómo
-Plancho solo lo que se ve
-Visto cómodo/a antes que bien
-Me pongo lo primero que encuentro
-Me cambio de ropa tres veces antes de salir
-Llevo un abrigo aunque haga calor
-Salgo sin abrigo aunque haga frío
-Llevo paraguas y nunca llueve
-No llevo paraguas y llueve
-Me pierdo en mi propio barrio
-Reconozco a alguien por su forma de caminar
-Hago voces raras en las llamadas
-Hablo diferente por teléfono
-Hablo más fuerte de lo que creo
-Hablo con las manos
-Hago muchos gestos cuando me explico
-Me quedo en blanco al presentarme
-Se me olvidan los nombres a los dos minutos
-Recuerdo cumpleaños pero no nombres
-Recuerdo canciones antiguas al instante
-Se me pega cualquier canción
-Me quedo con una frase de una peli y la repito
-Cuento el final de las pelis sin querer
-Me duermo en el cine
-Me quedo a ver los créditos
-Pongo subtítulos aunque entienda todo
-Pongo la tele de fondo mientras hago otra cosa
-Hago maratón de series el fin de semana
-Veo la misma serie por décima vez
-Me río con vídeos de gatos
-Me río con vídeos de gente cayéndose
-Me río con chistes de padres
-Me gustan los chistes malos
-Me gustan las bromas inocentes
-Me han gastado una broma que recuerdo siempre
-Me río recordando cosas de hace años
-Me da la risa floja al final del día
-Cuando me río hago ruidos extraños
-Me río tanto que lloro
-Me río aunque nadie más se ría
-Me encanta hacer reír a los demás
-Soy mucho más gracioso/a de lo que parezco`.split('\n');
-var CG=`Si te persigue un oso, tú|Corres en zigzag,Te haces el muerto,Le ofreces comida,Gritas pidiendo ayuda
-Si fueras rey o reina un día, lo primero sería|Decretar fiesta,Perdonar impuestos,Comer postre antes,Dormir una siesta real
-Si encuentras un genio, le pides|Dinero,Viajar en el tiempo,Pizza infinita,Un día sin lunes
-Te quedas encerrado/a en un ascensor|Canto,Hago estiramientos,Hablo solo/a,Llamo al técnico
-Alguien se te cuela en la fila|Lo miro mal,Lo dejo pasar,Digo algo,Me cuelo yo también
-Suena en público una canción que adoras|Canto bajito,Bailo,Disimulo,Hago como que no la conozco
-Pierdes el tren y|Corro,Me río,Busco otro,Me tiro al suelo
-Te dan un micrófono y|Canto,Hago un discurso,Cuento un chiste,Lo devuelvo
-Ves un platillo volante y|Hago fotos,Salgo corriendo,Saludo,Pienso que es un dron
-Te sale un grano el día de la foto|Lo tapo,Lo ignoro,Lo bautizo,Cancelo la foto
-En una escape room, tú eres|El líder,El que busca,El que hace ruido,El que se pierde
-En un karaoke, tú|Subo el primero,Voy por presión,Solo en dueto,Aplaudo desde abajo
-Si fueras invisible un día|Gastar bromas,Entrar al cine gratis,Escuchar conversaciones,Dormir tranquilo
-Si fueras famoso/a por algo absurdo|Bailar,Hacer reír,Cocinar mal,Perder cosas
-Si tuvieras que luchar contra un animal|Un pato,Una gallina,Una cabra,Un pulpo
-Si fueras detective, tu caso sería|La tortilla robada,El calcetín perdido,El misterio del mando,Quién se come el último trozo
-Si tuvieras un día de poder absoluto|Cambiar el lunes,Prohibir el despertador,Regalar helados,Hacer que todos bailen
-Si tuvieras que vivir en una película|Comedia,Terror,Aventura,Musical
-Si te toca una rifa, te lo gastas en|Un viaje,Un capricho,Una fiesta,Una cena
-Si te pierdes en el bosque|Sigo el sol,Hago una hoguera,Grito,Me quedo quieto/a
-Si te invitan a la boda de un desconocido|Voy y bailo,Pregunto quién es,Declino,Me cuelo en la mesa dulce
-Si solo pudieras comer una cosa para siempre|Pizza,Tortilla,Pasta,Helado
-Si tu vida tuviera un narrador|Famoso,Dramático,Gracioso,Misterioso
-Si tuvieras un robot ayudante, haría|Cocinar,Limpiar,La compra,Reírse conmigo
-Si te quedas sin batería de viaje|Pregunto,Uso un mapa de papel,Me siento a pensar,Sigo a alguien
-Si te regalan algo horrible|Sonrío,Lo agradezco,Lo regalo,Lo escondo
-Si te dicen que ya no queda postre|Protesto,Me resigno,Pido otro,Me enfado en silencio
-Si ves a un amigo con algo en los dientes|Se lo digo,Le hago señas,No digo nada,Me río
-Si te quedas sin palabras|Hago un chiste,Sonrío,Cambio de tema,Salgo corriendo
-Si tuvieras un día para no hacer nada|Sofá,Siesta,Serie,Comer
-Si te dan un trofeo, tú|Hago un discurso,Lloro,Bailo,Lo escondo
-Si te toca presentar un evento|Improviso,Preparo tarjetas,Bromeo,Me bloqueo
-Si tuvieras que ponerte un disfraz|Gracioso,Terrorífico,Elegante,Sencillo
-Si te cae un helado en la ropa|Lo lamo,Lo limpio,Me río,Compro otro
-Si te quedas atrapado/a en una cola|Escucho música,Hablo con otros,Miro el móvil,Reclamo
-Si encuentras dinero en la calle|Lo guardo,Miro alrededor,Lo gasto en dulces,Lo dejo
-Si te hacen una broma|Me río,Me enfado,Me vengo,Me hago el/la dormido/a
-Si tu mascota hablara un día, diría|Dame comida,Te quiero,Estás loco/a,Me aburro
-Si te mandan un audio de 8 minutos|Lo escucho,Respondo con otro,Lo ignoro,Llamo directamente
-Si ganas una discusión absurda|Celebro,Pido perdón,Me callo,Sigo discutiendo`.split('\n');
-var gneed=500-FG.length-SG.length-CG.length,gper=Math.ceil(gneed/12),gpp=[];
-Object.keys(PG).forEach(function(k){var a=PG[k].split(','),all=[];for(var i=0;i<a.length;i++)for(var j=i+1;j<a.length;j++)all.push(R3()<.5?[a[i],a[j]]:[a[j],a[i]]);shuffle(all,R3).slice(0,gper).forEach(function(p){gpp.push({k:k,q:'¿Qué prefieres?',s:p.join(' / '),o:p})})});
-gpp=shuffle(gpp,R3).slice(0,gneed);
-var QG=[].concat(gpp,
-  FG.map(function(l){var p=l.split('|');return{k:'Qué locura',q:p[0],s:p[0],o:shuffle(p[1].split(','),R3).slice(0,4)}}),
-  SG.map(function(s){return{k:'¿Te ha pasado?',q:s,s:s,o:['¡Totalmente!','Alguna vez','Jamás en la vida']}}),
-  CG.map(function(l){var p=l.split('|');return{k:'Imagina…',q:p[0],s:p[0],o:p[1].split(',')}}));
+var QN=[],QD=[],QG=[];
 var PROB=['se quede dormido/a en el cine', 'llegue tarde a su propia boda', 'se pierda con el GPS puesto', 'gane un concurso de baile', 'se ría en un momento serio', 'olvide su propio cumpleaños', 'sobreviva en una isla desierta', 'acabe siendo famoso/a', 'se coma el último trozo de pizza sin avisar', 'hable solo/a por la calle', 'pierda las llaves esta semana', 'llore con un anuncio', 'monte una empresa absurda', 'le cante en público a alguien', 'se haga amigo/a de un desconocido en el autobús', 'acabe viviendo en otro país', 'gaste una broma pesada', 'tenga una mascota rarísima', 'gane la lotería y lo pierda todo', 'se apunte a un plan sin saber de qué va', 'mande un mensaje a la persona equivocada', 'se duerma en una videollamada', 'hable con su mascota como si fuera una persona', 'aguante más tiempo sin móvil', 'cocine mejor que un chef', 'se tropiece en una entrada triunfal', 'haga la mejor imitación', 'organice un viaje sin planificar nada', 'sea el último en irse de la fiesta', 'se haga un tatuaje absurdo', 'llegue el primero a todo', 'cuente el mismo chiste cinco veces', 'haga trampas en un juego de mesa', 'aprenda un idioma rarísimo', 'se quede encerrado/a en un ascensor', 'se enamore en un viaje', 'salve el día en una emergencia', 'acabe con un disfraz en un día normal', 'compre algo inútil por impulso', 'diga una frase que se haga viral'];
 var TAB='grupo';
 var QS=QN,ROUNDS=Math.floor(QN.length/10),MODE='normal';
@@ -1938,11 +930,16 @@ function api(method,path,body){
   return fetch(path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
     return r.json().catch(function(){throw{error:'no_api'}}).then(function(d){if(!r.ok||!d||typeof d!=='object')throw d||{error:'server'};return d})});
 }
+function shortOf(x){
+  if(x.q==='¿Qué prefieres?')return x.o.join(' / ');
+  if(x.k==='Elige una'&&/^¿.*\?$/.test(x.q))return x.q.slice(1,-1)+': '+x.o.join(' / ');
+  return x.q;
+}
 function modeArr(m){return m==='profundo'?QD:m==='gracioso'?QG:QN}
 function applyCQ(list){
   CQ=Array.isArray(list)?list:[];
   [QN,QD,QG].forEach(function(a){for(var i=a.length-1;i>=0;i--)if(a[i].c)a.splice(i,1)});
-  CQ.forEach(function(x){modeArr(x.mode).push({k:x.k,q:x.q,s:x.q,o:x.o,c:x.id})});
+  CQ.forEach(function(x){modeArr(x.mode).push({k:x.k,q:x.q,s:shortOf(x),o:x.o,c:x.id})});
   ROUNDS=Math.floor(QS.length/10);
 }
 function readDraft(){
@@ -1970,16 +967,16 @@ function renderEditor(h){
     +'<button class="btn" data-e="save">'+(d.id?'Guardar cambios':'Añadir pregunta')+'</button>'+(d.id?'<button class="btn sec" data-e="cancel">Cancelar edición</button>':'')
     +(EMSG?'<p style="font-size:14px;color:'+(EOK?'var(--ok)':'var(--ko)')+'">'+esc(EMSG)+'</p>':'')+'</div>';
   var by={};list.forEach(function(x){(by[x.k]=by[x.k]||[]).push(x)});
-  var rows=Object.keys(by).sort().map(function(c){return '<div class="kick" style="margin-top:14px">'+esc(c)+' ('+by[c].length+')</div><ul>'+by[c].map(function(x){return '<li><b>'+esc(x.q)+'</b><small>'+x.o.map(esc).join(' · ')+'</small><div class="seg"><button data-e="edit" data-id="'+x.id+'">✏️ Editar</button><button data-e="del" data-id="'+x.id+'">🗑 Borrar</button></div></li>'}).join('')+'</ul>'}).join('');
-  app.innerHTML=h+'<div class="card eds"><div class="kick">Editor de preguntas</div><p class="mut" style="font-size:14px;margin:0">Las que añadas se suman a las originales y se guardan para siempre. Modo:</p>'+modes+'</div>'+form
-    +'<div class="card eds"><div class="kick">Tus preguntas en modo '+modeName(EM)+' ('+list.length+')</div>'+(rows||'<p class="mut" style="font-size:14px">Aún no has añadido ninguna en este modo.</p>')+'</div><button class="btn sec" data-e="exit">Cerrar el editor</button>';
+  var rows=Object.keys(by).sort().map(function(c){return '<div class="egrp"><div class="kick" style="margin-top:14px">'+esc(c)+' ('+by[c].length+')</div><ul>'+by[c].map(function(x){return '<li><b>'+esc(x.q)+'</b><small>'+x.o.map(esc).join(' · ')+'</small><div class="seg"><button data-e="edit" data-id="'+x.id+'">✏️ Editar</button><button data-e="del" data-id="'+x.id+'">🗑 Borrar</button></div></li>'}).join('')+'</ul></div>'}).join('');
+  app.innerHTML=h+'<div class="card eds"><div class="kick">Editor de preguntas</div><p class="mut" style="font-size:14px;margin:0">Aquí están todas las preguntas del juego. Lo que cambies, añadas o borres se guarda al instante. Modo:</p>'+modes+'</div>'+form
+    +'<div class="card eds"><div class="kick">Preguntas en modo '+modeName(EM)+' ('+list.length+')</div><input id="efilter" type="search" placeholder="🔍 Buscar en las preguntas…" autocomplete="off">'+(rows||'<p class="mut" style="font-size:14px">No hay ninguna pregunta en este modo.</p>')+'</div>'+bkCard()+'<button class="btn sec" data-e="exit">Cerrar el editor</button>';
 }
 app.addEventListener('click',function(e){
   var b=e.target.closest('[data-e]');if(!b||TAB!=='edit')return;
   var a=b.getAttribute('data-e'),id=+b.getAttribute('data-id');
   if(a==='login'){
     EK=(document.getElementById('ecode').value||'').trim();EMSG='';
-    api('POST','/api/questions/auth').then(reloadCQ).then(function(){EMSG='';home()}).catch(function(er){EK='';EMSG=errMsg(er);home()});
+    api('POST','/api/questions/auth').then(reloadCQ).then(function(){try{localStorage.setItem('cmc-owner','1')}catch(e){}return autoBackup(CQ).then(loadBK)}).then(function(){EMSG='';home()}).catch(function(er){EK='';EMSG=errMsg(er);home()});
   }else if(a==='mode'){readDraft();if(DRF&&DRF.id)DRF=null;EM=b.getAttribute('data-v');EMSG='';home()}
   else if(a==='cancel'){DRF=null;EMSG='';home()}
   else if(a==='exit'){EK='';DRF=null;EMSG='';TAB='grupo';home()}
@@ -1998,9 +995,116 @@ app.addEventListener('click',function(e){
     (d.id?api('PUT','/api/questions/'+d.id,body):api('POST','/api/questions',body)).then(reloadCQ).then(function(){DRF=null;EMSG='Guardado ✅';EOK=true;home()}).catch(function(er){EMSG=errMsg(er);EOK=false;home()});
   }
 });
-var started=false;function go(){if(started)return;started=true;home()}
-fetch('/api/questions').then(function(r){return r.json()}).then(function(d){applyCQ(d.questions)}).catch(function(){}).then(go);
-setTimeout(go,4000);
+// ---------- Backups de las preguntas ----------
+// Se guardan en este dispositivo (IndexedDB), uno por día a partir de las 9:00 (hora de Madrid), y se
+// descargan como archivo. No existe ninguna función que los borre. Solo se activan en los dispositivos
+// donde has entrado al editor (para que los invitados no reciban descargas).
+var BK_DL_EVERY_OPEN=false; // true = descargar un archivo CADA vez que se abre el juego (por defecto: 1 al día)
+var BKDB=null,BKL=[],BKB=null,BKALL=false;
+function madridSlot(){
+  var o={};new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(function(x){o[x.type]=x.value});
+  var d=new Date(Date.UTC(+o.year,+o.month-1,+o.day));if(+o.hour<9)d=new Date(d.getTime()-864e5);
+  return d.toISOString().slice(0,10);
+}
+function bkOpen(){
+  if(BKDB)return BKDB;
+  BKDB=new Promise(function(res,rej){
+    if(!window.indexedDB)return rej(new Error('no_idb'));
+    var r=indexedDB.open('cmc-backups',1);
+    r.onupgradeneeded=function(){var d=r.result;d.createObjectStore('m',{keyPath:'slot'});d.createObjectStore('b',{keyPath:'slot'})};
+    r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};
+  });
+  BKDB.catch(function(){BKDB=null});
+  return BKDB;
+}
+function bkReq(store,mode,make){return bkOpen().then(function(db){return new Promise(function(res,rej){var t=db.transaction(store,mode),r=make(t);t.oncomplete=function(){res(r&&r.result)};t.onerror=t.onabort=function(){rej(t.error)}})})}
+function bkMetas(){return bkReq('m','readonly',function(t){return t.objectStore('m').getAll()})}
+function bkGet(slot){return bkReq('b','readonly',function(t){return t.objectStore('b').get(slot)})}
+function bkHas(slot){return bkReq('m','readonly',function(t){return t.objectStore('m').get(slot)}).then(function(x){return !!x})}
+function bkPut(meta,data){return bkOpen().then(function(db){return new Promise(function(res,rej){var t=db.transaction(['m','b'],'readwrite');t.objectStore('m').put(meta);t.objectStore('b').put({slot:meta.slot,data:data});t.oncomplete=res;t.onerror=t.onabort=function(){rej(t.error)}})})}
+function bkData(list,slot){
+  var qs=list.map(function(x){return{mode:x.mode,k:x.k,q:x.q,o:x.o}});
+  return JSON.stringify({app:'cuanto-me-conoces',version:1,slot:slot,created:new Date().toISOString(),count:qs.length,questions:qs});
+}
+function dlFile(data,name){
+  try{
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;
+    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
+  }catch(e){}
+}
+function autoBackup(list){
+  if(!list||!list.length)return Promise.resolve();
+  var owner=false;try{owner=localStorage.getItem('cmc-owner')==='1'}catch(e){}
+  if(!owner)return Promise.resolve();
+  var slot=madridSlot(),data=bkData(list,slot);
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  var saved=bkHas(slot).then(function(has){if(!has)return bkPut({slot:slot,ts:Date.now(),count:list.length,label:slot+' · 9:00',kind:'daily'},data)}).catch(function(){});
+  var done='';try{done=localStorage.getItem('cmc-bk-dl')}catch(e){}
+  if(BK_DL_EVERY_OPEN||done!==slot){dlFile(data,'backup-preguntas-'+slot+'.json');try{localStorage.setItem('cmc-bk-dl',slot)}catch(e){}}
+  return saved;
+}
+function loadBK(){
+  return bkMetas().then(function(a){
+    BKL=(a||[]).sort(function(x,y){return y.ts-x.ts});
+    var ign='';try{ign=localStorage.getItem('cmc-bk-ign')||''}catch(e){}
+    BKB=BKL.filter(function(m){return m.kind!=='pre-restore'&&m.count>CQ.length&&(m.slot+':'+CQ.length)!==ign})[0]||null;
+  }).catch(function(){BKL=[];BKB=null});
+}
+function bkCard(){
+  var h='<div class="card eds"><div class="kick">💾 Backups</div>';
+  if(BKB)h+='<div style="border:1px solid var(--ko);border-radius:12px;padding:10px;margin-bottom:12px"><p style="font-size:14px;margin:0 0 8px">⚠️ El servidor tiene <b>'+CQ.length+'</b> preguntas y tu backup de <b>'+esc(BKB.label||BKB.slot)+'</b> tiene <b>'+BKB.count+'</b>. ¿Se ha borrado la base de datos?</p><button class="btn" data-e="bkrestore" data-slot="'+ea(BKB.slot)+'">♻️ Restaurar ese backup</button><button class="btn sec" data-e="bkign">Ahora no</button></div>';
+  h+='<p class="mut" style="font-size:14px;margin:0 0 10px">Al abrir el juego (en este dispositivo) se guarda un backup al día, a partir de las 9:00 de Madrid, y se descarga como archivo. Los backups nunca se borran.</p><button class="btn" data-e="bknow">⬇️ Descargar backup ahora</button>';
+  var shown=BKALL?BKL:BKL.slice(0,8);
+  if(shown.length)h+='<ul>'+shown.map(function(m){return '<li><b>'+esc(m.label||m.slot)+'</b><small>'+m.count+' preguntas</small><div class="seg"><button data-e="bkdl" data-slot="'+ea(m.slot)+'">⬇️ Descargar</button><button data-e="bkrestore" data-slot="'+ea(m.slot)+'">♻️ Restaurar</button></div></li>'}).join('')+'</ul>'+(BKL.length>8?'<button class="btn sec" data-e="bkall">'+(BKALL?'Ver solo los últimos':'Ver todos ('+BKL.length+')')+'</button>':'');
+  else h+='<p class="mut" style="font-size:14px">Aún no hay backups guardados en este dispositivo.</p>';
+  h+='<label style="margin-top:12px">Restaurar desde un archivo de backup<input id="bkfile" type="file" accept=".json,application/json"></label></div>';
+  return h;
+}
+function restoreFrom(obj,src){
+  var list=Array.isArray(obj)?obj:obj&&obj.questions;
+  if(!Array.isArray(list)||!list.length){EMSG='Ese backup no tiene preguntas válidas.';EOK=false;home();return}
+  if(!confirm('Se sustituirán TODAS las preguntas actuales ('+CQ.length+') por las de '+src+' ('+list.length+'). Antes se guardará una copia de lo actual. ¿Continuar?'))return;
+  readDraft();var ts=Date.now(),r0=null;
+  var pre=CQ.length?bkPut({slot:'pre-'+ts,ts:ts,count:CQ.length,label:'Antes de restaurar · '+new Date(ts).toLocaleString('es-ES'),kind:'pre-restore'},bkData(CQ,'pre-'+ts)).catch(function(){}):Promise.resolve();
+  pre.then(function(){return api('POST','/api/questions/restore',{questions:list})}).then(function(r){r0=r;return reloadCQ()}).then(loadBK).then(function(){DRF=null;EMSG='Backup restaurado: '+r0.restored+' preguntas'+(r0.skipped?' ('+r0.skipped+' no válidas omitidas)':'')+' ✅';EOK=true;home();window.scrollTo(0,0)}).catch(function(er){EMSG=errMsg(er);EOK=false;home()});
+}
+app.addEventListener('click',function(e){
+  var b=e.target.closest('[data-e^="bk"]');if(!b||TAB!=='edit')return;
+  var a=b.getAttribute('data-e'),slot=b.getAttribute('data-slot');
+  if(a==='bkall'){readDraft();BKALL=!BKALL;home()}
+  else if(a==='bkign'){try{localStorage.setItem('cmc-bk-ign',(BKB?BKB.slot:'')+':'+CQ.length)}catch(x){}BKB=null;readDraft();home()}
+  else if(a==='bknow'){
+    var ts=Date.now(),sl='manual-'+ts,d=bkData(CQ,sl);
+    dlFile(d,'backup-preguntas-'+new Date(ts).toISOString().slice(0,16).replace(/[:T]/g,'-')+'.json');
+    bkPut({slot:sl,ts:ts,count:CQ.length,label:'Manual · '+new Date(ts).toLocaleString('es-ES'),kind:'manual'},d).then(loadBK).then(function(){readDraft();home()}).catch(function(){});
+  }else if(a==='bkdl'){bkGet(slot).then(function(r){if(r)dlFile(r.data,'backup-preguntas-'+slot+'.json')})}
+  else if(a==='bkrestore'){
+    bkGet(slot).then(function(r){var o=null;try{o=JSON.parse(r.data)}catch(x){}restoreFrom(o,'el backup '+slot)}).catch(function(){EMSG='No se pudo leer ese backup.';EOK=false;home()});
+  }
+});
+app.addEventListener('change',function(e){
+  if(e.target.id!=='bkfile'||!e.target.files[0])return;
+  var f=e.target.files[0],fr=new FileReader();
+  fr.onload=function(){var o=null;try{o=JSON.parse(fr.result)}catch(x){}restoreFrom(o,'el archivo '+f.name)};
+  fr.readAsText(f);e.target.value='';
+});
+app.addEventListener('input',function(e){
+  if(e.target.id!=='efilter')return;
+  var t=e.target.value.trim().toLowerCase();
+  [].forEach.call(app.querySelectorAll('.egrp'),function(g){var any=false;[].forEach.call(g.querySelectorAll('li'),function(li){var m=!t||li.textContent.toLowerCase().indexOf(t)>-1;li.style.display=m?'':'none';if(m)any=true});g.style.display=any?'':'none'});
+});
+
+// ---------- Carga de preguntas (todas vienen de la base de datos) ----------
+var started=false;
+function noQ(){app.innerHTML='<div class="card"><div class="kick">No se han podido cargar las preguntas</div><p class="mut" style="font-size:14px">Comprueba la conexión e inténtalo de nuevo.</p><button class="btn" onclick="location.reload()">Reintentar</button></div>'}
+function go(){if(started)return;started=true;if(!QN.length&&!QD.length&&!QG.length){noQ();return}home()}
+function fromCache(){try{var c=JSON.parse(localStorage.getItem('cmc-qcache'));if(Array.isArray(c)&&c.length)applyCQ(c)}catch(e){}}
+fetch('/api/questions',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+  if(!d||!Array.isArray(d.questions)||!d.questions.length)throw new Error('empty');
+  applyCQ(d.questions);try{localStorage.setItem('cmc-qcache',JSON.stringify(d.questions))}catch(e){}
+  autoBackup(d.questions);
+}).catch(fromCache).then(go);
+setTimeout(function(){if(!started){fromCache();go()}},20000);
 </script>
 </body>
 </html>

@@ -4,7 +4,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { WebSocketServer } = require('ws');
-const { handle: questionsApi } = require('./questions-api');
+const { handle: questionsApi, warm: warmQuestions } = require('./questions-api');
 
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'public', 'index.html');
@@ -131,4 +131,7 @@ setInterval(() => {
   }
 }, 25000);
 
-server.listen(PORT, () => console.log('Servidor listo en el puerto ' + PORT));
+server.listen(PORT, () => {
+  console.log('Servidor listo en el puerto ' + PORT);
+  warmQuestions(); // crea las tablas y carga las preguntas originales (una sola vez) al arrancar
+});

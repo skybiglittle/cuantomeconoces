@@ -1019,9 +1019,55 @@ function bkOpen(){
 }
 function bkReq(store,mode,make){return bkOpen().then(function(db){return new Promise(function(res,rej){var t=db.transaction(store,mode),r=make(t);t.oncomplete=function(){res(r&&r.result)};t.onerror=t.onabort=function(){rej(t.error)}})})}
 function bkMetas(){return bkReq('m','readonly',function(t){return t.objectStore('m').getAll()})}
+  function bkTrim(max){
+  return bkMetas().then(function(items){
+    items=(items||[]).sort(function(a,b){
+      return b.ts-a.ts;
+    });
+
+    var old=items.slice(max);
+
+    if(!old.length)return Promise.resolve();
+
+    return bkOpen().then(function(db){
+      return new Promise(function(resolve,reject){
+        var t=db.transaction(['m','b'],'readwrite');
+
+        old.forEach(function(item){
+          t.objectStore('m').delete(item.slot);
+          t.objectStore('b').delete(item.slot);
+        });
+
+        t.oncomplete=resolve;
+        t.onerror=t.onabort=function(){
+          reject(t.error);
+        };
+      });
+    });
+  });
+}
 function bkGet(slot){return bkReq('b','readonly',function(t){return t.objectStore('b').get(slot)})}
 function bkHas(slot){return bkReq('m','readonly',function(t){return t.objectStore('m').get(slot)}).then(function(x){return !!x})}
-function bkPut(meta,data){return bkOpen().then(function(db){return new Promise(function(res,rej){var t=db.transaction(['m','b'],'readwrite');t.objectStore('m').put(meta);t.objectStore('b').put({slot:meta.slot,data:data});t.oncomplete=res;t.onerror=t.onabort=function(){rej(t.error)}})})}
+function bkPut(meta,data){
+  return bkOpen().then(function(db){
+    return new Promise(function(resolve,reject){
+      var t=db.transaction(['m','b'],'readwrite');
+
+      t.objectStore('m').put(meta);
+      t.objectStore('b').put({
+        slot:meta.slot,
+        data:data
+      });
+
+      t.oncomplete=resolve;
+      t.onerror=t.onabort=function(){
+        reject(t.error);
+      };
+    });
+  }).then(function(){
+    return bkTrim(5);
+  });
+}
 function bkData(list,slot){
   var qs=list.map(function(x){return{mode:x.mode,k:x.k,q:x.q,o:x.o}});
   return JSON.stringify({app:'cuanto-me-conoces',version:1,slot:slot,created:new Date().toISOString(),count:qs.length,questions:qs});

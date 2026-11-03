@@ -13,7 +13,7 @@ const ROOM_RE = /^[a-z0-9][a-z0-9_.-]{0,47}$/;
 const MAX_PLAYERS = 2;
 const MAX_GROUP = 200;
 const MAX_TITLE_PLAYERS = 30;
-const MAX_PRESENCE_BYTES = 65536;
+const MAX_PRESENCE_BYTES = 4096;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -55,7 +55,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   // La raíz muestra index.html; cualquier otra ruta apunta a su archivo dentro de public.
-  // Ejemplos: /misiones.html -> public/misiones.html; /juegos/dibujo.html -> public/juegos/dibujo.html
   let relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   if (relativePath.endsWith('/')) relativePath += 'index.html';
   else if (!path.extname(relativePath)) relativePath += '.html';
@@ -86,7 +85,7 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-const wss = new WebSocketServer({ server, maxPayload: 131072 });
+const wss = new WebSocketServer({ server, maxPayload: 8192 });
 const rooms = new Map();
 let nextId = 1;
 
@@ -161,9 +160,7 @@ wss.on('connection', (ws) => {
         }
       }
 
-      const maxPlayers = name.startsWith('cmm-')
-        ? Infinity
-        : (name.startsWith('cmt-') || name.startsWith('cmb-'))
+      const maxPlayers = (name.startsWith('cmt-') || name.startsWith('cmb-'))
         ? MAX_TITLE_PLAYERS
         : (name.startsWith('cmg-') || name.startsWith('cmd-'))
           ? MAX_GROUP
@@ -178,15 +175,6 @@ wss.on('connection', (ws) => {
       ws.room = name;
       set.add(ws);
       broadcast(name);
-      return;
-    }
-
-    // Mensajes privados entre jugadores de la misma sala (por ejemplo, la palabra secreta de Mímica).
-    if (m.t === 'direct' && ws.room && typeof m.to === 'string' && m.p && typeof m.p === 'object' && !Array.isArray(m.p)) {
-      const set = rooms.get(ws.room);
-      if (!set || Buffer.byteLength(JSON.stringify(m.p)) > 4096) return;
-      const target = [...set].find((peer) => peer.pid === m.to);
-      if (target) send(target, { t: 'direct', from: ws.pid, p: m.p });
       return;
     }
 

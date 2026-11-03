@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'public', 'index.html');
 const ROOM_RE = /^[a-z0-9][a-z0-9_.-]{0,47}$/;
 const MAX_PLAYERS = 2;
-const MAX_GROUP = 200; // salas de grupo: sin límite práctico (tope técnico de seguridad)
+const MAX_GROUP = 200;
+const MAX_TITLE_PLAYERS = 30;
 const MAX_PRESENCE_BYTES = 4096;
 
 const server = http.createServer(async (req, res) => {
@@ -34,7 +35,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 const wss = new WebSocketServer({ server, maxPayload: 8192 });
-const rooms = new Map(); // nombre de sala -> Set de sockets
+const rooms = new Map();
 let nextId = 1;
 
 function send(ws, obj) {
@@ -63,7 +64,10 @@ function leave(ws) {
 const pending = new Map();
 function schedule(name) {
   if (pending.has(name)) return;
-  pending.set(name, setTimeout(() => { pending.delete(name); broadcast(name); }, 60));
+  pending.set(name, setTimeout(() => {
+    pending.delete(name);
+    broadcast(name);
+  }, 60));
 }
 
 wss.on('connection', (ws) => {
@@ -71,33 +75,69 @@ wss.on('connection', (ws) => {
   ws.alive = true;
   ws.pres = {};
   ws.room = null;
-  ws.on('pong', () => { ws.alive = true; });
+
+  ws.on('pong', () => {
+    ws.alive = true;
+  });
+
   send(ws, { t: 'hello', id: ws.pid });
 
   ws.on('message', (raw) => {
     let m;
-    try { m = JSON.parse(raw.toString()); } catch { return; }
+    try {
+      m = JSON.parse(raw.toString());
+    } catch {
+      return;
+    }
+
     if (!m || typeof m !== 'object') return;
 
     if (m.t === 'join') {
       if (ws.room) return;
+
       const name = String(m.room || '');
-      if (!ROOM_RE.test(name)) return send(ws, { t: 'err', code: 'invalid_room' });
+      if (!ROOM_RE.test(name)) {
+        return send(ws, { t: 'err', code: 'invalid_room' });
+      }
+
       const cid = String(m.cid || '').slice(0, 32);
       let set = rooms.get(name);
-      if (!set) { set = new Set(); rooms.set(name, set); }
+
+      if (!set) {
+        set = new Set();
+        rooms.set(name, set);
+      }
+
       // Reconexión del mismo jugador: sustituye su socket anterior.
       for (const w of [...set]) {
-        if (cid && w.cid === cid) { set.delete(w); w.room = null; try { w.terminate(); } catch {} }
+        if (cid && w.cid === cid) {
+          set.delete(w);
+          w.room = null;
+          try {
+            w.terminate();
+          } catch {}
+        }
       }
+
       // Limpia sockets muertos antes de decidir si la sala está llena.
       for (const w of [...set]) {
-        if (w.readyState !== 1) { set.delete(w); w.room = null; }
+        if (w.readyState !== 1) {
+          set.delete(w);
+          w.room = null;
+        }
       }
-      if (set.size >= ((name.startsWith('cmg-') || name.startsWith('cmd-')) ? MAX_GROUP : MAX_PLAYERS)) {
+
+      const maxPlayers = name.startsWith('cmt-')
+        ? MAX_TITLE_PLAYERS
+        : (name.startsWith('cmg-') || name.startsWith('cmd-'))
+          ? MAX_GROUP
+          : MAX_PLAYERS;
+
+      if (set.size >= maxPlayers) {
         if (set.size === 0) rooms.delete(name);
         return send(ws, { t: 'err', code: 'room_full' });
       }
+
       ws.cid = cid;
       ws.room = name;
       set.add(ws);
@@ -105,14 +145,29 @@ wss.on('connection', (ws) => {
       return;
     }
 
-    if (m.t === 'pres' && ws.room && m.p && typeof m.p === 'object' && !Array.isArray(m.p)) {
+    if (
+      m.t === 'pres' &&
+      ws.room &&
+      m.p &&
+      typeof m.p === 'object' &&
+      !Array.isArray(m.p)
+    ) {
       const next = { ...ws.pres };
+
       for (const k of Object.keys(m.p)) {
         if (!/^[A-Za-z_][A-Za-z0-9_]{0,31}$/.test(k)) continue;
-        if (m.p[k] === null) delete next[k];
-        else next[k] = m.p[k];
+
+        if (m.p[k] === null) {
+          delete next[k];
+        } else {
+          next[k] = m.p[k];
+        }
       }
-      if (Buffer.byteLength(JSON.stringify(next)) > MAX_PRESENCE_BYTES) return;
+
+      if (Buffer.byteLength(JSON.stringify(next)) > MAX_PRESENCE_BYTES) {
+        return;
+      }
+
       ws.pres = next;
       schedule(ws.room);
     }
@@ -125,13 +180,22 @@ wss.on('connection', (ws) => {
 // Latido: elimina conexiones muertas y evita que el proxy cierre las inactivas.
 setInterval(() => {
   for (const ws of wss.clients) {
-    if (!ws.alive) { try { ws.terminate(); } catch {} continue; }
+    if (!ws.alive) {
+      try {
+        ws.terminate();
+      } catch {}
+      continue;
+    }
+
     ws.alive = false;
-    try { ws.ping(); } catch {}
+
+    try {
+      ws.ping();
+    } catch {}
   }
 }, 25000);
 
 server.listen(PORT, () => {
   console.log('Servidor listo en el puerto ' + PORT);
-  warmQuestions(); // crea las tablas y carga las preguntas originales (una sola vez) al arrancar
+  warmQuestions();
 });

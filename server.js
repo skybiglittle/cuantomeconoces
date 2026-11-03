@@ -20,53 +20,17 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     return res.end('ok');
   }
-  // Servir archivos de la carpeta public según la URL
-const PUBLIC_DIR = path.join(__dirname, 'public');
-
-const pathname = decodeURIComponent(
-  new URL(req.url, 'http://localhost').pathname
-);
-
-const filename = pathname === '/'
-  ? 'index.html'
-  : pathname.replace(/^\/+/, '');
-
-const filePath = path.resolve(PUBLIC_DIR, filename);
-
-// Evitar acceder a archivos fuera de public
-if (!filePath.startsWith(PUBLIC_DIR + path.sep) &&
-    filePath !== path.join(PUBLIC_DIR, 'index.html')) {
-  res.writeHead(403);
-  return res.end('Acceso denegado');
-}
-
-fs.readFile(filePath, (err, data) => {
-  if (err) {
-    res.writeHead(404, {
-      'Content-Type': 'text/plain; charset=utf-8'
+  fs.readFile(INDEX, (err, data) => {
+    if (err) {
+      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+      return res.end('No se encuentra public/index.html');
+    }
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache',
     });
-    return res.end('Archivo no encontrado');
-  }
-
-  const ext = path.extname(filePath);
-
-  const types = {
-    '.html': 'text/html; charset=utf-8',
-    '.js': 'application/javascript; charset=utf-8',
-    '.css': 'text/css; charset=utf-8',
-    '.json': 'application/json; charset=utf-8',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.svg': 'image/svg+xml'
-  };
-
-  res.writeHead(200, {
-    'Content-Type': types[ext] || 'application/octet-stream',
-    'Cache-Control': 'no-cache'
+    res.end(data);
   });
-
-  res.end(data);
-});
 });
 
 const wss = new WebSocketServer({ server, maxPayload: 8192 });
@@ -130,7 +94,7 @@ wss.on('connection', (ws) => {
       for (const w of [...set]) {
         if (w.readyState !== 1) { set.delete(w); w.room = null; }
       }
-      if (set.size >= (name.startsWith('cmg-') ? MAX_GROUP : MAX_PLAYERS)) {
+      if (set.size >= ((name.startsWith('cmg-') || name.startsWith('cmd-')) ? MAX_GROUP : MAX_PLAYERS)) {
         if (set.size === 0) rooms.delete(name);
         return send(ws, { t: 'err', code: 'room_full' });
       }

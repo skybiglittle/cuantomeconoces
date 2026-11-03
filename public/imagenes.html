@@ -928,122 +928,63 @@ new MutationObserver(fx).observe(app,{childList:true});
 // ---------- Prueba de fiesta: Preguntas creativas sobre imágenes ----------
 // Fotografías de Wikimedia Commons: API pública, sin clave. Se muestra siempre la atribución.
 var T=null,TR=null,tTimer=null,TT_WRITE=45000,TT_VOTE=25000,TT_ROUNDS=3;
-var TTOPICS=[
-  {q:'cute pets',cat:'animal'}, {q:'animal portrait',cat:'animal'},
-  {q:'unusual architecture',cat:'building'}, {q:'colorful buildings',cat:'building'},
-  {q:'food photography',cat:'food'}, {q:'fruit photography',cat:'food'},
-  {q:'vintage cars',cat:'vehicle'}, {q:'nature photography',cat:'nature'},
-  {q:'mountain landscape',cat:'landscape'}, {q:'waterfall landscape',cat:'landscape'},
-  {q:'funny signs',cat:'sign'}, {q:'household objects',cat:'object'},
-  {q:'tools and objects',cat:'object'}, {q:'flowers in nature',cat:'nature'}
+
+// Temas de búsqueda en Wikimedia (sin categorías: las preguntas valen para cualquier imagen)
+var TTOPICS=['cute pets','animal portrait','unusual architecture','colorful buildings','food photography','fruit photography','vintage cars','nature photography','mountain landscape','waterfall landscape','funny signs','household objects','tools and objects','flowers in nature','street photography','old machines','sculpture','market stall','bicycle','musical instruments'];
+
+// Preguntas genéricas: sirven para cualquier fotografía
+var TQ=[
+  // Títulos y nombres
+  'Ponle un título a esta imagen digno de una película de Oscar.',
+  'Describe esta imagen en tres palabras.',
+  'Ponle un nombre como si fuera una obra de arte carísima de un museo.',
+  'Si esta imagen fuera la portada de un libro, ¿cómo se titularía?',
+  '¿Cómo se llamaría un grupo de música cuya portada de disco fuera esta imagen?',
+  'Si esta imagen fuera una marca, ¿cómo se llamaría y cuál sería su eslogan?',
+  // Historias
+  '¿Qué ha pasado justo antes de que se hiciera esta foto?',
+  '¿Qué pasará cinco minutos después? Cuanto más inesperado, mejor.',
+  'Cuenta la historia de esta imagen en dos frases.',
+  'Inventa la leyenda de esta imagen como si fuera un cuento de abuelos.',
+  'Si esta imagen fuera el inicio de una película de terror cutre, ¿cuál sería la primera frase?',
+  'Si esta imagen fuera el final de una película, ¿qué pasaría en la escena siguiente?',
+  // Humor
+  'Escribe la reseña de 1 estrella (muy exagerada) de esta imagen.',
+  'Escribe el titular de periódico más sensacionalista para esta imagen.',
+  'Inventa la excusa más absurda para explicar por qué aparece esto en la foto.',
+  'Si esta imagen fuera un mensaje de WhatsApp de tu madre, ¿qué diría?',
+  '¿Qué diría tu abuela al verla? Sé fiel a su estilo.',
+  'Que animal pegaría con esta imagen.',
+  'Descríbela como un crítico de arte pedante y exagerado.',
+  'Escribe el anuncio de televisión de esta imagen con eslogan incluido.',
+  'Si esta imagen fuera una norma de la comunidad de vecinos, ¿qué prohibiría?',
+  '¿Qué dirías de esta imagen en tu perfil de una app de citas?',
+  // Imaginar y mejorar
+  '¿Qué detalle crees que casi nadie notaría al mirarla?',
+  'Si pudieras añadir una sola cosa a la imagen para mejorarla (o empeorarla), ¿qué sería?',
+  'Si esta imagen pudiera hablar, ¿qué sería lo primero que diría?',
+  '¿Qué sonido o ruido imaginas que acompañaría a esta imagen?',
+  '¿Qué olor crees que tendría si pudieras olerla?',
+  '¿Qué canción pondrías de banda sonora? Vale cualquiera, cuanto más inesperada, mejor.',
+  'Si esta imagen fuera un sabor de helado, ¿cuál sería?',
+  'Si esta imagen fuera una persona, ¿qué trabajo tendría y cómo sería su personalidad?',
+  '¿Qué superpoder le darías a esta imagen?',
+  // Personales
+  '¿Qué sería lo primero que harías si te teletransportaras a esta imagen?',
+  '¿A quién de este grupo le regalarías esta imagen y por qué?',
+  '¿Qué recuerdo de tu vida te trae esta imagen (real o inventado)?',
+  'Si tuvieras que colgarla en tu casa, ¿en qué habitación irá y por qué?',
+  'Si esta imagen apareciera en tu galería del móvil, ¿qué habría pasado esa noche?',
+  'Si fuera el fondo de pantalla de alguien, ¿qué dice eso de esa persona?',
+  'Descríbela sin usar la letra A (o como mínimo, ¡inténtalo!).'
 ];
-var TQUESTIONS={
-  any:[
-    'Describe esta imagen en tres palabras.',
-    '¿Qué título le pondrías a esta imagen?',
-    '¿Qué crees que ha pasado justo antes de esta foto?',
-    '¿Qué podría pasar cinco minutos después?',
-    'Si esta imagen fuera una película, ¿cómo se titularía?',
-    '¿Qué emoción te transmite? Explícalo en una frase.',
-    '¿Qué canción instrumental pegaría como banda sonora?',
-    'Inventa una historia de dos frases sobre esta imagen.',
-    '¿Qué detalle crees que casi nadie se fijaría en mirar?',
-    'Si pudieras añadir un elemento a la imagen, ¿cuál sería?',
-    '¿Qué pregunta le harías a alguien que aparece o está relacionado con esta imagen?',
-    'Ponle un nombre como si fuera una obra de arte.',
-    '¿En qué lugar del mundo podría estar hecha esta foto?',
-    '¿Qué nombre tendría el capítulo de un libro inspirado en esta imagen?',
-    'Descríbela como si estuvieras contando una noticia curiosa.'
-  ],
-  landscape:[
-    '¿Qué nombre le pondrías a este lugar?',
-    '¿Qué harías si pasaras aquí una tarde entera?',
-    '¿Qué tres cosas meterías en la mochila para visitar este sitio?',
-    '¿En qué estación del año te gustaría verlo? ¿Por qué?',
-    '¿Qué sonido crees que se escucharía aquí?',
-    'Inventa una leyenda breve sobre este lugar.',
-    '¿A quién invitarías a visitar este sitio?',
-    '¿Qué actividad encajaría mejor en este paisaje?',
-    'Si fuera el escenario de una aventura, ¿cuál sería la misión?',
-    '¿Qué nombre tendría un hotel situado aquí?'
-  ],
-  nature:[
-    '¿Qué estación del año representa mejor esta imagen?',
-    '¿Qué nombre le pondrías a esta escena?',
-    '¿Qué colores destacan más?',
-    '¿Qué sensación te produce observarla?',
-    '¿Qué pequeño detalle te parece más interesante?',
-    '¿Qué sonido de la naturaleza imaginas aquí?',
-    '¿Qué título tendría una exposición con esta fotografía?',
-    '¿Qué te gustaría descubrir si pudieras acercarte más?'
-  ],
-  object:[
-    '¿Para qué usarías tú este objeto?',
-    '¿Para qué crees que sirve este objeto?',
-    '¿Qué otro uso se le podría dar, aunque sea disparatado?',
-    '¿Quién sería la persona que más necesitaría este objeto?',
-    'Si tuvieras que venderlo, ¿qué nombre y eslogan le pondrías?',
-    '¿Qué problema cotidiano podría resolver?',
-    '¿Qué pasaría si este objeto fuera diez veces más grande?',
-    'Inventa una versión mejorada de este objeto.',
-    '¿En qué lugar de una casa esperarías encontrarlo?',
-    'Si pudiera hablar, ¿qué se quejaría de que haces mal?',
-    '¿Qué profesión lo utilizaría más?'
-  ],
-  animal:[
-    'Si este animal tuviera nombre de persona, ¿cómo lo llamarías?',
-    '¿Qué trabajo crees que haría si pudiera trabajar?',
-    '¿Qué crees que está pensando ahora mismo?',
-    '¿Qué superpoder le pegaría?',
-    '¿Cómo sería un día normal en su vida?',
-    '¿Qué personaje sería en una película de aventuras?',
-    '¿Qué objeto llevaría siempre consigo?',
-    '¿Qué talento inesperado podría tener?',
-    '¿Qué consejo crees que nos daría?',
-    '¿Qué nombre le pondrías a su programa de televisión?'
-  ],
-  food:[
-    '¿Qué nombre le pondrías a este plato o alimento?',
-    '¿En qué momento del día te apetecería más?',
-    '¿Qué ingrediente combinaría sorprendentemente bien con esto?',
-    'Inventa un eslogan para anunciarlo.',
-    '¿Qué restaurante podría tenerlo como especialidad?',
-    '¿Para qué ocasión lo prepararías?',
-    'Si fuera un personaje, ¿qué personalidad tendría?',
-    '¿Qué nombre tendría una receta inspirada en esta imagen?',
-    '¿Qué alimento no esperarías encontrar al lado de este?',
-    'Descríbelo como un crítico gastronómico exagerado.'
-  ],
-  vehicle:[
-    '¿Qué nombre le pondrías a este vehículo?',
-    '¿A qué destino lo llevarías en un viaje?',
-    '¿Quién crees que sería su dueño ideal?',
-    '¿Qué música pegaría para conducirlo?',
-    '¿Qué apodo tendría?',
-    'Si pudiera contar una anécdota, ¿cuál sería?',
-    '¿Qué mejora le añadirías?',
-    '¿En qué película encajaría como protagonista?'
-  ],
-  building:[
-    '¿Qué nombre le pondrías a este edificio?',
-    '¿Qué tipo de personas crees que entran aquí?',
-    '¿Qué actividad sería perfecta para este lugar?',
-    'Si pudieras visitar una sola habitación, ¿cuál elegirías?',
-    '¿Qué historia podría esconder este edificio?',
-    '¿Qué negocio montarías aquí?',
-    '¿Cómo sería un día normal dentro de este lugar?',
-    '¿Qué detalle arquitectónico te llama más la atención?'
-  ],
-  sign:[
-    '¿En qué situación te imaginas encontrando este cartel?',
-    '¿Qué otro mensaje podría poner para llamar la atención?',
-    '¿Qué norma absurda inventarías para este lugar?',
-    '¿Qué explicación divertida darías a este mensaje?',
-    '¿Qué título tendría la noticia sobre este cartel?',
-    '¿A quién crees que va dirigido?'
-  ]
-};
-function tPickQuestion(cat){var specific=TQUESTIONS[cat]||[],pool=specific.concat(TQUESTIONS.any);return pool[Math.floor(Math.random()*pool.length)]}
+function tPickQuestion(){
+  var used=(T&&T.usedQ)||[],pool=TQ.filter(function(q){return used.indexOf(q)<0});
+  if(!pool.length)pool=TQ;
+  var q=pool[Math.floor(Math.random()*pool.length)];
+  if(T)T.usedQ=used.concat([q]).slice(-TT_ROUNDS);
+  return q;
+}
 function tQuestionFor(img){return img&&img.question?img.question:'Describe esta imagen en tres palabras.'}
 function tPeers(){return TR?TR.peers().filter(function(p){return p.presence&&p.presence.tm===1}):[]}
 function tActive(){var ps=tPeers();return T&&T.ro&&T.ph!=='lobby'?ps.filter(function(x){return T.ro.indexOf(x.presence.tk)>-1}):ps}
@@ -1059,7 +1000,7 @@ async function tFetchImage(){
   var candidates=pages.map(function(pg){var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{},mime=ii.thumbmime||ii.mime||'';return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:mime,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value)),desc:tClean((ex.ImageDescription&&ex.ImageDescription.value)||(ex.ObjectName&&ex.ObjectName.value))}}).filter(function(x){return x.url&&x.page&&x.license&&/^image\/(jpeg|png|webp|gif)$/i.test(x.mime)&&used.indexOf(x.title)<0&&!/(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|war photograph|violent|murder|injury|death)/i.test(x.title+' '+x.desc)});
   if(!candidates.length)candidates=pages.map(function(pg){var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{},mime=ii.thumbmime||ii.mime||'';return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:mime,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value)),desc:tClean((ex.ImageDescription&&ex.ImageDescription.value)||(ex.ObjectName&&ex.ObjectName.value))}}).filter(function(x){return x.url&&x.page&&x.license&& /^image\/(jpeg|png|webp|gif)$/i.test(x.mime)&&!/(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|war photograph|violent|murder|injury|death)/i.test(x.title+' '+x.desc)});
   if(!candidates.length)throw new Error('No se han encontrado fotografías adecuadas. Prueba otra vez.');
-  var chosen=candidates[Math.floor(Math.random()*candidates.length)];chosen.category=topic.cat;chosen.question=tPickQuestion(topic.cat);return chosen;
+  var chosen=candidates[Math.floor(Math.random()*candidates.length)];chosen.question=tPickQuestion();return chosen;
 }
 function tPub(){
   if(!TR||!T)return;
@@ -1074,7 +1015,7 @@ function tStart(create){
   var name=((el&&el.value)||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador');
   var code=create?newCode():((ce&&ce.value)||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   if(!code){OMSG='Escribe el código de la sala.';homeKeep();return}
-  T={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',round:-1,ro:[],totals:{},img:null,sub:'',vote:'',deadline:0,seen:[],err:'',localRound:-99,rk:''};
+  T={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',round:-1,ro:[],totals:{},img:null,sub:'',vote:'',deadline:0,seen:[],usedQ:[],err:'',localRound:-99,rk:''};
   OMSG='';tTimer=setInterval(tTick,500);tRender();
   RM.join('cmt-'+T.code).then(function(r){TR=r;TR.onPeers(tSync);tPub();tSync()}).catch(function(e){tLeave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala.')});
 }

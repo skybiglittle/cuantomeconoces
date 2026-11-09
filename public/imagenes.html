@@ -927,7 +927,7 @@ new MutationObserver(fx).observe(app,{childList:true});
 
 // ---------- Prueba de fiesta: Preguntas creativas sobre imágenes ----------
 // Fotografías de Wikimedia Commons: API pública, sin clave. Se muestra siempre la atribución.
-var T=null,TR=null,tTimer=null,TT_WRITE=45000,TT_VOTE=25000,TT_ROUNDS=3;
+var T=null,TR=null,tTimer=null,TT_WRITE=45000,TT_VOTE=25000,TT_ROUNDS=8;
 
 // Temas de búsqueda en Wikimedia (sin categorías: las preguntas valen para cualquier imagen)
   var TTOPICS=[
@@ -1152,6 +1152,12 @@ function tPickQuestion(){
   return q;
 }
 function tQuestionFor(img){return img&&img.question?img.question:'Describe esta imagen en tres palabras.'}
+// Palabra obligada: si la respuesta más votada la contiene, su autor gana +1 punto
+var TWORDS=['calcetín','pepino','abuela','nevera','dragón','chancla','jubilado','pizza','tractor','wifi','fantasma','croqueta','sofá','mochila','paraguas','dinosaurio','lunes','gimnasio','pirata','bocadillo','ascensor','robot','sombrero','tortilla','cactus','playa','mudanza','karaoke','ninja','helado','vecino','selfie','pato','espagueti','examen','resaca','cohete','bufanda','siesta','pijama','jirafa','factura','mariachi','hámster','churro','taxi','cumpleaños','espejo','tiburón','zapatilla'];
+function tNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function tHas(s){var w=T&&T.word;return !!w&&tNorm(s).indexOf(tNorm(w))>-1}
+function tPickWord(){var used=(T&&T.usedW)||[],pool=TWORDS.filter(function(w){return used.indexOf(w)<0});if(!pool.length)pool=TWORDS;var w=pool[Math.floor(Math.random()*pool.length)];if(T)T.usedW=used.concat([w]).slice(-20);return w}
+function tWordBar(){if(!T||!T.word)return'';return '<p style="margin:10px 0 0;padding:8px 10px;border-radius:10px;background:rgba(124,77,255,.12);font-size:14px">🧩 Palabra obligada: <b>'+esc(T.word)+'</b> · si la usas y tu respuesta es la más votada, +1 punto</p>'}
 function tPeers(){return TR?TR.peers().filter(function(p){return p.presence&&p.presence.tm===1}):[]}
 function tActive(){var ps=tPeers();return T&&T.ro&&T.ph!=='lobby'?ps.filter(function(x){return T.ro.indexOf(x.presence.tk)>-1}):ps}
 function tBy(ps,k){return ps.filter(function(x){return x.presence.tk===k})[0]}
@@ -1171,8 +1177,8 @@ async function tFetchImage(){
 function tPub(){
   if(!TR||!T)return;
   var p={n:T.name,tk:T.me,tm:1,tpr:T.round,tx:T.sub||'',tv:T.vote||''};
-  if(T.host){p.th=1;p.tph=T.ph;p.tr=T.round;p.tro=T.ro;p.tot=T.totals;p.timg=T.img;p.tdeadline=T.deadline;p.tseen=T.seen;p.terr=T.err||''}
-  else{p.th=null;p.tph=null;p.tr=null;p.tro=null;p.tot=null;p.timg=null;p.tdeadline=null;p.tseen=null;p.terr=null}
+  if(T.host){p.th=1;p.tph=T.ph;p.tr=T.round;p.tro=T.ro;p.tot=T.totals;p.timg=T.img;p.tdeadline=T.deadline;p.tseen=T.seen;p.tw=T.word||'';p.terr=T.err||''}
+  else{p.th=null;p.tph=null;p.tr=null;p.tro=null;p.tot=null;p.timg=null;p.tdeadline=null;p.tseen=null;p.tw=null;p.terr=null}
   TR.presence(p).catch(function(){});
 }
 function tStart(create){
@@ -1181,20 +1187,20 @@ function tStart(create){
   var name=((el&&el.value)||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador');
   var code=create?newCode():((ce&&ce.value)||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   if(!code){OMSG='Escribe el código de la sala.';homeKeep();return}
-  T={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',round:-1,ro:[],totals:{},img:null,sub:'',vote:'',deadline:0,seen:[],usedQ:[],err:'',localRound:-99,rk:''};
+  T={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',round:-1,ro:[],totals:{},img:null,sub:'',vote:'',deadline:0,seen:[],usedQ:[],word:'',usedW:[],err:'',localRound:-99,rk:''};
   OMSG='';tTimer=setInterval(tTick,500);tRender();
   RM.join('cmt-'+T.code).then(function(r){TR=r;TR.onPeers(tSync);tPub();tSync()}).catch(function(e){tLeave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala.')});
 }
 function tLeave(msg){if(TR){TR.leave().catch(function(){});TR=null}if(tTimer){clearInterval(tTimer);tTimer=null}T=null;OMSG=msg||'';home()}
 function tSync(){
   if(!T||!TR)return;
-  if(!T.host){var hp=null;tPeers().forEach(function(x){if(x.presence.th===1)hp=x.presence});if(hp){T.nh=0;T.ph=hp.tph||'lobby';T.round=hp.tr===undefined?-1:hp.tr;T.ro=hp.tro||[];T.totals=hp.tot||{};T.img=hp.timg||null;T.deadline=hp.tdeadline||0;T.seen=hp.tseen||[];T.err=hp.terr||'';if(T.localRound!==T.round){T.localRound=T.round;T.sub='';T.vote='';tPub()}}else T.nh=T.nh||Date.now()}
+  if(!T.host){var hp=null;tPeers().forEach(function(x){if(x.presence.th===1)hp=x.presence});if(hp){T.nh=0;T.ph=hp.tph||'lobby';T.round=hp.tr===undefined?-1:hp.tr;T.ro=hp.tro||[];T.totals=hp.tot||{};T.img=hp.timg||null;T.deadline=hp.tdeadline||0;T.seen=hp.tseen||[];T.word=hp.tw||'';T.err=hp.terr||'';if(T.localRound!==T.round){T.localRound=T.round;T.sub='';T.vote='';tPub()}}else T.nh=T.nh||Date.now()}
   tRender();
 }
 function tActiveSubmissions(){return tActive().filter(function(x){return x.presence.tpr===T.round&&(x.presence.tx||'').trim().length>0})}
 function tNextRound(sameRound){
   if(!T||!T.host)return;
-  if(!sameRound)T.round++;T.sub='';T.vote='';T.img=null;T.err='';T.ph='loading';T.deadline=0;T.localRound=T.round;tPub();tSync();
+  if(!sameRound)T.round++;T.sub='';T.vote='';T.img=null;T.err='';if(!sameRound||!T.word)T.word=tPickWord();T.ph='loading';T.deadline=0;T.localRound=T.round;tPub();tSync();
   tFetchImage().then(function(img){if(!T||!T.host||T.ph!=='loading')return;T.img=img;T.seen=(T.seen||[]).concat([img.title]).slice(-TT_ROUNDS);T.ph='write';T.deadline=Date.now()+TT_WRITE;tPub();tSync()}).catch(function(e){if(!T||!T.host)return;T.err=e&&e.message?e.message:'No se pudo cargar la fotografía.';T.ph='error';tPub();tSync()});
 }
 function tSubmit(){if(!T||T.ph!=='write'||T.sub)return;var el=document.getElementById('tcaption'),v=(el&&el.value||'').trim();if(v.length<4){var m=document.getElementById('terr');if(m)m.textContent='Escribe una respuesta de al menos 4 caracteres.';return}T.sub=v.slice(0,180);tPub();tRender()}
@@ -1205,6 +1211,7 @@ function tTally(){
   var max=0;Object.keys(counts).forEach(function(k){if(counts[k]>max)max=counts[k]});
   if(!T.totals)T.totals={};Object.keys(counts).forEach(function(k){T.totals[k]=(T.totals[k]||0)+counts[k]*2});
   if(max>0)ps.forEach(function(x){if(x.presence.tpr===T.round&&counts[x.presence.tv]===max&&x.presence.tv)T.totals[x.presence.tk]=(T.totals[x.presence.tk]||0)+1});
+  if(max>0&&T.word)subs.forEach(function(x){if(counts[x.presence.tk]===max&&tHas(x.presence.tx))T.totals[x.presence.tk]=(T.totals[x.presence.tk]||0)+1});
 }
 function tTick(){
   if(!T||!TR)return;var now=Date.now(),bar=document.getElementById('ttbar');
@@ -1225,12 +1232,12 @@ function tTick(){
 function tRender(){
   if(!T)return;var ps=tActive(),all=tPeers(),warn=(!T.host&&T.nh&&Date.now()-T.nh>15000)?'<p class="center" style="color:var(--ko)">⚠️ El anfitrión se ha desconectado.</p>':'';
   if(T.ph!=='lobby'&&T.ro.indexOf(T.me)<0){tPaint('tlocked','<h1>¿Qué te inspira esta imagen?</h1><div class="card center"><h2>La partida ya ha empezado</h2><p class="mut">Esta sala no admite nuevos jugadores durante la partida. Puedes salir y unirte a otra sala.</p><button class="btn sec" data-ta="leave">Salir</button></div>');return}
-  var top='<div class="top"><span>🖼️ Imágenes · Sala '+esc(T.code.toUpperCase())+(T.ph==='lobby'?'':' · Ronda '+(T.round+1)+'/'+TT_ROUNDS)+'</span><button class="link" data-ta="leave">Salir</button></div>';
+  var top='<div class="top"><span>🖼️ Imágenes · Sala '+esc(T.code.toUpperCase())+(T.ph==='lobby'?'':' · Ronda '+(T.round+1))+'</span><button class="link" data-ta="leave">Salir</button></div>';
   var timer='<div class="tbar"><i id="ttbar" style="width:100%"></i></div>';
-  function imageCard(){if(!T.img)return'';return '<div class="card center"><img src="'+ea(T.img.url)+'" alt="Fotografía para responder una pregunta creativa" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:340px;object-fit:contain;border-radius:12px;background:#eee" onerror="this.style.display=\'none\'"><p class="mut" style="font-size:11px;margin:8px 0 0">Imagen: <a href="'+ea(T.img.page)+'" target="_blank" rel="noopener">'+esc((T.img.title||'Fotografía').replace(/^File:/,''))+'</a> · '+esc(T.img.author||'Autor no indicado')+' · '+esc(T.img.license||'Licencia no indicada')+'</p></div>'}
+  function imageCard(){if(!T.img)return'';return '<div class="card center"><img src="'+ea(T.img.url)+'" alt="Fotografía para responder una pregunta creativa" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:340px;object-fit:contain;border-radius:12px;background:#eee" onerror="this.style.display=\'none\'"><p class="mut" style="font-size:11px;margin:8px 0 0">Imagen: <a href="'+ea(T.img.page)+'" target="_blank" rel="noopener">'+esc((T.img.title||'Fotografía').replace(/^File:/,''))+'</a> · '+esc(T.img.author||'Autor no indicado')+' · '+esc(T.img.license||'Licencia no indicada')+'</p>'+tWordBar()+(T.host&&T.ph!=='loading'?'<button class="link" data-ta="skip" style="margin-top:6px">🔄 Cambiar foto</button>':'')+'</div>'}
   if(T.ph==='lobby'){
     var pills=all.map(function(x){return '<span class="pill">'+av(x.presence.n)+esc(x.presence.n)+(x.presence.th===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('');
-    tPaint('tl','<h1>¿Qué te inspira esta imagen?</h1>'+top+'<div class="card center"><div class="kick">Sala de imágenes</div><h2>Código: <span style="letter-spacing:.12em">'+esc(T.code.toUpperCase())+'</span></h2><p class="mut">Todos veréis la misma fotografía y una pregunta relacionada. Responded con creatividad, votad la respuesta más ingeniosa y acumulad puntos durante tres rondas.</p></div><div class="card"><div class="kick">Jugadores ('+all.length+')</div><div class="pl">'+pills+'</div></div>'+(T.host?'<button class="btn" data-ta="start"'+(all.length<3?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn);
+    tPaint('tl','<h1>¿Qué te inspira esta imagen?</h1>'+top+'<div class="card center"><div class="kick">Sala de imágenes</div><h2>Código: <span style="letter-spacing:.12em">'+esc(T.code.toUpperCase())+'</span></h2><p class="mut">Todos veréis la misma fotografía y una pregunta relacionada. Responded con creatividad, votad la respuesta más ingeniosa y acumulad puntos todas las rondas que queráis. Cada ronda hay una palabra obligada: si la usas y tu respuesta es la más votada, ganas +1 punto.</p></div><div class="card"><div class="kick">Jugadores ('+all.length+')</div><div class="pl">'+pills+'</div></div>'+(T.host?'<button class="btn" data-ta="start"'+(all.length<3?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn);
   }else if(T.ph==='loading'){
     tPaint('tload'+T.round,top+'<div class="card center"><h2>Buscando una fotografía…</h2><p class="mut">Consultando Wikimedia Commons. Enseguida empieza la ronda.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn);
   }else if(T.ph==='error'){
@@ -1243,9 +1250,9 @@ function tRender(){
     tPaint('tvote'+(T.vote?'done':'open'),top+timer+imageCard()+'<div class="card"><div class="kick">Votación anónima</div><p class="q">'+esc(tQuestionFor(T.img))+'</p><p class="mut">¿Qué respuesta te parece más ingeniosa?</p>'+(T.vote?'<p class="mut">Tu voto está registrado. Esperando a los demás…</p>':(opts||'<p class="mut">No hay respuestas de otros jugadores para votar.</p>'))+'<p class="mut" id="tstatus" style="font-size:13px"></p></div>'+warn);
   }else if(T.ph==='reveal'||T.ph==='end'){
     var sub=tActiveSubmissions(),votes={};sub.forEach(function(x){votes[x.presence.tk]=0});tActive().forEach(function(x){if(x.presence.tpr===T.round&&votes[x.presence.tv]!==undefined)votes[x.presence.tv]++});
-    var cards=sub.slice().sort(function(a,b){return votes[b.presence.tk]-votes[a.presence.tk]}).map(function(x,i){return '<div class="card"><div class="kick">'+(i===0?'🏆 Más votado':'Respuesta '+(i+1))+' · '+votes[x.presence.tk]+' votos</div><p class="q">«'+esc(x.presence.tx)+'»</p><p class="mut">'+av(x.presence.n)+esc(x.presence.n)+'</p></div>'}).join('');
+    var mv=0;Object.keys(votes).forEach(function(k){if(votes[k]>mv)mv=votes[k]});var cards=sub.slice().sort(function(a,b){return votes[b.presence.tk]-votes[a.presence.tk]}).map(function(x,i){return '<div class="card"><div class="kick">'+(i===0?'🏆 Más votado':'Respuesta '+(i+1))+' · '+votes[x.presence.tk]+' votos'+(mv>0&&votes[x.presence.tk]===mv&&tHas(x.presence.tx)?' · 🧩 +1 por la palabra':'')+'</div><p class="q">«'+esc(x.presence.tx)+'»</p><p class="mut">'+av(x.presence.n)+esc(x.presence.n)+'</p></div>'}).join('');
     var rank=T.ro.slice().sort(function(a,b){return (T.totals[b]||0)-(T.totals[a]||0)}).map(function(k,i){var x=tBy(all,k);return '<li><b>'+(i+1)+'. '+esc(x?x.presence.n:'Jugador')+'</b><span style="float:right;font-weight:800">'+(T.totals[k]||0)+' pts</span></li>'}).join('');
-    if(T.ph==='reveal')tPaint('treveal'+T.round,top+imageCard()+'<div class="card"><div class="kick">'+esc(tQuestionFor(T.img))+'</div><p class="mut">Estas eran vuestras respuestas</p>'+cards+'</div><div class="card"><div class="kick">Clasificación acumulada</div><ul>'+rank+'</ul></div>'+(T.host?'<button class="btn" data-ta="continue">'+(T.round+1<TT_ROUNDS?'Siguiente fotografía':'Ver clasificación final')+'</button>':'<p class="mut center">Esperando al anfitrión…</p>')+warn);
+    if(T.ph==='reveal')tPaint('treveal'+T.round,top+imageCard()+'<div class="card"><div class="kick">'+esc(tQuestionFor(T.img))+'</div><p class="mut">Estas eran vuestras respuestas</p>'+cards+'</div><div class="card"><div class="kick">Clasificación acumulada</div><ul>'+rank+'</ul></div>'+(T.host?'<button class="btn" data-ta="continue">Siguiente fotografía ➜</button><button class="btn sec" data-ta="finish">🏁 Terminar y ver clasificación final</button>':'<p class="mut center">Esperando al anfitrión…</p>')+warn);
     else tPaint('tend','<h1>¡Fin de la partida!</h1><div class="card"><div class="kick">Clasificación final</div><ul>'+rank+'</ul></div><button class="btn sec" data-ta="leave">Salir</button>');
   }
 }
@@ -1257,7 +1264,9 @@ app.addEventListener('click',function(e){
   else if(a==='start'&&T.host&&T.ph==='lobby'){var ps=tPeers();if(ps.length<3)return;T.ro=ps.map(function(x){return x.presence.tk});T.totals={};T.ro.forEach(function(k){T.totals[k]=0});tNextRound()}
   else if(a==='submit')tSubmit();
   else if(a==='retry'&&T.host)tNextRound(true);
-  else if(a==='continue'&&T.host&&T.ph==='reveal'){if(T.round+1<TT_ROUNDS)tNextRound();else{T.ph='end';tPub();tSync()}}
+  else if(a==='continue'&&T.host&&T.ph==='reveal')tNextRound();
+  else if(a==='finish'&&T.host&&T.ph==='reveal'){T.ph='end';tPub();tSync()}
+  else if(a==='skip'&&T.host&&(T.ph==='write'||T.ph==='vote'||T.ph==='reveal'))tNextRound();
   var v=e.target.closest('[data-tvote]');if(v&&!v.disabled)tVote(v.getAttribute('data-tvote'));
 });
 app.addEventListener('input',function(e){if(e.target.id==='tcaption'){var n=e.target.value.length;var b=document.querySelector('[data-ta="submit"]');if(b)b.textContent='Enviar respuesta ('+n+'/180)'}});

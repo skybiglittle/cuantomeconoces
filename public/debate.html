@@ -332,7 +332,7 @@ function makeWsRoom(){
 var RM=makeWsRoom();
 
 // ====================== Estado ======================
-var uid=ls('deb-uid')||(ls('deb-uid',Math.random().toString(36).slice(2,12)),ls('deb-uid'));
+var uid=(function(){try{var u=sessionStorage.getItem('deb-uid');if(!u){u=Math.random().toString(36).slice(2,12);sessionStorage.setItem('deb-uid',u)}return u}catch(e){return Math.random().toString(36).slice(2,12)}})(); // un id por pestaña: dos pestañas del mismo navegador ya no se expulsan entre sí
 var S={view:'home',code:'',host:false,room:null,peers:[],g:null,v:{g:0,r:{}},subs:[],name:ls('deb-name')||'',cd:(new URLSearchParams(location.search).get('sala')||'').toUpperCase().slice(0,6),
   err:'',flash:'',online:true,cfg:{m:'gracioso',n:8,R:6,tm:120,cb:1,dv:1},busy:false,sub:false,sf:{t:'',a:'',b:'',c:'',three:false},sferr:'',dirty:false};
 var app=$('app');
@@ -571,7 +571,7 @@ function viewEnd(g){
 }
 function viewRoom(){
   var g=G(),hostHere=players().some(function(p){return p.h});
-  if(!g)return '<div class="panel"><p>'+(hostHere?'Conectando con el anfitrión…':'Esperando al anfitrión…')+'</p><button class="link" data-a="leave">Salir</button></div>';
+  if(!g)return '<div class="panel"><p>'+(hostHere?'Conectando con el anfitrión…':'Esperando al anfitrión…')+'</p><p class="small">Si no aparece: comprueba el código y que el anfitrión tenga la sala abierta y haya recargado la página.</p><button class="link" data-a="leave">Salir</button></div>';
   if(!hostHere&&!S.host)return '<div class="err">El anfitrión se ha desconectado. Si vuelve, la partida continuará.</div><button class="btn secondary" data-a="leave">Salir</button>';
   if(g.ph==='lobby')return viewLobby(g);
   if(g.ph==='end')return viewEnd(g);

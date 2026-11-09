@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Debate · ¿Quién defiende qué?</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d32;--panel2:#1d2943;--text:#f4f6ff;--muted:#aab5d0;--line:#2e3b59;--a:#8b7cff;--b:#34d6c3;--good:#39d98a;--bad:#ff657a;--gold:#ffd166;--c0:#5f8cff;--c1:#ff9f4a;--c2:#39d98a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 15% 0%,#25234c 0,transparent 42%),radial-gradient(ellipse at 100% 20%,#123c4b 0,transparent 36%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+main{width:min(620px,100%);margin:auto;padding:20px 16px 48px}
+h1{font-size:clamp(38px,9vw,60px);line-height:1;margin:6px 0 0;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#a89dff 45%,#53ead7);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 10px}
+.sub{color:var(--muted);margin:8px 0 18px}.muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.panel{background:linear-gradient(145deg,rgba(29,41,67,.96),rgba(18,27,47,.96));border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 14px 40px #0003}
+.kick{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:800;margin:0 0 7px}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input[type=text]{width:100%;border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:13px;padding:13px 14px;font:inherit;outline:none}
+input[type=text]:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:13px 16px;margin-top:12px;background:linear-gradient(100deg,var(--a),#5f8cff);color:#fff;font-weight:800;box-shadow:0 8px 22px #6d65ff33}
+.btn.secondary{background:#263451;border:1px solid var(--line);box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px 2px;font-size:14px}
+.linkb{background:#263451;border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
+.grid{display:grid;gap:8px}.g4{grid-template-columns:repeat(4,1fr)}
+.opt{padding:11px 6px;border-radius:13px;border:1px solid var(--line);background:#121a2d;color:var(--muted);text-align:center;font-size:14px;font-weight:700}
+.opt.on{background:#322d60;color:#fff;border-color:#8075ef}
+.mode{display:flex;gap:12px;align-items:center;text-align:left;padding:12px 14px;color:var(--text)}
+.mode .em{font-size:28px}.mode b{display:block}.mode small{color:var(--muted);font-weight:500}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.step{display:flex;align-items:center;gap:14px}.step button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#263451;color:#fff;font-size:22px}
+.step b{font-size:24px;min-width:26px;text-align:center}
+.code{font-size:44px;letter-spacing:.2em;font-weight:900;text-align:center;color:var(--gold);margin:2px 0}
+.pl{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.pl.first{border-top:0}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));color:#0b1020;display:grid;place-items:center;font-weight:900}
+.topic{font-size:25px;font-weight:850;line-height:1.2;margin:2px 0 4px}
+.me{border:2px solid var(--sc);border-radius:20px;padding:16px;margin:12px 0;background:linear-gradient(145deg,color-mix(in srgb,var(--sc) 22%,#151d32),#151d32)}
+.me .lb{font-size:13px;font-weight:900;letter-spacing:.1em;color:var(--sc)}.me .tx{font-size:25px;font-weight:900;line-height:1.2;margin:6px 0}
+.st{border-left:6px solid var(--sc);border:1px solid var(--line);border-left:6px solid var(--sc);border-radius:14px;padding:11px 13px;margin:9px 0;background:#111a2e}
+.st .lb{font-size:12px;font-weight:900;letter-spacing:.06em;color:var(--sc);text-transform:uppercase}.st .tx{font-weight:800;font-size:18px;line-height:1.25;margin-top:2px}
+.tm{font-size:36px;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;color:var(--b)}.tm.end{color:var(--bad)}
+.err{background:#ff657a22;border:1px solid var(--bad);border-radius:14px;padding:10px 12px;margin:12px 0;font-size:14px}
+.ok{background:#39d98a22;border:1px solid var(--good);border-radius:14px;padding:10px 12px;margin:12px 0;font-size:14px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:6px}.dot.off{background:var(--bad)}
+.rk{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.rk.first{border-top:0}.rk .n{font-size:24px;width:36px;text-align:center}.rk .v{margin-left:auto;font-weight:900;color:var(--gold)}
+.votebtn{display:block;width:100%;text-align:left;margin:7px 0;padding:12px 14px;border-radius:13px;background:#111a2e;border:1px solid var(--line);color:var(--text)}
+.votebtn.on{border-color:var(--b);background:#12303a}
+.qi{font-size:13px;padding:4px 0;color:var(--muted)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// ====================== Temas ======================
+// Formato: 'Pregunta|Postura A|Postura B' (2 posturas) o 'Pregunta|A|B|C' (3 posturas)
+var MODES={
+"gracioso": {
+"n": "Gracioso",
+"e": "😂",
+"d": "Debates absurdos y de la vida diaria",
+"t2": [
+"¿Es un perrito caliente un sándwich?|Sí, es un sándwich|No, es otra cosa",
+"¿Debe llevar piña la pizza?|Sí, la piña es genial|No, es un crimen",
+"¿Los cereales con leche son una sopa?|Sí, es una sopa|No, jamás",
+"¿Cómo va el papel higiénico?|Hacia fuera|Hacia dentro",
+"¿Qué es más fácil de vencer?|Un pato del tamaño de un caballo|Cien caballos del tamaño de un pato",
+"¿Tortilla de patatas con o sin cebolla?|Con cebolla|Sin cebolla",
+"¿Son absurdos los dos besos al saludar?|Sí, son absurdos|No, son encantadores",
+"¿Hay que aplaudir cuando aterriza el avión?|Sí, siempre|No, qué vergüenza",
+"¿Calcetines con sandalias?|Es moda|Es un delito",
+"¿Es válido mandar un audio de cinco minutos?|Sí, es comunicación|No, es una tortura",
+"¿Qué es peor?|Llegar tarde|Llegar demasiado pronto",
+"¿Está mojada el agua?|Sí, el agua está mojada|No, solo moja a los demás",
+"¿Cuándo es mejor ducharse?|Por la mañana|Por la noche",
+"¿Se debe dejar propina por un café?|Sí, siempre|No, nunca",
+"¿Qué es un tomate?|Una fruta|Una verdura",
+"¿Quién es mejor compañero de piso?|Un gato|Un perro",
+"¿A qué hora se cena?|A las nueve|A las siete",
+"¿Es trampa usar el GPS en tu propia ciudad?|Sí, es trampa|No, es sensato",
+"¿Caducan los spoilers de una serie de hace diez años?|Sí, ya caducaron|No, jamás",
+"¿Quién cocina mejor?|El que sigue la receta|El que improvisa",
+"¿Volar como un pájaro o nadar como un delfín?|Elijo volar como un pájaro|Elijo nadar como un delfín",
+"¿Hablar con los animales o entender todos los idiomas?|Prefiero hablar con los animales|Prefiero entender todos los idiomas",
+"¿Vivir sin Netflix o sin YouTube?|Renuncio a Netflix y me quedo YouTube|Renuncio a YouTube y me quedo Netflix",
+"¿Mejor ser rico o ser famoso?|Es mejor ser rico|Es mejor ser famoso",
+"¿McDonald's o Burger King?|McDonald's gana|Burger King gana",
+"¿Café o té?|El café es superior|El té es superior",
+"¿Montaña o playa?|Playa, sin dudarlo|Montaña, sin dudarlo",
+"¿Persona madrugadora o noctámbula?|Madrugar es lo mejor|La noche es lo mejor",
+"¿Hablar con las plantas o entender a los bebés?|Prefiero hablar con las plantas|Prefiero entender a los bebés",
+"¿Mejor ser altísimo o muy bajito?|Es mejor ser altísimo|Es mejor ser bajito",
+"¿Comer solo dulce o solo salado toda la vida?|Solo dulce para siempre|Solo salado para siempre",
+"¿Un mes sin música o un mes sin series?|Aguanto sin música|Aguanto sin series",
+"¿Primero el cereal o primero la leche?|Primero el cereal y luego la leche|Primero la leche y luego el cereal",
+"¿Eran más guays los dinosaurios o los dragones?|Los dinosaurios, que existieron|Los dragones, que escupen fuego",
+"¿Qué vacaciones son mejores?|Hotel con todo incluido|Tienda de campaña",
+"¿Mejor piscina o jacuzzi en casa?|Prefiero una piscina|Prefiero un jacuzzi",
+"¿La lasaña está mejor recalentada?|Sí, al día siguiente es mejor|No, recién hecha gana",
+"¿Se puede cantar en la ducha a todo volumen?|Sí, es un derecho sagrado|No, hay vecinos",
+"¿Desayuno dulce o salado?|Desayuno salado|Desayuno dulce",
+"¿Chocolate negro o con leche?|Chocolate negro|Chocolate con leche",
+"¿Se puede comer pizza con cubiertos?|Sí, es civilizado|No, con las manos",
+"¿Los domingos son tristes?|Sí, dan bajón|No, son sagrados",
+"¿Es mejor llegar el primero a la fiesta?|Sí, el primero|No, el último",
+"¿Contestar los mensajes al instante?|Sí, es educado|No, hay que hacerse el difícil"
+],
+"t3": [
+"¿Cuál es la mejor hora para comer pizza?|A mediodía|De cena|De madrugada",
+"¿Qué harías en un apocalipsis zombi?|Esconderme|Luchar|Organizar a todos",
+"¿Mejor mascota para un piso pequeño?|Un gato|Un pez|Una planta",
+"¿Mejor superpoder para el día a día?|Teletransporte|Parar el tiempo|Leer la mente",
+"¿Quién merece el último trozo de pizza?|El que más hambre tiene|El que ha cocinado|El que llegó primero",
+"¿Cuál es la mejor excusa para llegar tarde?|Había tráfico|Mi alarma falló|Me perdí",
+"¿Cuándo es mejor echarse la siesta?|Justo después de comer|A media tarde|Nunca, no es lo mío",
+"¿Qué sería lo mejor de vivir en una peli?|Ser el héroe|Ser el villano|Ser el secundario gracioso",
+"¿Qué superpoder inútil elegirías?|Hablar con las palomas|Cambiar el color de mis calcetines|Saber siempre la hora exacta",
+"¿Qué comida elegirías para siempre?|Pizza|Tacos|Pasta",
+"¿Qué ruido es más molesto?|Alguien masticando|Una uña en la pizarra|Un grifo goteando",
+"¿Qué plan es mejor para un domingo?|Maratón de series|Excursión|Cocinar para todos",
+"¿Qué es lo peor en un viaje en grupo?|El que va siempre tarde|El que lo organiza todo|El que nunca decide"
+]
+},
+"profundo": {
+"n": "Profundo",
+"e": "🧠",
+"d": "Dilemas de vida, valores y relaciones",
+"t2": [
+"¿Es mejor ser feliz o tener razón?|Ser feliz|Tener razón",
+"¿Se puede ser amigo de tu ex?|Sí, se puede|No, es imposible",
+"¿Es mejor saber siempre la verdad?|La verdad, aunque duela|A veces, una mentira piadosa",
+"¿Qué pesa más?|La amistad|El amor de pareja",
+"¿Se nace bueno o se aprende a serlo?|Se nace así|Se aprende",
+"¿El dinero da la felicidad?|Sí, la facilita mucho|No, no la da",
+"¿Todo se puede perdonar?|Sí, todo|No, hay cosas imperdonables",
+"¿Qué vida es mejor?|Llena de aventuras|Estable y tranquila",
+"¿Es egoísta no querer tener hijos?|Sí, lo es|No, es una decisión legítima",
+"¿La gente puede cambiar de verdad?|Sí, puede|No, solo se disfraza",
+"¿Hay que juzgar a alguien por sus errores del pasado?|Sí, cuentan|No, ya pasó",
+"¿Qué trabajo es mejor?|El que amas|El que paga bien",
+"¿La fidelidad total tiene sentido?|Sí, es esencial|No, es una utopía",
+"¿Es mejor vivir en pareja o en solitario?|En pareja|En solitario",
+"¿Se debe obedecer una ley injusta?|Sí, hay que cumplirla|No, hay que desobedecerla",
+"¿Hay que decir siempre lo que piensas?|Sí, siempre|No, con filtro",
+"¿Qué pesa más en la vida?|La suerte|El esfuerzo",
+"¿Se puede ser feliz sin éxito?|Sí, claro|No, hace falta algo de éxito",
+"¿Qué debería premiar más la sociedad?|La bondad|El talento",
+"¿Qué es mejor?|Ser recordado|Ser feliz",
+"¿Debe prohibirse el móvil en las aulas?|Sí, hay que prohibirlo en clase|No, hay que enseñar a usarlo bien",
+"¿Deben existir uniformes escolares?|Sí, uniforme para todos|No, cada uno que vista como quiera",
+"¿Son necesarios los deberes en casa?|Los deberes son necesarios|Los deberes sobran",
+"¿Redes sociales antes de los 16 años?|Prohibidas para menores de 16|Permitidas con control familiar",
+"¿Son buenos los influencers para los adolescentes?|Aportan más cosas buenas|Hacen más daño que bien",
+"¿Mejor estudiar en casa o en el colegio?|Mejor estudiar en casa|Mejor ir al colegio",
+"¿Semana laboral de cuatro días?|Sí, hay que trabajar cuatro días|No, cinco días es lo razonable",
+"¿Debe haber una renta básica para todos?|Sí, una renta básica universal|No, desincentiva trabajar",
+"¿Hay que cerrar los zoológicos?|Sí, hay que cerrarlos|No, son útiles y deben seguir",
+"¿Es aceptable probar productos en animales?|Es aceptable si salva vidas|Nunca es aceptable",
+"¿Hay que ser vegetariano por el planeta?|Sí, todos deberíamos serlo|No, comer carne es una decisión libre",
+"¿Qué es más importante?|La privacidad|La seguridad",
+"¿Ganan demasiado los futbolistas?|Sus sueldos son justos|Sus sueldos son excesivos",
+"¿Cómo se frena el acoso escolar?|Con castigos severos|Con educación y mediación",
+"¿Deben encarecerse los plásticos de un solo uso?|Sí, hay que penalizarlos|No, no hay que cargar al consumidor",
+"¿Más deporte en horario escolar?|Sí, más horas de deporte|No, hay otras prioridades",
+"¿Es justa la meritocracia?|Sí, cada uno llega por su esfuerzo|No, depende de dónde naces",
+"¿Debe un adolescente tener móvil propio?|Sí, cuanto antes|No, mejor esperar",
+"¿La fama es un regalo o una trampa?|La fama es un regalo|La fama es una trampa",
+"¿Son los exámenes la mejor forma de evaluar?|Sí, los exámenes son justos|No, mejor trabajos y proyectos",
+"¿Hay que perdonar siempre una infidelidad?|Sí, se puede superar|No, es el final",
+"¿Es mejor vivir en una ciudad grande o en un pueblo?|Ciudad grande|Pueblo",
+"¿Es ético contar un secreto para evitar un daño?|Sí, es lo correcto|No, un secreto es sagrado",
+"¿Se puede ser buena persona sin ser amable?|Sí, claro|No, van juntas"
+],
+"t3": [
+"¿Qué es lo más importante en la vida?|El amor|La libertad|Tener un propósito",
+"¿Qué hace feliz a largo plazo?|Las relaciones|Los logros|La tranquilidad",
+"¿Qué es lo más valioso?|El tiempo|El dinero|La salud",
+"¿Qué define a una buena persona?|Lo que hace|Lo que piensa|Cómo trata a los demás",
+"¿Cómo educar a los hijos?|Con libertad|Con normas claras|Con el ejemplo",
+"¿Qué debe guiar una decisión importante?|La razón|El corazón|La experiencia",
+"¿Qué es el éxito?|Estar en paz|Lograr metas|Ayudar a otros",
+"¿Cómo afrontar un error grave?|Asumirlo públicamente|Aprender en silencio|Pasar página",
+"¿Cuál es el mayor problema de los jóvenes?|Las redes sociales|La presión por el futuro|La falta de tiempo libre",
+"¿Qué deberíamos arreglar primero?|La desigualdad|El medio ambiente|La salud mental",
+"¿Qué debería enseñar más la escuela?|Pensamiento crítico|Educación emocional|Educación financiera",
+"¿Qué pesa más en una pareja?|La confianza|La pasión|Los proyectos en común",
+"¿Qué es peor en un amigo?|Que mienta|Que desaparezca|Que critique todo"
+]
+},
+"curioso": {
+"n": "Curioso",
+"e": "🔭",
+"d": "Ciencia, futuro y grandes misterios",
+"t2": [
+"¿Hay vida inteligente fuera de la Tierra?|Sí, no estamos solos|No, somos únicos",
+"¿Qué invento fue más importante?|La imprenta|Internet",
+"¿Viajaremos en el tiempo algún día?|Sí, será posible|No, es imposible",
+"¿Viviremos en Marte dentro de cien años?|Sí, viviremos allí|No, no será posible",
+"¿Una IA podrá ser creativa de verdad?|Sí, ya lo es|No, solo imita",
+"¿Qué es prioritario?|Colonizar el espacio|Salvar primero la Tierra",
+"¿Las matemáticas se descubren o se inventan?|Se descubren|Se inventan",
+"¿Tenemos libre albedrío?|Sí, elegimos|No, todo está determinado",
+"¿Vivimos en una simulación?|Es muy posible|Es absurdo",
+"¿Tienen conciencia los animales?|Sí, muchos|No, no como nosotros",
+"¿Dónde está el mayor misterio?|En el fondo del mar|En el espacio",
+"¿Deberíamos resucitar a los dinosaurios?|Sí, si se puede|No, jamás",
+"¿Hicieron bien en quitarle a Plutón su título?|Sí, es un planeta enano|No, sigue siendo planeta",
+"¿Hablaremos algún día con los animales?|Sí, con tecnología|No, nunca",
+"¿Sigue haciendo falta aprender idiomas?|Sí, siempre|No, bastará con traductores",
+"¿Podremos vivir más de 150 años?|Sí, lo veremos|No, hay un límite",
+"¿Hay que proteger las lenguas minoritarias a toda costa?|Sí, son patrimonio|No, es natural que desaparezcan",
+"¿Los robots harán la mayoría de los trabajos?|Sí, en pocas décadas|No, siempre harán falta personas",
+"¿Es la Tierra un planeta muy especial?|Sí, es rara y única|No, habrá millones iguales",
+"¿Los coches voladores sustituirán a los coches?|Sí, algún día|No, nunca serán prácticos",
+"¿Son seguros los alimentos transgénicos?|Sí, son seguros y útiles|No, hay que desconfiar",
+"¿Hay que regular la inteligencia artificial?|Sí, con leyes estrictas|No, frenaría la innovación",
+"¿Se pueden editar los genes de un bebé?|Sí, para evitar enfermedades|No, es peligroso y poco ético",
+"¿Internet nos hace más listos o más tontos?|Nos hace más listos|Nos hace más tontos",
+"¿Cómo se frena la desinformación en redes?|Con más moderación y control|Protegiendo la libertad de expresión",
+"¿Nos hará la tecnología más conectados o más solos?|Más conectados|Más solos",
+"¿Habrá guerras por el agua?|Sí, será el gran conflicto|No, se resolverá cooperando",
+"¿Salvará el coche eléctrico el clima?|Sí, es la solución|No, es insuficiente",
+"¿Debe haber turismo espacial?|Sí, hay que abrir el espacio|No, es un lujo absurdo",
+"¿Merece la pena gastar dinero en explorar el espacio?|Sí, la inversión merece la pena|No, hay problemas aquí abajo",
+"¿Te fiarías de un coche que se conduce solo?|Sí, será más seguro|No, nunca me fiaré",
+"¿Es una adicción real la del móvil?|Sí, es una adicción real|No, es exagerado",
+"¿Siguen siendo necesarios los medios tradicionales?|Sí, son imprescindibles|No, bastan YouTube y las redes",
+"¿Comeremos insectos en el futuro?|Sí, son sostenibles|No, jamás",
+"¿Deberían tener derechos los robots?|Si son conscientes, sí|No, son solo máquinas",
+"¿Puede haber arte sin humanos?|Una IA puede hacer arte|El arte solo es humano",
+"¿Hay que clonar animales extintos?|Sí, hay que intentarlo|No, hay que dejarlos descansar",
+"¿Cambiarán el mundo los ordenadores cuánticos?|Sí, lo cambiarán todo|No, se exagera",
+"¿Mejor trabajar en remoto o en la oficina?|Mejor en remoto|Mejor en la oficina",
+"¿Hay que prohibir las apuestas online?|Sí, hay que prohibirlas|No, hay que regularlas",
+"¿Existen los viajes en el tiempo hacia el pasado?|Sí, algún día|No, sería una paradoja",
+"¿Los videojuegos son arte?|Sí, son arte|No, son entretenimiento",
+"¿Debe la IA poder firmar obras?|Sí, merece autoría|No, la firma es humana",
+"¿Es mejor leer en papel o en pantalla?|En papel|En pantalla"
+],
+"t3": [
+"¿Cuál es el mejor invento de la historia?|La rueda|La imprenta|La electricidad",
+"¿Qué lugar explorarías primero?|El fondo del mar|El espacio|Una cueva profunda",
+"¿Qué superará antes la ciencia?|El hambre|Las enfermedades|El cambio climático",
+"¿Qué misterio resolverías?|La Atlántida|La vida extraterrestre|El Triángulo de las Bermudas",
+"¿Qué sentido mejorarías?|La vista|El oído|El olfato",
+"¿Qué animal es más inteligente?|El delfín|El pulpo|El cuervo",
+"¿A qué época viajarías?|A la prehistoria|A la Edad Media|Al año 3000",
+"¿Qué tecnología cambiará más tu vida?|La IA|La energía limpia|La medicina genética",
+"¿Qué energía es el futuro?|La solar|La nuclear|El hidrógeno",
+"¿Cuál es el mayor peligro tecnológico?|La inteligencia artificial|La desinformación|La pérdida de privacidad",
+"¿Dónde viviría la humanidad en el año 2200?|En la Tierra|En Marte|En el océano",
+"¿Cuál es el mejor transporte del futuro?|Tren de alta velocidad|Avión|Hyperloop",
+"¿Qué profesión desaparecerá antes?|Conductor|Traductor|Cajero"
+]
+},
+"amigos": {
+"n": "Entre amigos",
+"e": "🫶",
+"d": "Manías, planes y vida en grupo (estilo ¿Cuánto me conoces?)",
+"t2": [
+"¿Quién debería elegir el restaurante?|El que invita|El que menos opina",
+"¿Es mejor quedar en casa o salir fuera?|En casa, con calma|Fuera, a lo grande",
+"¿Hay que avisar si vas a llegar cinco minutos tarde?|Sí, siempre|No, son solo cinco minutos",
+"¿Se pueden dejar en visto los mensajes del grupo?|Sí, es sano|No, es de mala educación",
+"¿Dividir la cuenta a partes iguales?|Sí, siempre igual|No, cada uno lo suyo",
+"¿Es válido cancelar un plan una hora antes?|Sí, a veces toca|No, es imperdonable",
+"¿Es mejor planificar el viaje al detalle?|Sí, con horarios|No, improvisar",
+"¿Los amigos deben conocer a tu pareja enseguida?|Sí, cuanto antes|No, mejor esperar",
+"¿Se puede ser puntual y divertido?|Sí, claro|No, son incompatibles",
+"¿Quién manda en el grupo de WhatsApp?|El que escribe más|El que lo creó",
+"¿Es mejor tener muchos amigos o pocos y buenos?|Muchos amigos|Pocos y buenos",
+"¿Hay que felicitar el cumpleaños aunque no hablemos?|Sí, siempre|No, es postureo"
+],
+"t3": [
+"¿Cuál es el mejor plan de sábado?|Cena en casa|Salir de fiesta|Excursión",
+"¿Qué rol tienes en el grupo?|El organizador|El gracioso|El que se apunta a todo",
+"¿Qué es peor?|El que nunca contesta|El que cancela siempre|El que llega tarde",
+"¿Qué regalo es mejor?|Algo hecho a mano|Una experiencia|Algo que pidió"
+]
+}
+};
+
+var COL=['var(--c0)','var(--c1)','var(--c2)'],LET=['A','B','C'];
+
+// ====================== Utilidades ======================
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),x=a[i];a[i]=a[j];a[j]=x}return a}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function rid(n){var c='ABCDEFGHJKMNPQRSTUVWXYZ',s='';for(var i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function hs(s){s=String(s).toLowerCase().trim();var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return(h>>>0).toString(36)}
+function clean(s,n){return String(s||'').replace(/[|@]/g,' ').replace(/\s+/g,' ').trim().slice(0,n)}
+function parseT(str){var p=str.split('|'),by='';if(p.length>2&&p[p.length-1].charAt(0)==='@')by=p.pop().slice(1);return{t:p[0],p:p.slice(1),by:by}}
+
+// ====================== Salas en directo (mismo sistema que el resto de tus juegos) ======================
+// Las salas de debate usan el prefijo "cmd-" (hasta 200 personas en tu server.js).
+var ROOM_PREFIX='cmd-deb-';
+function makeWsRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return {join:function(name,cid){return new Promise(function(resolve,reject){
+    var ws=null,id=null,pres={},arr=[],subs=[],done=false,closed=false,retry=0;
+    var room={
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn)},
+      onStatus:function(fn){room._st=fn},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p})},
+      leave:function(){closed=true;try{ws.close()}catch(e){}}
+    };
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres});if(room._st)room._st(true)};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello'){id=m.id}
+        else if(m.t==='peers'){
+          arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});
+          if(!done){done=true;resolve(room)}
+          subs.slice().forEach(function(f){f(arr)});
+        }else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}
+      };
+      ws.onclose=function(){if(room._st)room._st(false);if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();
+    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+var RM=makeWsRoom();
+
+// ====================== Estado ======================
+var uid=(function(){try{var u=sessionStorage.getItem('deb-uid');if(!u){u=Math.random().toString(36).slice(2,12);sessionStorage.setItem('deb-uid',u)}return u}catch(e){return Math.random().toString(36).slice(2,12)}})(); // un id por pestaña: dos pestañas del mismo navegador ya no se expulsan entre sí
+var S={view:'home',code:'',host:false,room:null,peers:[],g:null,v:{g:0,r:{}},subs:[],name:ls('deb-name')||'',cd:(new URLSearchParams(location.search).get('sala')||'').toUpperCase().slice(0,6),
+  err:'',flash:'',online:true,cfg:{m:'gracioso',n:8,R:6,tm:120,cb:1,dv:1},busy:false,sub:false,sf:{t:'',a:'',b:'',c:'',three:false},sferr:'',dirty:false};
+var app=$('app');
+
+var NM={};
+function RO(g){return (g.rs||'').split(',').filter(Boolean).map(function(u){return[u,NM[u]||'?']})}
+function devil(g,r){if(!g.dv)return'';var a=RO(g);return a.length>2?a[(g.s+r*5)%a.length][0]:''}
+function players(){
+  return S.peers.filter(function(p){return p.presence&&p.presence.u&&p.presence.n}).map(function(p){NM[p.presence.u]=p.presence.n;return{u:p.presence.u,n:p.presence.n,h:p.presence.h===1,v:p.presence.v,s:p.presence.s,me:p.isMe}});
+}
+function G(){
+  if(S.host)return S.g;
+  var h=S.peers.filter(function(p){return p.presence&&p.presence.h===1&&p.presence.g})[0];
+  return h?h.presence.g:null;
+}
+function pub(){
+  if(!S.room)return;
+  S.room.presence({u:uid,n:S.name,h:S.host?1:0,v:S.v,g:S.host?S.g:null,s:S.subs.length?S.subs:null});
+  if(S.host)ls('deb-g-'+S.code,JSON.stringify(S.g));
+  ls('deb-v-'+S.code,JSON.stringify(S.v));
+  ls('deb-s-'+S.code,JSON.stringify(S.subs));
+}
+function setG(patch){S.g=Object.assign({},S.g,patch);pub();render(true)}
+
+// ====================== Lógica del debate ======================
+function isThree(g,i){var N=RO(g).length;return N>=3&&(N===3?i%2===1:i%3===2)}
+function topicAt(g,i){
+  if(g.o&&g.o[i])return parseT(g.o[i]);
+  var m=MODES[g.m],r=rng(g.s),a=shuffle(m.t2,r),b=shuffle(m.t3,r),ai=0,bi=0;
+  for(var j=0;j<i;j++){if(isThree(g,j))bi++;else ai++}
+  return parseT(isThree(g,i)?b[bi%b.length]:a[ai%a.length]);
+}
+function assign(g,i,k){
+  var order=shuffle(RO(g).map(function(x){return x[0]}),rng(g.s*7+i*131+1)),map={};
+  order.forEach(function(u,j){map[u]=(j+((i===g.r&&g.cb)?(g.sw||0):0))%k});
+  return map;
+}
+function votes(g){
+  var tot={};RO(g).forEach(function(x){tot[x[0]]=0});
+  players().forEach(function(p){
+    if(!p.v||p.v.g!==g.id)return;
+    Object.keys(p.v.r||{}).forEach(function(r){var t=p.v.r[r];if(t!==p.u&&tot[t]!==undefined&&+r<g.R)tot[t]+=(t===devil(g,+r)?2:1)});
+  });
+  return tot;
+}
+// Temas enviados por los jugadores que aún no se han jugado
+function pendingSubs(g,N){
+  var used={};(g.u||[]).forEach(function(h){used[h]=1});
+  var out=[];
+  players().forEach(function(pl){
+    (pl.s||[]).forEach(function(raw){
+      if(typeof raw!=='string')return;
+      var t=parseT(raw),h=hs(t.t);
+      if(used[h]||t.p.length<2||t.p.length>3||(N&&t.p.length>N))return;
+      used[h]=1;out.push({raw:raw,h:h,by:pl.n});
+    });
+  });
+  return out;
+}
+
+// ====================== Acciones ======================
+function cleanName(){S.name=clean(S.name,18);ls('deb-name',S.name);return S.name}
+async function enter(code,host,cfg){
+  if(S.busy)return;S.busy=true;S.err='';render(true);
+  try{
+    var room=await RM.join(ROOM_PREFIX+code.toLowerCase(),uid);
+    S.room=room;S.code=code;S.host=host;S.view='room';
+    room.onPeers(function(arr){S.peers=arr;onPeers()});
+    room.onStatus(function(ok){S.online=ok;if(ok)pub();render()});
+    S.peers=room.peers();
+    var sv=null;try{sv=JSON.parse(ls('deb-v-'+code))}catch(e){}if(sv&&sv.r)S.v=sv;
+    var ss=null;try{ss=JSON.parse(ls('deb-s-'+code))}catch(e){}S.subs=Array.isArray(ss)?ss:[];
+    if(host){
+      var g=null;try{g=JSON.parse(ls('deb-g-'+code))}catch(e){}
+      S.g=g||Object.assign({id:Date.now(),s:Math.floor(Math.random()*1e9),ph:'lobby',r:0,rs:'',sw:0,o:{},u:[]},cfg);
+    }
+    ls('deb-last',JSON.stringify({code:code,host:host}));
+    pub();
+  }catch(e){
+    S.err=e&&e.code==='room_full'?'La sala está llena.':'No se ha podido conectar con la sala. Inténtalo de nuevo.';
+    S.view='home';
+  }
+  S.busy=false;render(true);
+}
+function onPeers(){
+  var ps=players(),dup=ps.filter(function(p){return !p.me&&p.n.toLowerCase()===S.name.toLowerCase()}).length;
+  if(dup&&!S.renamed){S.renamed=1;S.name=S.name+' 2';ls('deb-name',S.name);pub()}
+  var g=G();
+  if(g&&S.v.g!==g.id){S.v={g:g.id,r:{}};pub()}
+  render();
+}
+function leaveRoom(){
+  if(S.room)S.room.leave();
+  ls('deb-last',null);S.room=null;S.peers=[];S.g=null;S.host=false;S.view='home';S.renamed=0;S.sub=false;S.flash='';render(true);
+}
+function nextPatch(g,idx){ // si hay un tema enviado, lo coloca en la ronda idx
+  var ps=pendingSubs(g,RO(g).length),p={o:{}};
+  if(ps.length){p.o[idx]=ps[0].raw+'|@'+ps[0].by;p.u=(g.u||[]).concat(ps[0].h)}
+  return p;
+}
+function startGame(){
+  var g=S.g,ps=players().slice(0,g.n);
+  if(ps.length<2)return;
+  var rs=ps.map(function(p){return p.u}).join(','),g2=Object.assign({},g,{rs:rs});
+  setG(Object.assign({ph:'debate',r:0,sw:0,R:Math.min(g.R,15),id:Date.now(),rs:rs,t0:Date.now()},nextPatch(g2,0)));
+}
+function nextStep(){
+  var g=S.g;
+  if(g.ph==='debate')return setG({ph:'vote'});
+  if(g.ph==='vote'){
+    var nr=g.r+1,np=nextPatch(g,nr);
+    if(nr>=g.R){if(!np.o[nr])return setG({ph:'end',o:{}});np.R=nr+1}
+    return setG(Object.assign({ph:'debate',r:nr,sw:0,t0:Date.now()},np));
+  }
+}
+function again(){setG({ph:'lobby',r:0,rs:'',sw:0,o:{},id:Date.now(),s:Math.floor(Math.random()*1e9)})}
+function vote(u){var g=G();S.v.r[g.r]=u;pub();render(true)}
+function sendTopic(){
+  var f=S.sf,t=clean(f.t,90),a=clean(f.a,45),b=clean(f.b,45),c=f.three?clean(f.c,45):'';
+  S.sferr='';
+  if(t.length<5)S.sferr='Escribe el tema (mínimo 5 letras).';
+  else if(!a||!b)S.sferr='Escribe las dos posturas.';
+  else if(a.toLowerCase()===b.toLowerCase())S.sferr='Las posturas tienen que ser distintas.';
+  else if(f.three&&(!c||c.toLowerCase()===a.toLowerCase()||c.toLowerCase()===b.toLowerCase()))S.sferr='Escribe una tercera postura distinta.';
+  else if(f.three&&players().length<3)S.sferr='Para 3 posturas hacen falta al menos 3 jugadores en la sala.';
+  else if(S.subs.some(function(x){return hs(parseT(x).t)===hs(t)}))S.sferr='Ya has enviado ese tema.';
+  if(!S.sferr&&S.subs.length>=4){
+    var g=G(),used=(g&&g.u)||[],i=-1;
+    S.subs.forEach(function(x,k){if(i<0&&used.indexOf(hs(parseT(x).t))>-1)i=k});
+    if(i<0)S.sferr='Ya tienes 4 temas en cola; espera a que salgan.';else S.subs.splice(i,1);
+  }
+  if(S.sferr)return render(true);
+  S.subs.push([t,a,b].concat(c?[c]:[]).join('|'));
+  S.sf={t:'',a:'',b:'',c:'',three:false};S.sub=false;
+  S.flash='✅ ¡Tema enviado! Saldrá en uno de los próximos turnos de esta sala.';
+  clearTimeout(S.ft);S.ft=setTimeout(function(){S.flash='';render(true)},6000);
+  pub();render(true);
+}
+
+// ====================== Vistas ======================
+function viewHome(){
+  var m=S.cfg,last=null;try{last=JSON.parse(ls('deb-last'))}catch(e){}
+  var h='<a href="/" class="link" style="padding:0">← ¿Cuánto me conoces?</a><br><div class="tag">🎙️ MULTIJUGADOR · SALAS PRIVADAS</div><h1>Debate</h1><p class="sub">Cada uno defiende una postura… ¡aunque no sea la suya!</p>';
+  if(S.err)h+='<div class="err">'+esc(S.err)+'</div>';
+  h+='<div class="panel"><label style="margin-top:0">Tu nombre</label><input id="nm" type="text" maxlength="18" placeholder="¿Cómo te llamas?" value="'+esc(S.name)+'" autocomplete="off"></div>';
+  if(last&&last.code)h+='<button class="btn secondary" data-a="resume">↩️ Volver a la sala '+esc(last.code)+'</button>';
+  h+='<div class="panel"><h2>Crear sala</h2><div class="kick">Modo</div><div class="grid">'+
+    Object.keys(MODES).map(function(k){var x=MODES[k];return '<button class="opt mode'+(m.m===k?' on':'')+'" data-a="mode" data-v="'+k+'"><span class="em">'+x.e+'</span><span><b>'+x.n+'</b><small>'+x.d+'</small></span></button>'}).join('')+
+    '</div><div class="row" style="margin-top:16px"><div><div class="kick" style="margin:0">Jugadores</div><span class="small">De 2 a 100. Con 3 o más hay temas de 3 posturas.</span></div><div class="step"><button data-a="n" data-v="-1">−</button><b>'+m.n+'</b><button data-a="n" data-v="1">+</button></div></div>'+
+    '<div class="grid g4" style="margin-top:10px">'+[4,8,20,50].map(function(n){return '<button class="opt'+(m.n===n?' on':'')+'" data-a="np" data-v="'+n+'">'+n+'</button>'}).join('')+'</div><div class="kick" style="margin-top:16px">Número de temas</div><div class="grid g4">'+[4,6,8,10].map(function(r){return '<button class="opt'+(m.R===r?' on':'')+'" data-a="rounds" data-v="'+r+'">'+r+'</button>'}).join('')+'</div>'+
+    '<div class="kick" style="margin-top:16px">Tiempo por debate</div><div class="grid g4">'+[[0,'Libre'],[60,'1 min'],[120,'2 min'],[180,'3 min']].map(function(t){return '<button class="opt'+(m.tm===t[0]?' on':'')+'" data-a="tm" data-v="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>'+
+    '<div class="kick" style="margin-top:16px">Mecánicas extra</div><div class="grid" style="grid-template-columns:1fr 1fr"><button class="opt'+(m.cb?' on':'')+'" data-a="tog" data-v="cb">🔄 Cambio de bando</button><button class="opt'+(m.dv?' on':'')+'" data-a="tog" data-v="dv">😈 Abogado del diablo</button></div><p class="small" style="margin:8px 0 0">Cambio: el anfitrión rota las posturas a mitad de debate. Abogado: un jugador por tema, sus votos valen ×2.</p>'+
+    '<button class="btn" data-a="create">Crear sala</button></div>';
+  h+='<div class="panel"><h2>Unirme a una sala</h2><input id="cd" type="text" maxlength="6" placeholder="CÓDIGO" value="'+esc(S.cd)+'" style="text-transform:uppercase;letter-spacing:.25em;text-align:center;font-weight:800" autocomplete="off"><button class="btn" data-a="join">Unirme</button></div>';
+  return h;
+}
+function subForm(){
+  var f=S.sf,g=G(),used=(g&&g.u)||[];
+  var h='<div class="panel" id="subform"><h2>💡 Enviar un tema</h2><p class="small" style="margin:0 0 6px">Escribe una pregunta y las posturas que se pueden defender. Saldrá en uno de los próximos turnos y a cada jugador le tocará defender una.</p>';
+  if(S.sferr)h+='<div class="err">'+esc(S.sferr)+'</div>';
+  h+='<label>Tema o pregunta</label><input id="sf-t" type="text" maxlength="90" placeholder="Ej.: ¿Tortilla de patatas con o sin cebolla?" value="'+esc(f.t)+'" autocomplete="off">'+
+     '<label>Postura A</label><input id="sf-a" type="text" maxlength="45" placeholder="Ej.: Con cebolla" value="'+esc(f.a)+'" autocomplete="off">'+
+     '<label>Postura B</label><input id="sf-b" type="text" maxlength="45" placeholder="Ej.: Sin cebolla" value="'+esc(f.b)+'" autocomplete="off">';
+  if(f.three)h+='<label>Postura C</label><input id="sf-c" type="text" maxlength="45" placeholder="Tercera postura" value="'+esc(f.c)+'" autocomplete="off"><button class="link" data-a="sf3">Quitar la tercera postura</button>';
+  else h+='<button class="link" data-a="sf3">+ Añadir una tercera postura</button>';
+  h+='<button class="btn" data-a="sendtopic">Enviar tema</button><button class="btn ghost" data-a="subclose">Cancelar</button>';
+  if(S.subs.length)h+='<div class="kick" style="margin-top:16px">Tus temas enviados</div>'+S.subs.map(function(x){var t=parseT(x);return '<div class="qi">'+(used.indexOf(hs(t.t))>-1?'✅ jugado':'⏳ en cola')+' · '+esc(t.t)+'</div>'}).join('');
+  return h+'</div>';
+}
+function topbar(left){
+  return '<div class="row" style="margin-bottom:4px"><span class="small"><span class="dot'+(S.online?'':' off')+'"></span>'+left+'</span><span><button class="linkb" data-a="subopen">💡 Enviar tema</button> <button class="link" data-a="leave">Salir</button></span></div>'+
+    (S.flash?'<div class="ok">'+esc(S.flash)+'</div>':'')+(S.sub?subForm():'');
+}
+function viewLobby(g){
+  var ps=players(),inRoom=ps.slice(0,g.n),extra=ps.slice(g.n),x=MODES[g.m];
+  var mine=inRoom.some(function(p){return p.me});
+  var h=topbar(S.online?'Conectado':'Reconectando…');
+  h+='<div class="panel" style="text-align:center"><div class="kick">Código de la sala</div><div class="code">'+esc(S.code)+'</div><button class="btn secondary" data-a="share" style="margin-top:6px">🔗 Compartir enlace</button></div>';
+  h+='<div class="panel"><div class="row"><h2 style="margin:0">'+x.e+' '+x.n+'</h2><span class="small">'+g.R+' temas · '+(g.tm?Math.round(g.tm/60)+' min':'sin tiempo')+'</span></div><div class="kick" style="margin-top:12px">Jugadores ('+Math.min(ps.length,g.n)+'/'+g.n+')</div>'+
+    inRoom.map(function(p,i){return '<div class="pl'+(i?'':' first')+'"><div class="av">'+esc(p.n[0].toUpperCase())+'</div><b>'+esc(p.n)+(p.me?' (tú)':'')+'</b>'+(p.h?'<span class="small" style="margin-left:auto">👑 anfitrión</span>':'')+'</div>'}).join('');
+  for(var i=ps.length;i<g.n;i++)h+='<div class="pl muted"><div class="av" style="background:var(--line);color:var(--muted)">?</div>esperando…</div>';
+  h+='</div>';
+  if(extra.length)h+='<p class="small">'+extra.length+' persona(s) de más no entrarán: la sala es de '+g.n+' jugadores.</p>';
+  if(!mine&&!S.host)h+='<div class="err">La sala está completa: puedes mirar, pero no jugar.</div>';
+  if(S.host){
+    h+='<button class="btn" data-a="start"'+(ps.length<2?' disabled':'')+'>'+(ps.length>=g.n?'¡Empezar el debate!':'Empezar con los que hay ('+Math.min(ps.length,g.n)+')')+'</button>';
+    if(ps.length<g.n)h+='<p class="small" style="text-align:center">Comparte el código para que se una el resto.</p>';
+  }else h+='<p class="muted" style="text-align:center">Esperando a que el anfitrión empiece…</p>';
+  return h;
+}
+function nameList(a){if(a.length>6)return a.slice(0,5).join(', ')+' y '+(a.length-5)+' más';return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' y '+a[a.length-1]}
+function stanceBlocks(g,it,as,onlyMe){
+  var mi=as[uid],h='';
+  if(devil(g,g.r)===uid)h+='<div class="err" style="border-color:var(--gold);background:#ffd16622">😈 <b>Eres el abogado del diablo.</b> Defiéndelo con el argumento más exagerado y teatral. Si te votan, tus votos valen doble.</div>';
+  if(mi!==undefined){
+    var mates=RO(g).filter(function(x){return as[x[0]]===mi&&x[0]!==uid}).map(function(x){return esc(x[1])});
+    h+='<div class="me" style="--sc:'+COL[mi]+'"><div class="lb">'+(g.cb&&g.sw?'🔄 ¡CAMBIO DE BANDO! AHORA DEFIENDES':'🎯 TÚ DEFIENDES')+'</div><div class="tx">'+esc(it.p[mi])+'</div>'+(mates.length?'<div class="small" style="color:var(--text)">Defiendes lo mismo que: <b>'+nameList(mates)+'</b></div>':'<div class="small" style="color:var(--text)">Esta postura la defiendes tú solo/a 💪</div>')+'</div>';
+  }
+  if(onlyMe)return h;
+  var first=true;
+  it.p.forEach(function(t,i){
+    if(i===mi)return;
+    var who=RO(g).filter(function(x){return as[x[0]]===i}).map(function(x){return esc(x[1])});
+    if(first){h+='<div class="kick" style="margin-top:16px">'+(mi!==undefined?'Lo que defienden los demás':'Posturas (estás mirando)')+'</div>';first=false}
+    h+='<div class="st" style="--sc:'+COL[i]+'"><div class="lb">'+(who.length?nameList(who)+(who.length>1?' defienden':' defiende'):'Postura '+LET[i])+'</div><div class="tx">'+esc(t)+'</div></div>';
+  });
+  return h;
+}
+function viewPlay(g){
+  var it=topicAt(g,g.r),k=it.p.length,as=assign(g,g.r,k),x=MODES[g.m];
+  var h=topbar(x.e+' '+x.n+' · Tema '+(g.r+1)+' de '+g.R);
+  h+='<div class="panel"><div class="kick">'+(k===3?'Tres posturas':'Dos posturas')+(it.by?' · 💡 enviado por '+esc(it.by):'')+'</div><div class="topic">'+esc(it.t)+'</div>';
+  if(g.ph==='debate'&&g.tm)h+='<div class="tm" id="tm"></div>';
+  h+='</div>';
+  var dv=devil(g,g.r);if(dv)h+='<div class="tag" style="margin-bottom:6px">😈 Abogado del diablo: <b>&nbsp;'+esc(NM[dv]||'?')+'</b>&nbsp;(votos ×2)</div>';
+  if(g.ph==='debate'){
+    h+=stanceBlocks(g,it,as);
+    h+=S.host?(g.cb?'<button class="btn secondary" data-a="swap">🔄 ¡Cambio de bando!'+(g.sw?' ('+g.sw+')':'')+'</button>':'')+'<button class="btn" data-a="next">Pasar a la votación →</button>':'<p class="small" style="text-align:center">El anfitrión pasará a la votación cuando acabe el debate.</p>';
+  }else{
+    h+=stanceBlocks(g,it,as,1);
+    var mine=S.v.r[g.r],ps=players(),nv=ps.filter(function(p){return p.v&&p.v.g===g.id&&p.v.r&&p.v.r[g.r]}).length;
+    h+='<div class="panel"><h2>¿Quién ha defendido mejor su postura?</h2><div class="small" style="margin-bottom:6px">No vale votarte a ti mismo/a.</div>'+
+      RO(g).filter(function(r){return r[0]!==uid}).map(function(r){var s=as[r[0]];return '<button class="votebtn'+(mine===r[0]?' on':'')+'" style="border-left:6px solid '+COL[s]+'" data-a="vote" data-v="'+esc(r[0])+'"><b>'+esc(r[1])+(r[0]===devil(g,g.r)?' 😈 ×2':'')+'</b><div class="small">defendía: '+esc(it.p[s])+'</div></button>'}).join('')+
+      '<div class="small" style="margin-top:8px">Han votado '+nv+' de '+RO(g).length+'</div></div>';
+    h+=S.host?'<button class="btn" data-a="next">'+(g.r+1>=g.R&&!pendingSubs(g,RO(g).length).length?'Ver resultados 🏆':'Siguiente tema →')+'</button>':'<p class="small" style="text-align:center">Esperando al anfitrión…</p>';
+  }
+  return h;
+}
+function viewEnd(g){
+  var tot=votes(g),rk=RO(g).slice().sort(function(a,b){return tot[b[0]]-tot[a[0]]}),med=['🥇','🥈','🥉'],top=tot[rk[0][0]];
+  var h=topbar('🏆 Resultados');
+  h+='<div class="panel"><h2>'+(top>0?'¡'+esc(rk[0][1])+' ha sido el/la más convincente!':'Fin del debate')+'</h2>'+
+    rk.map(function(r,i){return '<div class="rk'+(i?'':' first')+'"><span class="n">'+(med[i]||(i+1))+'</span><b>'+esc(r[1])+(r[0]===uid?' (tú)':'')+'</b><span class="v">'+tot[r[0]]+' voto'+(tot[r[0]]===1?'':'s')+'</span></div>'}).join('')+'</div>';
+  h+=S.host?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="muted" style="text-align:center">El anfitrión puede empezar otra partida.</p>';
+  return h;
+}
+function viewRoom(){
+  var g=G(),hostHere=players().some(function(p){return p.h});
+  if(!g)return '<div class="panel"><p>'+(hostHere?'Conectando con el anfitrión…':'Esperando al anfitrión…')+'</p><p class="small">Si no aparece: comprueba el código y que el anfitrión tenga la sala abierta y haya recargado la página.</p><button class="link" data-a="leave">Salir</button></div>';
+  if(!hostHere&&!S.host)return '<div class="err">El anfitrión se ha desconectado. Si vuelve, la partida continuará.</div><button class="btn secondary" data-a="leave">Salir</button>';
+  if(g.ph==='lobby')return viewLobby(g);
+  if(g.ph==='end')return viewEnd(g);
+  return viewPlay(g);
+}
+function formFocused(){var a=document.activeElement;return !!(S.sub&&a&&a.closest&&a.closest('#subform'))}
+function render(force){
+  if(!force&&formFocused()){S.dirty=true;return} // no rompas lo que están escribiendo
+  S.dirty=false;
+  var a=document.activeElement,keep=null;
+  if(a&&a.tagName==='INPUT'&&a.id)keep={id:a.id,s:a.selectionStart,e:a.selectionEnd};
+  app.innerHTML=S.view==='home'?viewHome():viewRoom();
+  if(keep&&$(keep.id)){var el=$(keep.id);el.focus();try{el.setSelectionRange(keep.s,keep.e)}catch(e){}}
+  tick();
+}
+function tick(){
+  var g=G(),el=$('tm');
+  if(!el||!g||g.ph!=='debate'||!g.tm)return;
+  var left=Math.max(0,g.tm-Math.floor((Date.now()-g.t0)/1000));
+  el.textContent=left>0?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):'⏰ ¡Tiempo!';
+  el.className='tm'+(left?'':' end');
+}
+setInterval(tick,500);
+
+// ====================== Eventos ======================
+app.addEventListener('input',function(e){
+  var id=e.target.id;
+  if(id==='nm')S.name=e.target.value;
+  else if(id==='cd')S.cd=e.target.value.toUpperCase();
+  else if(id&&id.indexOf('sf-')===0)S.sf[id.slice(3)]=e.target.value;
+});
+app.addEventListener('focusout',function(){
+  setTimeout(function(){if(S.dirty&&!formFocused())render(true)},300);
+});
+app.addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]');if(!b)return;
+  var a=b.getAttribute('data-a'),v=b.getAttribute('data-v');
+  if(a==='mode'){S.cfg.m=v;render(true)}
+  else if(a==='n'){S.cfg.n=Math.max(2,Math.min(100,S.cfg.n+(+v)));render(true)}
+  else if(a==='rounds'){S.cfg.R=+v;render(true)}
+  else if(a==='tm'){S.cfg.tm=+v;render(true)}
+  else if(a==='create'){if(!cleanName()){S.err='Escribe tu nombre primero.';return render(true)}enter(rid(4),true,S.cfg)}
+  else if(a==='join'){
+    var c=(S.cd||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(!cleanName()){S.err='Escribe tu nombre primero.';return render(true)}
+    if(c.length<3){S.err='Escribe el código de la sala.';return render(true)}
+    enter(c,false);
+  }
+  else if(a==='resume'){var l=JSON.parse(ls('deb-last'));if(!cleanName()){S.err='Escribe tu nombre primero.';return render(true)}enter(l.code,l.host,S.cfg)}
+  else if(a==='leave'){if(confirm('¿Salir de la sala?'))leaveRoom()}
+  else if(a==='share'){
+    var url=location.origin+location.pathname+'?sala='+S.code;
+    if(navigator.share)navigator.share({title:'Debate',text:'Únete a mi debate: sala '+S.code,url:url}).catch(function(){});
+    else if(navigator.clipboard)navigator.clipboard.writeText(url).then(function(){b.textContent='✅ Enlace copiado'});
+  }
+  else if(a==='start')startGame();
+  else if(a==='next')nextStep();
+  else if(a==='swap')setG({sw:(S.g.sw||0)+1,t0:Date.now()});
+  else if(a==='tog'){S.cfg[v]=S.cfg[v]?0:1;render(true)}
+  else if(a==='np'){S.cfg.n=+v;render(true)}
+  else if(a==='again')again();
+  else if(a==='vote')vote(v);
+  else if(a==='subopen'){S.sub=!S.sub;S.sferr='';render(true);if(S.sub&&$('sf-t'))$('sf-t').focus()}
+  else if(a==='subclose'){S.sub=false;S.sferr='';render(true)}
+  else if(a==='sf3'){S.sf.three=!S.sf.three;render(true)}
+  else if(a==='sendtopic')sendTopic();
+});
+app.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='cd')app.querySelector('[data-a=join]').click()});
+render(true);
+</script>
+</body>
+</html>

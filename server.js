@@ -13,7 +13,7 @@ const ROOM_RE = /^[a-z0-9][a-z0-9_.-]{0,47}$/;
 const MAX_PLAYERS = 2;
 const MAX_GROUP = 200;
 const MAX_TITLE_PLAYERS = 30;
-const MAX_PRESENCE_BYTES = 16384;
+const MAX_PRESENCE_BYTES = 4096;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -37,52 +37,6 @@ const MIME_TYPES = {
   '.woff2': 'font/woff2',
 };
 
-// ---------- Menú de páginas ----------
-function listHtml(dir, base = '') {
-  let out = [];
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (e.name.startsWith('.')) continue;
-    const rel = base ? base + '/' + e.name : e.name;
-    if (e.isDirectory()) out = out.concat(listHtml(path.join(dir, e.name), rel));
-    else if (/\.html?$/i.test(e.name)) out.push(rel);
-  }
-  return out.sort();
-}
-
-function pageTitle(rel) {
-  try {
-    const txt = fs.readFileSync(path.join(PUBLIC_DIR, rel), 'utf8').slice(0, 4000);
-    const m = txt.match(/<title>([^<]*)<\/title>/i);
-    return m ? m[1].trim() : '';
-  } catch {
-    return '';
-  }
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function menuPage() {
-  let files = [];
-  try { files = listHtml(PUBLIC_DIR); } catch {}
-  const items = files.map((rel) => {
-    const href = '/' + rel.split('/').map(encodeURIComponent).join('/');
-    const title = pageTitle(rel) || rel;
-    return '<a class="it" href="' + escHtml(href) + '"><b>' + escHtml(title) + '</b><small>' + escHtml(rel) + '</small></a>';
-  }).join('') || '<p>No hay archivos .html en la carpeta public.</p>';
-  return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'
-    + '<meta name="viewport" content="width=device-width, initial-scale=1"><title>Juegos</title>'
-    + '<style>'
-    + ':root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--bd:#eadfe6}'
-    + '@media (prefers-color-scheme:dark){:root{--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}'
-    + '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}'
-    + 'main{max-width:560px;margin:0 auto;padding:24px 16px 40px}h1{font-size:28px;margin:8px 0 16px}'
-    + '.it{display:block;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px 18px;margin:10px 0;color:var(--tx);text-decoration:none}'
-    + '.it:hover,.it:active{border-color:var(--ac)}.it b{display:block;font-size:18px}.it small{color:var(--mut)}'
-    + '</style></head><body><main><h1>🎮 Elige un juego</h1>' + items + '</main></body></html>';
-}
-
 const server = http.createServer(async (req, res) => {
   // API de preguntas propias (editor): /api/questions
   if (await questionsApi(req, res)) return;
@@ -100,14 +54,8 @@ const server = http.createServer(async (req, res) => {
     return res.end('ok');
   }
 
-  // La raíz muestra un menú con todos los .html de public.
-  // El juego de siempre queda en /index y la foto censurada en /censura.
-  if (pathname === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
-    return res.end(menuPage());
-  }
-
-  let relativePath = pathname.replace(/^\/+/, '');
+  // La raíz muestra index.html; cualquier otra ruta apunta a su archivo dentro de public.
+  let relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   if (relativePath.endsWith('/')) relativePath += 'index.html';
   else if (!path.extname(relativePath)) relativePath += '.html';
 
@@ -137,7 +85,7 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-const wss = new WebSocketServer({ server, maxPayload: 32768 });
+const wss = new WebSocketServer({ server, maxPayload: 8192 });
 const rooms = new Map();
 let nextId = 1;
 
@@ -212,7 +160,7 @@ wss.on('connection', (ws) => {
         }
       }
 
-      const maxPlayers = (name.startsWith('cmt-') || name.startsWith('cmb-') || name.startsWith('cmz-'))
+      const maxPlayers = (name.startsWith('cmt-') || name.startsWith('cmb-'))
         ? MAX_TITLE_PLAYERS
         : (name.startsWith('cmg-') || name.startsWith('cmd-'))
           ? MAX_GROUP

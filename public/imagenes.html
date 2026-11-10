@@ -650,7 +650,7 @@ function home(){
   var old3=loadRem();if(old3&&(!old3.remote||old3.phase==='final'))old3=null;
   var old2=loadOn();if(old2&&(!old2.online||old2.phase==='final'))old2=null;
   var old=load(MODE),can=old&&old.phase&&old.phase!=='final'&&old.order;
-  app.innerHTML=h+'<div class="card"><div class="kick">🖼️ ¿Qué te inspira esta imagen? · 3 o más jugadores</div><p class="mut" style="font-size:14px">Aparece una fotografía y una pregunta creativa relacionada con ella. Cada jugador responde, después votáis la respuesta más ingeniosa y sumáis puntos durante tres rondas.</p><label style="display:block">Tu nombre<input id="tn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-ta="tcreate"'+(RM?'':' disabled')+'>Crear sala</button><div class="or">o únete a una sala</div><input id="tc" maxlength="8" placeholder="Código de sala" autocapitalize="none"><button class="btn sec" data-ta="tjoin"'+(RM?'':' disabled')+'>Unirme a una sala</button></div><p class="mut" style="font-size:14px;margin:12px 0 0">Otros modos secundarios, en pruebas.</p><div class="card"><div class="kick">Tipo de preguntas</div>'+seg()+'</div>'
+  app.innerHTML=h+'<div class="card"><div class="kick">🖼️ ¿Qué te inspira esta imagen? · 3 o más jugadores</div><p class="mut" style="font-size:14px">Aparece una fotografía y una pregunta creativa relacionada con ella. Cada jugador responde, después votáis la respuesta más ingeniosa y sumáis puntos durante tres rondas. El anfitrión puede dejar la foto al azar o buscarla él mismo en Wikimedia.</p><label style="display:block">Tu nombre<input id="tn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-ta="tcreate"'+(RM?'':' disabled')+'>Crear sala</button><div class="or">o únete a una sala</div><input id="tc" maxlength="8" placeholder="Código de sala" autocapitalize="none"><button class="btn sec" data-ta="tjoin"'+(RM?'':' disabled')+'>Unirme a una sala</button></div><p class="mut" style="font-size:14px;margin:12px 0 0">Otros modos secundarios, en pruebas.</p><div class="card"><div class="kick">Tipo de preguntas</div>'+seg()+'</div>'
   +'<div class="card"><div class="kick">Un solo móvil</div><p class="mut" style="font-size:14px">Dos jugadores se pasan el dispositivo entre rondas.</p><label>Jugador 1<input id="n0" maxlength="20" placeholder="Nombre"></label><label>Jugador 2<input id="n1" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="start">Empezar partida</button>'+(can?'<button class="btn sec" data-a="resume">Continuar partida guardada ('+esc(old.names[0])+' y '+esc(old.names[1])+', ronda '+(old.round+1)+')</button>':'')+'</div>'
   +'<div class="card"><div class="kick">A distancia sin sesión (por códigos)</div><p class="mut" style="font-size:14px">Cada uno juega a su ritmo y se pasan por WhatsApp un código al final de cada ronda.</p><label>Tu nombre<input id="rn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="rcreate">Crear partida ('+modeName(MODE)+')</button><input id="rc" maxlength="9" placeholder="Código de partida (ej: c-123456)" autocapitalize="none" style="margin-top:10px"><button class="btn sec" data-a="rjoin">Unirme con código</button>'+(old3?'<button class="btn sec" data-a="rreconnect">Continuar partida a distancia ('+esc(old3.remote.code.toUpperCase())+', ronda '+(old3.round+1)+')</button>':'')+'</div>'
   +'<div class="card"><div class="kick">Online en directo · 2 jugadores</div><p class="mut" style="font-size:14px">Cada uno en su móvil, con un código de sala.</p><label>Tu nombre<input id="on" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="create"'+(RM?'':' disabled')+'>Crear sala ('+modeName(MODE)+')</button><input id="oc" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none" style="margin-top:10px"><button class="btn sec" data-a="join"'+(RM?'':' disabled')+'>Unirme con código</button>'+(old2?'<button class="btn sec" data-a="reconnect">Reconectar a la sala '+esc(old2.online.code.toUpperCase())+'</button>':'')+'</div>'+msg;
@@ -1259,6 +1259,50 @@ async function tFetchImage(){
   if(!candidates.length)throw new Error('No se han encontrado fotografías adecuadas. Prueba otra vez.');
   var chosen=candidates[Math.floor(Math.random()*candidates.length)];chosen.question=tPickQuestion();return chosen;
 }
+// ---------- 🔎 Elegir foto buscando en Wikimedia (modo aparte, el anfitrión escoge) ----------
+function tCand(pg){
+  var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{},mime=ii.thumbmime||ii.mime||'';
+  return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:mime,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value)),desc:tClean((ex.ImageDescription&&ex.ImageDescription.value)||(ex.ObjectName&&ex.ObjectName.value)),idx:pg.index||0};
+}
+async function tSearchImages(term){
+  var q=new URLSearchParams({action:'query',format:'json',generator:'search',gsrnamespace:'6',gsrlimit:'30',gsrsearch:'filetype:bitmap '+term,prop:'imageinfo',iiprop:'url|mime|extmetadata',iiurlwidth:'1000',iiextmetadatafilter:'LicenseShortName|Artist|Credit|ImageDescription|ObjectName',origin:'*'});
+  var r=await fetch('https://commons.wikimedia.org/w/api.php?'+q.toString(),{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error('No se pudo consultar Wikimedia Commons.');
+  var data=await r.json(),pages=Object.keys((data.query&&data.query.pages)||{}).map(function(k){return data.query.pages[k]});
+  return pages.map(tCand).sort(function(a,b){return a.idx-b.idx}).filter(function(x){return x.url&&x.page&&x.license&&/^image\/(jpeg|png|webp|gif)$/i.test(x.mime)&&!/(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|war photograph|violent|murder|injury|death)/i.test(x.title+' '+x.desc)});
+}
+function tEnterPick(){
+  if(!T||!T.host)return;
+  T.ph='pick';T.sq=T.sq||'';T.sres=null;T.soff=0;T.serr='';T.sbusy=false;T.sid=(T.sid||0)+1;T.deadline=0;tPub();tSync();
+}
+function tDoSearch(){
+  if(!T||!T.host||T.ph!=='pick'||T.sbusy)return;
+  var term=(T.sq||'').trim();
+  if(term.length<2){T.serr='Escribe al menos 2 letras.';T.sid=(T.sid||0)+1;tRender();return}
+  T.sbusy=true;T.serr='';T.sid=(T.sid||0)+1;tRender();
+  tSearchImages(term).then(function(l){
+    if(!T||T.ph!=='pick')return;
+    T.sbusy=false;T.sres=l;T.soff=0;T.sid++;
+    T.serr=l.length?'':'No se han encontrado fotos. Prueba con otras palabras (en inglés suele dar más resultados).';
+    tRender();
+  }).catch(function(e){
+    if(!T||T.ph!=='pick')return;
+    T.sbusy=false;T.sid++;T.serr=(e&&e.message)||'No se pudo buscar. Inténtalo de nuevo.';tRender();
+  });
+}
+function tPickImg(i){
+  if(!T||!T.host||T.ph!=='pick'||!T.sres)return;
+  var img=T.sres[(T.soff||0)+i];if(!img)return;
+  T.round++;T.sub='';T.vote='';T.err='';T.word=tPickWord();T.localRound=T.round;
+  img.question=tPickQuestion();T.img=img;
+  T.seen=(T.seen||[]).concat([img.title]).slice(-TT_ROUNDS);
+  T.ph='write';T.deadline=Date.now()+TT_WRITE;T.sres=null;tPub();tSync();
+}
+function tPaintPick(key,html){
+  if(T.rk===key)return;
+  T.rk=key;app.classList.remove('still');app.innerHTML=html;
+  var i=document.getElementById('tsq');if(i)i.value=T.sq||'';
+}
 function tPub(){
   if(!TR||!T)return;
   var p={n:T.name,tk:T.me,tm:1,tpr:T.round,tx:T.sub||'',tv:T.vote||''};
@@ -1322,7 +1366,17 @@ function tRender(){
   function imageCard(){if(!T.img)return'';return '<div class="card center"><img src="'+ea(T.img.url)+'" alt="Fotografía para responder una pregunta creativa" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:340px;object-fit:contain;border-radius:12px;background:#eee" onerror="this.style.display=\'none\'"><p class="mut" style="font-size:11px;margin:8px 0 0">Imagen: <a href="'+ea(T.img.page)+'" target="_blank" rel="noopener">'+esc((T.img.title||'Fotografía').replace(/^File:/,''))+'</a> · '+esc(T.img.author||'Autor no indicado')+' · '+esc(T.img.license||'Licencia no indicada')+'</p>'+tWordBar()+(T.host&&T.ph!=='loading'?'<button class="link" data-ta="skip" style="margin-top:6px">🔄 Cambiar foto</button>':'')+'</div>'}
   if(T.ph==='lobby'){
     var pills=all.map(function(x){return '<span class="pill">'+av(x.presence.n)+esc(x.presence.n)+(x.presence.th===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('');
-    tPaint('tl','<h1>¿Qué te inspira esta imagen?</h1>'+top+'<div class="card center"><div class="kick">Sala de imágenes</div><h2>Código: <span style="letter-spacing:.12em">'+esc(T.code.toUpperCase())+'</span></h2><p class="mut">Todos veréis la misma fotografía y una pregunta relacionada. Responded con creatividad, votad la respuesta más ingeniosa y acumulad puntos todas las rondas que queráis. Cada ronda hay una palabra obligada: si la usas y tu respuesta es la más votada, ganas +1 punto.</p></div><div class="card"><div class="kick">Jugadores ('+all.length+')</div><div class="pl">'+pills+'</div></div>'+(T.host?'<button class="btn" data-ta="start"'+(all.length<3?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn);
+    tPaint('tl','<h1>¿Qué te inspira esta imagen?</h1>'+top+'<div class="card center"><div class="kick">Sala de imágenes</div><h2>Código: <span style="letter-spacing:.12em">'+esc(T.code.toUpperCase())+'</span></h2><p class="mut">Todos veréis la misma fotografía y una pregunta relacionada. Responded con creatividad, votad la respuesta más ingeniosa y acumulad puntos todas las rondas que queráis. Cada ronda hay una palabra obligada: si la usas y tu respuesta es la más votada, ganas +1 punto.</p></div><div class="card"><div class="kick">Jugadores ('+all.length+')</div><div class="pl">'+pills+'</div></div>'+(T.host?'<button class="btn" data-ta="start"'+(all.length<3?' disabled':'')+'>Empezar partida</button><button class="btn sec" data-ta="startpick"'+(all.length<3?' disabled':'')+'>🔎 Empezar eligiendo la foto buscando</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn);
+  }else if(T.ph==='pick'){
+    var ptop='<div class="top"><span>🖼️ Imágenes · Sala '+esc(T.code.toUpperCase())+'</span><button class="link" data-ta="leave">Salir</button></div>';
+    if(!T.host){
+      tPaintPick('tpickw',ptop+'<div class="card center"><h2>El anfitrión está eligiendo la foto 🔎</h2><p class="mut">Enseguida empieza la ronda.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn);
+    }else{
+      var off=T.soff||0,vis=(T.sres||[]).slice(off,off+3);
+      var th=vis.map(function(x,i){return '<button class="opt" data-tpick="'+i+'" style="padding:8px"><img src="'+ea(x.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;height:170px;object-fit:cover;border-radius:10px;background:#eee"><small class="mut" style="display:block;margin-top:6px">'+esc((x.title||'').replace(/^File:/,'').slice(0,70))+' · '+esc(x.license)+'</small></button>'}).join('');
+      var pkey='tpick|'+(T.sbusy?'b':'i')+'|'+(T.sid||0)+'|'+off+'|'+(T.serr||'');
+      tPaintPick(pkey,ptop+'<div class="card"><div class="kick">🔎 Elegir la foto</div><p class="mut" style="font-size:14px">Escribe una o varias palabras (en inglés suele dar más resultados) y toca la foto que quieras jugar.</p><input id="tsq" maxlength="60" placeholder="Ej: castle, vintage car, cat" autocomplete="off"><button class="btn" data-ta="search"'+(T.sbusy?' disabled':'')+'>'+(T.sbusy?'Buscando…':'Buscar')+'</button>'+(T.serr?'<p style="color:var(--ko);font-size:14px">'+esc(T.serr)+'</p>':'')+th+((T.sres||[]).length>3?'<button class="btn sec" data-ta="more">🔄 Ver otras 3</button>':'')+'</div><button class="btn sec" data-ta="pickrandom">🎲 Mejor una al azar</button><button class="btn sec" data-ta="pickback">← Volver</button>'+warn);
+    }
   }else if(T.ph==='loading'){
     tPaint('tload'+T.round,top+'<div class="card center"><h2>Buscando una fotografía…</h2><p class="mut">Consultando Wikimedia Commons. Enseguida empieza la ronda.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn);
   }else if(T.ph==='error'){
@@ -1337,7 +1391,7 @@ function tRender(){
     var sub=tActiveSubmissions(),votes={};sub.forEach(function(x){votes[x.presence.tk]=0});tActive().forEach(function(x){if(x.presence.tpr===T.round&&votes[x.presence.tv]!==undefined)votes[x.presence.tv]++});
     var mv=0;Object.keys(votes).forEach(function(k){if(votes[k]>mv)mv=votes[k]});var cards=sub.slice().sort(function(a,b){return votes[b.presence.tk]-votes[a.presence.tk]}).map(function(x,i){return '<div class="card"><div class="kick">'+(i===0?'🏆 Más votado':'Respuesta '+(i+1))+' · '+votes[x.presence.tk]+' votos'+(mv>0&&votes[x.presence.tk]===mv&&tHas(x.presence.tx)?' · 🧩 +1 por la palabra':'')+'</div><p class="q">«'+esc(x.presence.tx)+'»</p><p class="mut">'+av(x.presence.n)+esc(x.presence.n)+'</p></div>'}).join('');
     var rank=T.ro.slice().sort(function(a,b){return (T.totals[b]||0)-(T.totals[a]||0)}).map(function(k,i){var x=tBy(all,k);return '<li><b>'+(i+1)+'. '+esc(x?x.presence.n:'Jugador')+'</b><span style="float:right;font-weight:800">'+(T.totals[k]||0)+' pts</span></li>'}).join('');
-    if(T.ph==='reveal')tPaint('treveal'+T.round,top+imageCard()+'<div class="card"><div class="kick">'+esc(tQuestionFor(T.img))+'</div><p class="mut">Estas eran vuestras respuestas</p>'+cards+'</div><div class="card"><div class="kick">Clasificación acumulada</div><ul>'+rank+'</ul></div>'+(T.host?'<button class="btn" data-ta="continue">Siguiente fotografía ➜</button><button class="btn sec" data-ta="finish">🏁 Terminar y ver clasificación final</button>':'<p class="mut center">Esperando al anfitrión…</p>')+warn);
+    if(T.ph==='reveal')tPaint('treveal'+T.round,top+imageCard()+'<div class="card"><div class="kick">'+esc(tQuestionFor(T.img))+'</div><p class="mut">Estas eran vuestras respuestas</p>'+cards+'</div><div class="card"><div class="kick">Clasificación acumulada</div><ul>'+rank+'</ul></div>'+(T.host?'<button class="btn" data-ta="continue">Siguiente fotografía ➜</button><button class="btn sec" data-ta="pickstart">🔎 Elegir la siguiente foto buscando</button><button class="btn sec" data-ta="finish">🏁 Terminar y ver clasificación final</button>':'<p class="mut center">Esperando al anfitrión…</p>')+warn);
     else tPaint('tend','<h1>¡Fin de la partida!</h1><div class="card"><div class="kick">Clasificación final</div><ul>'+rank+'</ul></div><button class="btn sec" data-ta="leave">Salir</button>');
   }
 }
@@ -1352,9 +1406,18 @@ app.addEventListener('click',function(e){
   else if(a==='continue'&&T.host&&T.ph==='reveal')tNextRound();
   else if(a==='finish'&&T.host&&T.ph==='reveal'){T.ph='end';tPub();tSync()}
   else if(a==='skip'&&T.host&&(T.ph==='write'||T.ph==='vote'||T.ph==='reveal'))tNextRound();
+  else if(a==='startpick'&&T.host&&T.ph==='lobby'){var ps2=tPeers();if(ps2.length<3)return;T.ro=ps2.map(function(x){return x.presence.tk});T.totals={};T.ro.forEach(function(k){T.totals[k]=0});tEnterPick()}
+  else if(a==='pickstart'&&T.host&&T.ph==='reveal')tEnterPick();
+  else if(a==='search')tDoSearch();
+  else if(a==='more'&&T.host&&T.ph==='pick'&&T.sres){T.soff=((T.soff||0)+3)>=T.sres.length?0:(T.soff||0)+3;T.sid=(T.sid||0)+1;tRender()}
+  else if(a==='pickrandom'&&T.host&&T.ph==='pick')tNextRound();
+  else if(a==='pickback'&&T.host&&T.ph==='pick'){T.ph=T.round<0?'lobby':'reveal';tPub();tSync()}
+  var pk=e.target.closest('[data-tpick]');if(pk&&T&&T.host)tPickImg(+pk.getAttribute('data-tpick'));
   var v=e.target.closest('[data-tvote]');if(v&&!v.disabled)tVote(v.getAttribute('data-tvote'));
 });
 app.addEventListener('input',function(e){if(e.target.id==='tcaption'){var n=e.target.value.length;var b=document.querySelector('[data-ta="submit"]');if(b)b.textContent='Enviar respuesta ('+n+'/180)'}});
+app.addEventListener('input',function(e){if(e.target.id==='tsq'&&T)T.sq=e.target.value});
+app.addEventListener('keydown',function(e){if(e.target.id==='tsq'&&e.key==='Enter'){e.preventDefault();tDoSearch()}});
 
 // ---------- Preguntas propias + editor (pestaña protegida por código) ----------
 var CQ=[],EK='',EM='normal',EMSG='',EOK=false,DRF=null;

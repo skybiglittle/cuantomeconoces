@@ -1,8 +1,6 @@
 // Servidor de "¿Cuánto me conoces?" para Render.
 // Sirve cualquier archivo de la carpeta public según la URL solicitada
 // y mantiene el relé de salas en directo por WebSocket.
-// Además inyecta un botón 🎮 con el menú de todos los juegos (.html de public)
-// en cada página HTML. Para que una página NO lo muestre, pon <!-- no-menu --> en ella.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -61,35 +59,28 @@ function pageTitle(rel) {
   }
 }
 
-function gamesList() {
-  let files = [];
-  try { files = listHtml(PUBLIC_DIR); } catch {}
-  return files.map((rel) => ({
-    href: '/' + rel.split('/').map(encodeURIComponent).join('/'),
-    title: pageTitle(rel) || rel,
-  }));
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-const MENU_SNIPPET = '<script>(function(){if(window.__gm)return;window.__gm=1;'
-  + 'var d=matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches,b=document.createElement("button"),p=document.createElement("div");'
-  + 'b.textContent="\\uD83C\\uDFAE";b.setAttribute("aria-label","Men\\u00fa de juegos");'
-  + 'b.style.cssText="position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:9999;width:46px;height:46px;border-radius:50%;border:0;font-size:22px;cursor:pointer;background:#7c4dff;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3)";'
-  + 'p.style.cssText="display:none;position:fixed;right:12px;bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:9999;width:min(300px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:8px;border-radius:16px;font:15px system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.3);border:1px solid "+(d?"#352c40":"#eadfe6")+";background:"+(d?"#221c2b":"#fff")+";color:"+(d?"#f3eef7":"#2a2230");'
-  + 'function open(){p.innerHTML="Cargando\\u2026";p.style.display="block";'
-  + 'fetch("/_games",{cache:"no-store"}).then(function(r){return r.json()}).then(function(l){p.innerHTML="";'
-  + 'l.forEach(function(g){var a=document.createElement("a"),h=decodeURIComponent(g.href),cur=h===location.pathname||h.replace(/\\.html?$/,"")===location.pathname;'
-  + 'a.href=g.href;a.textContent=g.title+(cur?"  \\u2022":"");'
-  + 'a.style.cssText="display:block;padding:10px 12px;border-radius:10px;text-decoration:none;color:inherit;font-weight:"+(cur?"700":"500");'
-  + 'if(cur)a.style.background="rgba(124,77,255,.15)";p.appendChild(a)});'
-  + 'if(!l.length)p.textContent="No hay juegos."}).catch(function(){p.textContent="No se pudo cargar el men\\u00fa."})}'
-  + 'b.onclick=function(e){e.stopPropagation();if(p.style.display==="none")open();else p.style.display="none"};'
-  + 'document.addEventListener("click",function(e){if(!p.contains(e.target))p.style.display="none"});'
-  + 'document.body.appendChild(p);document.body.appendChild(b)})();</script>';
-
-function injectMenu(html) {
-  if (html.includes('<!-- no-menu -->')) return html;
-  const i = html.toLowerCase().lastIndexOf('</body>');
-  return i === -1 ? html + MENU_SNIPPET : html.slice(0, i) + MENU_SNIPPET + html.slice(i);
+function menuPage() {
+  let files = [];
+  try { files = listHtml(PUBLIC_DIR); } catch {}
+  const items = files.map((rel) => {
+    const href = '/' + rel.split('/').map(encodeURIComponent).join('/');
+    const title = pageTitle(rel) || rel;
+    return '<a class="it" href="' + escHtml(href) + '"><b>' + escHtml(title) + '</b><small>' + escHtml(rel) + '</small></a>';
+  }).join('') || '<p>No hay archivos .html en la carpeta public.</p>';
+  return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1"><title>Juegos</title>'
+    + '<style>'
+    + ':root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--bd:#eadfe6}'
+    + '@media (prefers-color-scheme:dark){:root{--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}'
+    + '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}'
+    + 'main{max-width:560px;margin:0 auto;padding:24px 16px 40px}h1{font-size:28px;margin:8px 0 16px}'
+    + '.it{display:block;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px 18px;margin:10px 0;color:var(--tx);text-decoration:none}'
+    + '.it:hover,.it:active{border-color:var(--ac)}.it b{display:block;font-size:18px}.it small{color:var(--mut)}'
+    + '</style></head><body><main><h1>🎮 Elige un juego</h1>' + items + '</main></body></html>';
 }
 
 const server = http.createServer(async (req, res) => {
@@ -109,14 +100,14 @@ const server = http.createServer(async (req, res) => {
     return res.end('ok');
   }
 
-  // Lista de juegos para el menú.
-  if (pathname === '/_games') {
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
-    return res.end(JSON.stringify(gamesList()));
+  // La raíz muestra un menú con todos los .html de public.
+  // El juego de siempre queda en /index y la foto censurada en /censura.
+  if (pathname === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+    return res.end(menuPage());
   }
 
-  // La raíz muestra index.html; cualquier otra ruta apunta a su archivo dentro de public.
-  let relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+  let relativePath = pathname.replace(/^\/+/, '');
   if (relativePath.endsWith('/')) relativePath += 'index.html';
   else if (!path.extname(relativePath)) relativePath += '.html';
 
@@ -137,13 +128,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     const contentType = MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-    const isHtml = contentType.startsWith('text/html');
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=3600',
+      'Cache-Control': contentType.startsWith('text/html') ? 'no-cache' : 'public, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
     });
-    res.end(isHtml ? injectMenu(data.toString('utf8')) : data);
+    res.end(data);
   });
 });
 

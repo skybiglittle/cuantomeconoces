@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El Reclutador Absurdo & El Juicio</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --card-border: #334155;
+  --tx: #f8fafc;
+  --mut: #94a3b8;
+  --ac-job: #ec4899;
+  --ac-job-glow: rgba(236, 72, 153, 0.35);
+  --ac-dilemma: #8b5cf6;
+  --ac-dilemma-glow: rgba(139, 92, 246, 0.35);
+  --success: #10b981;
+  --danger: #ef4444;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+body { background: var(--bg); color: var(--tx); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
+main { max-width: 520px; width: 100%; }
+
+.card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+h1 { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 6px; background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6); -webkit-background-clip: text; color: transparent; }
+p.subtitle { text-align: center; color: var(--mut); font-size: 14px; margin-bottom: 20px; }
+
+.badge { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+.badge.job { background: rgba(236, 72, 153, 0.15); color: var(--ac-job); border: 1px solid var(--ac-job); }
+.badge.dilemma { background: rgba(139, 92, 246, 0.15); color: var(--ac-dilemma); border: 1px solid var(--ac-dilemma); }
+
+.field { margin-bottom: 16px; }
+label { display: block; font-size: 13px; font-weight: 600; color: var(--mut); margin-bottom: 6px; text-transform: uppercase; }
+input[type="text"] { width: 100%; padding: 14px 16px; background: #0f172a; border: 1.5px solid var(--card-border); border-radius: 12px; color: var(--tx); font-size: 16px; outline: none; transition: border-color 0.2s; }
+input[type="text"]:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px var(--ac-dilemma-glow); }
+
+button.btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; background: linear-gradient(135deg, #8b5cf6, #6366f1); color: #fff; box-shadow: 0 4px 12px var(--ac-dilemma-glow); margin-top: 8px; }
+button.btn.job-btn { background: linear-gradient(135deg, #ec4899, #d946ef); box-shadow: 0 4px 12px var(--ac-job-glow); }
+button.btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+button.btn:active { transform: translateY(0); }
+button.btn.sec { background: transparent; border: 1.5px solid var(--card-border); color: var(--tx); box-shadow: none; margin-top: 8px; }
+button.btn.sec:hover { background: rgba(255,255,255,0.05); }
+
+.mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.mode-btn { padding: 14px 10px; border-radius: 12px; border: 1.5px solid var(--card-border); background: #0f172a; color: var(--mut); font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s; }
+.mode-btn.active.job { border-color: var(--ac-job); background: rgba(236, 72, 153, 0.1); color: var(--ac-job); }
+.mode-btn.active.dilemma { border-color: var(--ac-dilemma); background: rgba(139, 92, 246, 0.1); color: var(--ac-dilemma); }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #0f172a; border: 1px solid var(--card-border); border-radius: 99px; font-size: 13px; margin: 4px; }
+.pill-list { display: flex; flex-wrap: wrap; margin-bottom: 16px; }
+
+.question-box { background: #0f172a; border: 1px solid var(--card-border); border-radius: 14px; padding: 18px; margin: 16px 0; text-align: center; }
+.question-title { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.3; }
+
+/* Dilemma Options Grid */
+.dilemma-opts { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.dilemma-opt { padding: 14px; border-radius: 12px; border: 1.5px solid var(--card-border); background: #0f172a; color: var(--tx); font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+.dilemma-opt:hover { border-color: var(--ac-dilemma); background: rgba(139, 92, 246, 0.1); }
+.dilemma-opt.selected { border-color: var(--ac-dilemma); background: rgba(139, 92, 246, 0.25); box-shadow: 0 0 0 2px var(--ac-dilemma); }
+
+/* Votaciones del Reclutador */
+.candidate-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #0f172a; border: 1.5px solid var(--card-border); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+.candidate-item:hover { border-color: var(--ac-job); background: rgba(236, 72, 153, 0.1); }
+.candidate-item.selected { border-color: var(--ac-job); background: rgba(236, 72, 153, 0.2); }
+
+.dots span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--mut); margin: 0 2px; animation: blink 1.4s infinite; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+.timer-bar { height: 6px; background: var(--card-border); border-radius: 6px; overflow: hidden; margin: 16px 0; }
+.timer-fill { height: 100%; background: var(--ac-dilemma); width: 100%; transition: width 0.1s linear; }
+
+.result-bar-bg { background: #0f172a; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 6px; border: 1px solid var(--card-border); }
+.result-bar-fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #ec4899); border-radius: 6px; transition: width 0.5s ease; }
+</style>
+</head>
+<body>
+
+<main id="app"></main>
+
+<script>
+// --- BANCOS DE DATOS ---
+
+// MODO 1: Entrevista Absurda (Puestos de trabajo y preguntas extravagantes)
+const JOBS = [
+  { title: "Probador/a Oficial de Fantasmas", desc: "Evaluar el nivel de susto y la cortesía de los espectros en mansiones abandonadas." },
+  { title: "Gestor/a de Rabietas de Dinosaurio", desc: "Calmar a T-Rex frustrados cuando se les cae la comida por no alcanzar con los brazos cortos." },
+  { title: "Diseñador/a de Nubes con Formas", desc: "Esculpir el cielo por las tardes para que la gente en el parque vea gatitos o barcos." },
+  { title: "Traductor/a Jurado de Maullidos", desc: "Aclarar en juicios qué quería decir exactamente el gato cuando tiró el vaso de agua." },
+  { title: "Catarata Humana de Toboganes de Agua", desc: "Probar toboganes acuáticos asegurando que el grito de emoción sea de tono perfecto." },
+  { title: "Coordinador/a de Siestas Corporativas", desc: "Asegurar que todo el personal duerma 30 minutos con la manta a la temperatura ideal." },
+  { title: "Abogado/a de Dragones", desc: "Negociar daños y perjuicios después de que un dragón queme accidentalmente un pajar." }
+];
+
+const JOB_QUESTIONS = [
+  "¿Qué harías si durante tu primer día el techo se llena de pan crujiente y cae sin parar?",
+  "Si un cliente enfadado empieza a comunicarse haciendo ruidos de delfín, ¿cómo negocias con él?",
+  "¿Cómo justificas en la nota de gastos que has tenido que comprar 40 kilos de gominolas para salvar la empresa?",
+  "Si descubres que tu compañero de equipo es en realidad un pulpo disfrazado con traje, ¿qué haces?",
+  "Explica tu mayor defecto utilizando únicamente términos de cocina o repostería.",
+  "¿Qué estrategia usarías si te quedas encerrado en un ascensor con un fantasma que no para de cantar reggaetón?",
+  "Si pudieras sustituir la lluvia por cualquier objeto no líquido, ¿cuál elegirías para impresionar al jefe?"
+];
+
+// MODO 2: El Juicio de las 4 Opciones (Dilemas absurdos con trampa)
+const DILEMMAS = [
+  {
+    title: "Elige tu Superpoder con Trampa",
+    opts: [
+      "Volar, pero solo a la velocidad de una persona caminando despacio.",
+      "Leer mentes, pero solo escuchas quejas sobre el tráfico y el tiempo.",
+      "Ser invisible, pero cada paso que das suena como un pato de goma.",
+      "Superfuerza, pero solo funciona para abrir frascos de mermelada."
+    ]
+  },
+  {
+    title: "Tu Condena Diaria",
+    opts: [
+      "Que cada vez que estornudes caiga un confeti dorado sobre ti.",
+      "Tener que pedir perdón formalmente a cada puerta antes de abrirla.",
+      "Que tu banda sonora personal suene fuerte en público cuando estés nervioso.",
+      "Hablar siempre en rimado cuando pidas comida en un restaurante."
+    ]
+  },
+  {
+    title: "El Apocalipsis Cotidiano",
+    opts: [
+      "Que tu teléfono solo tenga batería cuando estás dentro del baño.",
+      "Pisar un bloque de Lego descalzo una vez todas las mañanas al levantarte.",
+      "Que el café o té siempre esté o helado o quemando, nunca a buena temperatura.",
+      "Que los semáforos siempre se pongan en rojo justo cuando llegas tú."
+    ]
+  },
+  {
+    title: "La Mascota Imposible",
+    opts: [
+      "Un pingüino extremadamente formal que juzga tu forma de vestir.",
+      "Un mapache que te roba las llaves y las esconde en sitios creativos.",
+      "Un loro que repite en alto tus pensamientos más vergonzosos.",
+      "Un pulpo de estantería que te cambia los libros de sitio por la noche."
+    ]
+  },
+  {
+    title: "Viaje en el Tiempo Absurdo",
+    opts: [
+      "Ir al medioevo a enseñarles a bailar breakdance a los campesinos.",
+      "Ir a la prehistoria a intentar explicarles qué es una hipoteca a los cavernícolas.",
+      "Ir a los años 80 solo para avisar a la gente de que no usen tanto gomina.",
+      "Ir al futuro 500 años solo para ver si por fin han arreglado tu calle."
+    ]
+  }
+];
+
+// --- ESTADO GLOBAL Y RED ---
+let state = {
+  playerName: '',
+  roomCode: '',
+  isHost: false,
+  mode: 'job', // 'job' (Entrevista Absurda) o 'dilemma' (Juicio de 4 Opciones)
+  phase: 'home', // home, lobby, question, answering, voting, reveal, scoreboard
+  roundsTotal: 5,
+  currentRound: 0,
+  
+  // Datos específicos del juego
+  currentJob: null,
+  currentQuestion: '',
+  currentDilemma: null,
+
+  myAnswer: '',
+  myOptionIndex: null,
+
+  bossId: null, // ID del reclutador en el modo entrevista
+  players: {} // { id: { name, score, answer, optionChosen, votedFor, submitted } }
+};
+
+let channel = null;
+const app = document.getElementById('app');
+
+function initChannel(code) {
+  if (channel) channel.close();
+  channel = new BroadcastChannel('entrevista-absurda-' + code.toLowerCase());
+  channel.onmessage = (e) => handleNetworkMessage(e.data);
+}
+
+function broadcast(type, payload = {}) {
+  if (channel) {
+    channel.postMessage({ type, sender: getMyId(), payload });
+  }
+}
+
+function getMyId() {
+  let id = sessionStorage.getItem('entrevista_pid');
+  if (!id) {
+    id = 'p_' + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem('entrevista_pid', id);
+  }
+  return id;
+}
+
+function handleNetworkMessage(msg) {
+  const { type, sender, payload } = msg;
+
+  if (type === 'JOIN_REQUEST') {
+    if (state.isHost) {
+      state.players[sender] = { name: payload.name, score: 0, answer: '', optionChosen: null, votedFor: null, submitted: false };
+      broadcastState();
+      render();
+    }
+  } else if (type === 'STATE_UPDATE') {
+    if (!state.isHost) {
+      state.players = payload.players;
+      state.phase = payload.phase;
+      state.currentRound = payload.currentRound;
+      state.mode = payload.mode;
+      state.currentJob = payload.currentJob;
+      state.currentQuestion = payload.currentQuestion;
+      state.currentDilemma = payload.currentDilemma;
+      state.bossId = payload.bossId;
+      render();
+    }
+  } else if (type === 'SUBMIT_ACTION') {
+    if (state.isHost && state.players[sender]) {
+      state.players[sender].answer = payload.answer || '';
+      state.players[sender].optionChosen = payload.optionChosen !== undefined ? payload.optionChosen : null;
+      state.players[sender].votedFor = payload.votedFor || null;
+      state.players[sender].submitted = true;
+      
+      checkPhaseCompletion();
+      broadcastState();
+      render();
+    }
+  }
+}
+
+function broadcastState() {
+  broadcast('STATE_UPDATE', {
+    players: state.players,
+    phase: state.phase,
+    currentRound: state.currentRound,
+    mode: state.mode,
+    currentJob: state.currentJob,
+    currentQuestion: state.currentQuestion,
+    currentDilemma: state.currentDilemma,
+    bossId: state.bossId
+  });
+}
+
+function checkPhaseCompletion() {
+  const playerList = Object.values(state.players);
+  if (state.phase === 'answering') {
+    let required = playerList;
+    if (state.mode === 'job') {
+      // En modo trabajo, el reclutador no responde la pregunta
+      required = playerList.filter(p => getPlayerId(p) !== state.bossId);
+    }
+    const allDone = required.every(p => p.submitted);
+    if (allDone) {
+      state.phase = 'voting';
+      // Resetear flag de envíos para la fase de votación
+      playerList.forEach(p => p.submitted = false);
+    }
+  } else if (state.phase === 'voting') {
+    if (state.mode === 'job') {
+      // En modo entrevista solo vota el Jefe/Reclutador
+      const boss = state.players[state.bossId];
+      if (boss && boss.submitted) {
+        processJobResults();
+      }
+    } else {
+      // En modo dilema votan todos
+      if (playerList.every(p => p.submitted)) {
+        processDilemmaResults();
+      }
+    }
+  }
+}
+
+function getPlayerId(playerObj) {
+  return Object.keys(state.players).find(key => state.players[key] === playerObj);
+}
+
+// --- ACCIONES DE JUEGO ---
+function createRoom() {
+  const nameInput = document.getElementById('player-name').value.trim();
+  if (!nameInput) return alert("Por favor, introduce tu nombre");
+  
+  state.playerName = nameInput;
+  state.roomCode = Math.random().toString(36).substr(2, 5).toUpperCase();
+  state.isHost = true;
+  state.players[getMyId()] = { name: nameInput, score: 0, answer: '', optionChosen: null, votedFor: null, submitted: false };
+  state.phase = 'lobby';
+  
+  initChannel(state.roomCode);
+  render();
+}
+
+function joinRoom() {
+  const nameInput = document.getElementById('player-name').value.trim();
+  const codeInput = document.getElementById('room-code').value.trim().toUpperCase();
+  if (!nameInput || !codeInput) return alert("Introduce tu nombre y el código de sala");
+
+  state.playerName = nameInput;
+  state.roomCode = codeInput;
+  state.isHost = false;
+  state.phase = 'lobby';
+
+  initChannel(codeInput);
+  broadcast('JOIN_REQUEST', { name: nameInput });
+  render();
+}
+
+function startNextRound() {
+  if (!state.isHost) return;
+  
+  state.currentRound++;
+  if (state.currentRound > state.roundsTotal) {
+    state.phase = 'scoreboard';
+    broadcastState();
+    render();
+    return;
+  }
+
+  // Resetear estados individuales
+  Object.keys(state.players).forEach(id => {
+    state.players[id].answer = '';
+    state.players[id].optionChosen = null;
+    state.players[id].votedFor = null;
+    state.players[id].submitted = false;
+  });
+
+  const pIds = Object.keys(state.players);
+
+  if (state.mode === 'job') {
+    // Asignar Reclutador rotativo
+    const bossIndex = (state.currentRound - 1) % pIds.length;
+    state.bossId = pIds[bossIndex];
+    state.currentJob = JOBS[Math.floor(Math.random() * JOBS.length)];
+    state.currentQuestion = JOB_QUESTIONS[Math.floor(Math.random() * JOB_QUESTIONS.length)];
+  } else {
+    // Dilema
+    state.currentDilemma = DILEMMAS[Math.floor(Math.random() * DILEMMAS.length)];
+  }
+
+  state.phase = 'answering';
+  broadcastState();
+  render();
+}
+
+function submitMyResponse() {
+  const myId = getMyId();
+
+  if (state.mode === 'job') {
+    const ansInput = document.getElementById('my-answer')?.value.trim();
+    if (!ansInput && myId !== state.bossId) return alert("Escribe tu respuesta antes de enviar");
+    
+    state.myAnswer = ansInput;
+    if (state.isHost) {
+      state.players[myId].answer = ansInput;
+      state.players[myId].submitted = true;
+      checkPhaseCompletion();
+    } else {
+      broadcast('SUBMIT_ACTION', { answer: ansInput });
+      state.players[myId].submitted = true;
+    }
+  } else {
+    // Dilema
+    if (state.myOptionIndex === null) return alert("Selecciona una de las 4 opciones");
+    
+    if (state.isHost) {
+      state.players[myId].optionChosen = state.myOptionIndex;
+      state.players[myId].submitted = true;
+      checkPhaseCompletion();
+    } else {
+      broadcast('SUBMIT_ACTION', { optionChosen: state.myOptionIndex });
+      state.players[myId].submitted = true;
+    }
+  }
+  render();
+}
+
+function submitVote(targetCandidateId) {
+  const myId = getMyId();
+
+  if (state.isHost) {
+    state.players[myId].votedFor = targetCandidateId;
+    state.players[myId].submitted = true;
+    checkPhaseCompletion();
+  } else {
+    broadcast('SUBMIT_ACTION', { votedFor: targetCandidateId });
+    state.players[myId].submitted = true;
+  }
+  render();
+}
+
+function processJobResults() {
+  const boss = state.players[state.bossId];
+  if (boss && boss.votedFor && state.players[boss.votedFor]) {
+    // El candidato contratado gana 3 puntos
+    state.players[boss.votedFor].score += 3;
+  }
+  state.phase = 'reveal';
+  broadcastState();
+  render();
+}
+
+function processDilemmaResults() {
+  // Puntuación en el Juicio: Contar elecciones por opción
+  const counts = [0, 0, 0, 0];
+  Object.values(state.players).forEach(p => {
+    if (p.optionChosen !== null && p.optionChosen >= 0 && p.optionChosen < 4) {
+      counts[p.optionChosen]++;
+    }
+  });
+
+  // Ganas puntos según cuántas personas coincidieron con tu opción
+  Object.values(state.players).forEach(p => {
+    if (p.optionChosen !== null) {
+      const matchCount = counts[p.optionChosen];
+      p.score += matchCount; // Por ejemplo: si 3 eligieron la opción 2, cada uno gana 3 pts
+    }
+  });
+
+  state.phase = 'reveal';
+  broadcastState();
+  render();
+}
+
+// --- RENDERS DE VISTA ---
+function renderHome() {
+  return `
+    <div class="card">
+      <h1>EL RECLUTADOR & EL JUICIO</h1>
+      <p class="subtitle">Juegos de Entrevista Absurda y Dilemas Morales</p>
+      
+      <div class="field">
+        <label>Tu Nombre / Nickname</label>
+        <input type="text" id="player-name" placeholder="Ej: Roberto" maxlength="15">
+      </div>
+
+      <button class="btn job-btn" onclick="createRoom()">Crear Nueva Sala</button>
+      
+      <div style="margin: 16px 0; border-top: 1px solid var(--card-border);"></div>
+
+      <div class="field">
+        <label>Código de Sala</label>
+        <input type="text" id="room-code" placeholder="Ej: A8K9P" style="text-transform: uppercase;">
+      </div>
+      <button class="btn sec" onclick="joinRoom()">Unirse a Sala</button>
+    </div>
+  `;
+}
+
+function renderLobby() {
+  const playerList = Object.values(state.players);
+
+  return `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+        <span class="badge ${state.mode}">${state.mode === 'job' ? 'Entrevista Absurda' : 'Juicio de 4 Opciones'}</span>
+        <span style="font-size:12px; color:var(--mut); font-weight:700;">SALA: ${state.roomCode}</span>
+      </div>
+
+      <h1>Sala de Espera</h1>
+      <p class="subtitle">Preparando el proceso de selección...</p>
+
+      ${state.isHost ? `
+        <div class="field">
+          <label>Modo de Juego</label>
+          <div class="mode-selector">
+            <div class="mode-btn ${state.mode === 'job' ? 'active job' : ''}" onclick="setMode('job')">
+              💼 ENTREVISTA
+              <div style="font-size:10px; font-weight:400; margin-top:2px;">Roleplay & Respuestas divertidas</div>
+            </div>
+            <div class="mode-btn ${state.mode === 'dilemma' ? 'active dilemma' : ''}" onclick="setMode('dilemma')">
+              ⚖️ EL JUICIO
+              <div style="font-size:10px; font-weight:400; margin-top:2px;">Dilemas imposibles de 4 opciones</div>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="field">
+        <label>Candidatos Conectados (${playerList.length})</label>
+        <div class="pill-list">
+          ${playerList.map(p => `
+            <span class="pill">
+              <span style="width:8px; height:8px; background:${state.mode === 'job' ? 'var(--ac-job)' : 'var(--ac-dilemma)'}; border-radius:50%;"></span>
+              ${p.name}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+
+      ${state.isHost ? `
+        <button class="btn ${state.mode === 'job' ? 'job-btn' : ''}" onclick="startNextRound()" ${playerList.length < 2 ? 'disabled style="opacity:0.5"' : ''}>
+          ${playerList.length < 2 ? 'Faltan Jugadores (Mínimo 2)' : 'Empezar Partida'}
+        </button>
+      ` : `
+        <p style="text-align:center; color:var(--mut); font-size:14px; margin-top:16px;">
+          Esperando a que el anfitrión inicie el juego <span class="dots"><span></span><span></span><span></span></span>
+        </p>
+      `}
+    </div>
+  `;
+}
+
+function setMode(m) {
+  if (!state.isHost) return;
+  state.mode = m;
+  broadcastState();
+  render();
+}
+
+function renderAnswering() {
+  const myId = getMyId();
+  const myPlayer = state.players[myId];
+  const isBoss = (state.mode === 'job' && myId === state.bossId);
+
+  if (myPlayer && myPlayer.submitted) {
+    return `
+      <div class="card">
+        <span class="badge ${state.mode}">Ronda ${state.currentRound} / ${state.roundsTotal}</span>
+        <h2>Respuesta Registrada</h2>
+        <p class="subtitle">Esperando a que los demás completen su turno...</p>
+
+        <div class="field" style="margin-top:20px;">
+          <label>Estado de los Participantes</label>
+          <div class="pill-list">
+            ${Object.entries(state.players).map(([id, p]) => {
+              if (state.mode === 'job' && id === state.bossId) return '';
+              return `
+                <span class="pill" style="opacity: ${p.submitted ? '1' : '0.4'}">
+                  ${p.submitted ? '✓' : '⏳'} ${p.name}
+                </span>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (state.mode === 'job') {
+    const bossName = state.players[state.bossId]?.name || 'Reclutador';
+
+    if (isBoss) {
+      return `
+        <div class="card">
+          <span class="badge job">👑 Eres el Reclutador Jefe</span>
+          <h2 style="margin-top:4px;">Puesto: ${state.currentJob.title}</h2>
+          <p style="font-size:13px; color:var(--mut); margin-bottom:16px;">${state.currentJob.desc}</p>
+          
+          <div class="question-box">
+            <div style="font-size:11px; color:var(--mut); text-transform:uppercase; font-weight:700;">Tu pregunta para los candidatos</div>
+            <div class="question-title" style="margin-top:6px;">"${state.currentQuestion}"</div>
+          </div>
+
+          <p style="text-align:center; color:var(--mut); font-size:14px; margin-top:16px;">
+            Los candidatos están redactando sus respuestas. ¡Prepárate para evaluar! <span class="dots"><span></span><span></span><span></span></span>
+          </p>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="card">
+        <span class="badge job">Ronda ${state.currentRound} / ${state.roundsTotal}</span>
+        <div style="font-size:12px; color:var(--mut); font-weight:700; text-transform:uppercase;">Entrevistador/a: ${bossName}</div>
+        <h2 style="font-size:22px; color:var(--ac-job); margin-top:2px;">${state.currentJob.title}</h2>
+        <p style="font-size:13px; color:var(--mut); margin-bottom:14px;">${state.currentJob.desc}</p>
+
+        <div class="question-box">
+          <div class="question-title">"${state.currentQuestion}"</div>
+        </div>
+
+        <div class="field">
+          <label>Tu Respuesta Argumentada</label>
+          <input type="text" id="my-answer" placeholder="Responde con profesionalidad absurda..." maxlength="120" autocomplete="off">
+        </div>
+
+        <button class="btn job-btn" onclick="submitMyResponse()">Enviar a la Entrevista</button>
+      </div>
+    `;
+  } else {
+    // Modo Dilema de 4 Opciones
+    return `
+      <div class="card">
+        <span class="badge dilemma">Ronda ${state.currentRound} / ${state.roundsTotal}</span>
+        <h2 style="font-size:20px; text-align:center; margin: 10px 0;">${state.currentDilemma.title}</h2>
+        <p style="font-size:13px; color:var(--mut); text-align:center; margin-bottom:16px;">Elige una opción. Sumas puntos según cuántas personas coincidan contigo.</p>
+
+        <div class="dilemma-opts">
+          ${state.currentDilemma.opts.map((opt, idx) => `
+            <div class="dilemma-opt ${state.myOptionIndex === idx ? 'selected' : ''}" onclick="selectOption(${idx})">
+              <span style="font-weight:800; color:var(--ac-dilemma);">${idx + 1}.</span>
+              <span>${opt}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <button class="btn" onclick="submitMyResponse()">Confirmar Elección</button>
+      </div>
+    `;
+  }
+}
+
+function selectOption(idx) {
+  state.myOptionIndex = idx;
+  render();
+}
+
+function renderVoting() {
+  const myId = getMyId();
+  const isBoss = (state.mode === 'job' && myId === state.bossId);
+  const myPlayer = state.players[myId];
+
+  if (state.mode === 'job') {
+    if (isBoss) {
+      if (myPlayer.submitted) {
+        return `
+          <div class="card">
+            <h2>Decisión tomada</h2>
+            <p class="subtitle">Procesando la contratación final...</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="card">
+          <span class="badge job">👑 Hora de Contratar</span>
+          <h2>Elige al mejor candidato</h2>
+          <p class="subtitle">Pregunta: "${state.currentQuestion}"</p>
+
+          <div style="margin: 16px 0;">
+            ${Object.entries(state.players).map(([id, p]) => {
+              if (id === state.bossId) return '';
+              return `
+                <div class="candidate-item ${myPlayer.votedFor === id ? 'selected' : ''}" onclick="submitVote('${id}')">
+                  <div>
+                    <div style="font-weight:700;">${p.name}</div>
+                    <div style="font-size:14px; color:var(--mut); margin-top:2px;">"${p.answer}"</div>
+                  </div>
+                  <button style="padding:6px 12px; border-radius:8px; border:none; background:var(--ac-job); color:#fff; font-weight:700; cursor:pointer;">Contratar</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="card" style="text-align:center;">
+          <span class="badge job">Evaluación en curso</span>
+          <h2>El Reclutador está leyendo las respuestas</h2>
+          <p class="subtitle">Esperando la decisión de ${state.players[state.bossId]?.name} <span class="dots"><span></span><span></span><span></span></span></p>
+
+          <div class="question-box" style="text-align:left;">
+            <div style="font-size:12px; color:var(--mut); font-weight:700;">Respuestas de la mesa:</div>
+            ${Object.entries(state.players).map(([id, p]) => {
+              if (id === state.bossId) return '';
+              return `<div style="margin-top:8px; font-size:14px;"><b>${p.name}:</b> "${p.answer}"</div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+function renderReveal() {
+  if (state.mode === 'job') {
+    const boss = state.players[state.bossId];
+    const hiredCandidate = state.players[boss?.votedFor];
+
+    return `
+      <div class="card" style="text-align:center;">
+        <span class="badge job">Resultado de la Entrevista</span>
+        <h2 style="margin-top:8px;">¡Candidato Contratado!</h2>
+        
+        <div style="margin: 20px 0; background:rgba(236, 72, 153, 0.1); border:1px solid var(--ac-job); border-radius:14px; padding:16px;">
+          <div style="font-size:24px; font-weight:800; color:var(--ac-job);">${hiredCandidate ? hiredCandidate.name : 'Nadie'}</div>
+          <div style="font-size:15px; color:var(--tx); margin-top:6px;">"${hiredCandidate ? hiredCandidate.answer : ''}"</div>
+          <div style="font-size:12px; color:var(--mut); margin-top:8px;">Elegido por: <b>${boss?.name}</b> (+3 Puntos)</div>
+        </div>
+
+        <div style="margin-top:20px; text-align:left;">
+          <label>Clasificación General</label>
+          ${renderLeaderboard()}
+        </div>
+
+        ${state.isHost ? `
+          <button class="btn job-btn" style="margin-top:20px;" onclick="startNextRound()">
+            ${state.currentRound >= state.roundsTotal ? 'Ver Gran Final' : 'Siguiente Ronda'}
+          </button>
+        ` : '<p style="color:var(--mut); font-size:14px; margin-top:16px;">Esperando al anfitrión...</p>'}
+      </div>
+    `;
+  } else {
+    // Revelar dilema de 4 opciones
+    const totalPlayers = Object.keys(state.players).length;
+    const counts = [0, 0, 0, 0];
+    Object.values(state.players).forEach(p => {
+      if (p.optionChosen !== null && p.optionChosen >= 0 && p.optionChosen < 4) {
+        counts[p.optionChosen]++;
+      }
+    });
+
+    return `
+      <div class="card">
+        <span class="badge dilemma">Resultados del Juicio</span>
+        <h2 style="font-size:18px; text-align:center; margin-bottom:16px;">${state.currentDilemma.title}</h2>
+
+        <div style="margin-bottom:20px;">
+          ${state.currentDilemma.opts.map((opt, idx) => {
+            const votes = counts[idx];
+            const pct = Math.round((votes / totalPlayers) * 100) || 0;
+            const voters = Object.values(state.players).filter(p => p.optionChosen === idx).map(p => p.name).join(', ');
+
+            return `
+              <div style="margin-bottom:12px; background:#0f172a; padding:10px; border-radius:10px; border:1px solid var(--card-border);">
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600;">
+                  <span>${idx + 1}. ${opt}</span>
+                  <span style="color:var(--ac-dilemma);">${votes} voto(s) (${pct}%)</span>
+                </div>
+                <div class="result-bar-bg">
+                  <div class="result-bar-fill" style="width:${pct}%;"></div>
+                </div>
+                ${voters ? `<div style="font-size:11px; color:var(--mut); margin-top:4px;">Elegido por: ${voters}</div>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div style="margin-top:20px;">
+          <label>Clasificación General</label>
+          ${renderLeaderboard()}
+        </div>
+
+        ${state.isHost ? `
+          <button class="btn" style="margin-top:20px;" onclick="startNextRound()">
+            ${state.currentRound >= state.roundsTotal ? 'Ver Gran Final' : 'Siguiente Ronda'}
+          </button>
+        ` : '<p style="color:var(--mut); font-size:14px; margin-top:16px; text-align:center;">Esperando al anfitrión...</p>'}
+      </div>
+    `;
+  }
+}
+
+function renderLeaderboard() {
+  const sorted = Object.values(state.players).sort((a,b) => b.score - a.score);
+  return `
+    <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+      ${sorted.map((p, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#0f172a; border:1px solid var(--card-border); border-radius:8px; font-size:14px;">
+          <span><b>${idx + 1}.</b> ${p.name}</span>
+          <span style="font-weight:800; color:${state.mode === 'job' ? 'var(--ac-job)' : 'var(--ac-dilemma)'};">${p.score} pts</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderScoreboard() {
+  const sorted = Object.values(state.players).sort((a,b) => b.score - a.score);
+
+  return `
+    <div class="card" style="text-align:center;">
+      <h1>🏆 GRAN FINAL 🏆</h1>
+      <p class="subtitle">Resultado definitivo del grupo</p>
+
+      <div style="margin: 24px 0;">
+        <div style="font-size:48px; margin-bottom:8px;">🥇</div>
+        <h2 style="font-size:28px; color:var(--ac-job);">${sorted[0] ? sorted[0].name : '-'}</h2>
+        <div style="font-size:18px; font-weight:800; color:var(--tx); margin-top:4px;">${sorted[0] ? sorted[0].score : 0} Puntos Totales</div>
+      </div>
+
+      <div style="text-align:left; margin-bottom:24px;">
+        <label>Clasificación Final</label>
+        ${renderLeaderboard()}
+      </div>
+
+      <button class="btn" onclick="location.reload()">Volver a Jugar</button>
+    </div>
+  `;
+}
+
+function render() {
+  switch (state.phase) {
+    case 'home': app.innerHTML = renderHome(); break;
+    case 'lobby': app.innerHTML = renderLobby(); break;
+    case 'answering': app.innerHTML = renderAnswering(); break;
+    case 'voting': app.innerHTML = renderVoting(); break;
+    case 'reveal': app.innerHTML = renderReveal(); break;
+    case 'scoreboard': app.innerHTML = renderScoreboard(); break;
+  }
+}
+
+// Inicialización
+render();
+</script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 // Servidor de "¿Cuánto me conoces?" para Render.
 // Sirve cualquier archivo de la carpeta public según la URL solicitada
 // y mantiene el relé de salas en directo por WebSocket.
+// Además inyecta un botón 🎮 con el menú de todos los juegos (.html de public)
+// en cada página HTML. Para que una página NO lo muestre, pon <!-- no-menu --> en ella.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +15,7 @@ const ROOM_RE = /^[a-z0-9][a-z0-9_.-]{0,47}$/;
 const MAX_PLAYERS = 2;
 const MAX_GROUP = 200;
 const MAX_TITLE_PLAYERS = 30;
-const MAX_PRESENCE_BYTES = 4096;
+const MAX_PRESENCE_BYTES = 16384;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -37,6 +39,59 @@ const MIME_TYPES = {
   '.woff2': 'font/woff2',
 };
 
+// ---------- Menú de páginas ----------
+function listHtml(dir, base = '') {
+  let out = [];
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name.startsWith('.')) continue;
+    const rel = base ? base + '/' + e.name : e.name;
+    if (e.isDirectory()) out = out.concat(listHtml(path.join(dir, e.name), rel));
+    else if (/\.html?$/i.test(e.name)) out.push(rel);
+  }
+  return out.sort();
+}
+
+function pageTitle(rel) {
+  try {
+    const txt = fs.readFileSync(path.join(PUBLIC_DIR, rel), 'utf8').slice(0, 4000);
+    const m = txt.match(/<title>([^<]*)<\/title>/i);
+    return m ? m[1].trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+function gamesList() {
+  let files = [];
+  try { files = listHtml(PUBLIC_DIR); } catch {}
+  return files.map((rel) => ({
+    href: '/' + rel.split('/').map(encodeURIComponent).join('/'),
+    title: pageTitle(rel) || rel,
+  }));
+}
+
+const MENU_SNIPPET = '<script>(function(){if(window.__gm)return;window.__gm=1;'
+  + 'var d=matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches,b=document.createElement("button"),p=document.createElement("div");'
+  + 'b.textContent="\\uD83C\\uDFAE";b.setAttribute("aria-label","Men\\u00fa de juegos");'
+  + 'b.style.cssText="position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:9999;width:46px;height:46px;border-radius:50%;border:0;font-size:22px;cursor:pointer;background:#7c4dff;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3)";'
+  + 'p.style.cssText="display:none;position:fixed;right:12px;bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:9999;width:min(300px,calc(100vw - 24px));max-height:60vh;overflow:auto;padding:8px;border-radius:16px;font:15px system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.3);border:1px solid "+(d?"#352c40":"#eadfe6")+";background:"+(d?"#221c2b":"#fff")+";color:"+(d?"#f3eef7":"#2a2230");'
+  + 'function open(){p.innerHTML="Cargando\\u2026";p.style.display="block";'
+  + 'fetch("/_games",{cache:"no-store"}).then(function(r){return r.json()}).then(function(l){p.innerHTML="";'
+  + 'l.forEach(function(g){var a=document.createElement("a"),h=decodeURIComponent(g.href),cur=h===location.pathname||h.replace(/\\.html?$/,"")===location.pathname;'
+  + 'a.href=g.href;a.textContent=g.title+(cur?"  \\u2022":"");'
+  + 'a.style.cssText="display:block;padding:10px 12px;border-radius:10px;text-decoration:none;color:inherit;font-weight:"+(cur?"700":"500");'
+  + 'if(cur)a.style.background="rgba(124,77,255,.15)";p.appendChild(a)});'
+  + 'if(!l.length)p.textContent="No hay juegos."}).catch(function(){p.textContent="No se pudo cargar el men\\u00fa."})}'
+  + 'b.onclick=function(e){e.stopPropagation();if(p.style.display==="none")open();else p.style.display="none"};'
+  + 'document.addEventListener("click",function(e){if(!p.contains(e.target))p.style.display="none"});'
+  + 'document.body.appendChild(p);document.body.appendChild(b)})();</script>';
+
+function injectMenu(html) {
+  if (html.includes('<!-- no-menu -->')) return html;
+  const i = html.toLowerCase().lastIndexOf('</body>');
+  return i === -1 ? html + MENU_SNIPPET : html.slice(0, i) + MENU_SNIPPET + html.slice(i);
+}
+
 const server = http.createServer(async (req, res) => {
   // API de preguntas propias (editor): /api/questions
   if (await questionsApi(req, res)) return;
@@ -52,6 +107,12 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end('ok');
+  }
+
+  // Lista de juegos para el menú.
+  if (pathname === '/_games') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
+    return res.end(JSON.stringify(gamesList()));
   }
 
   // La raíz muestra index.html; cualquier otra ruta apunta a su archivo dentro de public.
@@ -76,16 +137,17 @@ const server = http.createServer(async (req, res) => {
     }
 
     const contentType = MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+    const isHtml = contentType.startsWith('text/html');
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': contentType.startsWith('text/html') ? 'no-cache' : 'public, max-age=3600',
+      'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
     });
-    res.end(data);
+    res.end(isHtml ? injectMenu(data.toString('utf8')) : data);
   });
 });
 
-const wss = new WebSocketServer({ server, maxPayload: 8192 });
+const wss = new WebSocketServer({ server, maxPayload: 32768 });
 const rooms = new Map();
 let nextId = 1;
 
@@ -160,7 +222,7 @@ wss.on('connection', (ws) => {
         }
       }
 
-      const maxPlayers = (name.startsWith('cmt-') || name.startsWith('cmb-'))
+      const maxPlayers = (name.startsWith('cmt-') || name.startsWith('cmb-') || name.startsWith('cmz-'))
         ? MAX_TITLE_PLAYERS
         : (name.startsWith('cmg-') || name.startsWith('cmd-'))
           ? MAX_GROUP

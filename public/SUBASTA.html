@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Subasta de Mentiras / El Farol</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: '#131b2e',
+                        cardBorder: '#23304d',
+                        neonPink: '#ff007f',
+                        neonCyan: '#00f0ff',
+                        neonYellow: '#ffea00',
+                        neonPurple: '#8a2be2'
+                    },
+                    animation: {
+                        'bounce-short': 'bounce 0.6s ease-in-out 2',
+                        'pulse-glow': 'pulseGlow 2s infinite ease-in-out'
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(0,240,255,0.3)' },
+                            '50%': { boxShadow: '0 0 30px rgba(255,0,127,0.5)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Rubik+Glitch&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-glitch {
+            font-family: 'Rubik Glitch', cursive;
+        }
+        .glow-pink {
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #00f0ff 0%, #ff007f 50%, #ffea00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #23304d; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden p-3 sm:p-5">
+
+    <!-- HEADER -->
+    <header class="w-full max-w-xl mx-auto flex items-center justify-between py-2 border-b border-cardBorder/60 mb-4">
+        <div class="flex items-center space-x-2.5 cursor-pointer" onclick="confirmExit()">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-neonPink via-neonPurple to-neonCyan flex items-center justify-center font-bold text-lg text-slate-950 shadow-lg">
+                <i class="fa-solid fa-masks-theater text-lg text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-gradient tracking-wide leading-none">
+                    EL FAROL
+                </h1>
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Subasta de Mentiras</span>
+            </div>
+        </div>
+
+        <div id="headerBadge" class="hidden flex items-center space-x-2">
+            <span class="bg-cardBg/90 text-neonCyan text-xs font-mono font-bold px-3 py-1.5 rounded-xl border border-neonCyan/40 flex items-center gap-2 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-neonPink animate-ping"></span>
+                SALA: <strong id="displayRoomCode" class="text-white">----</strong>
+            </span>
+            <button onclick="copyRoomCode()" class="text-slate-400 hover:text-white p-2 bg-cardBorder/40 hover:bg-cardBorder rounded-xl transition">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main id="app" class="flex-1 max-w-xl w-full mx-auto flex flex-col justify-center items-center">
+        <!-- Rendered dynamically -->
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full text-center py-3 text-[11px] text-slate-500 border-t border-cardBorder/40 mt-4">
+        El Farol &bull; Juego Multijugador de Apuestas y Faroles Numéricos
+    </footer>
+
+    <script>
+        /* ----------------------------------------------------
+           1. SPANISH NUMERICAL TRIVIA QUESTION BANK
+        ---------------------------------------------------- */
+        const QUESTION_BANK = [
+            { q: "¿Cuántos episodios en total tiene la serie animada 'Los Simpson'?", a: 750, unit: "episodios" },
+            { q: "¿Cuántos kilos de chocolate consume al año una persona promedio en Suiza?", a: 11, unit: "kg" },
+            { q: "¿Cuántas veces al día parpadea un ser humano promedio?", a: 19000, unit: "veces" },
+            { q: "¿Cuántos dientes tiene en total un tiburón ballena adulto?", a: 3000, unit: "dientes" },
+            { q: "¿Cuántos kilómetros de largo tiene la Gran Muralla China?", a: 21196, unit: "km" },
+            { q: "¿Cuántos días tardó la nave Apolo 11 en llegar a la Luna?", a: 4, unit: "días" },
+            { q: "¿Cuántos lunares tiene aproximadamente el cuerpo humano promedio?", a: 30, unit: "lunares" },
+            { q: "¿Cuántas teclas tiene un piano de cola estándar?", a: 88, unit: "teclas" },
+            { q: "¿Cuántas cartas hay en una baraja española tradicional sin comodines?", a: 40, unit: "cartas" },
+            { q: "¿Cuántos músculos tiene un gato en cada una de sus orejas?", a: 32, unit: "músculos" },
+            { q: "¿Cuántos países forman parte actualmente de la Unión Europea?", a: 27, unit: "países" },
+            { q: "¿Cuántos huesos tiene el cuerpo humano adulto?", a: 206, unit: "huesos" },
+            { q: "¿Cuántos litros de agua requiere la producción de una sola camiseta de algodón?", a: 2700, unit: "litros" },
+            { q: "¿Cuántas peldaños tiene la Torre Eiffel en total hasta la cima?", a: 1665, unit: "peldaños" },
+            { q: "¿Cuántos minutos dura exactamente la película 'Titanic' de James Cameron?", a: 195, unit: "minutos" },
+            { q: "¿Cuántos corazones tiene un pulpo?", a: 3, unit: "corazones" },
+            { q: "¿Cuántos satélites naturales (lunas) orbitan alrededor del planeta Júpiter?", a: 95, unit: "lunas" },
+            { q: "¿Cuántos idiomas vivos existen aproximadamente registrados en el mundo?", a: 7100, unit: "idiomas" },
+            { q: "¿Cuántas franjas rojas y blancas tiene la bandera de los Estados Unidos?", a: 13, unit: "franjas" },
+            { q: "¿Cuántos hoyos tiene un campo de golf oficial de competición?", a: 18, unit: "hoyos" },
+            { q: "¿Cuántos caracteres tenía como límite máximo un tweet en Twitter en sus inicios?", a: 140, unit: "caracteres" },
+            { q: "¿Cuántas casillas tiene un tablero de ajedrez tradicional?", a: 64, unit: "casillas" },
+            { q: "¿Cuántos volcanes activos se estima que hay en todo el mundo?", a: 1350, unit: "volcanes" },
+            { q: "¿Cuántas horas al día pasa durmiendo un perezoso en libertad?", a: 10, unit: "horas" },
+            { q: "¿Cuántas palabras tiene aproximadamente el primer libro de Harry Potter en español?", a: 77000, unit: "palabras" },
+            { q: "¿Cuántos continentes se reconocen en el modelo geográfico estándar de los JJ.OO.?", a: 5, unit: "continentes" },
+            { q: "¿Cuántos gramos pesa aproximadamente un corazón humano adulto sano?", a: 300, unit: "gramos" },
+            { q: "¿Cuántos metros mide la estatua de la Libertad desde la base hasta la antorcha?", a: 46, unit: "metros" },
+            { q: "¿Cuántos estados integran los Estados Unidos de América?", a: 50, unit: "estados" },
+            { q: "¿Cuántas notas musicales existen en la escala diatónica estándar?", a: 7, unit: "notas" }
+        ];
+
+        /* ----------------------------------------------------
+           2. WEB AUDIO SYNTHESIZER
+        ---------------------------------------------------- */
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playBeep(freq = 440, type = 'sine', duration = 0.1) {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+            playChime() {
+                this.playBeep(523.25, 'triangle', 0.12);
+                setTimeout(() => this.playBeep(659.25, 'triangle', 0.15), 100);
+            }
+            playWin() {
+                this.playBeep(440, 'sine', 0.1);
+                setTimeout(() => this.playBeep(554.37, 'sine', 0.1), 100);
+                setTimeout(() => this.playBeep(659.25, 'sine', 0.25), 200);
+            }
+        }
+        const sfx = new SoundFX();
+
+        /* ----------------------------------------------------
+           3. GAME STATE & BROADCAST CHANNEL
+        ---------------------------------------------------- */
+        let localPlayer = {
+            id: getMyId(),
+            name: '',
+            score: 0
+        };
+
+        let gameState = {
+            roomCode: '',
+            isHost: false,
+            phase: 'home', // home, lobby, writing, voting, reveal, scoreboard
+            roundsTotal: 5,
+            currentRound: 0,
+            currentQuestion: null,
+            players: {}, // { id: { name, score, guess, votedOptionId, submittedGuess, submittedVote } }
+            votingOptions: [] // [{ id, value, ownerId, isReal, votes: [] }]
+        };
+
+        let channel = null;
+
+        function getMyId() {
+            let id = sessionStorage.getItem('farol_player_id');
+            if (!id) {
+                id = 'p_' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('farol_player_id', id);
+            }
+            return id;
+        }
+
+        function initChannel(code) {
+            if (channel) channel.close();
+            channel = new BroadcastChannel('farol_game_' + code.toLowerCase());
+            channel.onmessage = (e) => handleNetworkMessage(e.data);
+        }
+
+        function broadcast(type, payload = {}) {
+            if (channel) {
+                channel.postMessage({ type, senderId: localPlayer.id, payload });
+            }
+        }
+
+        function broadcastState() {
+            if (gameState.isHost) {
+                broadcast('STATE_UPDATE', { state: gameState });
+            }
+        }
+
+        function handleNetworkMessage(msg) {
+            const { type, senderId, payload } = msg;
+
+            if (type === 'JOIN_REQUEST') {
+                if (gameState.isHost) {
+                    if (!gameState.players[senderId]) {
+                        gameState.players[senderId] = {
+                            id: senderId,
+                            name: payload.name,
+                            score: 0,
+                            guess: null,
+                            votedOptionId: null,
+                            submittedGuess: false,
+                            submittedVote: false
+                        };
+                    }
+                    broadcastState();
+                    renderUI();
+                }
+            } else if (type === 'STATE_UPDATE') {
+                if (!gameState.isHost) {
+                    gameState = payload.state;
+                    renderUI();
+                }
+            } else if (type === 'SUBMIT_GUESS') {
+                if (gameState.isHost && gameState.players[senderId]) {
+                    gameState.players[senderId].guess = payload.guess;
+                    gameState.players[senderId].submittedGuess = true;
+                    checkAllGuessesSubmitted();
+                }
+            } else if (type === 'SUBMIT_VOTE') {
+                if (gameState.isHost && gameState.players[senderId]) {
+                    gameState.players[senderId].votedOptionId = payload.optionId;
+                    gameState.players[senderId].submittedVote = true;
+                    checkAllVotesSubmitted();
+                }
+            }
+        }
+
+        /* ----------------------------------------------------
+           4. GAME LOGIC & ROUND FLOW
+        ---------------------------------------------------- */
+        function createRoom() {
+            const input = document.getElementById('playerNameInput')?.value.trim();
+            if (!input) return alert("Por favor, escribe tu nombre.");
+            sfx.init();
+
+            localPlayer.name = input;
+            const code = Math.random().toString(36).substring(2, 7).toUpperCase();
+            
+            gameState.roomCode = code;
+            gameState.isHost = true;
+            gameState.phase = 'lobby';
+            gameState.players = {
+                [localPlayer.id]: {
+                    id: localPlayer.id,
+                    name: input,
+                    score: 0,
+                    guess: null,
+                    votedOptionId: null,
+                    submittedGuess: false,
+                    submittedVote: false
+                }
+            };
+
+            initChannel(code);
+            renderUI();
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('playerNameInput')?.value.trim();
+            const code = document.getElementById('roomCodeInput')?.value.trim().toUpperCase();
+            if (!name || !code) return alert("Escribe tu nombre y el código de la sala.");
+            sfx.init();
+
+            localPlayer.name = name;
+            gameState.roomCode = code;
+            gameState.isHost = false;
+            gameState.phase = 'lobby';
+
+            initChannel(code);
+            broadcast('JOIN_REQUEST', { name });
+            renderUI();
+        }
+
+        function startNextRound() {
+            if (!gameState.isHost) return;
+
+            gameState.currentRound++;
+            if (gameState.currentRound > gameState.roundsTotal) {
+                gameState.phase = 'scoreboard';
+                broadcastState();
+                renderUI();
+                return;
+            }
+
+            // Pick random question
+            const q = QUESTION_BANK[Math.floor(Math.random() * QUESTION_BANK.length)];
+            gameState.currentQuestion = q;
+            gameState.phase = 'writing';
+            gameState.votingOptions = [];
+
+            // Reset player states for new round
+            Object.values(gameState.players).forEach(p => {
+                p.guess = null;
+                p.votedOptionId = null;
+                p.submittedGuess = false;
+                p.submittedVote = false;
+            });
+
+            broadcastState();
+            renderUI();
+        }
+
+        function submitMyGuess() {
+            const val = document.getElementById('guessInput')?.value.trim();
+            if (val === '' || isNaN(val)) return alert("Por favor, introduce una cifra o número válido.");
+            sfx.playChime();
+
+            const numGuess = parseInt(val, 10);
+
+            if (gameState.isHost) {
+                gameState.players[localPlayer.id].guess = numGuess;
+                gameState.players[localPlayer.id].submittedGuess = true;
+                checkAllGuessesSubmitted();
+            } else {
+                broadcast('SUBMIT_GUESS', { guess: numGuess });
+                gameState.players[localPlayer.id].submittedGuess = true;
+                renderUI();
+            }
+        }
+
+        function checkAllGuessesSubmitted() {
+            const allSubmitted = Object.values(gameState.players).every(p => p.submittedGuess);
+            if (allSubmitted) {
+                prepareVotingOptions();
+                gameState.phase = 'voting';
+                broadcastState();
+                renderUI();
+            } else {
+                broadcastState();
+                renderUI();
+            }
+        }
+
+        function prepareVotingOptions() {
+            const optionsMap = new Map();
+
+            // 1. Add Real Answer
+            optionsMap.set('real_ans', {
+                id: 'opt_real',
+                value: gameState.currentQuestion.a,
+                ownerId: 'REAL',
+                isReal: true,
+                voters: []
+            });
+
+            // 2. Add Player Bluffs
+            Object.values(gameState.players).forEach(p => {
+                // Check if guess equals real answer to avoid duplicate keys
+                if (p.guess === gameState.currentQuestion.a) {
+                    // Match! They put the exact right answer
+                    optionsMap.get('real_ans').voters.push(p.name);
+                } else {
+                    const optId = 'opt_' + p.id;
+                    optionsMap.set(optId, {
+                        id: optId,
+                        value: p.guess,
+                        ownerId: p.id,
+                        isReal: false,
+                        voters: []
+                    });
+                }
+            });
+
+            // Convert to array and sort numerically ascending
+            const optionsArr = Array.from(optionsMap.values()).sort((a, b) => a.value - b.value);
+            gameState.votingOptions = optionsArr;
+        }
+
+        function submitMyVote(optionId) {
+            // Check if attempting to vote for own bluff
+            const myOpt = gameState.votingOptions.find(o => o.id === optionId);
+            if (myOpt && myOpt.ownerId === localPlayer.id) {
+                alert("¡No puedes votar por tu propia cifra!");
+                return;
+            }
+
+            sfx.playChime();
+
+            if (gameState.isHost) {
+                gameState.players[localPlayer.id].votedOptionId = optionId;
+                gameState.players[localPlayer.id].submittedVote = true;
+                checkAllVotesSubmitted();
+            } else {
+                broadcast('SUBMIT_VOTE', { optionId });
+                gameState.players[localPlayer.id].submittedVote = true;
+                renderUI();
+            }
+        }
+
+        function checkAllVotesSubmitted() {
+            const allSubmitted = Object.values(gameState.players).every(p => p.submittedVote);
+            if (allSubmitted) {
+                calculateScores();
+                gameState.phase = 'reveal';
+                broadcastState();
+                renderUI();
+            } else {
+                broadcastState();
+                renderUI();
+            }
+        }
+
+        function calculateScores() {
+            // Clear previous voters list on options
+            gameState.votingOptions.forEach(opt => opt.voters = []);
+
+            // Record votes
+            Object.values(gameState.players).forEach(p => {
+                const votedOpt = gameState.votingOptions.find(o => o.id === p.votedOptionId);
+                if (votedOpt) {
+                    votedOpt.voters.push(p.name);
+                }
+            });
+
+            // Assign Points
+            // +3 pts if you voted for the REAL answer
+            // +2 pts per player who fell for your BLUFF
+            Object.values(gameState.players).forEach(p => {
+                const votedOpt = gameState.votingOptions.find(o => o.id === p.votedOptionId);
+                
+                // Correct guess bonus
+                if (votedOpt && votedOpt.isReal) {
+                    p.score += 3;
+                }
+
+                // Bluff bonus
+                const myBluffOpt = gameState.votingOptions.find(o => o.ownerId === p.id);
+                if (myBluffOpt) {
+                    const fooledCount = myBluffOpt.voters.length;
+                    p.score += (fooledCount * 2);
+                }
+            });
+        }
+
+        /* ----------------------------------------------------
+           5. UI RENDER FUNCTIONS
+        ---------------------------------------------------- */
+        function renderUI() {
+            const container = document.getElementById('app');
+            const headerBadge = document.getElementById('headerBadge');
+            const roomCodeSpan = document.getElementById('displayRoomCode');
+
+            if (headerBadge) {
+                headerBadge.classList.toggle('hidden', !gameState.roomCode);
+                if (roomCodeSpan) roomCodeSpan.innerText = gameState.roomCode;
+            }
+
+            switch (gameState.phase) {
+                case 'home':
+                    container.innerHTML = renderHome();
+                    break;
+                case 'lobby':
+                    container.innerHTML = renderLobby();
+                    break;
+                case 'writing':
+                    container.innerHTML = renderWriting();
+                    break;
+                case 'voting':
+                    container.innerHTML = renderVoting();
+                    break;
+                case 'reveal':
+                    container.innerHTML = renderReveal();
+                    break;
+                case 'scoreboard':
+                    container.innerHTML = renderScoreboard();
+                    break;
+            }
+        }
+
+        function renderHome() {
+            return `
+                <div class="w-full max-w-md bg-cardBg p-6 sm:p-8 rounded-3xl border border-cardBorder shadow-2xl space-y-6 glow-cyan">
+                    <div class="text-center space-y-2">
+                        <div class="w-20 h-20 bg-gradient-to-tr from-neonPink to-neonCyan rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-lg mb-2">
+                            <i class="fa-solid fa-dice text-slate-950"></i>
+                        </div>
+                        <h2 class="text-3xl font-black text-white tracking-wide">¡AL FAROL!</h2>
+                        <p class="text-xs text-slate-400">Cuatros cifras, mentiras convincentes y apuestas engañosas.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-neonYellow mb-1.5 uppercase tracking-wider">Tu Nombre / Apodo</label>
+                            <input type="text" id="playerNameInput" maxlength="12" placeholder="Ej: Don Farol"
+                                class="w-full px-4 py-3 bg-darkBg border border-cardBorder rounded-2xl text-white font-bold text-base focus:outline-none focus:border-neonCyan transition">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <button onclick="createRoom()" class="py-3.5 px-4 bg-gradient-to-r from-neonPink to-neonPurple hover:opacity-95 text-white font-black text-sm rounded-2xl shadow-xl transition transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                                <i class="fa-solid fa-plus-circle text-lg"></i>
+                                <span>Crear Sala</span>
+                            </button>
+                            <div class="flex flex-col gap-1">
+                                <input type="text" id="roomCodeInput" placeholder="CÓDIGO" maxlength="5" uppercase
+                                    class="w-full px-3 py-2 bg-darkBg border border-cardBorder rounded-xl text-center text-xs font-mono font-bold uppercase text-white focus:border-neonYellow">
+                                <button onclick="joinRoom()" class="w-full py-2 bg-cardBorder hover:bg-slate-700 text-neonCyan font-bold text-xs rounded-xl transition">
+                                    Unirse
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-cardBorder text-center">
+                        <div class="text-[11px] text-slate-400 leading-relaxed">
+                            <strong class="text-neonYellow">¿Cómo se juega?</strong> Inventa una cifra mentirosa creíble. ¡Consigue que los demás apuesten por tu mentira mientras tú descubres la cifra real!
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLobby() {
+            const playersArr = Object.values(gameState.players);
+            return `
+                <div class="w-full max-w-md bg-cardBg p-6 rounded-3xl border border-cardBorder shadow-2xl space-y-6">
+                    <div class="flex justify-between items-center border-b border-cardBorder pb-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-white">Sala de Espera</h2>
+                            <p class="text-xs text-slate-400">Comparte el código con tus amigos.</p>
+                        </div>
+                        <span class="font-mono text-2xl font-black text-neonYellow bg-darkBg px-4 py-1 rounded-xl border border-neonYellow/40">
+                            ${gameState.roomCode}
+                        </span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+                            <span>Jugadores Unidos</span>
+                            <span>${playersArr.length} Jugadores</span>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2.5 max-h-56 overflow-y-auto">
+                            ${playersArr.map(p => `
+                                <div class="flex items-center justify-between p-3 rounded-2xl bg-darkBg border border-cardBorder">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-xl bg-neonPurple/30 border border-neonPurple flex items-center justify-center font-bold text-xs text-neonCyan">
+                                            ${p.name.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <span class="font-bold text-sm text-white">${p.name}</span>
+                                    </div>
+                                    <span class="text-xs font-bold text-neonPink bg-neonPink/10 px-2.5 py-1 rounded-lg border border-neonPink/30">Listo</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-cardBorder flex items-center justify-between gap-3">
+                        <button onclick="confirmExit()" class="px-4 py-3 bg-darkBg hover:bg-slate-800 text-slate-400 font-bold text-xs rounded-xl transition">
+                            Salir
+                        </button>
+                        ${gameState.isHost ? `
+                            <button onclick="startNextRound()" class="flex-1 py-3.5 bg-gradient-to-r from-neonCyan to-neonPurple text-slate-950 font-black text-base rounded-2xl shadow-xl hover:opacity-95 transition transform active:scale-95 flex items-center justify-center gap-2">
+                                <span>EMPEZAR PARTIDA</span>
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                        ` : `
+                            <div class="flex-1 text-center text-xs text-slate-400 py-2">
+                                Esperando al anfitrión para iniciar...
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWriting() {
+            const myPlayer = gameState.players[localPlayer.id];
+            const hasSubmitted = myPlayer && myPlayer.submittedGuess;
+            const q = gameState.currentQuestion;
+
+            return `
+                <div class="w-full max-w-md bg-cardBg p-6 rounded-3xl border border-cardBorder shadow-2xl space-y-6">
+                    <div class="flex justify-between items-center border-b border-cardBorder pb-3">
+                        <span class="text-xs font-bold text-neonPink uppercase tracking-widest">Ronda ${gameState.currentRound} / ${gameState.roundsTotal}</span>
+                        <span class="text-xs font-bold text-slate-400">FASE 1: TU MENTIRA</span>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="bg-darkBg p-5 rounded-2xl border border-neonCyan/30 space-y-2 text-center">
+                        <span class="text-[10px] font-extrabold text-neonCyan uppercase tracking-widest block">Pregunta Numérica</span>
+                        <h2 class="text-xl font-black text-white leading-snug">${q ? q.q : ''}</h2>
+                        <span class="text-xs text-slate-400 block font-mono">Unidad: ${q ? q.unit : ''}</span>
+                    </div>
+
+                    ${hasSubmitted ? `
+                        <div class="bg-darkBg p-6 rounded-2xl border border-cardBorder text-center space-y-3">
+                            <div class="w-12 h-12 rounded-full bg-neonPink/20 border border-neonPink flex items-center justify-center mx-auto text-neonPink text-xl animate-bounce">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Cifra Enviada</h3>
+                            <p class="text-xs text-slate-400">Esperando a que el resto de jugadores inventen sus cifras...</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-neonYellow mb-1.5 uppercase tracking-wider">Escribe tu Cifra (Real o Farol)</label>
+                                <input type="number" id="guessInput" placeholder="Introduce solo números..."
+                                    class="w-full px-4 py-3.5 bg-darkBg border border-cardBorder rounded-2xl text-white font-mono font-bold text-xl text-center focus:outline-none focus:border-neonPink transition">
+                                <p class="text-[11px] text-slate-400 mt-1 text-center">
+                                    Intenta colar una cifra muy creíble para engañar a tus amigos.
+                                </p>
+                            </div>
+
+                            <button onclick="submitMyGuess()" class="w-full py-4 bg-gradient-to-r from-neonPink to-neonPurple text-white font-black text-lg rounded-2xl shadow-xl hover:opacity-95 transition transform active:scale-95">
+                                ENVIAR CIFRA SECRETA
+                            </button>
+                        </div>
+                    `}
+
+                    <!-- Status Bar -->
+                    <div class="pt-2 border-t border-cardBorder">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>Progreso del grupo:</span>
+                            <span class="font-bold text-neonCyan">
+                                ${Object.values(gameState.players).filter(p => p.submittedGuess).length} / ${Object.values(gameState.players).length} Listos
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderVoting() {
+            const myPlayer = gameState.players[localPlayer.id];
+            const hasVoted = myPlayer && myPlayer.submittedVote;
+
+            return `
+                <div class="w-full max-w-md bg-cardBg p-6 rounded-3xl border border-cardBorder shadow-2xl space-y-5">
+                    <div class="flex justify-between items-center border-b border-cardBorder pb-3">
+                        <span class="text-xs font-bold text-neonYellow uppercase tracking-widest">Ronda ${gameState.currentRound} / ${gameState.roundsTotal}</span>
+                        <span class="text-xs font-bold text-slate-400">FASE 2: LA APUESTA</span>
+                    </div>
+
+                    <div class="text-center space-y-1">
+                        <h2 class="text-xl font-black text-white">¿Cuál es la cifra REAL?</h2>
+                        <p class="text-xs text-slate-400">Apuesta por el número verdadero (no puedes votar el tuyo).</p>
+                    </div>
+
+                    ${hasVoted ? `
+                        <div class="bg-darkBg p-6 rounded-2xl border border-cardBorder text-center space-y-3">
+                            <div class="w-12 h-12 rounded-full bg-neonCyan/20 border border-neonCyan flex items-center justify-center mx-auto text-neonCyan text-xl animate-bounce">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Apuesta Registrada</h3>
+                            <p class="text-xs text-slate-400">Esperando que todos voten para revelar la respuesta real...</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                            ${gameState.votingOptions.map(opt => {
+                                const isMyOwn = opt.ownerId === localPlayer.id;
+                                return `
+                                    <button onclick="submitMyVote('${opt.id}')" ${isMyOwn ? 'disabled' : ''}
+                                        class="w-full p-4 rounded-2xl border text-left transition flex justify-between items-center ${
+                                            isMyOwn 
+                                                ? 'bg-darkBg/50 border-cardBorder text-slate-500 cursor-not-allowed opacity-60' 
+                                                : 'bg-darkBg border-cardBorder hover:border-neonCyan text-white hover:bg-slate-800'
+                                        }">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="font-mono text-xl font-black ${isMyOwn ? 'text-slate-500' : 'text-neonCyan'}">
+                                                ${opt.value.toLocaleString()}
+                                            </span>
+                                            <span class="text-xs text-slate-400 font-mono">${gameState.currentQuestion.unit}</span>
+                                        </div>
+                                        ${isMyOwn ? `
+                                            <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-400 px-2 py-1 rounded-lg">Tu Cifra</span>
+                                        ` : `
+                                            <span class="text-xs font-bold text-neonPink flex items-center gap-1">
+                                                Apostar <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                            </span>
+                                        `}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    `}
+
+                    <!-- Status Bar -->
+                    <div class="pt-2 border-t border-cardBorder">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>Votos registrados:</span>
+                            <span class="font-bold text-neonYellow">
+                                ${Object.values(gameState.players).filter(p => p.submittedVote).length} / ${Object.values(gameState.players).length}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderReveal() {
+            const realOpt = gameState.votingOptions.find(o => o.isReal);
+            const playersArr = Object.values(gameState.players).sort((a, b) => b.score - a.score);
+
+            return `
+                <div class="w-full max-w-md bg-cardBg p-6 rounded-3xl border border-cardBorder shadow-2xl space-y-6">
+                    <div class="text-center space-y-2 border-b border-cardBorder pb-4">
+                        <span class="text-xs font-bold text-neonCyan uppercase tracking-widest">RESULTADOS RONDA ${gameState.currentRound}</span>
+                        <h2 class="text-2xl font-black text-white">¡LA RESPUESTA REAL ERA!</h2>
+                        <div class="inline-block px-6 py-2 rounded-2xl bg-gradient-to-r from-neonPink via-neonPurple to-neonCyan text-slate-950 font-mono font-black text-3xl shadow-lg">
+                            ${realOpt ? realOpt.value.toLocaleString() : '---'} <span class="text-sm uppercase font-sans">${gameState.currentQuestion?.unit}</span>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown of Options -->
+                    <div class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Desglose de Cifras y Faroles</label>
+                        ${gameState.votingOptions.map(opt => {
+                            const isReal = opt.isReal;
+                            const ownerName = isReal ? 'CIFRA REAL' : (gameState.players[opt.ownerId]?.name || 'Farol');
+                            const voters = opt.voters.length > 0 ? opt.voters.join(', ') : 'Nadie';
+
+                            return `
+                                <div class="p-3.5 rounded-2xl border ${isReal ? 'bg-neonCyan/10 border-neonCyan' : 'bg-darkBg border-cardBorder'} space-y-1.5">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-mono text-lg font-black ${isReal ? 'text-neonCyan' : 'text-white'}">
+                                                ${opt.value.toLocaleString()}
+                                            </span>
+                                            <span class="text-xs font-bold px-2 py-0.5 rounded-md ${isReal ? 'bg-neonCyan text-slate-950' : 'bg-slate-800 text-slate-400'}">
+                                                ${ownerName}
+                                            </span>
+                                        </div>
+                                        <span class="text-xs font-bold text-neonYellow">
+                                            ${opt.voters.length} Voto(s)
+                                        </span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-400">
+                                        Votaron: <strong class="text-slate-200">${voters}</strong>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <!-- Leaderboard -->
+                    <div class="space-y-2 pt-2 border-t border-cardBorder">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Clasificación General</label>
+                        <div class="space-y-1.5">
+                            ${playersArr.map((p, idx) => `
+                                <div class="flex justify-between items-center p-2.5 bg-darkBg rounded-xl border border-cardBorder text-xs">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-bold text-slate-500 w-4">#${idx + 1}</span>
+                                        <span class="font-bold text-white">${p.name}</span>
+                                    </div>
+                                    <span class="font-mono font-black text-neonPink">${p.score} pts</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Host Next Button -->
+                    ${gameState.isHost ? `
+                        <button onclick="startNextRound()" class="w-full py-4 bg-gradient-to-r from-neonCyan to-neonPurple text-slate-950 font-black text-base rounded-2xl shadow-xl hover:opacity-95 transition transform active:scale-95">
+                            ${gameState.currentRound >= gameState.roundsTotal ? 'VER GANADOR FINAL' : 'SIGUIENTE RONDA'}
+                        </button>
+                    ` : `
+                        <div class="text-center text-xs text-slate-400 py-1">
+                            Esperando al anfitrión para avanzar...
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function renderScoreboard() {
+            const sorted = Object.values(gameState.players).sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+            sfx.playWin();
+
+            return `
+                <div class="w-full max-w-md bg-cardBg p-6 sm:p-8 rounded-3xl border border-cardBorder shadow-2xl text-center space-y-6 glow-pink">
+                    <div class="w-20 h-20 bg-gradient-to-tr from-neonYellow to-neonPink rounded-full flex items-center justify-center mx-auto text-4xl shadow-xl animate-bounce">
+                        <i class="fa-solid fa-trophy text-slate-950"></i>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h2 class="text-3xl font-black text-white">¡FIN DE LA PARTIDA!</h2>
+                        <p class="text-xs text-slate-400">El rey absoluto de las mentiras y los números es:</p>
+                        <div class="text-3xl font-black text-gradient pt-2">${winner ? winner.name : '---'}</div>
+                        <div class="text-sm font-mono font-bold text-neonYellow">${winner ? winner.score : 0} Puntos Totales</div>
+                    </div>
+
+                    <div class="space-y-2 text-left pt-2">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tabla Final</label>
+                        <div class="space-y-1.5">
+                            ${sorted.map((p, idx) => `
+                                <div class="flex justify-between items-center p-3 bg-darkBg rounded-xl border border-cardBorder text-sm">
+                                    <span class="font-bold text-white">${idx + 1}. ${p.name}</span>
+                                    <span class="font-mono font-black text-neonCyan">${p.score} pts</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <button onclick="location.reload()" class="w-full py-4 bg-gradient-to-r from-neonPink to-neonPurple text-white font-black text-lg rounded-2xl shadow-xl hover:opacity-95 transition transform active:scale-95">
+                        VOLVER AL INICIO
+                    </button>
+                </div>
+            `;
+        }
+
+        /* ----------------------------------------------------
+           6. HELPER UTILS
+        ---------------------------------------------------- */
+        function copyRoomCode() {
+            if (gameState.roomCode) {
+                navigator.clipboard.writeText(gameState.roomCode);
+                alert("Código de sala copiado: " + gameState.roomCode);
+            }
+        }
+
+        function confirmExit() {
+            if (gameState.phase !== 'home') {
+                if (confirm("¿Seguro que deseas salir al menú inicial?")) {
+                    location.reload();
+                }
+            }
+        }
+
+        // Initial render call
+        renderUI();
+    </script>
+</body>
+</html>

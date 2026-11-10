@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>¡Tic Tac BOOM! - Juego Multijugador de Palabras</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        boomDark: '#0e0b14',
+                        boomCard: '#1a1426',
+                        boomRed: '#ff2e55',
+                        boomOrange: '#ff7b00',
+                        boomYellow: '#ffc800',
+                        boomPurple: '#7c3aed'
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 0.4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'float': 'float 3s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0e0b14;
+            color: #ffffff;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-boom {
+            font-family: 'Luckiest Guy', cursive;
+            letter-spacing: 1px;
+        }
+        .glow-fire {
+            box-shadow: 0 0 35px rgba(255, 123, 0, 0.4), inset 0 0 15px rgba(255, 46, 85, 0.3);
+        }
+        .glow-red {
+            box-shadow: 0 0 30px rgba(255, 46, 85, 0.6);
+        }
+        /* Custom Spark Canvas Animation */
+        #sparkCanvas {
+            pointer-events: none;
+        }
+        /* Gradient Text */
+        .text-gradient-fire {
+            background: linear-gradient(135deg, #ffc800 0%, #ff7b00 50%, #ff2e55 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0e0b14; }
+        ::-webkit-scrollbar-thumb { background: #2a1f3d; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- HEADER -->
+    <header class="w-full bg-boomCard/80 backdrop-blur-md border-b border-purple-900/40 p-3 sm:p-4 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="confirmExit()">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-boomRed via-boomOrange to-boomYellow flex items-center justify-center font-bold text-lg shadow-lg">
+                    <i class="fa-solid fa-bomb text-boomDark text-xl"></i>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-boom text-gradient-fire tracking-wider">
+                    TIC TAC BOOM!
+                </h1>
+            </div>
+            
+            <div id="headerRoomBadge" class="hidden flex items-center space-x-2">
+                <span class="bg-purple-950/80 text-boomYellow text-xs font-mono font-bold px-3 py-1.5 rounded-xl border border-boomOrange/40 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-boomRed animate-ping"></span>
+                    SALA: <strong id="displayRoomCode" class="text-white text-sm">----</strong>
+                </span>
+                <button onclick="copyRoomCode()" class="text-gray-400 hover:text-white p-2 bg-purple-900/30 hover:bg-purple-900/60 rounded-xl transition" title="Copiar código">
+                    <i class="fa-solid fa-copy"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-center items-center">
+
+        <!-- ================= 1. LOBBY SCREEN ================= -->
+        <div id="lobbyScreen" class="w-full max-w-md bg-boomCard p-6 sm:p-8 rounded-3xl border border-purple-900/50 shadow-2xl space-y-6 glow-fire">
+            <div class="text-center space-y-2">
+                <div class="inline-block p-4 rounded-full bg-gradient-to-b from-boomOrange/20 to-transparent mb-1 animate-float">
+                    <i class="fa-solid fa-burst text-6xl text-boomOrange"></i>
+                </div>
+                <h2 class="text-3xl font-boom text-white">¡A JUGAR!</h2>
+                <p class="text-xs sm:text-sm text-gray-300">Responde antes de que la bomba explote en tus manos.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-boomYellow mb-1.5 uppercase tracking-wider">Tu Nombre / Apodo</label>
+                    <input type="text" id="playerNameInput" maxlength="12" placeholder="Ej: Capitán Boom" 
+                        class="w-full px-4 py-3 bg-boomDark border border-purple-700/60 rounded-2xl text-white font-bold text-lg focus:outline-none focus:border-boomOrange transition">
+                </div>
+
+                <!-- GAME MODE OPTIONS -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Modo de Juego</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setGameMode('categories')" id="modeBtnCategories" class="mode-btn p-2.5 bg-purple-900/40 border-2 border-boomOrange rounded-xl text-xs font-bold text-center transition">
+                            <i class="fa-solid fa-list-check text-boomYellow text-base block mb-1"></i>
+                            Categorías
+                        </button>
+                        <button onclick="setGameMode('syllables')" id="modeBtnSyllables" class="mode-btn p-2.5 bg-boomDark border-2 border-transparent hover:border-purple-600 rounded-xl text-xs font-bold text-center transition text-gray-400">
+                            <i class="fa-solid fa-font text-boomRed text-base block mb-1"></i>
+                            Sílabas
+                        </button>
+                        <button onclick="setGameMode('extreme')" id="modeBtnExtreme" class="mode-btn p-2.5 bg-boomDark border-2 border-transparent hover:border-purple-600 rounded-xl text-xs font-bold text-center transition text-gray-400">
+                            <i class="fa-solid fa-bolt text-boomOrange text-base block mb-1"></i>
+                            Extremo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- LIVES SELECTOR -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Vidas por Jugador</label>
+                    <div class="flex items-center justify-between bg-boomDark p-2 rounded-2xl border border-purple-900/40">
+                        <button onclick="adjustLives(-1)" class="w-10 h-10 rounded-xl bg-purple-900/50 hover:bg-purple-800 text-white font-bold text-lg flex items-center justify-center transition">-</button>
+                        <div class="flex items-center space-x-2">
+                            <span id="livesCountDisplay" class="text-xl font-boom text-boomRed">3</span>
+                            <i class="fa-solid fa-heart text-boomRed text-lg"></i>
+                        </div>
+                        <button onclick="adjustLives(1)" class="w-10 h-10 rounded-xl bg-purple-900/50 hover:bg-purple-800 text-white font-bold text-lg flex items-center justify-center transition">+</button>
+                    </div>
+                </div>
+
+                <!-- MULTIPLAYER MODE SELECTOR -->
+                <div class="pt-2 grid grid-cols-2 gap-3">
+                    <button onclick="createOnlineRoom()" class="py-3.5 px-4 bg-gradient-to-r from-boomOrange to-boomRed hover:opacity-95 text-boomDark font-boom font-bold text-base rounded-2xl shadow-xl transition transform active:scale-95 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-wifi text-lg mb-0.5"></i>
+                        <span>Crear Sala Online</span>
+                    </button>
+                    <button onclick="startPassAndPlay()" class="py-3.5 px-4 bg-purple-900/40 hover:bg-purple-900/70 border border-purple-500/40 text-white font-bold text-xs rounded-2xl transition transform active:scale-95 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-mobile-screen-button text-lg text-boomYellow mb-0.5"></i>
+                        <span>1 Móvil (Pasa y Juega)</span>
+                    </button>
+                </div>
+
+                <!-- JOIN ROOM INPUT -->
+                <div class="pt-2">
+                    <div class="flex gap-2">
+                        <input type="text" id="joinRoomInput" placeholder="CÓDIGO DE SALA" uppercase maxlength="6"
+                            class="flex-1 uppercase text-center font-mono tracking-widest px-4 py-2.5 bg-boomDark border border-purple-700/60 rounded-xl text-white text-sm focus:outline-none focus:border-boomYellow">
+                        <button onclick="joinOnlineRoom()" class="px-5 bg-boomPurple hover:bg-purple-600 text-white font-bold text-xs rounded-xl transition">
+                            Unirse
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCTIONS MODAL TRIGGER -->
+            <div class="pt-2 border-t border-purple-950 text-center">
+                <button onclick="toggleInstructions()" class="text-xs text-gray-400 hover:text-boomYellow transition flex items-center justify-center gap-1.5 mx-auto">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>Reglas del juego</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= 2. ROOM WAITING SCREEN ================= -->
+        <div id="waitingRoomScreen" class="hidden w-full max-w-2xl space-y-6">
+            <div class="bg-boomCard p-6 sm:p-8 rounded-3xl border border-purple-900/50 shadow-2xl space-y-6">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-purple-900/40 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-boom text-white flex items-center gap-2">
+                            <span>Sala de Espera</span>
+                            <span id="networkModeTag" class="text-xs font-mono font-bold bg-boomOrange/20 text-boomOrange px-2.5 py-1 rounded-full border border-boomOrange/40">ONLINE</span>
+                        </h2>
+                        <p class="text-xs text-gray-400">Invita a tus amigos con el código de la sala.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 uppercase font-bold">Código:</span>
+                        <span id="waitingCodeDisplay" class="font-mono text-2xl font-black text-boomYellow bg-boomDark px-4 py-1 rounded-xl border border-boomYellow/40">----</span>
+                    </div>
+                </div>
+
+                <!-- PLAYERS LIST -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider px-1">
+                        <span>Jugadores Unidos</span>
+                        <span id="playerCountTag">0 Jugadores</span>
+                    </div>
+                    <div id="playersListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Dynamic Player Badges -->
+                    </div>
+                </div>
+
+                <!-- PASS AND PLAY PLAYER ADDER (Only for 1-Device mode) -->
+                <div id="passAndPlayAdder" class="hidden space-y-3 pt-2 border-t border-purple-900/40">
+                    <label class="block text-xs font-bold text-boomYellow">Añadir otro jugador local:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="localPlayerNameInput" placeholder="Nombre jugador 2, 3..." maxlength="12"
+                            class="flex-1 px-4 py-2 bg-boomDark border border-purple-700/60 rounded-xl text-white text-sm">
+                        <button onclick="addLocalPlayer()" class="px-4 bg-boomOrange text-boomDark font-bold text-xs rounded-xl hover:bg-amber-400 transition">
+                            + Añadir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- START GAME BUTTON -->
+                <div class="pt-4 border-t border-purple-900/40 flex justify-between items-center gap-4">
+                    <button onclick="confirmExit()" class="px-5 py-3 bg-purple-950 hover:bg-purple-900 text-gray-300 font-bold text-xs rounded-2xl transition">
+                        Cancelar
+                    </button>
+                    <button id="startGameBtn" onclick="startGame()" class="flex-1 py-4 bg-gradient-to-r from-boomOrange via-boomRed to-boomPink text-boomDark font-boom text-xl rounded-2xl shadow-xl hover:opacity-95 transition transform active:scale-95">
+                        ¡EMPEZAR PARTIDA! <i class="fa-solid fa-play ml-2"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= 3. GAME ARENA SCREEN ================= -->
+        <div id="gameArenaScreen" class="hidden w-full max-w-xl space-y-4">
+            
+            <!-- PLAYERS LIVES BAR -->
+            <div class="bg-boomCard p-3 rounded-2xl border border-purple-900/40 shadow-lg overflow-x-auto">
+                <div id="arenaPlayersBar" class="flex items-center justify-center gap-2 sm:gap-4 min-w-max">
+                    <!-- Dynamic Lives Chips -->
+                </div>
+            </div>
+
+            <!-- MAIN BOMB & PROMPT CARD -->
+            <div id="bombCard" class="bg-gradient-to-b from-boomCard via-purple-950/40 to-boomCard p-6 rounded-3xl border border-purple-900/60 shadow-2xl text-center space-y-5 relative overflow-hidden">
+                
+                <!-- PROMPT / CATEGORY DISPLAY -->
+                <div class="space-y-1">
+                    <span id="promptTypeTag" class="text-xs font-bold text-boomOrange uppercase tracking-widest bg-boomOrange/10 px-3 py-1 rounded-full border border-boomOrange/30 inline-block">
+                        Categoría
+                    </span>
+                    <h2 id="promptText" class="text-2xl sm:text-3xl font-boom text-white leading-tight drop-shadow-md">
+                        Cosas que encuentras en la playa
+                    </h2>
+                </div>
+
+                <!-- ANIMATED SVG BOMB WITH SPARK -->
+                <div class="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto flex items-center justify-center my-2">
+                    
+                    <!-- SVG Bomb -->
+                    <svg id="bombSvg" viewBox="0 0 200 200" class="w-full h-full drop-shadow-[0_10px_25px_rgba(255,46,85,0.4)]">
+                        <!-- Fuse Rope -->
+                        <path id="fusePath" d="M 115 50 Q 145 20 160 45 T 145 80" fill="none" stroke="#8d6e63" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Fuse Cap -->
+                        <rect x="94" y="45" width="22" height="14" rx="3" fill="#ff7b00" />
+                        <!-- Main Bomb Sphere -->
+                        <circle cx="100" cy="118" r="62" fill="url(#bombGradient)" />
+                        <!-- Highlight Gloss -->
+                        <ellipse cx="80" cy="92" rx="16" ry="8" fill="#ffffff" opacity="0.18" transform="rotate(-30 80 92)"/>
+
+                        <!-- SVG Gradients -->
+                        <defs>
+                            <radialGradient id="bombGradient" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#3a2d54"/>
+                                <stop offset="50%" stop-color="#181126"/>
+                                <stop offset="100%" stop-color="#0a0712"/>
+                            </radialGradient>
+                        </defs>
+                    </svg>
+
+                    <!-- Spark Canvas Overlay for Burning Fuse Effect -->
+                    <canvas id="sparkCanvas" width="220" height="220" class="absolute inset-0 w-full h-full"></canvas>
+
+                    <!-- EXPLOSION FLASH OVERLAY -->
+                    <div id="explosionFlash" class="hidden absolute inset-0 bg-gradient-to-r from-boomYellow via-boomRed to-white rounded-3xl z-30 flex items-center justify-center">
+                        <span class="text-6xl sm:text-7xl font-boom text-boomDark animate-bounce">¡BOOM!</span>
+                    </div>
+
+                </div>
+
+                <!-- ACTIVE PLAYER TURN BANNER -->
+                <div class="bg-boomDark/80 p-3 rounded-2xl border border-purple-800/50 flex items-center justify-between">
+                    <div class="text-left">
+                        <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider block">Turno Activo</span>
+                        <span id="activePlayerName" class="text-lg font-boom text-boomYellow">---</span>
+                    </div>
+                    <div id="bombStatusBadge" class="text-xs px-3 py-1.5 rounded-xl bg-boomRed/20 text-boomRed border border-boomRed/40 font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock animate-spin"></i>
+                        <span>¡BOMBA ENCENDIDA!</span>
+                    </div>
+                </div>
+
+                <!-- WORD INPUT & PASS BOMB ACTION -->
+                <div class="space-y-3 pt-1">
+                    <div class="flex gap-2">
+                        <input type="text" id="wordInput" placeholder="Escribe tu palabra..." autocomplete="off"
+                            class="flex-1 px-4 py-3.5 bg-boomDark border border-purple-700/70 rounded-2xl text-white font-bold text-lg focus:outline-none focus:border-boomYellow">
+                        <button onclick="submitWordAndPass()" id="passBombBtn" class="px-6 bg-gradient-to-r from-boomOrange to-boomRed hover:opacity-95 text-boomDark font-boom text-lg rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <span>PASAR</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-gray-400">
+                        *Di la palabra en voz alta o escríbela y pasa la bomba antes de que explote.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= 4. GAME OVER / PODIUM MODAL ================= -->
+        <div id="gameOverModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-boomCard p-8 rounded-3xl border border-purple-800 max-w-md w-full text-center space-y-6 shadow-2xl glow-fire animate-float">
+                <div class="w-24 h-24 bg-gradient-to-tr from-boomYellow via-boomOrange to-boomRed rounded-full flex items-center justify-center mx-auto text-5xl shadow-xl">
+                    <i class="fa-solid fa-trophy text-boomDark"></i>
+                </div>
+                
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-boom text-white">¡TENEMOS GANADOR!</h2>
+                    <p id="winnerNameDisplay" class="text-2xl font-boom text-gradient-fire">---</p>
+                    <p class="text-xs text-gray-300">Superó la tensión y sobrevivió a las explosiones.</p>
+                </div>
+
+                <button onclick="resetGameToLobby()" class="w-full py-4 bg-gradient-to-r from-boomOrange to-boomRed text-boomDark font-boom text-lg rounded-2xl hover:opacity-95 transition">
+                    Volver al Inicio
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= 5. RULES & INSTRUCTIONS MODAL ================= -->
+        <div id="instructionsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-boomCard p-6 sm:p-8 rounded-3xl border border-purple-800 max-w-lg w-full text-left space-y-4 shadow-2xl overflow-y-auto max-h-[85vh]">
+                <div class="flex justify-between items-center border-b border-purple-900/50 pb-3">
+                    <h3 class="text-xl font-boom text-boomYellow">¿Cómo jugar a Tic Tac BOOM?</h3>
+                    <button onclick="toggleInstructions()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="space-y-3 text-xs sm:text-sm text-gray-300 leading-relaxed">
+                    <p><strong>1. El Turno de la Bomba:</strong> El jugador que tiene el turno debe decir en voz alta una palabra válida según la regla en pantalla y pulsar <em>PASAR</em>.</p>
+                    <p><strong>2. El Tiempo Secreto:</strong> La bomba explotará en un tiempo aleatorio entre 15 y 45 segundos. ¡El tictac se acelerará sin previo aviso!</p>
+                    <p><strong>3. ¡BOOM! Y Vidas:</strong> Quien tenga la bomba en la mano al momento de la explosión pierde 1 vida. El juego continúa hasta que solo quede un único sobreviviente.</p>
+                    <p><strong>4. Modos de Juego:</strong>
+                        <br>&bull; <em>Categorías:</em> Decir elementos de un tema (ej: "Frutas").
+                        <br>&bull; <em>Sílabas:</em> Usar palabras con la combinación dada (ej: "MAR").
+                        <br>&bull; <em>Extremo:</em> ¡La mecha es más corta cada vez!</p>
+                </div>
+                <button onclick="toggleInstructions()" class="w-full py-3 bg-purple-900 text-white font-bold rounded-xl hover:bg-purple-800 transition mt-2">
+                    ¡Entendido, a jugar!
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full text-center p-3 text-[11px] text-gray-500 border-t border-purple-950/60">
+        Tic Tac BOOM! &bull; Juego de Palabras en Tiempo Real
+    </footer>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        /* ----------------------------------------------------
+           1. DATA BANKS (SPANISH CATEGORIES & SYLLABLES)
+        ---------------------------------------------------- */
+        const CATEGORIES = [
+            "Ingredientes de una Pizza", "Marcas de Coches", "Cosas que hay en la Playa",
+            "Animales Salvajes", "Frutas y Verduras", "Personajes de Disney",
+            "Países de Europa", "Cosas que guardas en la Nevera", "Superhéroes y Villanos",
+            "Peliculas de Animación", "Cosas que encuentras en el Baño", "Instrumentos Musicales",
+            "Juegos de Mesa", "Deportes de Equipo", "Cosas Verdes", "Ropa de Invierno",
+            "Profesiōn u Oficios", "Cosas que Vuelan", "Marcas de Ropa o Calzado",
+            "Canciones Famosas", "Cosas Dulces", "Capitales del Mundo", "Objetos de Cocina",
+            "Platos de Comida Española", "Cosas de Madera", "Razas de Perro",
+            "Enfermedades o Síntomas", "Cosas que hacen Ruido", "Aparatos Electrónicos",
+            "Lugares para ir de Vacaciones", "Cosas que encuentras en el Colegio", "Bebidas y Refrescos",
+            "Nombres de Flor o Planta", "Cosas Redondas", "Nombres de Mujer", "Nombres de Hombre",
+            "Cosas que Huelen Bien", "Cosas que Huelen Mal", "Elementos del Espacio",
+            "Cosas Transparentes", "Palabras de 4 Letras", "Cosas que Compras en la Farmacia",
+            "Juegos de Videojuegos", "Películas de Terror", "Cosas Rápidas", "Cosas Lentas",
+            "Palabras con Z", "Cosas que Flotan", "Nombres de Ciudades Españolas",
+            "Accesorios para el Pelo", "Cosas que hay en el Garaje", "Personajes de Harry Potter",
+            "Cosas que se Rompen Fácilmente", "Cosas que Pican", "Formatos de Redes Sociales",
+            "Cosas Amarillas", "Tipos de Queso", "Cosas que se Llevan en el Bolsillo",
+            "Mamíferos Marinos", "Cosas Frías", "Cosas Calientes", "Herramientas de Bricolaje"
+        ];
+
+        const SYLLABLES = [
+            { type: "Contiene la sílaba", text: "MAR" },
+            { type: "Empieza por la letra", text: "CA" },
+            { type: "Termina en la sílaba", text: "ON" },
+            { type: "Contiene la letra / sílaba", text: "TR" },
+            { type: "Empieza por la letra", text: "BA" },
+            { type: "Contiene la sílaba", text: "PAR" },
+            { type: "Termina en la sílaba", text: "ADO" },
+            { type: "Empieza por la letra", text: "ES" },
+            { type: "Contiene la sílaba", text: "PL" },
+            { type: "Termina en la sílaba", text: "AR" },
+            { type: "Empieza por la letra", text: "CO" },
+            { type: "Contiene la sílaba", text: "BER" },
+            { type: "Termina en la sílaba", text: "ER" },
+            { type: "Empieza por la letra", text: "FA" },
+            { type: "Contiene la sílaba", text: "COR" },
+            { type: "Empieza por la letra", text: "G" },
+            { type: "Contiene la sílaba", text: "LI" },
+            { type: "Termina en la sílaba", text: "AZ" },
+            { type: "Empieza por la letra", text: "P" },
+            { type: "Contiene la sílaba", text: "ROS" },
+            { type: "Empieza por la letra", text: "TA" },
+            { type: "Termina en la sílaba", text: "IN" },
+            { type: "Contiene la sílaba", text: "TOR" },
+            { type: "Empieza por la letra", text: "VI" },
+            { type: "Contiene la sílaba", text: "BL" }
+        ];
+
+        /* ----------------------------------------------------
+           2. WEB AUDIO SYNTHESIZER FOR SOUND EFFECTS
+        ---------------------------------------------------- */
+        class BoomAudio {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            // Short clock tick sound
+            playTick(speedMultiplier = 1.0) {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(600 * speedMultiplier, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.04);
+                    
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.04);
+                } catch (e) {}
+            }
+
+            // Chime when passing bomb
+            playPassSound() {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.12);
+                    
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.12);
+                } catch (e) {}
+            }
+
+            // Explosion Sound Effect
+            playExplosion() {
+                if (!this.ctx) return;
+                try {
+                    // White noise buffer for explosion
+                    const bufferSize = this.ctx.sampleRate * 1.5;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 1.2);
+
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 1.2);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    noise.start();
+                    noise.stop(this.ctx.currentTime + 1.2);
+                } catch (e) {}
+            }
+        }
+        const audio = new BoomAudio();
+
+        /* ----------------------------------------------------
+           3. GAME STATE & BROADCAST CHANNEL (ONLINE)
+        ---------------------------------------------------- */
+        let localPlayer = {
+            id: 'p_' + Math.random().toString(36).substr(2, 9),
+            name: '',
+            lives: 3
+        };
+
+        let gameState = {
+            isOnline: false,
+            roomCode: '',
+            phase: 'lobby', // lobby, waiting, playing, exploded, ended
+            gameMode: 'categories', // categories, syllables, extreme
+            initialLives: 3,
+            players: [], // { id, name, lives, originalLives }
+            activePlayerIndex: 0,
+            currentPrompt: { type: 'Categoría', text: 'Cosas de la playa' },
+            bombExploded: false,
+            winner: null
+        };
+
+        let broadcastChannel = null;
+        let timerInterval = null;
+        let fuseAnimationId = null;
+        let bombTimeRemaining = 0; // In seconds
+        let totalBombTime = 30; // Random target
+
+        function initBroadcastChannel(code) {
+            if (broadcastChannel) broadcastChannel.close();
+            broadcastChannel = new BroadcastChannel('boom_room_' + code);
+            broadcastChannel.onmessage = (event) => {
+                handleNetworkMessage(event.data);
+            };
+        }
+
+        function broadcastState() {
+            if (gameState.isOnline && broadcastChannel) {
+                broadcastChannel.postMessage({ type: 'STATE_UPDATE', state: gameState });
+            }
+        }
+
+        function handleNetworkMessage(msg) {
+            if (msg.type === 'STATE_UPDATE') {
+                gameState = msg.state;
+                renderUI();
+            } else if (msg.type === 'JOIN_REQUEST' && gameState.players[0]?.id === localPlayer.id) {
+                // Host receives join request
+                const exists = gameState.players.find(p => p.id === msg.player.id);
+                if (!exists) {
+                    msg.player.lives = gameState.initialLives;
+                    gameState.players.push(msg.player);
+                }
+                broadcastState();
+                renderUI();
+            }
+        }
+
+        /* ----------------------------------------------------
+           4. SETUP & ROOM CREATION
+        ---------------------------------------------------- */
+        function setGameMode(mode) {
+            gameState.gameMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.className = "mode-btn p-2.5 bg-boomDark border-2 border-transparent hover:border-purple-600 rounded-xl text-xs font-bold text-center transition text-gray-400";
+            });
+            const activeBtn = document.getElementById(mode === 'categories' ? 'modeBtnCategories' : mode === 'syllables' ? 'modeBtnSyllables' : 'modeBtnExtreme');
+            if (activeBtn) {
+                activeBtn.className = "mode-btn p-2.5 bg-purple-900/40 border-2 border-boomOrange rounded-xl text-xs font-bold text-center transition text-white";
+            }
+        }
+
+        function adjustLives(delta) {
+            let lives = gameState.initialLives + delta;
+            if (lives < 1) lives = 1;
+            if (lives > 5) lives = 5;
+            gameState.initialLives = lives;
+            localPlayer.lives = lives;
+            document.getElementById('livesCountDisplay').innerText = lives;
+        }
+
+        function createOnlineRoom() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if (!name) {
+                alert("Por favor, introduce tu nombre.");
+                return;
+            }
+            audio.init();
+            localPlayer.name = name;
+            localPlayer.lives = gameState.initialLives;
+
+            const code = Math.random().toString(36).substring(2, 7).toUpperCase();
+            gameState.isOnline = true;
+            gameState.roomCode = code;
+            gameState.players = [Object.assign({}, localPlayer)];
+            gameState.phase = 'waiting';
+
+            initBroadcastChannel(code);
+            broadcastState();
+            renderUI();
+        }
+
+        function joinOnlineRoom() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            const code = document.getElementById('joinRoomInput').value.trim().toUpperCase();
+            if (!name || !code) {
+                alert("Introduce tu nombre y el código de la sala.");
+                return;
+            }
+            audio.init();
+            localPlayer.name = name;
+            localPlayer.lives = gameState.initialLives;
+
+            gameState.isOnline = true;
+            gameState.roomCode = code;
+            initBroadcastChannel(code);
+
+            // Send Join Request
+            broadcastChannel.postMessage({ type: 'JOIN_REQUEST', player: localPlayer });
+            gameState.phase = 'waiting';
+            renderUI();
+        }
+
+        function startPassAndPlay() {
+            const name = document.getElementById('playerNameInput').value.trim() || 'Jugador 1';
+            audio.init();
+            localPlayer.name = name;
+            localPlayer.lives = gameState.initialLives;
+
+            gameState.isOnline = false;
+            gameState.roomCode = 'LOCAL';
+            gameState.players = [
+                Object.assign({}, localPlayer),
+                { id: 'p_2', name: 'Jugador 2', lives: gameState.initialLives }
+            ];
+            gameState.phase = 'waiting';
+            renderUI();
+        }
+
+        function addLocalPlayer() {
+            const input = document.getElementById('localPlayerNameInput');
+            const name = input.value.trim();
+            if (!name) return;
+            gameState.players.push({
+                id: 'p_' + Math.random().toString(36).substr(2, 6),
+                name: name,
+                lives: gameState.initialLives
+            });
+            input.value = '';
+            renderUI();
+        }
+
+        function startGame() {
+            if (gameState.players.length < 2) {
+                alert("Se necesitan al menos 2 jugadores para empezar.");
+                return;
+            }
+            gameState.phase = 'playing';
+            gameState.activePlayerIndex = 0;
+            gameState.bombExploded = false;
+            
+            startRoundPrompt();
+            startBombTimer();
+
+            broadcastState();
+            renderUI();
+        }
+
+        function startRoundPrompt() {
+            if (gameState.gameMode === 'categories') {
+                const randomCat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+                gameState.currentPrompt = { type: 'Categoría', text: randomCat };
+            } else if (gameState.gameMode === 'syllables') {
+                const randomSyl = SYLLABLES[Math.floor(Math.random() * SYLLABLES.length)];
+                gameState.currentPrompt = { type: randomSyl.type, text: randomSyl.text };
+            } else {
+                // Extreme mode: mix of both
+                if (Math.random() > 0.5) {
+                    const randomCat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+                    gameState.currentPrompt = { type: 'Desafío Extremo', text: randomCat };
+                } else {
+                    const randomSyl = SYLLABLES[Math.floor(Math.random() * SYLLABLES.length)];
+                    gameState.currentPrompt = { type: 'Desafío Extremo', text: `${randomSyl.type}: ${randomSyl.text}` };
+                }
+            }
+        }
+
+        /* ----------------------------------------------------
+           5. BOMB TIMER & SPARK CANVAS ANIMATION
+        ---------------------------------------------------- */
+        function startBombTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            // Random time between 15 and 45 seconds
+            totalBombTime = Math.floor(Math.random() * 30) + 15;
+            bombTimeRemaining = totalBombTime;
+
+            let tickCounter = 0;
+            timerInterval = setInterval(() => {
+                bombTimeRemaining -= 0.2;
+                tickCounter++;
+
+                // Accelerating tic-tac audio calculation
+                const progress = 1 - (bombTimeRemaining / totalBombTime); // 0 to 1
+                const tickFrequency = Math.max(1, Math.floor((1 - progress) * 5)); // Ticks faster near end
+
+                if (tickCounter % tickFrequency === 0) {
+                    audio.playTick(1 + progress * 0.8);
+                }
+
+                if (bombTimeRemaining <= 0) {
+                    explodeBomb();
+                }
+            }, 200);
+
+            startSparkAnimation();
+        }
+
+        function submitWordAndPass() {
+            if (gameState.phase !== 'playing' || gameState.bombExploded) return;
+            
+            audio.playPassSound();
+
+            // Clear text input
+            const wordInput = document.getElementById('wordInput');
+            if (wordInput) wordInput.value = '';
+
+            // Extreme mode reduces bomb time slightly on every pass!
+            if (gameState.gameMode === 'extreme' && bombTimeRemaining > 5) {
+                bombTimeRemaining -= 2;
+            }
+
+            // Move to next player with lives
+            let nextIndex = (gameState.activePlayerIndex + 1) % gameState.players.length;
+            while (gameState.players[nextIndex].lives <= 0) {
+                nextIndex = (nextIndex + 1) % gameState.players.length;
+            }
+            gameState.activePlayerIndex = nextIndex;
+
+            broadcastState();
+            renderUI();
+        }
+
+        function explodeBomb() {
+            clearInterval(timerInterval);
+            gameState.bombExploded = true;
+            audio.playExplosion();
+
+            // Active player loses a life
+            const victim = gameState.players[gameState.activePlayerIndex];
+            if (victim) {
+                victim.lives -= 1;
+            }
+
+            // Flash explosion UI
+            const flash = document.getElementById('explosionFlash');
+            if (flash) flash.classList.remove('hidden');
+
+            setTimeout(() => {
+                if (flash) flash.classList.add('hidden');
+
+                // Check remaining alive players
+                const alivePlayers = gameState.players.filter(p => p.lives > 0);
+                if (alivePlayers.length <= 1) {
+                    gameState.phase = 'ended';
+                    gameState.winner = alivePlayers[0] || gameState.players[0];
+                } else {
+                    // Next round
+                    startRoundPrompt();
+                    startBombTimer();
+                    gameState.bombExploded = false;
+                }
+
+                broadcastState();
+                renderUI();
+            }, 2200);
+        }
+
+        /* Spark particles canvas rendering on top of the fuse */
+        function startSparkAnimation() {
+            const canvas = document.getElementById('sparkCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            let particles = [];
+            
+            function createSparks(x, y) {
+                for (let i = 0; i < 4; i++) {
+                    particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4 - 2,
+                        size: Math.random() * 3 + 1,
+                        color: Math.random() > 0.3 ? '#ffc800' : '#ff2e55',
+                        life: 1
+                    });
+                }
+            }
+
+            function animateSparks() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (gameState.phase === 'playing' && !gameState.bombExploded) {
+                    // Fuse tip position approx (x: 160, y: 45)
+                    const fuseX = 160 + (Math.random() * 4 - 2);
+                    const fuseY = 45 + (Math.random() * 4 - 2);
+
+                    createSparks(fuseX, fuseY);
+
+                    particles.forEach((p, idx) => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.life -= 0.05;
+
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = Math.max(0, p.life);
+                        ctx.fill();
+
+                        if (p.life <= 0) particles.splice(idx, 1);
+                    });
+
+                    fuseAnimationId = requestAnimationFrame(animateSparks);
+                }
+            }
+
+            cancelAnimationFrame(fuseAnimationId);
+            animateSparks();
+        }
+
+        /* ----------------------------------------------------
+           6. UI RENDERER & STATE SYNCHRONIZATION
+        ---------------------------------------------------- */
+        function renderUI() {
+            // Screen Visibility
+            document.getElementById('lobbyScreen').classList.toggle('hidden', gameState.phase !== 'lobby');
+            document.getElementById('waitingRoomScreen').classList.toggle('hidden', gameState.phase !== 'waiting');
+            document.getElementById('gameArenaScreen').classList.toggle('hidden', gameState.phase !== 'playing');
+            document.getElementById('headerRoomBadge').classList.toggle('hidden', !gameState.isOnline || !gameState.roomCode);
+
+            // Room Codes Display
+            document.getElementById('displayRoomCode').innerText = gameState.roomCode;
+            document.getElementById('waitingCodeDisplay').innerText = gameState.roomCode;
+
+            // Network Badge & Pass/Play Controls
+            document.getElementById('networkModeTag').innerText = gameState.isOnline ? 'ONLINE' : 'LOCAL';
+            document.getElementById('passAndPlayAdder').classList.toggle('hidden', gameState.isOnline);
+
+            // Render Waiting Room Players List
+            if (gameState.phase === 'waiting') {
+                const list = document.getElementById('playersListContainer');
+                list.innerHTML = '';
+                document.getElementById('playerCountTag').innerText = `${gameState.players.length} Jugadores`;
+
+                gameState.players.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = "flex items-center justify-between p-3 rounded-2xl bg-boomDark border border-purple-900/40";
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-user-astronaut text-boomOrange text-lg"></i>
+                            <span class="font-bold text-sm text-white">${p.name}</span>
+                        </div>
+                        <span class="text-xs text-boomRed font-bold flex items-center gap-1">
+                            ${p.lives} <i class="fa-solid fa-heart"></i>
+                        </span>
+                    `;
+                    list.appendChild(card);
+                });
+            }
+
+            // Render Playing Arena
+            if (gameState.phase === 'playing') {
+                // Prompt text
+                document.getElementById('promptTypeTag').innerText = gameState.currentPrompt.type;
+                document.getElementById('promptText').innerText = gameState.currentPrompt.text;
+
+                // Active Player Name
+                const activePlayer = gameState.players[gameState.activePlayerIndex];
+                document.getElementById('activePlayerName').innerText = activePlayer ? activePlayer.name : '---';
+
+                // Arena Players Bar & Lives
+                const arenaBar = document.getElementById('arenaPlayersBar');
+                arenaBar.innerHTML = '';
+                gameState.players.forEach((p, idx) => {
+                    const isTurn = idx === gameState.activePlayerIndex;
+                    const chip = document.createElement('div');
+                    chip.className = `px-3 py-1.5 rounded-xl flex items-center gap-2 border text-xs font-bold transition ${
+                        isTurn ? 'bg-boomOrange text-boomDark border-boomYellow shadow-lg scale-105' : 'bg-boomDark text-gray-300 border-purple-900/40 opacity-70'
+                    } ${p.lives <= 0 ? 'line-through opacity-30' : ''}`;
+                    
+                    chip.innerHTML = `
+                        <span>${p.name}</span>
+                        <span class="text-boomRed">${p.lives}♥</span>
+                    `;
+                    arenaBar.appendChild(chip);
+                });
+
+                // Disable pass button if not local active player in online mode
+                const passBtn = document.getElementById('passBombBtn');
+                if (gameState.isOnline && activePlayer?.id !== localPlayer.id) {
+                    passBtn.disabled = true;
+                    passBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    passBtn.disabled = false;
+                    passBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            // Game Over Modal
+            if (gameState.phase === 'ended') {
+                const modal = document.getElementById('gameOverModal');
+                modal.classList.remove('hidden');
+                document.getElementById('winnerNameDisplay').innerText = gameState.winner ? gameState.winner.name : 'Nadie';
+            }
+        }
+
+        function confirmExit() {
+            if (gameState.phase !== 'lobby') {
+                if (confirm("¿Quieres volver al menú principal? Se abandonará la partida actual.")) {
+                    resetGameToLobby();
+                }
+            }
+        }
+
+        function resetGameToLobby() {
+            clearInterval(timerInterval);
+            cancelAnimationFrame(fuseAnimationId);
+            gameState.phase = 'lobby';
+            document.getElementById('gameOverModal').classList.add('hidden');
+            renderUI();
+        }
+
+        function copyRoomCode() {
+            if (gameState.roomCode) {
+                navigator.clipboard.writeText(gameState.roomCode);
+                alert("Código de sala copiado: " + gameState.roomCode);
+            }
+        }
+
+        function toggleInstructions() {
+            const modal = document.getElementById('instructionsModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Enter key listener for passing word
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && gameState.phase === 'playing') {
+                submitWordAndPass();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Mentiroso · ¿Cuál es la verdadera?</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d32;--panel2:#1d2943;--text:#f4f6ff;--muted:#aab5d0;--line:#2e3b59;--a:#8b7cff;--b:#34d6c3;--good:#39d98a;--bad:#ff657a;--gold:#ffd166;--c0:#5f8cff;--c1:#ff9f4a;--c2:#39d98a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 15% 0%,#25234c 0,transparent 42%),radial-gradient(ellipse at 100% 20%,#123c4b 0,transparent 36%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+main{width:min(620px,100%);margin:auto;padding:20px 16px 48px}
+h1{font-size:clamp(38px,9vw,60px);line-height:1;margin:6px 0 0;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#a89dff 45%,#53ead7);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 10px}
+.sub{color:var(--muted);margin:8px 0 18px}.muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.panel{background:linear-gradient(145deg,rgba(29,41,67,.96),rgba(18,27,47,.96));border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 14px 40px #0003}
+.kick{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:800;margin:0 0 7px}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input[type=text]{width:100%;border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:13px;padding:13px 14px;font:inherit;outline:none}
+input[type=text]:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:13px 16px;margin-top:12px;background:linear-gradient(100deg,var(--a),#5f8cff);color:#fff;font-weight:800;box-shadow:0 8px 22px #6d65ff33}
+.btn.secondary{background:#263451;border:1px solid var(--line);box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;padding:6px 2px;font-size:14px}
+.linkb{background:#263451;border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
+.grid{display:grid;gap:8px}.g4{grid-template-columns:repeat(4,1fr)}
+.opt{padding:11px 6px;border-radius:13px;border:1px solid var(--line);background:#121a2d;color:var(--muted);text-align:center;font-size:14px;font-weight:700}
+.opt.on{background:#322d60;color:#fff;border-color:#8075ef}
+.mode{display:flex;gap:12px;align-items:center;text-align:left;padding:12px 14px;color:var(--text)}
+.mode .em{font-size:28px}.mode b{display:block}.mode small{color:var(--muted);font-weight:500}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.step{display:flex;align-items:center;gap:14px}.step button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#263451;color:#fff;font-size:22px}
+.step b{font-size:24px;min-width:26px;text-align:center}
+.code{font-size:44px;letter-spacing:.2em;font-weight:900;text-align:center;color:var(--gold);margin:2px 0}
+.pl{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.pl.first{border-top:0}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));color:#0b1020;display:grid;place-items:center;font-weight:900}
+.topic{font-size:25px;font-weight:850;line-height:1.2;margin:2px 0 4px}
+.me{border:2px solid var(--sc);border-radius:20px;padding:16px;margin:12px 0;background:linear-gradient(145deg,color-mix(in srgb,var(--sc) 22%,#151d32),#151d32)}
+.me .lb{font-size:13px;font-weight:900;letter-spacing:.1em;color:var(--sc)}.me .tx{font-size:25px;font-weight:900;line-height:1.2;margin:6px 0}
+.st{border-left:6px solid var(--sc);border:1px solid var(--line);border-left:6px solid var(--sc);border-radius:14px;padding:11px 13px;margin:9px 0;background:#111a2e}
+.st .lb{font-size:12px;font-weight:900;letter-spacing:.06em;color:var(--sc);text-transform:uppercase}.st .tx{font-weight:800;font-size:18px;line-height:1.25;margin-top:2px}
+.tm{font-size:36px;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;color:var(--b)}.tm.end{color:var(--bad)}
+.err{background:#ff657a22;border:1px solid var(--bad);border-radius:14px;padding:10px 12px;margin:12px 0;font-size:14px}
+.ok{background:#39d98a22;border:1px solid var(--good);border-radius:14px;padding:10px 12px;margin:12px 0;font-size:14px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:6px}.dot.off{background:var(--bad)}
+.rk{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.rk.first{border-top:0}.rk .n{font-size:24px;width:36px;text-align:center}.rk .v{margin-left:auto;font-weight:900;color:var(--gold)}
+.votebtn{display:block;width:100%;text-align:left;margin:7px 0;padding:12px 14px;border-radius:13px;background:#111a2e;border:1px solid var(--line);color:var(--text)}
+.votebtn.on{border-color:var(--b);background:#12303a}
+.qi{font-size:13px;padding:4px 0;color:var(--muted)}
+.hidden{display:none}
+.cd{font-size:12px;color:var(--muted)}</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var ROOM_PREFIX='cmd-men-',MAXP=20,DW=60,DV=30;
+function makeWsRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return {join:function(name,cid){return new Promise(function(resolve,reject){
+    var ws=null,id=null,pres={},arr=[],subs=[],done=false,closed=false,retry=0;
+    var room={
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn)},
+      onStatus:function(fn){room._st=fn},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p})},
+      leave:function(){closed=true;try{ws.close()}catch(e){}}
+    };
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres});if(room._st)room._st(true)};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello'){id=m.id}
+        else if(m.t==='peers'){
+          arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});
+          if(!done){done=true;resolve(room)}
+          subs.slice().forEach(function(f){f(arr)});
+        }else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}
+      };
+      ws.onclose=function(){if(room._st)room._st(false);if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();
+    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+
+var RM=makeWsRoom();
+var Q=[["Un ____ puede dormir hasta tres años seguidos.","caracol"],["Los pulpos tienen ____ corazones.","tres"],["El único mamífero que puede volar de verdad es el ____.","murciélago"],["Las nutrias marinas duermen agarradas de la ____ para no separarse.","mano"],["Los delfines duermen con un ____ abierto.","ojo"],["Un avestruz tiene los ojos más grandes que el ____.","cerebro"],["Las jirafas tienen ____ vértebras en el cuello, las mismas que una persona.","siete"],["La sangre de los pulpos es de color ____.","azul"],["Los gatos no pueden saborear el sabor ____.","dulce"],["En los caballitos de mar, quien se queda embarazado es el ____.","macho"],["Las hormigas no tienen ____ y respiran por unos agujeritos en el cuerpo.","pulmones"],["Las huellas dactilares de los koalas son casi idénticas a las de los ____.","humanos"],["Los flamencos nacen de color ____ y se vuelven rosas por lo que comen.","gris"],["Las abejas obreras de una colmena son todas ____.","hembras"],["Los canguros no pueden caminar hacia ____.","atrás"],["Las estrellas de mar no tienen ____: usan agua de mar para mover los nutrientes.","sangre"],["Los búhos giran la ____ hasta 270 grados porque no pueden mover los ojos.","cabeza"],["Las medusas no tienen ni cerebro ni ____.","corazón"],["El ____ es un mamífero que pone huevos.","ornitorrinco"],["Una ____ puede sobrevivir varios días sin cabeza.","cucaracha"],["El ____ es la única ave capaz de volar hacia atrás.","colibrí"],["Los dálmatas nacen completamente ____.","blancos"],["Los pingüinos emperador macho incuban el huevo sobre sus ____.","patas"],["El chocolate es tóxico para los ____.","perros"],["Los bebés nacen con unos ____ huesos, más que los adultos.","300"],["Las uñas de las manos crecen más deprisa que las de los ____.","pies"],["Una persona pasa más o menos un ____ de su vida durmiendo.","tercio"],["El hueso más pequeño del cuerpo humano es el ____, y está en el oído.","estribo"],["El corazón humano late unas ____ veces al día.","100.000"],["La sustancia más dura del cuerpo humano es el ____ de los dientes.","esmalte"],["La ____ tiene una huella única, igual que los dedos.","lengua"],["El cerebro usa aproximadamente el ____ % de la energía del cuerpo.","20"],["Un año en Mercurio dura unos ____ días terrestres.","88"],["La luz del Sol tarda unos ____ minutos en llegar a la Tierra.","8"],["El Sol contiene más del 99 % de la ____ del sistema solar.","masa"],["Las huellas de los astronautas en la Luna duran millones de años porque allí no hay ____.","viento/atmósfera"],["El diamante y el grafito están hechos del mismo elemento: el ____.","carbono"],["El único metal líquido a temperatura ambiente es el ____.","mercurio"],["Un rayo puede ser más caliente que la superficie del ____.","Sol"],["El sonido no puede viajar por el ____.","vacío"],["En Venus, un día dura más que un ____.","año"],["El planeta más caliente del sistema solar es ____, aunque no es el más cercano al Sol.","Venus"],["La Torre Eiffel puede crecer hasta 15 centímetros en ____ por el calor.","verano"],["Los plátanos son ligeramente ____ porque contienen potasio.","radiactivos"],["El efecto ____ describe cómo el agua caliente a veces se congela antes que la fría.","Mpemba"],["La Antártida es el desierto más grande del mundo, más que el ____.","Sáhara"],["Un día en Júpiter dura menos de ____ horas.","10"],["Cleopatra vivió más cerca de la llegada a la Luna que de la construcción de la Gran ____ de Giza.","pirámide"],["Napoleón no era bajito: medía unos ____ metros.","1,69"],["Los vikingos nunca llevaron cascos con ____.","cuernos"],["La Guerra de los Cien Años duró en realidad ____ años.","116"],["La guerra más corta de la historia, entre Reino Unido y Zanzíbar, duró unos ____ minutos.","40/38"],["El Quijote se publicó por primera vez en el año ____.","1605"],["Cervantes y Shakespeare murieron en la misma fecha del calendario: el 23 de ____ de 1616.","abril"],["La construcción de la Sagrada Familia empezó en el año ____.","1882"],["El Museo del Prado abrió sus puertas en el año ____.","1819"],["Madrid es la capital más alta de la ____.","Unión Europea/UE"],["El Teide mide ____ metros de altura.","3.715"],["Nintendo se fundó en 1889 fabricando ____.","cartas/naipes"],["Lego viene de las palabras danesas «leg godt», que significan «juega ____».","bien"],["Netflix empezó alquilando ____ por correo.","DVD/DVDs/películas"],["El primer SMS de la historia decía «Feliz ____».","Navidad"],["El código QR fue inventado en ____.","Japón"],["La primera webcam del mundo se usó para vigilar una ____ de café.","cafetera"],["El primer ratón de ordenador era de ____.","madera"],["El nombre Google viene de «googol», el número 1 seguido de ____ ceros.","100/cien"],["El ketchup se vendió al principio como ____.","medicina"],["Freddie Mercury estudió ____ antes de ser cantante.","diseño gráfico/diseño"],["Mickey Mouse estuvo a punto de llamarse ____ Mouse.","Mortimer"],["El primer anuncio de televisión en EE. UU. fue de un ____.","reloj"],["El Titanic llevaba solo ____ botes salvavidas.","20/veinte"],["Las zanahorias eran originalmente de color ____.","morado/violeta/púrpura"],["Los cacahuetes no son frutos secos: son ____.","legumbres"],["Los billetes de euro están hechos de ____.","algodón"],["El inventor del microondas descubrió la idea porque se le derritió un ____ en el bolsillo.","chocolate"],["La palabra «ojalá» viene del árabe y significa «si ____ quiere».","Dios/Alá"],["Rusia tiene ____ husos horarios.","11/once"],["Francia es el país con más husos horarios, gracias a sus ____ de ultramar.","territorios"],["El lago más profundo del mundo es el ____.","Baikal"],["El país con más islas del mundo es ____.","Suecia"],["La capital de Australia es ____, no Sídney.","Canberra"],["En ____ hay más lagos que en el resto del mundo juntos.","Canadá"],["El ajedrez nació en ____.","India"],["El Real Madrid se fundó en el año ____.","1902"],["El FC Barcelona se fundó en el año ____.","1899"],["La primera edición de LaLiga se jugó en la temporada 1928-____.","29/1929"],["El primer Mundial de fútbol, en 1930, se celebró en ____.","Uruguay"],["La Estatua de la Libertad fue un regalo de ____ a Estados Unidos.","Francia"],["Bolivia tiene dos capitales: Sucre y ____.","La Paz"],["Sudáfrica tiene tres capitales: Pretoria, Ciudad del Cabo y ____.","Bloemfontein"],["La bandera de ____ es la única del mundo que no es un cuadrilátero.","Nepal"],["La palabra «almohada» viene del ____.","árabe"],["La Gran Muralla china no se ve a simple vista desde el espacio: es un ____.","mito"],["El sentido del ____ es el único que no pasa por el tálamo del cerebro.","olfato"],["El océano más grande del mundo es el ____.","Pacífico"],["El monte más alto del mundo sobre el nivel del mar es el ____.","Everest"],["El idioma más hablado del mundo como lengua materna es el ____.","mandarín/chino"],["La Mona Lisa se conserva en el museo del ____.","Louvre"],["El Muro de Berlín cayó en el año ____.","1989"],["El euro empezó a circular en billetes y monedas en el año ____.","2002"]];
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),x=a[i];a[i]=a[j];a[j]=x}return a}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function rid(n){var c='ABCDEFGHJKMNPQRSTUVWXYZ',s='';for(var i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function cl(s,n){return String(s||'').replace(/\s+/g,' ').trim().slice(0,n)}
+function nz(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
+var uid=(function(){try{var u=sessionStorage.getItem('men-uid');if(!u){u=Math.random().toString(36).slice(2,12);sessionStorage.setItem('men-uid',u)}return u}catch(e){return Math.random().toString(36).slice(2,12)}})();
+var S={view:'home',code:'',host:false,room:null,peers:[],g:null,name:ls('men-name')||'',cd:(new URLSearchParams(location.search).get('sala')||'').toUpperCase().slice(0,6),err:'',flash:'',online:true,busy:false,a:null,v:null,lv:'',R:8,dirty:false};
+var app=$('app'),NM={};
+function RO(g){return (g.rs||'').split(',').filter(Boolean).map(function(u){return[u,NM[u]||'?']})}
+function players(){return S.peers.filter(function(p){return p.presence&&p.presence.u&&p.presence.n}).map(function(p){NM[p.presence.u]=p.presence.n;return{u:p.presence.u,n:p.presence.n,h:p.presence.h===1,a:p.presence.a,v:p.presence.v,me:p.isMe}})}
+function G(){if(S.host)return S.g;var h=S.peers.filter(function(p){return p.presence&&p.presence.h===1&&p.presence.g})[0];return h?h.presence.g:null}
+function pub(){
+  if(!S.room)return;
+  S.room.presence({u:uid,n:S.name,h:S.host?1:0,g:S.host?S.g:null,a:S.a,v:S.v});
+  if(S.host)ls('men-g-'+S.code,JSON.stringify(S.g));
+  ls('men-m-'+S.code,JSON.stringify({a:S.a,v:S.v}));
+}
+function setG(p){S.g=Object.assign({},S.g,p);pub();render(true)}
+function flash(m){S.flash=m;clearTimeout(S.ft);S.ft=setTimeout(function(){S.flash='';render(true)},4000);render(true)}
+// ---- lógica
+function qi(g,r){return shuffle(Q.map(function(_,i){return i}),rng(g.s))[r]}
+function truths(g){return Q[qi(g,g.r)][1].split('/')}
+function isTruth(g,t){var z=nz(t);return truths(g).some(function(x){return nz(x)===z})}
+function lies(g){var m={};players().forEach(function(p){if(RO(g).some(function(r){return r[0]===p.u})&&p.a&&p.a.r===g.r&&p.a.x)m[p.u]=p.a.x});return m}
+function buildOpts(g){
+  var seen={},o=[],L=lies(g);
+  Object.keys(L).forEach(function(u){var z=nz(L[u]);if(!z||seen[z]||isTruth(g,L[u]))return;seen[z]=1;o.push(L[u])});
+  o.push(truths(g)[0]);
+  return shuffle(o,rng(g.s+g.r*13+1));
+}
+function roundScore(g){
+  var gain={},by=(g.o||[]).map(function(t){return{t:t,truth:isTruth(g,t),au:[],vo:[]}}),ps=players(),ro=RO(g);
+  ro.forEach(function(r){gain[r[0]]=0});
+  ps.forEach(function(p){
+    if(!gain.hasOwnProperty(p.u)||!p.v||p.v.r!==g.r||typeof p.v.i!=='number'||!by[p.v.i])return;
+    var o=by[p.v.i];o.vo.push(p.n);
+    if(o.truth)gain[p.u]+=2;
+    else ps.forEach(function(q){if(q.u!==p.u&&gain.hasOwnProperty(q.u)&&q.a&&q.a.r===g.r&&nz(q.a.x)===nz(o.t))gain[q.u]+=1});
+  });
+  ps.forEach(function(q){if(gain.hasOwnProperty(q.u)&&q.a&&q.a.r===g.r)by.forEach(function(o){if(!o.truth&&nz(o.t)===nz(q.a.x))o.au.push(q.n)})});
+  return{gain:gain,by:by};
+}
+// ---- acciones
+async function enter(code,host){
+  if(S.busy)return;S.busy=true;S.err='';render(true);
+  try{
+    var room=await RM.join(ROOM_PREFIX+code.toLowerCase(),uid);
+    S.room=room;S.code=code;S.host=host;S.view='room';
+    room.onPeers(function(arr){S.peers=arr;onPeers()});
+    room.onStatus(function(ok){S.online=ok;if(ok)pub();render()});
+    S.peers=room.peers();
+    var m=null;try{m=JSON.parse(ls('men-m-'+code))}catch(e){}if(m){S.a=m.a||null;S.v=m.v||null}
+    if(host){var g=null;try{g=JSON.parse(ls('men-g-'+code))}catch(e){}S.g=g||{id:Date.now(),s:Math.floor(Math.random()*1e9),ph:'lobby',r:0,R:S.R,rs:'',o:[],tot:{},t0:0}}
+    ls('men-last',JSON.stringify({code:code,host:host}));pub();
+  }catch(e){S.err=e&&e.code==='room_full'?'La sala está llena.':'No se ha podido conectar con la sala. Inténtalo de nuevo.';S.view='home'}
+  S.busy=false;render(true);
+}
+function onPeers(){
+  var ps=players(),dup=ps.filter(function(p){return !p.me&&p.n.toLowerCase()===S.name.toLowerCase()}).length;
+  if(dup&&!S.renamed){S.renamed=1;S.name=S.name+' 2';ls('men-name',S.name);pub()}
+  render();
+}
+function leaveRoom(){if(S.room)S.room.leave();ls('men-last',null);S.room=null;S.peers=[];S.g=null;S.host=false;S.view='home';S.renamed=0;S.a=null;S.v=null;render(true)}
+function startGame(){
+  var ps=players().slice(0,MAXP);if(ps.length<2)return;
+  S.a=null;S.v=null;S.lv='';
+  setG({ph:'write',r:0,o:[],tot:{},t0:Date.now(),id:Date.now(),s:Math.floor(Math.random()*1e9),rs:ps.map(function(p){return p.u}).join(',')});
+}
+function toVote(){setG({ph:'vote',o:buildOpts(S.g),t0:Date.now()})}
+function toReveal(){var g=S.g,sc=roundScore(g),t=Object.assign({},g.tot);Object.keys(sc.gain).forEach(function(u){t[u]=(t[u]||0)+sc.gain[u]});setG({ph:'reveal',tot:t,t0:Date.now()})}
+function nextRound(){var g=S.g;S.lv='';if(g.r+1>=g.R)setG({ph:'end'});else setG({ph:'write',r:g.r+1,o:[],t0:Date.now()})}
+function sendLie(){
+  var g=G(),x=cl(S.lv,40);
+  if(!x)return flash('Escribe una respuesta falsa.');
+  if(isTruth(g,x))return flash('¡Esa es la verdadera! Inventa otra que suene creíble.');
+  S.a={r:g.r,x:x};pub();flash('✅ Mentira enviada. Puedes cambiarla hasta que acabe el tiempo.');
+}
+function vote(i){
+  var g=G();if(!g||g.ph!=='vote'||!RO(g).some(function(r){return r[0]===uid}))return;
+  if(S.a&&S.a.r===g.r&&nz(S.a.x)===nz(g.o[i]))return;
+  S.v={r:g.r,i:i};pub();render(true);
+}
+// ---- vistas
+function topbar(left){return '<div class="row" style="margin-bottom:4px"><span class="small"><span class="dot'+(S.online?'':' off')+'"></span>'+left+'</span><button class="link" data-a="leave">Salir</button></div>'+(S.flash?'<div class="ok">'+esc(S.flash)+'</div>':'')}
+function viewHome(){
+  var last=null;try{last=JSON.parse(ls('men-last'))}catch(e){}
+  var h='<a href="/" class="link" style="padding:0">← ¿Cuánto me conoces?</a><br><div class="tag">🤥 MULTIJUGADOR · SALAS PRIVADAS</div><h1>Mentiroso</h1><p class="sub">Sale una frase real con un hueco. Inventa la respuesta falsa más creíble… y no te creas las de los demás.</p>';
+  if(S.err)h+='<div class="err">'+esc(S.err)+'</div>';
+  h+='<div class="panel"><label style="margin-top:0">Tu nombre</label><input id="nm" type="text" maxlength="18" placeholder="¿Cómo te llamas?" value="'+esc(S.name)+'" autocomplete="off"></div>';
+  if(last&&last.code)h+='<button class="btn secondary" data-a="resume">↩️ Volver a la sala '+esc(last.code)+'</button>';
+  h+='<div class="panel"><h2>Crear sala</h2><div class="kick">Número de preguntas</div><div class="grid g4">'+[5,8,10,15].map(function(r){return '<button class="opt'+(S.R===r?' on':'')+'" data-a="rounds" data-v="'+r+'">'+r+'</button>'}).join('')+'</div><p class="small" style="margin:10px 0 0">De 2 a '+MAXP+' jugadores. Hay 100 preguntas distintas.</p><button class="btn" data-a="create">Crear sala</button></div>';
+  h+='<div class="panel"><h2>Unirme a una sala</h2><input id="cd" type="text" maxlength="6" placeholder="CÓDIGO" value="'+esc(S.cd)+'" style="text-transform:uppercase;letter-spacing:.25em;text-align:center;font-weight:800" autocomplete="off"><button class="btn" data-a="join">Unirme</button></div>';
+  return h;
+}
+function viewLobby(g){
+  var ps=players(),inn=ps.slice(0,MAXP),h=topbar(S.online?'Conectado':'Reconectando…');
+  h+='<div class="panel" style="text-align:center"><div class="kick">Código de la sala</div><div class="code">'+esc(S.code)+'</div><button class="btn secondary" data-a="share" style="margin-top:6px">🔗 Compartir enlace</button></div>';
+  h+='<div class="panel"><div class="row"><div class="kick" style="margin:0">Jugadores ('+inn.length+'/'+MAXP+')</div><span class="small">'+g.R+' preguntas</span></div>'+inn.map(function(p,i){return '<div class="pl'+(i?'':' first')+'"><div class="av">'+esc(p.n[0].toUpperCase())+'</div><b>'+esc(p.n)+(p.me?' (tú)':'')+'</b>'+(p.h?'<span class="small" style="margin-left:auto">👑 anfitrión</span>':'')+'</div>'}).join('')+'</div>';
+  h+='<div class="panel"><div class="kick">Cómo se juega</div><p class="small" style="margin:0">1) Sale una frase con un hueco. Escribe una respuesta falsa que suene real. 2) Se mezclan todas con la verdadera: elige la que creas cierta. 3) <b>+2</b> si aciertas, <b>+1</b> por cada persona que se crea tu mentira.</p></div>';
+  return h+(S.host?'<button class="btn" data-a="start"'+(ps.length<2?' disabled':'')+'>¡Empezar! ('+inn.length+' jugadores)</button>':'<p class="muted" style="text-align:center">Esperando a que el anfitrión empiece…</p>');
+}
+function nameList(a){return a.length>6?a.slice(0,5).join(', ')+' y '+(a.length-5)+' más':a.join(', ')}
+function rankHtml(g){var ro=RO(g),t=g.tot||{},r=ro.slice().sort(function(a,b){return (t[b[0]]||0)-(t[a[0]]||0)}),med=['🥇','🥈','🥉'];return r.map(function(x,i){return '<div class="rk'+(i?'':' first')+'"><span class="n">'+(med[i]||(i+1))+'</span><b>'+esc(x[1])+(x[0]===uid?' (tú)':'')+'</b><span class="v">'+(t[x[0]]||0)+' pts</span></div>'}).join('')}
+function viewPlay(g){
+  var ro=RO(g),inn=ro.some(function(r){return r[0]===uid}),ps=players(),q=Q[qi(g,g.r)];
+  var h=topbar('Pregunta '+(g.r+1)+' de '+g.R);
+  h+='<div class="panel"><div class="kick">Completa la frase</div><div class="topic">'+esc(q[0])+'</div>'+(g.ph!=='reveal'?'<div class="tm" id="tm"></div>':'')+'</div>';
+  if(!inn)h+='<div class="err">Estás mirando: la partida ya había empezado cuando entraste.</div>';
+  if(g.ph==='write'){
+    var L=lies(g),n=Object.keys(L).length,mine=S.a&&S.a.r===g.r;
+    if(inn)h+='<div class="panel"><h2>Tu mentira</h2><input id="li" type="text" maxlength="40" placeholder="Escribe lo que iría en el hueco…" value="'+esc(S.lv||(mine?S.a.x:''))+'" autocomplete="off"><button class="btn" data-a="sendlie">'+(mine?'Cambiar mi mentira':'Enviar mentira')+'</button>'+(mine?'<p class="small">✅ Enviada: «'+esc(S.a.x)+'»</p>':'')+'</div>';
+    h+='<div class="panel"><b>Han escrito '+n+' de '+ro.length+'</b></div>';
+    return h+(S.host?'<button class="btn" data-a="tovote">Pasar a la votación →</button>':'<p class="small" style="text-align:center">Cuando todos escriban, empieza la votación.</p>');
+  }
+  if(g.ph==='vote'){
+    var vd=ps.filter(function(p){return p.v&&p.v.r===g.r&&ro.some(function(r){return r[0]===p.u})}).length;
+    h+='<div class="panel"><h2>¿Cuál es la verdadera?</h2><div class="small" style="margin-bottom:6px">No puedes votar tu propia mentira.</div>'+g.o.map(function(t,i){var own=S.a&&S.a.r===g.r&&nz(S.a.x)===nz(t),on=S.v&&S.v.r===g.r&&S.v.i===i;return '<button class="votebtn'+(on?' on':'')+'" data-a="vote" data-v="'+i+'"'+(own||!inn?' disabled':'')+'><b>'+esc(t)+'</b>'+(own?'<div class="small">tu mentira</div>':'')+'</button>'}).join('')+'<div class="small" style="margin-top:8px">Han votado '+vd+' de '+ro.length+'</div></div>';
+    return h+(S.host?'<button class="btn" data-a="toreveal">Mostrar la respuesta →</button>':'<p class="small" style="text-align:center">Esperando al anfitrión…</p>');
+  }
+  var sc=roundScore(g),win=ro.filter(function(r){return sc.gain[r[0]]>0});
+  h+='<div class="ok">✅ La respuesta era: <b>'+esc(q[1].split('/')[0])+'</b></div>';
+  h+=sc.by.slice().sort(function(a,b){return b.truth-a.truth}).map(function(o){
+    return '<div class="st" style="--sc:'+(o.truth?'var(--good)':'var(--bad)')+'"><div class="lb">'+(o.truth?'✅ Verdad':'🤥 Mentira de '+(o.au.length?esc(nameList(o.au)):'nadie'))+'</div><div class="tx">'+esc(o.t)+'</div><div class="small">'+(o.vo.length?(o.truth?'La encontraron: ':'Cayeron: ')+esc(nameList(o.vo)):(o.truth?'Nadie la encontró':'Nadie cayó'))+'</div></div>'}).join('');
+  h+='<div class="panel"><div class="kick">Puntos de esta pregunta</div>'+(win.length?win.map(function(r){return '<div class="qi"><b style="color:var(--text)">'+esc(r[1])+'</b> +'+sc.gain[r[0]]+'</div>'}).join(''):'<div class="qi">Nadie ha puntuado.</div>')+'</div>';
+  h+='<div class="panel"><div class="kick">Clasificación</div>'+rankHtml(g)+'</div>';
+  return h+(S.host?'<button class="btn" data-a="next">'+(g.r+1>=g.R?'Ver resultados 🏆':'Siguiente pregunta →')+'</button>':'<p class="small" style="text-align:center">Esperando al anfitrión…</p>');
+}
+function viewEnd(g){
+  var t=g.tot||{},ro=RO(g).slice().sort(function(a,b){return (t[b[0]]||0)-(t[a[0]]||0)}),top=ro[0];
+  var h=topbar('🏆 Resultados');
+  h+='<div class="panel"><h2>'+(top&&(t[top[0]]||0)>0?'¡'+esc(top[1])+' es el/la mejor mentiroso/a!':'Fin de la partida')+'</h2>'+rankHtml(g)+'</div>';
+  return h+(S.host?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="muted" style="text-align:center">El anfitrión puede empezar otra partida.</p>');
+}
+function viewRoom(){
+  var g=G(),hostHere=players().some(function(p){return p.h});
+  if(!g)return '<div class="panel"><p>'+(hostHere?'Conectando con el anfitrión…':'Esperando al anfitrión…')+'</p><p class="small">Si no aparece: comprueba el código y que el anfitrión tenga la sala abierta y haya recargado la página.</p><button class="link" data-a="leave">Salir</button></div>';
+  if(!hostHere&&!S.host)return '<div class="err">El anfitrión se ha desconectado. Si vuelve, la partida continuará.</div><button class="btn secondary" data-a="leave">Salir</button>';
+  return g.ph==='lobby'?viewLobby(g):g.ph==='end'?viewEnd(g):viewPlay(g);
+}
+function typing(){var a=document.activeElement;return !!(a&&a.id==='li')}
+function render(force){
+  if(!force&&typing()){S.dirty=true;return}
+  S.dirty=false;var a=document.activeElement,keep=null;
+  if(a&&a.tagName==='INPUT'&&a.id)keep={id:a.id,s:a.selectionStart,e:a.selectionEnd};
+  app.innerHTML=S.view==='home'?viewHome():viewRoom();
+  if(keep&&$(keep.id)){var el=$(keep.id);el.focus();try{el.setSelectionRange(keep.s,keep.e)}catch(e){}}
+  tick();
+}
+function tick(){
+  var g=G();if(!g||S.view!=='room')return;
+  var dur=g.ph==='write'?DW:g.ph==='vote'?DV:0;if(!dur)return;
+  var el=Date.now()-g.t0,left=Math.max(0,dur-Math.floor(el/1000)),t=$('tm');
+  if(t){t.textContent=left>0?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):'⏰ ¡Tiempo!';t.className='tm'+(left?'':' end')}
+  if(S.host&&S.g){
+    var ro=RO(S.g),ps=players();
+    if(g.ph==='write'){var n=Object.keys(lies(g)).length;if((n>=ro.length&&el>1500)||el>(DW+4)*1000)toVote()}
+    else if(g.ph==='vote'){var vd=ps.filter(function(p){return p.v&&p.v.r===g.r&&ro.some(function(r){return r[0]===p.u})}).length;if((vd>=ro.length&&el>1500)||el>(DV+3)*1000)toReveal()}
+  }
+}
+setInterval(tick,500);
+app.addEventListener('input',function(e){var id=e.target.id;if(id==='nm')S.name=e.target.value;else if(id==='cd')S.cd=e.target.value.toUpperCase();else if(id==='li')S.lv=e.target.value});
+app.addEventListener('focusout',function(){setTimeout(function(){if(S.dirty&&!typing())render(true)},300)});
+function nm(){S.name=cl(S.name,18);ls('men-name',S.name);return S.name}
+app.addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a'),v=b.getAttribute('data-v');
+  if(a==='rounds'){S.R=+v;render(true)}
+  else if(a==='create'){if(!nm()){S.err='Escribe tu nombre primero.';return render(true)}enter(rid(4),true)}
+  else if(a==='join'){var c=(S.cd||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!nm()){S.err='Escribe tu nombre primero.';return render(true)}if(c.length<3){S.err='Escribe el código de la sala.';return render(true)}enter(c,false)}
+  else if(a==='resume'){var l=JSON.parse(ls('men-last'));if(!nm()){S.err='Escribe tu nombre primero.';return render(true)}enter(l.code,l.host)}
+  else if(a==='leave'){if(confirm('¿Salir de la sala?'))leaveRoom()}
+  else if(a==='share'){var u=location.origin+location.pathname+'?sala='+S.code;if(navigator.share)navigator.share({title:'Mentiroso',text:'Únete a mi sala: '+S.code,url:u}).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(u).then(function(){b.textContent='✅ Enlace copiado'})}
+  else if(a==='start')startGame();
+  else if(a==='sendlie')sendLie();
+  else if(a==='tovote'&&S.host)toVote();
+  else if(a==='vote')vote(+v);
+  else if(a==='toreveal'&&S.host)toReveal();
+  else if(a==='next'&&S.host)nextRound();
+  else if(a==='again'&&S.host){S.a=null;S.v=null;setG({ph:'lobby',r:0,o:[],tot:{},rs:'',id:Date.now()})}
+});
+app.addEventListener('keydown',function(e){if(e.key==='Enter'){if(e.target.id==='cd')app.querySelector('[data-a=join]').click();else if(e.target.id==='li')sendLie()}});
+render(true);
+</script>
+</body>
+</html>

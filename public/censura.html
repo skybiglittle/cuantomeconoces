@@ -74,6 +74,7 @@ li.rk .sc{font-weight:800;font-size:18px}
 //  · Online: usa la misma sala por WebSocket que el resto del juego.
 // =====================================================================
 var app=document.getElementById('app');
+window.addEventListener('error',function(e){var d=document.getElementById('errbox');if(!d){d=document.createElement('div');d.id='errbox';d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#d6453d;color:#fff;padding:8px 12px;border-radius:10px;font-size:13px';document.body.appendChild(d)}d.textContent='Error: '+(e.message||'desconocido')});
 function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function ea(t){return esc(t).replace(/"/g,'&quot;')}
 function val(id){var e=document.getElementById(id);return e?e.value:''}
@@ -128,7 +129,7 @@ var THEME_KEYS=Object.keys(TH);
 // ---------- Coincidencia aproximada (solo como sugerencia para el anfitrión) ----------
 function nz(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
 function lev(a,b){var m=a.length,n=b.length,d=[],i,j;for(i=0;i<=m;i++)d[i]=[i];for(j=1;j<=n;j++)d[0][j]=j;for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
-function close(g,t){g=nz(g);t=nz(t);if(!g||!t)return false;if(g===t)return true;if(g.length>=4&&(t.indexOf(g)>-1||g.indexOf(t)>-1))return true;return lev(g,t)<=Math.max(1,Math.floor(t.length/4))}
+function near(g,t){g=nz(g);t=nz(t);if(!g||!t)return false;if(g===t)return true;if(g.length>=4&&(t.indexOf(g)>-1||g.indexOf(t)>-1))return true;return lev(g,t)<=Math.max(1,Math.floor(t.length/4))}
 
 // ---------- Estado ----------
 // Z = estado local de este dispositivo. H = estado de la partida (lo manda el anfitrión).
@@ -155,7 +156,7 @@ function hostSet(c){Object.assign(H,c);H.v=(H.v||0)+1;Z.base=Date.now()-(H.el||0
 
 // ---------- Wikimedia ----------
 function tClean(s){return String(s||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim().slice(0,180)}
-var BAD=/(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|war photograph|violent|murder|injury|death|logo|flag|map of|diagram|poster|stamp|coat of arms|drawing|painting|engraving|illustration|scan|book|cover)/i;
+var BAD=/\b(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|violent|murder|injury|death|logo|flag|diagram|poster|stamp|drawing|painting|engraving|illustration|scan|book|cover)\b|map of|coat of arms/i;
 function cand(pg){
   var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{};
   return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:ii.thumbmime||ii.mime||'',w:ii.width||0,h:ii.height||0,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value))};
@@ -276,7 +277,7 @@ function paint(html){
   app.innerHTML=html;drawCv();
   var t=document.getElementById('gin');if(t){if(Z&&Z.gt!=null)t.value=Z.gt;if(fe)t.focus()}
 }
-function top(){
+function hdr(){
   var info=Z.mode==='online'?'Sala '+esc(Z.code.toUpperCase()):'Un dispositivo';
   var rd=H&&H.r>=0&&H.ph!=='lobby'&&H.ph!=='end'?' · Foto '+(H.r+1)+'/'+H.tot:'';
   return '<div class="top"><span>📸 '+info+rd+'</span><button class="link" data-a="leave">Salir</button></div>';
@@ -289,10 +290,11 @@ function board(){
 function setSeg(key,opts,cur,dis){return '<div class="seg'+(opts.length>4?' wrap':'')+'">'+opts.map(function(o){return '<button data-set="'+key+'" data-v="'+o[0]+'"'+(String(cur)===String(o[0])?' class="on"':'')+(dis?' disabled':'')+'>'+o[1]+'</button>'}).join('')+'</div>'}
 function render(){
   if(!Z)return;
-  if(!H){paint(top()+'<div class="card center"><h2>Conectando…</h2><p class="mut">Buscando la sala '+esc(Z.code.toUpperCase())+'.</p><span class="dots"><i></i><i></i><i></i></span></div>');return}
+  if(!H){paint(hdr()+'<div class="card center"><h2>Conectando…</h2><p class="mut">Buscando la sala '+esc(Z.code.toUpperCase())+'.</p><span class="dots"><i></i><i></i><i></i></span></div>');return}
+  if(H.img)loadImg(H.img.url);
   var ph=H.ph;
   if(ph==='lobby')vLobby();
-  else if(ph==='prep')paint(top()+'<div class="card center"><h2>Buscando una foto…</h2><p class="mut">Consultando Wikimedia Commons.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn());
+  else if(ph==='prep')paint(hdr()+'<div class="card center"><h2>Buscando una foto…</h2><p class="mut">Consultando Wikimedia Commons.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn());
   else if(ph==='ready')vReady();
   else if(ph==='error')vError();
   else if(ph==='end')vEnd();
@@ -309,16 +311,16 @@ function vLobby(){
     +'<div class="kick" style="margin-top:14px">Fotos por partida</div>'+setSeg('tot',[[5,'5'],[10,'10'],[15,'15']],H.tot)
     :'<p class="mut" style="font-size:14px;margin:12px 0 0">El anfitrión está preparando la partida…</p>';
   var head=Z.mode==='online'?'<div class="card center"><div class="kick">Sala de foto censurada</div><h2>Código: <span style="letter-spacing:.12em">'+esc(Z.code.toUpperCase())+'</span></h2><p class="mut">Pasa este código. Cada jugador pulsa "¡Lo sé!" en su móvil; el anfitrión (que no juega) presenta la foto en su pantalla y juzga las respuestas.</p></div>':'<div class="card center"><div class="kick">Un dispositivo</div><h2>Todos miran esta pantalla</h2><p class="mut">Cada jugador tiene su botón. Quien pulse primero responde en voz alta y tú decides si acierta.</p></div>';
-  paint('<h1>Foto censurada</h1>'+top()+head+'<div class="card"><div class="kick">Jugadores ('+pl.length+')</div><div class="pl">'+pills+'</div>'+set+'</div>'
+  paint('<h1>Foto censurada</h1>'+hdr()+head+'<div class="card"><div class="kick">Jugadores ('+pl.length+')</div><div class="pl">'+pills+'</div>'+set+'</div>'
     +(host?'<button class="btn" data-a="start"'+(pl.length<min?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn());
 }
 function vReady(){
-  if(!Z.host){paint(top()+'<div class="card center"><h2>Preparando la foto…</h2><p class="mut">Mira la pantalla del anfitrión. Enseguida empieza.</p><span class="dots"><i></i><i></i><i></i></span></div>'+board()+warn());return}
-  paint(top()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+(H.kind==='zoom'?'ampliado':'pixelado')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto.</p></div>'
+  if(!Z.host){paint(hdr()+'<div class="card center"><h2>Preparando la foto…</h2><p class="mut">Mira la pantalla del anfitrión. Enseguida empieza.</p><span class="dots"><i></i><i></i><i></i></span></div>'+board()+warn());return}
+  paint(hdr()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+(H.kind==='zoom'?'ampliado':'pixelado')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto.</p></div>'
     +'<button class="btn" data-a="begin">▶ Empezar a revelar</button><button class="btn sec" data-a="other">🔄 Otra foto</button>'+board());
 }
 function vError(){
-  paint(top()+'<div class="card center"><h2>No se pudo cargar la foto</h2><p class="mut">'+esc(H.err||'Inténtalo de nuevo.')+'</p>'+(Z.host?'<button class="btn" data-a="retry">Buscar otra</button>':'<p class="mut">El anfitrión puede volver a intentarlo.</p>')+'</div>'+warn());
+  paint(hdr()+'<div class="card center"><h2>No se pudo cargar la foto</h2><p class="mut">'+esc(H.err||'Inténtalo de nuevo.')+'</p>'+(Z.host?'<button class="btn" data-a="retry">Buscar otra</button>':'<p class="mut">El anfitrión puede volver a intentarlo.</p>')+'</div>'+warn());
 }
 function banner(){
   var l=H.last;if(!l)return '';
@@ -342,7 +344,7 @@ function vPlay(){
   }else if(host){
     var key='<p class="note">🔑 Respuesta: <b>'+esc(H.ans)+'</b></p>';
     if(judging){
-      var who=nameOf(H.buz),g=local?'':guessOf(H.buz),sug=g&&(close(g,H.ans)||close(g,H.ansEn));
+      var who=nameOf(H.buz),g=local?'':guessOf(H.buz),sug=g&&(near(g,H.ans)||near(g,H.ansEn));
       act=key+'<div class="card center"><div class="kick">Responde</div><h2>'+esc(who)+'</h2>'+(local?'<p class="mut">Que lo diga en voz alta. ¿Es correcto?</p>':(g?'<p class="q" style="font-size:20px;margin:0 0 6px">«'+esc(g)+'»'+(sug?' ✨':'')+'</p><p class="mut" style="font-size:13px">'+(sug?'Parece correcta.':'No coincide con la respuesta esperada.')+' Tú decides.</p>':'<p class="mut">Está escribiendo su respuesta…</p>'))
         +'<button class="btn ok" data-a="ok">✅ Correcto (+'+pubPoints(Math.min(1,H.el/H.dur))+')</button><button class="btn ko" data-a="ko">❌ Incorrecto (−1)</button></div>';
     }else{
@@ -358,7 +360,7 @@ function vPlay(){
     else if(mine)act='<p class="center mut">¡Pulsado! Esperando al anfitrión…</p>';
     else act=banner()+'<button class="btn buzz" data-a="buzz">✋ ¡LO SÉ!</button>';
   }
-  paint(top()+prog+cv+act+board()+warn());
+  paint(hdr()+prog+cv+act+board()+warn());
 }
 function vEnd(){
   var pl=players().slice().sort(function(a,b){return (H.sc[b.k]||0)-(H.sc[a.k]||0)}),w=pl[0];

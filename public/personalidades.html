@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>El personaje misterioso · Cuánto me conoces</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d32;--panel2:#1d2943;--text:#f4f6ff;--muted:#aab5d0;--line:#2e3b59;--a:#9b8cff;--b:#53dfca;--good:#39d98a;--gold:#ffd166;--bad:#ff758f}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,#29234d 0,transparent 42%),radial-gradient(ellipse at 100% 20%,#123c4b 0,transparent 36%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}main{width:min(800px,100%);margin:auto;padding:24px 16px 48px}h1{font-size:clamp(35px,8vw,58px);line-height:1.02;margin:12px 0 8px;letter-spacing:-.055em;background:linear-gradient(100deg,#fff,#b6aaff 48%,#64e9d8);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:23px;margin:0 0 8px}h3{font-size:18px;margin:0 0 6px}.sub,.muted{color:var(--muted)}.sub{margin:0 0 22px}.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px}.panel{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(18,27,47,.97));border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 14px 40px #0003}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1;min-width:0}.stack{display:grid;gap:10px}.hidden{display:none!important}label{display:block;font-size:13px;color:var(--muted);margin:12px 0 5px}input,select,textarea{width:100%;border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:13px;padding:13px 14px;font:inherit;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--a)}button{font:inherit;cursor:pointer}.btn{border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:white;font-weight:800;box-shadow:0 8px 22px #6d65ff33}.btn.secondary{background:#263451;border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--text)}.btn.green{background:linear-gradient(100deg,#159b67,#20b982)}.btn:disabled{opacity:.4;cursor:not-allowed}.players{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.player{background:#0f172a;border:1px solid var(--line);padding:6px 10px;border-radius:99px;font-size:13px}.player.me{border-color:var(--b);color:var(--b)}.code{font-size:31px;letter-spacing:.18em;font-weight:950;text-align:center;color:var(--gold)}.small{font-size:13px;color:var(--muted)}.notice,.status{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--line);color:var(--muted);margin:12px 0}.notice.good{background:#102b25;border-color:#226448;color:#a8f0ca}.notice.warn{background:#332719;border-color:#74542a;color:#ffe0a3}.question{font-size:clamp(22px,5vw,30px);font-weight:850;line-height:1.25;margin:14px 0 18px}.persona{border:1px solid #6556a5;background:linear-gradient(135deg,#30265b,#1d2947);border-radius:18px;padding:20px;margin:15px 0}.persona .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#c9bfff;font-weight:800}.persona .name{font-size:clamp(25px,6vw,36px);font-weight:950;margin-top:5px}.answer-card{background:#101a2e;border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0}.answer-head{display:flex;justify-content:space-between;gap:10px;color:var(--b);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}.answer-text{font-size:17px;margin:7px 0 0;overflow-wrap:anywhere}.vote-row{display:grid;grid-template-columns:1fr;gap:7px;margin-top:12px}.vote-row select{padding:10px}.meter{height:9px;background:#303b55;border-radius:99px;overflow:hidden;margin:10px 0}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--a));width:0}.scoreline{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.scoreline:last-child{border:0}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}.timerline{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)}.pill{display:inline-block;padding:4px 9px;border-radius:99px;background:#29234e;color:#c8c0ff;font-size:12px;font-weight:800}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hint{font-size:12px;color:var(--muted);margin-top:8px}
+@media(max-width:560px){main{padding:18px 12px 34px}.panel{padding:16px}.row{flex-wrap:wrap}.row>*{flex:1 1 100%}.grid2{grid-template-columns:1fr}.code{font-size:27px}}
+</style>
+</head>
+<body><main>
+<header><div class="tag">🎭 MULTIJUGADOR · SALAS PRIVADAS</div><h1>El personaje misterioso</h1><p class="sub">Interpreta una personalidad secreta, responde como ella y descubre quién es quién.</p></header>
+<section id="home" class="panel">
+<h2>Entra en partida</h2><p class="muted">Crea una sala y comparte el código de cinco caracteres, o únete a la sala de otra persona.</p>
+<label for="playerName">Tu nombre</label><input id="playerName" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="createBtn">Crear sala</button><button class="btn secondary" id="showJoinBtn">Unirme a una sala</button></div>
+<div id="joinBox" class="hidden"><label for="roomCode">Código de sala</label><input id="roomCode" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn" id="joinBtn" style="width:100%;margin-top:9px">Entrar en la sala</button></div>
+<p id="homeMsg" class="notice" aria-live="polite"></p>
+</section>
+<section id="lobby" class="panel hidden">
+<div class="grid2"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="codeLabel">-----</div></div><div class="stack"><button class="btn secondary" id="copyBtn">Copiar código</button><div class="small" id="hostLabel">Esperando jugadores…</div></div></div>
+<h3 style="margin-top:18px">Jugadores conectados</h3><div id="lobbyPlayers" class="players"></div>
+<div class="status">Cada persona recibirá una personalidad diferente. Todos contestarán la misma pregunta y después intentaréis adivinar qué personaje tenía cada uno.</div>
+<div class="row"><button class="btn green" id="startBtn">Empezar partida</button><button class="btn ghost" id="leaveBtn">Salir</button></div><p id="lobbyMsg" class="small">El anfitrión podrá empezar cuando haya entre 3 y 8 jugadores.</p>
+</section>
+<section id="game" class="panel hidden"></section>
+<p class="footer">Cuánto me conoces · El personaje misterioso · 141 preguntas incluidas</p>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const QUESTIONS=[
+'Llegas a un restaurante y te sirven un plato completamente diferente al que habías pedido. ¿Qué haces?',
+'Te encuentras 1.000 euros en mitad de la calle. ¿Cuál es tu primera reacción?',
+'Tu mejor amigo te anuncia que se casa mañana. ¿Qué le respondes?',
+'Te quedas encerrado en un ascensor con cuatro desconocidos. ¿Cómo rompes el silencio?',
+'Te invitan a dar un discurso delante de 500 personas. ¿Qué dices?',
+'Se va la luz en toda tu casa a medianoche. ¿Qué haces primero?',
+'Te toca organizar las vacaciones de un grupo de amigos. ¿Cuál es tu primera decisión?',
+'Alguien te dice que eres muy raro. ¿Cómo respondes?',
+'Descubres que puedes leer la mente durante 24 horas. ¿Qué haces primero?',
+'Te encuentras con una persona famosa por la calle. ¿Qué le dices?',
+'Te nombran jefe de una empresa durante un día. ¿Qué es lo primero que cambias?',
+'Tu vecino empieza a tocar un instrumento a las siete de la mañana. ¿Cómo reaccionas?',
+'Has preparado una cena y nadie llega a la hora acordada. ¿Qué haces?',
+'Te dan un regalo que no te gusta nada. ¿Cómo reaccionas?',
+'Un desconocido te pide consejo para cambiar de vida. ¿Qué le preguntas?',
+'Te pierdes en una ciudad sin batería en el móvil. ¿Cuál es tu plan?',
+'Tienes que elegir una canción para que suene al entrar en una habitación. ¿Cuál sería tu estilo?',
+'Un amigo te cuenta que ha comprado algo carísimo y se arrepiente. ¿Qué le dices?',
+'Te despiertas y descubres que todo el mundo habla con rimas. ¿Cómo te adaptas?',
+'Te ofrecen cambiar de trabajo por uno completamente inesperado. ¿Qué necesitas saber?',
+'En una reunión nadie se atreve a hablar. ¿Qué haces para romper el hielo?',
+'Te toca cuidar durante una tarde a un perro muy travieso. ¿Cómo organizas el día?',
+'Entras en una tienda y descubres que todo cuesta un euro. ¿Qué compras?',
+'Te dan un micrófono y te piden que improvises una canción. ¿De qué trataría?',
+'Un amigo te propone montar un negocio contigo sin explicarte la idea. ¿Qué respondes?',
+'Te invitan a una fiesta donde no conoces a nadie. ¿Cómo empiezas a relacionarte?',
+'Te despiertas siendo famoso durante un día. ¿Qué es lo primero que haces?',
+'Te encuentras una puerta misteriosa en mitad del bosque. ¿La abres?',
+'Tu equipo pierde una competición por un solo punto. ¿Qué dices al terminar?',
+'Tienes que convencer al grupo para ver una película que nadie conoce. ¿Cómo la vendes?',
+'Te piden que expliques internet a alguien que vivió hace 200 años. ¿Por dónde empiezas?',
+'Un camarero se equivoca tres veces con tu pedido. ¿Cómo solucionas la situación?',
+'Te dan un presupuesto ilimitado para mejorar tu barrio. ¿En qué lo gastas?',
+'En mitad de una excursión empieza a llover muchísimo. ¿Qué propones?',
+'Te toca elegir el nombre de una nueva mascota del grupo. ¿Qué nombre sugieres?',
+'Un amigo quiere aprender una habilidad en una semana. ¿Qué consejo le das?',
+'Te encuentras un botón que, al pulsarlo, concede un deseo pequeño. ¿Qué pides?',
+'Tienes que pasar una noche en un museo. ¿Qué zona eliges para instalarte?',
+'Tu comida llega fría y el resto del grupo ya está comiendo. ¿Qué haces?',
+'Te piden que cuentes un secreto inofensivo sobre ti. ¿Qué confiesas?',
+'Un extraterrestre te pregunta qué es lo más importante de la humanidad. ¿Qué contestas?',
+'Te conviertes en profesor por un día. ¿Qué norma pones en clase?',
+'Tienes que diseñar un nuevo día festivo. ¿Qué se celebraría?',
+'Un amigo te manda un mensaje que solo dice «tenemos que hablar». ¿Qué piensas?',
+'Te toca compartir habitación con alguien que ronca muchísimo. ¿Cómo lo gestionas?',
+'Puedes borrar una tarea doméstica para siempre. ¿Cuál eliminas?',
+'Te ofrecen viajar al pasado durante una hora. ¿A qué época irías?',
+'Te dan la oportunidad de inventar un sabor de helado. ¿Cuál creas?',
+'Un desconocido te reta a un concurso de talentos. ¿Qué presentas?',
+'Te despiertas con un objeto absurdo en el bolsillo y no recuerdas cómo llegó ahí. ¿Qué haces?',
+'Tienes que elegir a alguien del grupo para una misión secreta. ¿A quién eliges y por qué?',
+'Un robot te pide que le enseñes a ser humano. ¿Cuál es la primera lección?',
+'Te toca hacer de guía turístico en tu propia ciudad. ¿Adónde llevas al grupo?',
+'Un amigo llega tarde por quinta vez. ¿Qué le dices?',
+'Te dan una hora para preparar una fiesta sorpresa. ¿Cómo te organizas?',
+'Tienes que sobrevivir una semana sin usar el móvil. ¿Qué harías para entretenerte?',
+'Un genio te concede tres deseos, pero uno tiene que ser para otra persona. ¿Cómo los repartes?',
+'Te encuentras una máquina que traduce los sonidos de los animales. ¿A qué animal escuchas primero?',
+'Te nombran responsable de elegir la comida para todo el grupo durante un mes. ¿Qué criterio sigues?',
+'Tienes que explicar por qué el lunes debería ser el mejor día de la semana. ¿Qué argumento utilizas?',
+'Un niño te pregunta de dónde vienen las nubes. ¿Cómo se lo explicas?',
+'Te ofrecen participar en un reality de televisión. ¿Qué condición pondrías?',
+'Tu amigo ha enviado un mensaje al grupo equivocado. ¿Cómo reaccionas?',
+'Te dan una pizarra y cinco minutos para enseñar algo al resto. ¿Qué enseñas?',
+'Una paloma te sigue durante varias calles. ¿Qué haces?',
+'Tienes que poner música en un viaje largo en coche. ¿Qué estilo eliges?',
+'Te conviertes en alcalde de una isla diminuta. ¿Cuál es tu primera ley?',
+'Te invitan a una cena elegante y no sabes usar uno de los cubiertos. ¿Cómo actúas?',
+'Un amigo te pide que le ayudes a elegir un nombre artístico. ¿Qué le propones?',
+'Te toca negociar el precio de un objeto en un mercadillo. ¿Cómo empiezas?',
+'Tienes que crear una nueva asignatura para los colegios. ¿Qué enseñarías?',
+'Te despiertas y descubres que tu casa está llena de patos. ¿Cuál es tu plan?',
+'Un famoso te ofrece intercambiar vidas durante un día. ¿Qué pregunta haces antes?',
+'Te piden que hagas una foto de grupo y todos salen con los ojos cerrados. ¿Qué haces?',
+'Tienes que preparar una presentación sobre algo que no conoces. ¿Cómo empiezas?',
+'Te encuentras una maleta llena de calcetines desparejados. ¿Qué conclusión sacas?',
+'Tu grupo debe elegir un lema para una competición. ¿Cuál propones?',
+'Te ofrecen un asiento en primera fila para cualquier espectáculo. ¿Qué eliges?',
+'Un amigo asegura que puede hablar con las plantas. ¿Qué le preguntas?',
+'Te toca explicar las reglas de un juego nuevo a personas impacientes. ¿Cómo lo haces?',
+'Una tienda te pide que pruebes un producto completamente absurdo. ¿Qué tendría que ser para aceptar?',
+'Te despiertas con la capacidad de volar, pero solo a un metro del suelo. ¿Para qué la usarías?',
+'Tienes que elegir un objeto cotidiano para representar al grupo. ¿Cuál eliges?',
+'Un desconocido te pide que le recomiendes un libro sin saber sus gustos. ¿Qué le preguntas?',
+'Te dan una semana libre inesperada. ¿Cómo sería tu primer día?',
+'En una comida alguien cuenta un chiste malísimo y se hace un silencio incómodo. ¿Qué haces?',
+'Te toca inventar una tradición para celebrar cada viernes. ¿Qué propones?',
+'Un amigo quiere abrir un restaurante temático. ¿Qué temática le recomiendas?',
+'Te dan un mapa sin nombres y te dicen que encuentres un tesoro. ¿Qué haces primero?',
+'Tienes que elegir un animal como compañero para una expedición. ¿Cuál eliges?',
+'Te piden que describas el siglo XXI usando solo tres palabras. ¿Cuáles eliges?',
+'Un ascensor tiene un botón que nadie ha pulsado nunca. ¿Qué haces?',
+'Te toca improvisar una excusa por haber llegado tarde. ¿Qué explicación das?',
+'Un amigo te propone intercambiar casas durante un mes. ¿Qué necesitas saber?',
+'Tienes que crear un nuevo deporte con tres objetos de una cocina. ¿Qué inventas?',
+'Te dan la oportunidad de hablar durante cinco minutos con tu yo del futuro. ¿Qué preguntas?',
+'Te piden que elijas una mascota para una biblioteca. ¿Cuál sería la más apropiada?',
+'Un turista te pregunta qué es imprescindible probar en tu ciudad. ¿Qué recomiendas?',
+'Te toca organizar una competición entre vecinos. ¿Qué pruebas incluyes?',
+'Tu grupo se queda sin cobertura en mitad de un viaje. ¿Quién toma el mando y qué propones?',
+'Te regalan una caja enorme que hace ruido por dentro. ¿Qué crees que contiene?',
+'Tienes que cambiar el nombre de todos los días de la semana. ¿Por cuál empiezas?',
+'Un amigo te pide una opinión sincera sobre un peinado nuevo. ¿Qué le dices?',
+'Te dan una máquina del tiempo que solo funciona para visitar lugares, no épocas. ¿Adónde vas?',
+'Tienes que elegir un objeto para llevar a una isla desierta, además de lo imprescindible. ¿Cuál?',
+'Una persona te acusa de haberte comido su postre, pero no has sido tú. ¿Cómo te defiendes?',
+'Te conviertes en presentador de un concurso. ¿Cómo das la bienvenida?',
+'Te ofrecen vivir dentro de una película durante un día. ¿Qué género eliges?',
+'Te piden que inventes una aplicación que todavía no existe. ¿Qué problema resolvería?',
+'Tu grupo tiene que construir algo con cartón y cinta adhesiva. ¿Qué propones?',
+'Te encuentras un teléfono antiguo que suena en una cabina vacía. ¿Contestas?',
+'Te dan el poder de pausar el tiempo durante diez segundos al día. ¿Cuándo lo usarías?',
+'Tienes que elegir un uniforme para todo el grupo. ¿Cómo sería?',
+'Un amigo te invita a una actividad que te da mucha pereza. ¿Cómo respondes?',
+'Te toca poner nombre a un barco. ¿Qué nombre eliges?',
+'Te piden que convenzas a alguien de que las siestas deberían ser patrimonio cultural. ¿Qué argumento usas?',
+'Una máquina te permite fabricar cualquier objeto pequeño. ¿Qué fabricarías primero?',
+'Te dan un minuto para hacer reír a todo el grupo. ¿Qué intentas?',
+'Tienes que elegir un compañero para participar en un concurso de cocina. ¿Qué cualidad buscas?',
+'Te encuentras una nota que dice «no abras la nevera». ¿Qué haces?',
+'Puedes hacer que una frase se convierta en refrán popular. ¿Qué frase eliges?',
+'Te piden que expliques por qué los gatos deberían dirigir el transporte público. ¿Qué propones?',
+'Un amigo te pregunta qué debería hacer con un día sin obligaciones. ¿Qué le recomiendas?',
+'Tienes que organizar una búsqueda del tesoro dentro de casa. ¿Cuál sería la primera pista?',
+'Te dan una medalla por algo completamente cotidiano. ¿Por qué te la conceden?',
+'Te toca elegir una palabra para que todo el grupo la use durante el día. ¿Cuál eliges?',
+'Un científico te pide que pruebes un invento que todavía no tiene nombre. ¿Qué le preguntas?',
+'Te ofrecen un trabajo como probador profesional de algo. ¿Qué te gustaría probar?',
+'Tienes que dar una charla motivadora a un equipo de pingüinos. ¿Qué les dices?',
+'Te conviertes en guía de un museo de objetos inútiles. ¿Cuál es tu pieza estrella?',
+'Te dan la oportunidad de cambiar una norma de los restaurantes. ¿Cuál cambiarías?',
+'Tu grupo debe elegir una contraseña para una sociedad secreta. ¿Qué propones?',
+'Te encuentras una escalera que parece no terminar nunca. ¿Hasta dónde subirías?',
+'Te piden que inventes una nueva excusa para no contestar al teléfono. ¿Cuál sería?',
+'Tienes que organizar una cena donde cada plato tenga un nombre dramático. ¿Cómo llamas al postre?',
+'Te nombran juez de un concurso de talentos muy extraño. ¿Qué valoras más?',
+'Te despiertas y descubres que puedes comunicarte con los electrodomésticos. ¿A cuál preguntas primero?',
+'Te dan una tarde para enseñar al grupo algo que se te dé bien. ¿Qué eliges?',
+'Te toca elegir un lema para una expedición al centro de la Tierra. ¿Qué frase pondrías?',
+'Te ofrecen un botón para repetir una hora de tu vida. ¿Qué tipo de hora elegirías?',
+'Tienes que defender que las reuniones deberían durar exactamente siete minutos. ¿Qué argumento das?'
+];
+const PERSONALITIES=[
+'Un niño de 8 años','Un millonario presumido','Una abuela tradicional','Un detective privado','Un extraterrestre recién llegado a la Tierra','Un chef con estrella Michelin','Un influencer que vive pendiente de las redes','Un pirata del siglo XVIII','Un científico obsesionado con los experimentos','Un robot que intenta comprender a los humanos','Un entrenador deportivo muy intenso','Un poeta dramático','Un vendedor que intenta venderlo todo','Un turista que no entiende nada','Un astronauta en su primera misión','Un rey medieval','Una estrella de rock','Un bibliotecario extremadamente formal','Un abogado que siempre busca argumentos','Un explorador de lugares desconocidos','Un presentador de televisión','Un agente secreto','Un filósofo que cuestiona todo','Un chef de comida rápida','Un profesor de primaria','Un mago de cumpleaños','Un detective de dibujos animados','Un comentarista deportivo','Un inventor algo despistado','Un guía turístico entusiasmado','Un crítico gastronómico','Un náufrago que lleva años solo','Un vampiro vegetariano de ficción','Un superhéroe jubilado','Un entrenador de delfines','Un astronauta que echa de menos su casa','Un músico de jazz','Un mayordomo muy elegante','Un granjero que habla con sus animales','Un presentador de concursos','Un niño que cree saberlo todo','Un monje medieval copista','Un influencer de cocina','Un científico loco de película familiar','Un capitán de barco','Un vendedor de enciclopedias','Un detective que ve conspiraciones en todas partes','Un abuelo que lo compara todo con su juventud','Un chef que solo cocina tortilla','Un extraterrestre que cree que los humanos son mascotas','Un actor de telenovela','Un entrenador de perros','Un arqueólogo que encuentra tesoros','Un organizador de bodas','Un piloto de carreras','Un guía de museo','Un profesor de educación física','Un espía que no puede guardar secretos','Un presentador de radio nocturna','Un escritor de novelas de misterio'
+];
+const $safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const randomCode=()=>{const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=chars[Math.floor(Math.random()*chars.length)];return s;};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function seededShuffle(a,seed){let x=constHash(seed);const out=a.slice();for(let i=out.length-1;i>0;i--){x=(x*1664525+1013904223)>>>0;const j=x%(i+1);[out[i],out[j]]=[out[j],out[i]];}return out;}
+function constHash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(h,31)+s.charCodeAt(i))>>>0;return h||1;}
+function mapping(){if(!state)return{};const order=seededShuffle(PERSONALITIES,roomCode+'-'+state.round);return Object.fromEntries(state.players.map((p,i)=>[p.key,order[i%order.length]]));}
+let wsRoom=null,roomCode='',myKey='',myName='',isHost=false,peers=[],state=null,localAnswer='',localVotes={},assignedPersona='',lastPhase='',localSubmitted=false;
+function show(id){['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));}
+function setHomeMsg(s){$('homeMsg').textContent=s||'';}
+function getData(p){return p&&p.presence||{};}
+function players(){return peers.map(p=>getData(p)).filter(p=>p.g_key).map(p=>({key:p.g_key,name:p.g_name||'Jugador',me:p.g_key===myKey}));}
+function myPeer(){return peers.find(p=>getData(p).g_key===myKey);}
+function dataFor(key){const p=peers.find(q=>getData(q).g_key===key);return p?getData(p).g_data||{}:{};}
+function publish(obj){if(wsRoom)wsRoom.presence(obj);}
+function publishState(){if(isHost&&state)publish({g_host:1,g_state:state});}
+function joinRoom(code,host){roomCode=code.toUpperCase();myKey=Math.random().toString(36).slice(2,10);isHost=!!host;const url=(location.protocol==='https:'?'wss://':'ws://')+location.host;return new Promise((resolve,reject)=>{let socket=null,done=false,closedLocal=false,retry=0,cid=Math.random().toString(36).slice(2);const api={peers:()=>peers,presence(obj){if(socket&&socket.readyState===1)socket.send(JSON.stringify({t:'pres',p:obj}));return Promise.resolve();},leave(){closedLocal=true;try{socket.close();}catch(e){}}};wsRoom=api;function connect(){socket=new WebSocket(url);socket.onopen=()=>{retry=0;socket.send(JSON.stringify({t:'join',room:'cmb-'+roomCode.toLowerCase(),cid}));};socket.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}if(m.t==='hello')return;if(m.t==='peers'){peers=m.peers.map(q=>({peer:q.id,presence:q.p||{}}));if(!done){done=true;resolve(api);}sync();}else if(m.t==='err'){closedLocal=true;if(!done){done=true;reject({code:m.code});}else setHomeMsg(m.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala.');}};socket.onclose=()=>{if(closedLocal)return;retry++;setHomeMsg('Conexión interrumpida. Intentando reconectar…');setTimeout(connect,Math.min(1000*retry,8000));};socket.onerror=()=>{};}connect();setTimeout(()=>{if(!done){done=true;closedLocal=true;try{socket.close();}catch(e){}reject({code:'timeout'});}},15000);});}
+function sync(){const hp=peers.find(p=>getData(p).g_host===1);if(hp&&!isHost&&getData(hp).g_state){const incoming=getData(hp).g_state;if(!state||incoming.updatedAt>= (state.updatedAt||0))state=incoming;}if(state&&state.phase!==lastPhase){lastPhase=state.phase;localAnswer='';localVotes={};localSubmitted=false;}render();if(isHost)hostProcess();}
+function enterLobby(){show('lobby');$('codeLabel').textContent=roomCode;$('hostLabel').textContent=isHost?'Eres el anfitrión':'Esperando al anfitrión';$('startBtn').classList.toggle('hidden',!isHost);}
+async function createRoom(){myName=($('playerName').value.trim()||'Jugador').slice(0,18);roomCode=randomCode();isHost=true;state={phase:'lobby',round:0,used:[],scores:{},host:'',updatedAt:Date.now()};try{await joinRoom(roomCode,true);state.host=myKey;publish({g_name:myName,g_key:myKey,g_host:1,g_state:state,g_data:{}});enterLobby();sync();}catch(e){setHomeMsg('No se pudo crear la sala. Inténtalo de nuevo.');}}
+async function joinExisting(){myName=($('playerName').value.trim()||'Jugador').slice(0,18);const c=$('roomCode').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c)){setHomeMsg('Escribe un código de cinco caracteres.');return;}try{await joinRoom(c,false);publish({g_name:myName,g_key:myKey,g_data:{}});enterLobby();sync();}catch(e){setHomeMsg(e.code==='room_full'?'La sala está llena.':'No se pudo entrar. Comprueba el código.');}}
+function renderLobby(){const ps=players();$('lobbyPlayers').innerHTML=ps.map(p=>'<span class="player '+(p.me?'me':'')+'">'+$safe(p.name)+(p.key===state?.host?' 👑':'')+(p.me?' (tú)':'')+'</span>').join('');$('hostLabel').textContent=isHost?'Eres el anfitrión':'Esperando al anfitrión';$('startBtn').classList.toggle('hidden',!isHost);$('startBtn').disabled=ps.length<3||ps.length>8;$('lobbyMsg').textContent=ps.length<3?'Necesitáis al menos 3 jugadores para que tenga gracia.':ps.length>8?'Máximo 8 jugadores para mantener las respuestas y la conexión ágiles.':(isHost?'Ya podéis empezar.':'El anfitrión empezará cuando estéis preparados.');}
+function startRound(){if(!isHost)return;const ps=players();if(ps.length<3||ps.length>8)return;let idx;do{idx=Math.floor(Math.random()*QUESTIONS.length);}while(state.used.includes(idx)&&state.used.length<QUESTIONS.length);if(state.used.length>=QUESTIONS.length)state.used=[];state.used.push(idx);state.round=(state.round||0)+1;state.players=ps.slice(0,8).map(p=>({key:p.key,name:p.name}));state.question=QUESTIONS[idx];state.phase='answer';state.responses=[];state.roundData={};state.deadline=Date.now()+90000;state.updatedAt=Date.now();publishState();ps.forEach(p=>publish({g_data:{round:state.round,answer:'',votes:{}}}));lastPhase='';sync();}
+function hostProcess(){if(!isHost||!state||state.phase==='lobby'||state.phase==='finished')return;const now=Date.now();if(state.phase==='answer'){const submitted=state.players.filter(p=>{const d=dataFor(p.key);return d.round===state.round&&typeof d.answer==='string'&&d.answer.trim().length>=1;});if(submitted.length===state.players.length||now>state.deadline){state.responses=state.players.map(p=>({key:p.key,answer:(dataFor(p.key).round===state.round?String(dataFor(p.key).answer||'').trim():'(No ha respondido)').slice(0,100)}));state.responses=seededShuffle(state.responses,roomCode+'-responses-'+state.round);state.phase='vote';state.deadline=Date.now()+90000;state.updatedAt=Date.now();publishState();lastPhase='';render();}}else if(state.phase==='vote'){const eligible=state.players.filter(p=>p.key!==myKey);const voted=state.players.filter(p=>{const d=dataFor(p.key);return d.round===state.round&&d.votes&&state.responses.every(r=>r.key===p.key||typeof d.votes[r.key]==='string');});if(voted.length===state.players.length||now>state.deadline){const map=mapping(),results={},scores={...state.scores};state.players.forEach(p=>{const d=dataFor(p.key),votes=d.round===state.round?d.votes||{}:{};let pts=0,correct=0;state.responses.forEach(r=>{if(r.key===p.key)return;if(votes[r.key]===map[r.key]){pts++;correct++;}});scores[p.key]=(scores[p.key]||0)+pts;results[p.key]={points:pts,correct};});state.scores=scores;state.roundData={results,personas:map};state.phase='results';state.deadline=0;state.updatedAt=Date.now();publishState();lastPhase='';render();}}}
+function personaFor(key){return mapping()[key]||'Personaje misterioso';}
+function remaining(){return Math.max(0,Math.ceil((state.deadline-Date.now())/1000));}
+function render(){if(!state)return;if(state.phase==='lobby'){show('lobby');renderLobby();return;}show('game');if(state.phase==='answer')renderAnswer();else if(state.phase==='vote')renderVote();else if(state.phase==='results')renderResults();else if(state.phase==='finished')renderFinished();}
+function renderAnswer(){const persona=personaFor(myKey);assignedPersona=persona;const mine=dataFor(myKey);const sent=localSubmitted||(mine.round===state.round&&typeof mine.answer==='string'&&mine.answer.trim().length>0);$('game').innerHTML=`<div class="timerline"><span>RONDA ${state.round}</span><span>Respuestas · ${remaining()} s</span></div><div class="meter"><span style="width:${Math.max(0,remaining()/90*100)}%"></span></div><div class="pill">PREGUNTA PARA TODOS</div><div class="question">${$safe(state.question)}</div><div class="persona"><div class="eyebrow">Tu personalidad secreta</div><div class="name">${$safe(persona)}</div><p class="small">Interpreta este personaje, pero no digas quién eres. Los demás intentarán descubrirlo por tu respuesta.</p></div>${sent?`<div class="notice good">✓ Tu respuesta está enviada. Esperando al resto del grupo…</div>`:`<label for="answerInput">¿Qué respondería tu personaje?</label><textarea id="answerInput" maxlength="100" rows="4" placeholder="Escribe como si fueras ese personaje…">${$safe(localAnswer)}</textarea><p class="hint">No hace falta escribir mucho. Una respuesta con personalidad puede ser más reveladora que un párrafo entero.</p><button class="btn green" id="sendAnswer" style="width:100%">Enviar respuesta</button>`}<div class="small" style="margin-top:14px">Han respondido ${state.players.filter(p=>{const d=dataFor(p.key);return d.round===state.round&&String(d.answer||'').trim();}).length} de ${state.players.length} jugadores.</div>`;const input=$('answerInput');if(input)input.addEventListener('input',()=>localAnswer=input.value);const btn=$('sendAnswer');if(btn)btn.addEventListener('click',()=>{const v=$('answerInput').value.trim();if(!v){$('answerInput').focus();return;}publish({g_data:{round:state.round,answer:v,votes:{}}});localAnswer=v;localSubmitted=true;renderAnswer();});}
+function renderVote(){const map=mapping();const mine=dataFor(myKey);const votes=mine.round===state.round?mine.votes||{}:{};const candidates=state.players.map(p=>personaFor(p.key));const ownDone=state.players.filter(p=>p.key!==myKey&&votes[p.key]).length;let html=`<div class="timerline"><span>RONDA ${state.round}</span><span>ADIVINA LOS PERSONAJES · ${remaining()} s</span></div><div class="meter"><span style="width:${Math.max(0,remaining()/90*100)}%"></span></div><h2>¿Quién es quién?</h2><p class="muted">Lee cada respuesta y asigna la personalidad que crees que tenía esa persona. No puedes votar tu propia respuesta.</p><div class="notice">Has identificado ${ownDone} de ${Math.max(0,state.players.length-1)} respuestas.</div>`;state.responses.forEach((r,i)=>{if(r.key===myKey)return;const existing=votes[r.key]||'';html+=`<div class="answer-card"><div class="answer-head"><span>Respuesta ${i+1}</span><span>${existing?'✓ Votada':'Pendiente'}</span></div><div class="answer-text">“${$safe(r.answer)}”</div><div class="vote-row"><label for="vote-${i}">¿Qué personalidad tenía?</label><select id="vote-${i}" data-vote-key="${$safe(r.key)}"><option value="">Elige una personalidad…</option>${candidates.map(c=>`<option value="${$safe(c)}" ${existing===c?'selected':''}>${$safe(c)}</option>`).join('')}</select></div></div>`;});html+=`<button class="btn green" id="sendVotes" style="width:100%">Confirmar mis respuestas</button><p class="hint">Puedes cambiar tus elecciones hasta confirmar. Una vez enviadas, quedarán bloqueadas.</p>`;$('game').innerHTML=html;const btn=$('sendVotes');btn.addEventListener('click',()=>{const all={};let missing=false;$('game').querySelectorAll('[data-vote-key]').forEach(s=>{if(!s.value)missing=true;all[s.dataset.voteKey]=s.value;});if(missing){alert('Te falta asignar una personalidad a alguna respuesta.');return;}publish({g_data:{round:state.round,answer:mine.answer||'',votes:all}});btn.disabled=true;btn.textContent='Votos enviados';$('game').insertAdjacentHTML('beforeend','<div class="notice good">¡Votos enviados! Esperando a los demás…</div>');});}
+function renderResults(){const map=state.roundData.personas||mapping(),results=state.roundData.results||{};let html=`<div class="pill">RESULTADOS · RONDA ${state.round}</div><h2>¡Se revelan las personalidades!</h2><p class="muted">Descubre quién estaba detrás de cada respuesta y comprueba cuántas has acertado.</p>`;state.responses.forEach((r,i)=>{const p=state.players.find(x=>x.key===r.key);html+=`<div class="answer-card"><div class="answer-head"><span>Respuesta ${i+1} · ${$safe(p?.name||'Jugador')}</span><span>${r.key===myKey?'TU RESPUESTA':''}</span></div><div class="answer-text">“${$safe(r.answer)}”</div><div class="persona" style="margin-bottom:0;padding:13px"><div class="eyebrow">Su personaje era</div><div class="name" style="font-size:22px">${$safe(map[r.key]||'—')}</div></div></div>`;});html+=`<h3 style="margin-top:20px">Puntos de esta ronda</h3>`;state.players.slice().sort((a,b)=>(results[b.key]?.points||0)-(results[a.key]?.points||0)).forEach(p=>{html+=`<div class="scoreline"><span>${$safe(p.name)} ${p.key===myKey?'(tú)':''}</span><strong>+${results[p.key]?.points||0} · Total ${state.scores[p.key]||0}</strong></div>`;});html+=`<div class="row" style="margin-top:18px"><button class="btn green" id="nextRound">Siguiente ronda</button><button class="btn ghost" id="finishGame">Terminar partida</button></div>`;$('game').innerHTML=html;const next=$('nextRound');next.classList.toggle('hidden',!isHost);next.addEventListener('click',startRound);const finish=$('finishGame');finish.classList.toggle('hidden',!isHost);finish.addEventListener('click',()=>{state.phase='finished';state.updatedAt=Date.now();publishState();render();});}
+function renderFinished(){const sorted=state.players.slice().sort((a,b)=>(state.scores[b.key]||0)-(state.scores[a.key]||0));$('game').innerHTML=`<div class="pill">PARTIDA TERMINADA</div><h2>🏆 Clasificación final</h2><p class="muted">Así ha quedado la partida. Gana quien mejor haya leído entre líneas.</p>${sorted.map((p,i)=>`<div class="scoreline"><span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':' '+(i+1)+'.'} ${$safe(p.name)}</span><strong>${state.scores[p.key]||0} puntos</strong></div>`).join('')}<div class="row" style="margin-top:18px"><button class="btn green" id="againBtn">Jugar otra vez</button><button class="btn ghost" id="exitBtn">Salir</button></div>`;$('againBtn').classList.toggle('hidden',!isHost);$('againBtn').addEventListener('click',()=>{state.phase='lobby';state.round=0;state.used=[];state.scores=Object.fromEntries(state.players.map(p=>[p.key,0]));state.updatedAt=Date.now();publishState();lastPhase='';render();});$('exitBtn').addEventListener('click',()=>location.reload());}
+$('createBtn').addEventListener('click',createRoom);$('showJoinBtn').addEventListener('click',()=>$('joinBox').classList.toggle('hidden'));$('joinBtn').addEventListener('click',joinExisting);$('roomCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5));$('copyBtn').addEventListener('click',()=>{if(navigator.clipboard)navigator.clipboard.writeText(roomCode).then(()=>$('copyBtn').textContent='¡Copiado!').catch(()=>{});});$('startBtn').addEventListener('click',startRound);$('leaveBtn').addEventListener('click',()=>{if(wsRoom)wsRoom.leave();location.reload();});
+setInterval(()=>{if(!state||state.phase==='lobby'||state.phase==='finished')return;if(isHost)hostProcess();const line=$('game').querySelector('.timerline span:last-child');if(line)line.textContent=(state.phase==='answer'?'Respuestas · ':'ADIVINA LOS PERSONAJES · ')+remaining()+' s';const bar=$('game').querySelector('.meter span');if(bar)bar.style.width=Math.max(0,remaining()/90*100)+'%';},1000);
+window.addEventListener('beforeunload',()=>{if(wsRoom)wsRoom.leave();});
+})();
+</script>
+</body></html>

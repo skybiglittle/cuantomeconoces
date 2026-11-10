@@ -167,7 +167,7 @@ async function fetchImg(term){
   if(!r.ok)throw new Error('No se pudo consultar Wikimedia Commons.');
   var data=await r.json(),pages=Object.keys((data.query&&data.query.pages)||{}).map(function(k){return data.query.pages[k]});
   var c=pages.map(cand).filter(function(x){return x.url&&x.page&&x.license&&/^image\/(jpeg|png|webp)$/i.test(x.mime)&&x.w>=600&&x.h>=400&&!BAD.test(x.title)});
-  var seen=H.seen||[],f=c.filter(function(x){return seen.indexOf(x.title)<0});if(f.length)c=f;
+  var seen=H.seen||[],f=c.filter(function(x){return seen.indexOf((x.title||'').slice(0,80))<0&&seen.indexOf(x.title)<0});if(f.length)c=f;
   if(!c.length)throw new Error('No se han encontrado fotos para «'+term+'». Prueba con otras palabras.');
   return pick(c);
 }
@@ -187,7 +187,7 @@ async function prepRound(){
       var img=await fetchImg(t.en);
       if(!Z||!Z.host)return;
       var kind=H.fx==='mix'?pick(['pix','zoom']):H.fx;
-      hostSet({ph:'ready',img:{url:img.url,page:img.page,title:img.title,author:img.author,license:img.license},ans:t.es,ansEn:t.en,kind:kind,cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,seen:(H.seen||[]).concat([img.title]).slice(-30),used:(H.used||[]).concat([t.es]).slice(-30),run:false,el:0});
+      hostSet({ph:'ready',img:{url:img.url,page:img.page,title:(img.title||'').slice(0,80),author:(img.author||'').slice(0,60),license:(img.license||'').slice(0,30)},ans:t.es,ansEn:t.en,kind:kind,cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,seen:(H.seen||[]).concat([img.title]).slice(-10),used:(H.used||[]).concat([t.es]).slice(-10),run:false,el:0});
       return;
     }catch(e){lastErr=e}
   }
@@ -383,7 +383,7 @@ function startOnline(create){
   OMSG='';
   Z={mode:'online',code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,base:0,bz:null,g:null,gt:'',lh:'',nh:0};
   H=create?newH():null;render();
-  RM.join('cmz-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala (¿está el servidor activo?).')});
+  RM.join('cmg-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala (¿está el servidor activo?).')});
 }
 function startLocal(){
   var names=(val('ln')||'').split(',').map(function(s){return s.trim().slice(0,20)}).filter(Boolean).slice(0,8);

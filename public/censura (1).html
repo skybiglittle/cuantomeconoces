@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Foto censurada</title>
+<style>
+:root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--ac2:#7c4dff;--ok:#1f9d63;--ko:#d6453d;--bd:#eadfe6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}
+:root[data-theme="dark"]{--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:30px;line-height:1.15;margin:8px 0 6px;background:linear-gradient(90deg,var(--ac),var(--ac2),var(--ac));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 8px;font-size:22px}
+p{margin:0 0 12px}
+.mut{color:var(--mut)}
+.center{text-align:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;margin:14px 0}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut)}
+.kick{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ac);font-weight:700;margin-bottom:4px}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;padding:14px;border:0;border-radius:14px;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff;font-weight:700;margin-top:10px}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sec{background:transparent;color:var(--tx);border:1.5px solid var(--bd)}
+.btn.ok{background:var(--ok)}
+.btn.ko{background:var(--ko)}
+.buzz{padding:28px 14px;font-size:24px;letter-spacing:.02em}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;padding:0;font-size:14px}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;margin:6px 0 10px}
+.or{text-align:center;color:var(--mut);font-size:13px;margin:14px 0 4px}
+.seg{display:flex;gap:8px;margin-top:6px}
+.seg.wrap{flex-wrap:wrap}
+.seg.wrap button{flex:1 0 40%}
+.seg button{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx)}
+.seg button.on{border-color:var(--ac);background:rgba(224,69,123,.12);font-weight:700}
+.seg button[disabled]{opacity:.45;cursor:default}
+.tbar{height:7px;border-radius:7px;background:var(--bd);overflow:hidden;margin:8px 0 4px}
+.tbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1f9d63,#ffb020)}
+.cv{display:block;width:100%;max-height:62vh;object-fit:contain;border-radius:12px;background:#111}
+.pl{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;padding:4px 12px 4px 4px;border:1px solid var(--bd);border-radius:99px;font-size:14px}
+.av{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font:700 12px/1 system-ui;font-style:normal;margin-right:8px;flex:none}
+.pill .av{width:22px;height:22px;font-size:11px;margin-right:6px}
+ul{list-style:none;padding:0;margin:0}
+li{padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid var(--bd);background:var(--card);font-size:15px}
+li.rk{display:flex;justify-content:space-between;align-items:center}
+li.rk span:first-child{display:flex;align-items:center}
+li.rk .sc{font-weight:800;font-size:18px}
+.pts{font-size:54px;font-weight:800;text-align:center;line-height:1;margin:6px 0}
+.pts.up{color:var(--ok)}
+.dots i{display:inline-block;width:6px;height:6px;margin-left:5px;border-radius:50%;background:var(--ac);animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.15s}
+.dots i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.note{padding:8px 10px;border-radius:10px;background:rgba(124,77,255,.12);font-size:14px;margin:10px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{padding:16px 8px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font-weight:700;font-size:17px}
+.grid button:active{border-color:var(--ac)}
+.grid button[disabled]{opacity:.4}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// =====================================================================
+//  📸 FOTO CENSURADA
+//  La foto (Wikimedia Commons) empieza muy pixelada o muy ampliada y se
+//  va revelando. Quien crea que sabe qué es pulsa "¡Lo sé!", la partida se
+//  pausa y el anfitrión juzga. Cuanto antes aciertes, más puntos.
+//  · Un dispositivo: funciona solo, sin servidor.
+//  · Online: usa la misma sala por WebSocket que el resto del juego.
+// =====================================================================
+var app=document.getElementById('app');
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function ea(t){return esc(t).replace(/"/g,'&quot;')}
+function val(id){var e=document.getElementById(id);return e?e.value:''}
+function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function hue(n){var h=0;n=String(n);for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return h}
+function av(n){return '<i class="av" style="background:hsl('+hue(n)+',62%,46%)">'+esc((String(n).trim().charAt(0)||'?').toUpperCase())+'</i>'}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+
+// ---------- Sala online (mismo protocolo que el juego principal) ----------
+function makeWsRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return {join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,pres={},arr=[],subs=[],done=false,closed=false,retry=0,cid=Math.random().toString(36).slice(2);
+    var room={
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn);return function(){subs=subs.filter(function(x){return x!==fn})}},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}
+    };
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello'){id=m.id}
+        else if(m.t==='peers'){
+          arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,sameTab:q.id===id,kind:'viewer',guest:false,by:null,presence:q.p||{},updatedAt:Date.now()}});
+          if(!done){done=true;resolve(room)}
+          subs.slice().forEach(function(f){f({peers:arr})});
+        }
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}
+      };
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();
+    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},70000);
+  })}};
+}
+var RM=makeWsRoom(),NR=null,OMSG='';
+
+// ---------- Temas: [búsqueda en Wikimedia (inglés), respuesta en español] ----------
+var TH={
+  animales:{n:'🐾 Animales',p:[['lion','león'],['giraffe','jirafa'],['elephant','elefante'],['penguin','pingüino'],['octopus','pulpo'],['flamingo','flamenco'],['giant panda','panda'],['kangaroo','canguro'],['owl','búho'],['zebra','cebra'],['hedgehog','erizo'],['chameleon','camaleón'],['tiger','tigre'],['dolphin','delfín'],['peacock','pavo real'],['koala','koala'],['polar bear','oso polar'],['camel','camello']]},
+  monumentos:{n:'🏛️ Monumentos',p:[['Eiffel Tower','torre eiffel'],['Colosseum Rome','coliseo'],['Sagrada Familia','sagrada familia'],['Taj Mahal','taj mahal'],['Statue of Liberty','estatua de la libertad'],['Big Ben','big ben'],['Alhambra Granada','alhambra'],['Pyramids of Giza','pirámides de giza'],['Machu Picchu','machu picchu'],['Parthenon Acropolis','partenón'],['Brandenburg Gate','puerta de brandeburgo'],['Leaning Tower of Pisa','torre de pisa'],['Golden Gate Bridge','golden gate'],['Christ the Redeemer','cristo redentor'],['Burj Khalifa','burj khalifa'],['Great Wall of China','muralla china'],['Sydney Opera House','ópera de sídney'],['Moai Easter Island','moáis']]},
+  comida:{n:'🍕 Comida',p:[['pizza','pizza'],['paella','paella'],['sushi','sushi'],['hamburger','hamburguesa'],['croissant','cruasán'],['tacos','tacos'],['pancakes','tortitas'],['pineapple','piña'],['watermelon','sandía'],['cheese','queso'],['donut','donut'],['spaghetti','espaguetis'],['churros','churros'],['avocado','aguacate'],['popcorn','palomitas'],['ice cream cone','helado'],['pomegranate','granada'],['croqueta','croquetas']]},
+  vehiculos:{n:'🚗 Vehículos',p:[['steam locomotive','locomotora'],['helicopter','helicóptero'],['hot air balloon','globo aerostático'],['tractor','tractor'],['bicycle','bicicleta'],['sailboat','velero'],['fire engine','camión de bomberos'],['tram','tranvía'],['submarine','submarino'],['motorcycle','moto'],['double-decker bus','autobús de dos pisos'],['airliner','avión'],['cruise ship','crucero'],['canoe','canoa'],['rickshaw','rickshaw'],['gondola Venice','góndola']]},
+  naturaleza:{n:'🌋 Naturaleza',p:[['volcano','volcán'],['waterfall','cascada'],['glacier','glaciar'],['sunflower','girasol'],['cactus','cactus'],['rainbow','arcoíris'],['coral reef','arrecife de coral'],['aurora borealis','aurora boreal'],['sand dunes','dunas'],['geyser','géiser'],['lighthouse','faro'],['mushroom','seta'],['tulip field','tulipanes'],['lightning storm','tormenta'],['cave stalactites','cueva'],['fjord','fiordo']]},
+  objetos:{n:'🔧 Objetos',p:[['umbrella','paraguas'],['typewriter','máquina de escribir'],['hourglass','reloj de arena'],['telescope','telescopio'],['globe','globo terráqueo'],['accordion','acordeón'],['compass','brújula'],['skateboard','monopatín'],['backpack','mochila'],['grand piano','piano'],['acoustic guitar','guitarra'],['violin','violín'],['saxophone','saxofón'],['drum kit','batería'],['chess board','ajedrez'],['microscope','microscopio'],['sewing machine','máquina de coser'],['padlock','candado']]}
+};
+var THEME_KEYS=Object.keys(TH);
+
+// ---------- Coincidencia aproximada (solo como sugerencia para el anfitrión) ----------
+function nz(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+function lev(a,b){var m=a.length,n=b.length,d=[],i,j;for(i=0;i<=m;i++)d[i]=[i];for(j=1;j<=n;j++)d[0][j]=j;for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
+function close(g,t){g=nz(g);t=nz(t);if(!g||!t)return false;if(g===t)return true;if(g.length>=4&&(t.indexOf(g)>-1||g.indexOf(t)>-1))return true;return lev(g,t)<=Math.max(1,Math.floor(t.length/4))}
+
+// ---------- Estado ----------
+// Z = estado local de este dispositivo. H = estado de la partida (lo manda el anfitrión).
+var Z=null,H=null,IMG=null,IMGU='',OFF=document.createElement('canvas'),GRACE=8000;
+function newH(){return{v:1,ph:'lobby',r:-1,tot:10,theme:'mezcla',fx:'mix',dur:45000,free:'',img:null,ans:'',ansEn:'',kind:'pix',cx:.5,cy:.5,run:false,el:0,buz:null,lock:[],sc:{},last:null,seen:[],used:[],err:''}}
+function peers(){return NR?NR.peers().filter(function(p){return p.presence&&p.presence.cz}).map(function(p){return{id:p.peer,me:p.isMe,p:p.presence}}):[]}
+function pidN(x){return parseInt(String(x.id).slice(1))||0}
+function players(){
+  if(!Z)return[];
+  if(Z.mode==='local')return Z.players.map(function(x){return{k:x.k,n:x.n,me:false}});
+  return peers().filter(function(x){return x.p.h!==1}).sort(function(a,b){return pidN(a)-pidN(b)}).map(function(x){return{k:x.p.k,n:x.p.n,me:x.me}});
+}
+function nameOf(k){var a=players();for(var i=0;i<a.length;i++)if(a[i].k===k)return a[i].n;return '?'}
+function elapsed(){if(!H)return 0;return H.run?Math.max(0,Date.now()-Z.base):H.el}
+function lvl(){return Math.min(1,elapsed()/H.dur)}
+function pubPoints(lv){return 1+Math.round(3*(1-lv))}
+function pub(){
+  if(!NR||!Z)return;
+  var p={n:Z.name,k:Z.me,cz:1,bz:Z.bz||null,g:Z.g||null};
+  if(Z.host){p.h=1;p.s=H}else{p.h=null;p.s=null}
+  NR.presence(p).catch(function(){});
+}
+function hostSet(c){Object.assign(H,c);H.v=(H.v||0)+1;Z.base=Date.now()-(H.el||0);pub();render()}
+
+// ---------- Wikimedia ----------
+function tClean(s){return String(s||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim().slice(0,180)}
+var BAD=/(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|war photograph|violent|murder|injury|death|logo|flag|map of|diagram|poster|stamp|coat of arms|drawing|painting|engraving|illustration|scan|book|cover)/i;
+function cand(pg){
+  var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{};
+  return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:ii.thumbmime||ii.mime||'',w:ii.width||0,h:ii.height||0,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value))};
+}
+async function fetchImg(term){
+  var q=new URLSearchParams({action:'query',format:'json',generator:'search',gsrnamespace:'6',gsrlimit:'30',gsrsort:'user_random',gsrsearch:'filetype:bitmap '+term,prop:'imageinfo',iiprop:'url|mime|size|extmetadata',iiurlwidth:'1200',iiextmetadatafilter:'LicenseShortName|Artist|Credit',origin:'*'});
+  var r=await fetch('https://commons.wikimedia.org/w/api.php?'+q.toString(),{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error('No se pudo consultar Wikimedia Commons.');
+  var data=await r.json(),pages=Object.keys((data.query&&data.query.pages)||{}).map(function(k){return data.query.pages[k]});
+  var c=pages.map(cand).filter(function(x){return x.url&&x.page&&x.license&&/^image\/(jpeg|png|webp)$/i.test(x.mime)&&x.w>=600&&x.h>=400&&!BAD.test(x.title)});
+  var seen=H.seen||[],f=c.filter(function(x){return seen.indexOf(x.title)<0});if(f.length)c=f;
+  if(!c.length)throw new Error('No se han encontrado fotos para «'+term+'». Prueba con otras palabras.');
+  return pick(c);
+}
+function pickTarget(){
+  var free=(H.free||'').trim();
+  if(free)return{en:free,es:free};
+  var key=H.theme==='mezcla'?pick(THEME_KEYS):H.theme,used=H.used||[];
+  var pool=TH[key].p.filter(function(x){return used.indexOf(x[1])<0});if(!pool.length)pool=TH[key].p;
+  var t=pick(pool);return{en:t[0],es:t[1]};
+}
+async function prepRound(){
+  hostSet({ph:'prep',img:null,buz:null,lock:[],last:null,err:'',run:false,el:0});
+  var rid=H.v,tries=(H.free||'').trim()?1:4,lastErr=null;
+  for(var i=0;i<tries;i++){
+    var t=pickTarget();
+    try{
+      var img=await fetchImg(t.en);
+      if(!Z||!Z.host)return;
+      var kind=H.fx==='mix'?pick(['pix','zoom']):H.fx;
+      hostSet({ph:'ready',img:{url:img.url,page:img.page,title:img.title,author:img.author,license:img.license},ans:t.es,ansEn:t.en,kind:kind,cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,seen:(H.seen||[]).concat([img.title]).slice(-30),used:(H.used||[]).concat([t.es]).slice(-30),run:false,el:0});
+      return;
+    }catch(e){lastErr=e}
+  }
+  if(!Z||!Z.host)return;
+  hostSet({ph:'error',err:(lastErr&&lastErr.message)||'No se pudo cargar la foto.'});
+}
+function nextRound(){if(!Z||!Z.host)return;H.r++;prepRound()}
+
+// ---------- Lógica de la ronda (anfitrión) ----------
+function startJudge(k){if(!Z.host||H.ph!=='play'||H.buz)return;if(H.lock.indexOf(k)>-1)return;hostSet({ph:'judge',run:false,el:elapsed(),buz:k})}
+function doReveal(last){hostSet({ph:'reveal',run:false,el:elapsed(),buz:null,last:last||{ok:false}})}
+function judge(ok){
+  if(!Z.host||H.ph!=='judge')return;
+  var k=H.buz,lv=Math.min(1,H.el/H.dur),sc=Object.assign({},H.sc);
+  if(ok){var pts=pubPoints(lv);sc[k]=(sc[k]||0)+pts;hostSet({ph:'reveal',run:false,sc:sc,buz:null,last:{ok:true,k:k,pts:pts}})}
+  else{
+    sc[k]=(sc[k]||0)-1;var lock=H.lock.concat([k]);
+    var left=players().filter(function(p){return lock.indexOf(p.k)<0}).length;
+    if(!left)hostSet({ph:'reveal',run:false,sc:sc,lock:lock,buz:null,last:{ok:false,k:k,pen:true}});
+    else hostSet({ph:'play',run:true,sc:sc,lock:lock,buz:null,last:{ok:false,k:k,pen:true,mid:true}});
+  }
+}
+setInterval(function(){
+  if(!Z||!Z.host||!H)return;
+  if(H.ph==='play'&&H.run&&elapsed()>H.dur+GRACE)doReveal({ok:false,timeout:true});
+},300);
+function hostProcess(){
+  if(!Z.host||!H||H.ph!=='play'||H.buz)return;
+  var ps=peers().filter(function(x){return x.p.h!==1&&x.p.bz&&x.p.bz.r===H.r&&H.lock.indexOf(x.p.k)<0});
+  if(ps.length)startJudge(ps[0].p.k);
+}
+function guessOf(k){var a=peers();for(var i=0;i<a.length;i++)if(a[i].p.k===k&&a[i].p.g&&a[i].p.g.r===H.r)return String(a[i].p.g.t||'');return ''}
+
+// ---------- Sincronización ----------
+function sync(){
+  if(!Z)return;
+  if(Z.mode==='online'&&NR){
+    if(!Z.host){
+      var hs=null;peers().forEach(function(x){if(x.p.h===1&&x.p.s)hs=x.p.s});
+      if(hs){Z.nh=0;if(!H||hs.v!==H.v){H=hs;Z.base=Date.now()-(H.el||0)}}
+      else Z.nh=Z.nh||Date.now();
+    }else hostProcess();
+  }
+  if(H&&H.img)loadImg(H.img.url);
+  render();
+}
+function loadImg(u){
+  if(IMGU===u)return;IMGU=u;IMG=new Image();IMG.referrerPolicy='no-referrer';
+  IMG.onload=function(){render()};IMG.src=u;
+}
+
+// ---------- Dibujo de la foto ----------
+function drawCv(){
+  var cv=document.getElementById('cv');
+  if(!cv||!H||!IMG||!IMG.complete||!IMG.naturalWidth)return;
+  var iw=IMG.naturalWidth,ih=IMG.naturalHeight;
+  if(cv.dataset.k!==IMGU){var cw=Math.min(900,iw),ch=Math.round(cw*ih/iw);if(ch>700){ch=700;cw=Math.round(ch*iw/ih)}cv.width=cw;cv.height=ch;cv.dataset.k=IMGU}
+  var cw2=cv.width,ch2=cv.height,x=cv.getContext('2d'),full=(H.ph==='reveal'||H.ph==='end'),lv=full?1:lvl();
+  x.imageSmoothingEnabled=true;
+  if(H.kind==='zoom'){
+    var s=full?1:.07+.93*Math.pow(lv,1.6),sw=iw*s,sh=ih*s,sx=Math.max(0,Math.min(iw-sw,H.cx*iw-sw/2)),sy=Math.max(0,Math.min(ih-sh,H.cy*ih-sh/2));
+    x.drawImage(IMG,sx,sy,sw,sh,0,0,cw2,ch2);
+  }else if(full||lv>=1){
+    x.drawImage(IMG,0,0,cw2,ch2);
+  }else{
+    var c=Math.max(3,Math.round(3*Math.pow(100,lv))),w=c,h=Math.max(1,Math.round(c*ih/iw));
+    OFF.width=w;OFF.height=h;OFF.getContext('2d').drawImage(IMG,0,0,w,h);
+    x.imageSmoothingEnabled=false;x.drawImage(OFF,0,0,w,h,0,0,cw2,ch2);
+  }
+}
+function loop(){
+  if(Z&&H){
+    drawCv();
+    var pb=document.getElementById('pb'),pv=document.getElementById('pv');
+    if(pb&&(H.ph==='play'||H.ph==='judge')){var lv=lvl();pb.style.width=(lv*100)+'%';
+      if(pv)pv.textContent=H.ph==='judge'?'⏸ Pausado · vale +'+pubPoints(lv)+' si aciertas':'Vale +'+pubPoints(lv)+' pts ahora · cuanto antes aciertes, más puntos'}
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ---------- Vistas ----------
+function paint(html){
+  var fe=document.activeElement&&document.activeElement.id==='gin';
+  if(Z&&Z.lh===html)return;
+  if(Z)Z.lh=html;
+  app.innerHTML=html;drawCv();
+  var t=document.getElementById('gin');if(t){if(Z&&Z.gt!=null)t.value=Z.gt;if(fe)t.focus()}
+}
+function top(){
+  var info=Z.mode==='online'?'Sala '+esc(Z.code.toUpperCase()):'Un dispositivo';
+  var rd=H&&H.r>=0&&H.ph!=='lobby'&&H.ph!=='end'?' · Foto '+(H.r+1)+'/'+H.tot:'';
+  return '<div class="top"><span>📸 '+info+rd+'</span><button class="link" data-a="leave">Salir</button></div>';
+}
+function warn(){return(Z&&!Z.host&&Z.nh&&Date.now()-Z.nh>15000)?'<p class="center" style="color:var(--ko)">⚠️ El anfitrión se ha desconectado.</p>':''}
+function board(){
+  var pl=players().slice().sort(function(a,b){return (H.sc[b.k]||0)-(H.sc[a.k]||0)});
+  return '<div class="card"><div class="kick">Marcador</div><ul>'+(pl.map(function(x,i){return '<li class="rk"><span>'+av(x.n)+'<b>'+(i+1)+'. '+esc(x.n)+(x.me?' (tú)':'')+'</b></span><span class="sc">'+(H.sc[x.k]||0)+'</span></li>'}).join('')||'<li class="mut">Aún no hay jugadores</li>')+'</ul></div>';
+}
+function setSeg(key,opts,cur,dis){return '<div class="seg'+(opts.length>4?' wrap':'')+'">'+opts.map(function(o){return '<button data-set="'+key+'" data-v="'+o[0]+'"'+(String(cur)===String(o[0])?' class="on"':'')+(dis?' disabled':'')+'>'+o[1]+'</button>'}).join('')+'</div>'}
+function render(){
+  if(!Z)return;
+  if(!H){paint(top()+'<div class="card center"><h2>Conectando…</h2><p class="mut">Buscando la sala '+esc(Z.code.toUpperCase())+'.</p><span class="dots"><i></i><i></i><i></i></span></div>');return}
+  var ph=H.ph;
+  if(ph==='lobby')vLobby();
+  else if(ph==='prep')paint(top()+'<div class="card center"><h2>Buscando una foto…</h2><p class="mut">Consultando Wikimedia Commons.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn());
+  else if(ph==='ready')vReady();
+  else if(ph==='error')vError();
+  else if(ph==='end')vEnd();
+  else vPlay();
+}
+function vLobby(){
+  var pl=players(),host=Z.host,min=1;
+  var pills=pl.map(function(x){return '<span class="pill">'+av(x.n)+esc(x.n)+(x.me?' (tú)':'')+'</span>'}).join('')||'<span class="mut" style="font-size:14px">Aún no se ha unido nadie…</span>';
+  var themes=[['mezcla','🎲 Mezcla']].concat(THEME_KEYS.map(function(k){return [k,TH[k].n]}));
+  var set=host?'<div class="kick" style="margin-top:14px">Tema</div>'+setSeg('theme',themes,H.theme)
+    +'<div class="kick" style="margin-top:14px">…o busca tú un tema libre (opcional)</div><input id="free" maxlength="40" placeholder="Ej: castle, vintage car, cat (en inglés suele ir mejor)" value="'+ea(H.free)+'"><p class="mut" style="font-size:12px;margin:-4px 0 0">Si escribes algo aquí, se usa en lugar del tema. Esa palabra será la respuesta.</p>'
+    +'<div class="kick" style="margin-top:14px">Efecto</div>'+setSeg('fx',[['mix','Mezcla'],['pix','Pixelado'],['zoom','Ampliado']],H.fx)
+    +'<div class="kick" style="margin-top:14px">Tiempo hasta verla entera</div>'+setSeg('dur',[[30000,'30 s'],[45000,'45 s'],[60000,'60 s']],H.dur)
+    +'<div class="kick" style="margin-top:14px">Fotos por partida</div>'+setSeg('tot',[[5,'5'],[10,'10'],[15,'15']],H.tot)
+    :'<p class="mut" style="font-size:14px;margin:12px 0 0">El anfitrión está preparando la partida…</p>';
+  var head=Z.mode==='online'?'<div class="card center"><div class="kick">Sala de foto censurada</div><h2>Código: <span style="letter-spacing:.12em">'+esc(Z.code.toUpperCase())+'</span></h2><p class="mut">Pasa este código. Cada jugador pulsa "¡Lo sé!" en su móvil; el anfitrión (que no juega) presenta la foto en su pantalla y juzga las respuestas.</p></div>':'<div class="card center"><div class="kick">Un dispositivo</div><h2>Todos miran esta pantalla</h2><p class="mut">Cada jugador tiene su botón. Quien pulse primero responde en voz alta y tú decides si acierta.</p></div>';
+  paint('<h1>Foto censurada</h1>'+top()+head+'<div class="card"><div class="kick">Jugadores ('+pl.length+')</div><div class="pl">'+pills+'</div>'+set+'</div>'
+    +(host?'<button class="btn" data-a="start"'+(pl.length<min?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn());
+}
+function vReady(){
+  if(!Z.host){paint(top()+'<div class="card center"><h2>Preparando la foto…</h2><p class="mut">Mira la pantalla del anfitrión. Enseguida empieza.</p><span class="dots"><i></i><i></i><i></i></span></div>'+board()+warn());return}
+  paint(top()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+(H.kind==='zoom'?'ampliado':'pixelado')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto.</p></div>'
+    +'<button class="btn" data-a="begin">▶ Empezar a revelar</button><button class="btn sec" data-a="other">🔄 Otra foto</button>'+board());
+}
+function vError(){
+  paint(top()+'<div class="card center"><h2>No se pudo cargar la foto</h2><p class="mut">'+esc(H.err||'Inténtalo de nuevo.')+'</p>'+(Z.host?'<button class="btn" data-a="retry">Buscar otra</button>':'<p class="mut">El anfitrión puede volver a intentarlo.</p>')+'</div>'+warn());
+}
+function banner(){
+  var l=H.last;if(!l)return '';
+  if(H.ph==='reveal'){
+    if(l.ok)return '<div class="pts up">+'+l.pts+'</div><p class="center"><b>'+esc(nameOf(l.k))+'</b> lo ha sabido 🎉</p>';
+    return '<div class="pts">😶</div><p class="center">'+(l.pen?'Nadie ha acertado.':l.timeout?'Se acabó el tiempo: nadie lo ha sabido.':'Nadie lo ha sabido.')+'</p>';
+  }
+  if(l.mid)return '<p class="note center">❌ '+esc(nameOf(l.k))+' ha fallado (−1) y no puede volver a intentarlo en esta foto.</p>';
+  return '';
+}
+function vPlay(){
+  var ph=H.ph,host=Z.host,me=Z.me,local=Z.mode==='local',reveal=ph==='reveal',judging=ph==='judge';
+  var prog=reveal?'':'<div class="tbar"><i id="pb"></i></div><p class="center mut" id="pv" style="font-size:14px;margin:0"></p>';
+  var attr=reveal?'<p class="mut" style="font-size:11px;margin:8px 0 0">Imagen: <a href="'+ea(H.img.page)+'" target="_blank" rel="noopener">'+esc((H.img.title||'Fotografía').replace(/^File:/,''))+'</a> · '+esc(H.img.author||'Autor no indicado')+' · '+esc(H.img.license||'Licencia no indicada')+'</p>':'';
+  var cv='<div class="card center" style="padding:10px"><canvas id="cv" class="cv" width="800" height="600"></canvas>'+attr+(reveal?'<h2 style="margin:12px 0 0">'+esc(H.ans)+'</h2>':'')+'</div>';
+  var act='';
+  if(reveal){
+    act=banner();
+    if(host){var last=H.r+1>=H.tot;act+=last?'<button class="btn" data-a="finish">Ver resultado final</button>':'<button class="btn" data-a="next">Siguiente foto ➜</button><button class="btn sec" data-a="finish">🏁 Terminar partida</button>'}
+    else act+='<p class="mut center">Esperando al anfitrión…</p>';
+  }else if(host){
+    var key='<p class="note">🔑 Respuesta: <b>'+esc(H.ans)+'</b></p>';
+    if(judging){
+      var who=nameOf(H.buz),g=local?'':guessOf(H.buz),sug=g&&(close(g,H.ans)||close(g,H.ansEn));
+      act=key+'<div class="card center"><div class="kick">Responde</div><h2>'+esc(who)+'</h2>'+(local?'<p class="mut">Que lo diga en voz alta. ¿Es correcto?</p>':(g?'<p class="q" style="font-size:20px;margin:0 0 6px">«'+esc(g)+'»'+(sug?' ✨':'')+'</p><p class="mut" style="font-size:13px">'+(sug?'Parece correcta.':'No coincide con la respuesta esperada.')+' Tú decides.</p>':'<p class="mut">Está escribiendo su respuesta…</p>'))
+        +'<button class="btn ok" data-a="ok">✅ Correcto (+'+pubPoints(Math.min(1,H.el/H.dur))+')</button><button class="btn ko" data-a="ko">❌ Incorrecto (−1)</button></div>';
+    }else{
+      var btns=local?'<div class="card"><div class="kick">¿Quién ha pulsado?</div><div class="grid">'+players().map(function(x){return '<button data-pb="'+ea(x.k)+'"'+(H.lock.indexOf(x.k)>-1?' disabled':'')+'>✋ '+esc(x.n)+'</button>'}).join('')+'</div></div>':'<p class="mut center">Esperando a que alguien pulse «¡Lo sé!»<span class="dots"><i></i><i></i><i></i></span></p>';
+      act=banner()+key+btns+'<button class="btn sec" data-a="skip">⏭ Nadie lo sabe: revelar</button>';
+    }
+  }else{
+    var locked=H.lock.indexOf(me)>-1,mine=Z.bz&&Z.bz.r===H.r;
+    if(judging){
+      if(H.buz===me)act='<div class="card center"><div class="kick">¡Tu turno!</div><h2>¿Qué es?</h2><input id="gin" maxlength="40" placeholder="Escribe tu respuesta" autocomplete="off"><button class="btn" data-a="send">Enviar respuesta</button><p class="mut" style="font-size:13px;margin:8px 0 0">El anfitrión decidirá si es correcta.</p></div>';
+      else act='<p class="center"><b>'+esc(nameOf(H.buz))+'</b> está respondiendo…</p>';
+    }else if(locked)act=banner()+'<p class="center mut">Has fallado en esta foto. Espera a la siguiente.</p>';
+    else if(mine)act='<p class="center mut">¡Pulsado! Esperando al anfitrión…</p>';
+    else act=banner()+'<button class="btn buzz" data-a="buzz">✋ ¡LO SÉ!</button>';
+  }
+  paint(top()+prog+cv+act+board()+warn());
+}
+function vEnd(){
+  var pl=players().slice().sort(function(a,b){return (H.sc[b.k]||0)-(H.sc[a.k]||0)}),w=pl[0];
+  paint('<h1>Resultado final</h1><div class="card center"><div class="kick">Mejor ojo</div><h2>'+(w?esc(w.n):'—')+' 🏆</h2></div>'+board()+(Z.host?'<button class="btn" data-a="again">Jugar otra vez</button>':'')+'<button class="btn sec" data-a="leave">Salir</button>');
+}
+function home(){
+  Z=null;H=null;
+  var msg=OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'';
+  app.innerHTML='<h1>Foto censurada</h1><div class="card"><div class="kick">📸 La foto se va revelando</div><p class="mut" style="font-size:14px">Una fotografía de Wikimedia empieza muy pixelada o muy ampliada y se va aclarando poco a poco. Pulsa «¡Lo sé!» antes que los demás: cuanto más borrosa esté, más puntos ganas. Pero si fallas, pierdes uno y te quedas fuera de esa foto.</p></div>'
+  +'<div class="card"><div class="kick">Un solo dispositivo</div><p class="mut" style="font-size:14px">Todos miráis la misma pantalla y respondéis en voz alta. Funciona sin servidor.</p><label>Jugadores (separados por comas)<input id="ln" maxlength="120" placeholder="Ana, Luis, Marta"></label><button class="btn" data-a="local">Empezar</button></div>'
+  +'<div class="card"><div class="kick">Online · cada uno en su móvil</div><p class="mut" style="font-size:14px">El anfitrión presenta y juzga; los demás pulsan desde su móvil. Necesita el servidor del juego.</p><label>Tu nombre<input id="nm" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="create">Crear sala</button><div class="or">o únete a una sala</div><input id="cd" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-a="join">Unirme</button>'+msg+'</div>';
+}
+function leave(msg){
+  if(NR){NR.leave().catch(function(){});NR=null}
+  OMSG=msg||'';home();
+}
+function startOnline(create){
+  var name=(val('nm')||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador'),code=create?newCode():(val('cd')||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!code){OMSG='Escribe el código de la sala.';home();return}
+  OMSG='';
+  Z={mode:'online',code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,base:0,bz:null,g:null,gt:'',lh:'',nh:0};
+  H=create?newH():null;render();
+  RM.join('cmz-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala (¿está el servidor activo?).')});
+}
+function startLocal(){
+  var names=(val('ln')||'').split(',').map(function(s){return s.trim().slice(0,20)}).filter(Boolean).slice(0,8);
+  if(!names.length){OMSG='';names=['Jugador 1','Jugador 2']}
+  Z={mode:'local',code:'',me:'host',name:'Anfitrión',host:true,base:0,bz:null,g:null,gt:'',lh:'',nh:0,players:names.map(function(n,i){return{k:'p'+i,n:n}})};
+  H=newH();render();
+}
+
+// ---------- Eventos ----------
+app.addEventListener('click',function(e){
+  var s=e.target.closest('[data-set]');
+  if(s){if(Z&&Z.host&&H.ph==='lobby'&&!s.disabled){var k=s.getAttribute('data-set'),v=s.getAttribute('data-v'),c={};c[k]=(k==='dur'||k==='tot')?+v:v;hostSet(c)}return}
+  var pb=e.target.closest('[data-pb]');
+  if(pb){if(Z&&Z.host&&Z.mode==='local')startJudge(pb.getAttribute('data-pb'));return}
+  var b=e.target.closest('[data-a]');if(!b)return;
+  var a=b.getAttribute('data-a');
+  if(a==='create')startOnline(true);
+  else if(a==='join')startOnline(false);
+  else if(a==='local')startLocal();
+  else if(a==='leave')leave();
+  else if(!Z)return;
+  else if(a==='start'&&Z.host&&H.ph==='lobby'){if(!players().length)return;H.sc={};H.r=-1;H.seen=[];H.used=[];nextRound()}
+  else if(a==='begin'&&Z.host&&H.ph==='ready')hostSet({ph:'play',run:true,el:0,lock:[],buz:null,last:null});
+  else if(a==='other'&&Z.host&&H.ph==='ready')prepRound();
+  else if(a==='retry'&&Z.host)prepRound();
+  else if(a==='ok')judge(true);
+  else if(a==='ko')judge(false);
+  else if(a==='skip'&&Z.host&&H.ph==='play')doReveal({ok:false});
+  else if(a==='next'&&Z.host&&H.ph==='reveal')nextRound();
+  else if(a==='finish'&&Z.host)hostSet({ph:'end',run:false,buz:null});
+  else if(a==='again'&&Z.host)hostSet({ph:'lobby',r:-1,sc:{},img:null,last:null,lock:[],buz:null,run:false,el:0});
+  else if(a==='buzz'){
+    if(Z.host||!H||H.ph!=='play'||H.lock.indexOf(Z.me)>-1||(Z.bz&&Z.bz.r===H.r))return;
+    Z.bz={r:H.r,t:Date.now()};Z.g=null;Z.gt='';pub();render();
+  }
+  else if(a==='send'){
+    if(!H||H.buz!==Z.me)return;var t=(val('gin')||'').trim().slice(0,40);if(!t)return;
+    Z.g={r:H.r,t:t};pub();b.textContent='Enviada ✓';
+  }
+});
+app.addEventListener('input',function(e){
+  if(e.target.id==='gin'&&Z)Z.gt=e.target.value;
+  if(e.target.id==='free'&&Z&&Z.host&&H)H.free=e.target.value;
+});
+app.addEventListener('change',function(e){
+  if(e.target.id==='free'&&Z&&Z.host&&H&&H.ph==='lobby')hostSet({free:e.target.value.trim().slice(0,40)});
+});
+app.addEventListener('keydown',function(e){
+  if(e.target.id==='gin'&&e.key==='Enter'){e.preventDefault();var b=document.querySelector('[data-a="send"]');if(b)b.click()}
+});
+home();
+</script>
+</body>
+</html>

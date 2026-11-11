@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Concept · Pictogramas</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--b:#43d9c5;--gold:#ffd166;--good:#48d597}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(900px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:var(--b)}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(36px,8vw,58px);line-height:1;margin:0;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b8adff 48%,#64e8d7);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:19px;padding:17px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:13px;margin:9px 0 4px}
+input,select{width:100%;border:1px solid var(--line);background:#0d1629;color:var(--text);border-radius:11px;padding:12px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:12px 15px;background:linear-gradient(100deg,var(--a),#638cff);color:#fff;font-weight:800}.btn.secondary{background:#293753;border:1px solid var(--line)}.btn.good{background:linear-gradient(100deg,#149b69,#27c99b)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px}.player.me{border-color:var(--b);color:var(--b)}.player.act{border-color:var(--gold);color:var(--gold)}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}.status{padding:11px 13px;border:1px solid #258d69;border-radius:12px;background:#0e1f1d;color:#a2f0ce;margin:10px 0;font-weight:700}.status.no{border-color:#9a7730;background:#1f1a0e;color:#ffe09a}
+.secret{font-size:clamp(24px,6vw,40px);font-weight:900;text-align:center;margin:8px 0;color:var(--gold);overflow-wrap:anywhere}
+.board{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:84px;padding:10px;border:1px dashed #536381;border-radius:13px;background:#0b1426}
+.piece{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:66px;min-height:72px;padding:6px 8px;border:2px solid var(--line);border-radius:11px;background:#18243b;user-select:none}.piece.edit{cursor:pointer}.piece b{font-weight:400;line-height:1.1}.piece small{font-size:10px;color:#fff;margin-top:2px}.piece button{position:absolute;right:-7px;top:-8px;border:0;border-radius:50%;width:21px;height:21px;background:#ff6c7f;color:#fff;font-size:13px;padding:0}
+.palette{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.swatch{width:30px;height:30px;border:3px solid transparent;border-radius:50%;padding:0}.swatch.on{border-color:#fff;outline:2px solid #fff5}
+.cats{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;margin-top:8px}.cats button{flex:0 0 auto;border:1px solid var(--line);background:#101a2e;color:var(--text);border-radius:99px;padding:6px 11px;font-size:13px}.cats button.on{background:var(--a);border-color:var(--a)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:7px;max-height:320px;overflow:auto;padding:2px;margin-top:8px}.picto{border:1px solid var(--line);background:#101a2e;border-radius:11px;padding:7px 3px;color:var(--text);min-width:0}.picto b{display:block;font-size:26px;font-weight:400;line-height:1.2}.picto span{display:block;font-size:10px;color:var(--muted);overflow-wrap:anywhere}.picto:active{transform:scale(.96)}
+.log{display:grid;gap:6px;max-height:190px;overflow:auto;margin-top:10px}.log div{padding:7px 9px;background:#101a2e;border:1px solid var(--line);border-radius:9px;font-size:13px}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#101a2e;margin:5px 0}.sc strong{color:var(--gold)}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:600px){.settings{grid-template-columns:1fr}.grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:280px}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Con<span>cept</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Concept · Salas en directo · hasta 30 jugadores</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_cpt_session_v1',CID='cmc_cpt_cid_v1',KEY='cmc_cpt_key_v1';
+// ---------- Pictogramas por categorías (incluye abstractos: tamaño, formas, cantidad, dirección, tiempo, cualidades…) ----------
+const CATS=[
+['🔎 Todo',''],
+['👥 Personas','👨 hombre,👩 mujer,🧒 niño,👶 bebé,👴 anciano,👵 anciana,👑 rey,👸 reina,🤴 príncipe,👪 familia,👥 grupo,🕵️ detective,👮 policía,🧑‍⚕️ médico,🧑‍🍳 cocinero,🧑‍🚀 astronauta,🧑‍🏫 profesor,🦸 héroe,🦹 villano,🤡 payaso,🧙 mago,🧚 hada,🧛 vampiro,🧟 zombi,🧜 sirena,🏴‍☠️ pirata,👻 fantasma,👽 alien,🤖 robot,🎅 Papá Noel,🥷 ladrón,💃 bailarina,🧑‍🎤 cantante,🧑‍🌾 granjero,🧑‍🔬 científico'],
+['🐶 Animales','🐶 perro,🐱 gato,🐭 ratón,🐰 conejo,🦊 zorro,🐻 oso,🐼 panda,🦁 león,🐯 tigre,🐘 elefante,🦒 jirafa,🐵 mono,🐸 rana,🐢 tortuga,🐍 serpiente,🐊 cocodrilo,🐧 pingüino,🦆 pato,🦉 búho,🦅 águila,🦜 loro,🐟 pez,🦈 tiburón,🐬 delfín,🐳 ballena,🐙 pulpo,🦀 cangrejo,🦋 mariposa,🐝 abeja,🐌 caracol,🕷️ araña,🐜 hormiga,🦄 unicornio,🐉 dragón,🦖 dinosaurio,🐎 caballo,🐄 vaca,🐑 oveja,🐔 gallina,🐷 cerdo,🐺 lobo,🦇 murciélago,🐓 gallo,🦢 cisne,🦩 flamenco'],
+['🌳 Naturaleza','🌳 árbol,🌲 abeto,🌴 palmera,🌵 cactus,🌻 girasol,🌹 rosa,🌷 tulipán,🍄 seta,🌱 brote,🍂 hoja seca,🌍 Tierra,🌕 luna llena,🌙 luna,☀️ sol,⭐ estrella,🌠 estrella fugaz,🌌 galaxia,🪐 planeta,☁️ nube,🌧️ lluvia,⛈️ tormenta,❄️ nieve,🌪️ tornado,🌈 arcoíris,🌊 ola,🔥 fuego,💨 viento,🌫️ niebla,🌋 volcán,🏝️ isla,🏜️ desierto,⛰️ montaña,🏖️ playa,💧 gota,🪨 roca,🌾 trigo,🪵 tronco'],
+['🏠 Lugares','🏠 casa,🏰 castillo,🛖 cabaña,⛺ tienda,🏥 hospital,🏫 escuela,🏦 banco,🏨 hotel,🏪 tienda,🏭 fábrica,⛪ iglesia,🕌 mezquita,🗼 torre,🗽 estatua,⛲ fuente,🌉 puente,🛣️ carretera,🚉 estación,✈️ avión,🚀 cohete,🚁 helicóptero,🚂 tren,🚇 metro,🚗 coche,🚕 taxi,🚌 autobús,🚲 bici,🏍️ moto,🚢 barco,⛵ velero,🛶 canoa,🚜 tractor,🚑 ambulancia,🚒 bomberos,🚧 obras,🚦 semáforo,🎢 montaña rusa,🎡 noria,🎪 circo,🎭 teatro,🎬 cine,🏟️ estadio,🕳️ agujero,🗺️ mapa,🧭 brújula'],
+['🎒 Objetos','🗝️ llave,🔒 candado,🔔 campana,⏰ reloj,⌛ reloj arena,📅 calendario,📖 libro,📜 pergamino,📱 móvil,💻 ordenador,📷 cámara,📺 tele,📻 radio,🎙️ micro,🎧 auriculares,🎸 guitarra,🎹 piano,🥁 tambor,🎻 violín,🎺 trompeta,🎨 pintura,🖌️ pincel,✏️ lápiz,🎲 dado,🃏 carta,♟️ ajedrez,🎯 diana,🏆 trofeo,🥇 medalla,⚽ fútbol,🏀 baloncesto,🎾 tenis,🎈 globo,🎁 regalo,📦 caja,🧳 maleta,🪑 silla,🛏️ cama,🛋️ sofá,🚪 puerta,🪟 ventana,🪞 espejo,🪜 escalera,🛁 bañera,🧹 escoba,🔨 martillo,✂️ tijeras,🪓 hacha,🛡️ escudo,🏹 arco,🗡️ espada,💡 bombilla,🔦 linterna,🔋 pila,💰 dinero,💳 tarjeta,🪙 moneda,💎 diamante,💍 anillo,👓 gafas,👒 sombrero,👗 vestido,👕 camiseta,👟 zapatilla,🧤 guante,🧣 bufanda,☂️ paraguas,💉 jeringuilla,🧪 probeta,🔬 microscopio,🧲 imán,🔗 cadena,🕸️ telaraña,🪄 varita,🧸 peluche,🪁 cometa,💣 bomba,📢 megáfono,🔭 telescopio,🪆 matrioska'],
+['🍎 Comida','🍎 manzana,🍐 pera,🍌 plátano,🍉 sandía,🍇 uvas,🍓 fresa,🍋 limón,🍍 piña,🍒 cerezas,🥕 zanahoria,🥔 patata,🍅 tomate,🌽 maíz,🍞 pan,🧀 queso,🥚 huevo,🍕 pizza,🍔 hamburguesa,🍟 patatas,🍝 pasta,🍚 arroz,🥗 ensalada,🍲 sopa,🍫 chocolate,🍦 helado,🍯 miel,☕ café,🥛 leche,🧃 zumo,🍷 vino,🍺 cerveza,🍴 cubiertos,🍂 otoño,🎂 tarta,🍪 galleta,🥐 cruasán,🥩 carne,🍗 pollo,🥜 cacahuete'],
+['🏃 Acciones','🏃 correr,🚶 caminar,🏊 nadar,🧗 escalar,💃 bailar,🗣️ hablar,👂 escuchar,👀 mirar,🍽️ comer,🥤 beber,😴 dormir,📖 leer,✍️ escribir,🛒 comprar,🔍 buscar,🧼 limpiar,🏗️ construir,🛫 despegar,🛬 aterrizar,🎵 cantar,🤝 pacto,🎁 regalar,💥 romper,✂️ cortar,💭 pensar,🙏 pedir,👋 saludar,🤸 saltar,🚪 entrar,🏁 ganar,🪂 caer,🤿 bucear,🎣 pescar,🧶 tejer,🔧 arreglar,📞 llamar,📸 fotografiar,🤫 callar,🤗 abrazar,💋 besar,🥊 pelear,👏 aplaudir,🛌 descansar,🚴 pedalear,⛷️ esquiar,🏄 surfear,🔥 quemar'],
+['😀 Emociones','😀 feliz,😂 risa,😢 triste,😭 llorar,😡 enfadado,😱 miedo,😴 sueño,🤢 asco,😍 amor,🤔 duda,😎 genial,🤯 sorpresa,😳 vergüenza,🥳 fiesta,🤒 enfermo,😈 malo,😇 bueno,🙄 aburrido,🥶 frío,🥵 calor,😏 pícaro,🤑 codicia,😬 nervios,🥺 ternura,😤 orgullo,❤️ corazón,💔 desamor,💤 sueño,🤪 loco,😵 mareo'],
+['🔷 Formas','⚫ círculo,⬛ cuadrado,🔺 triángulo,💠 rombo,⭐ estrella,❤️ corazón,⭕ aro,🔲 marco,🔳 recuadro,🔘 botón,➰ bucle,〰️ ondas,🌀 espiral,✖️ cruz,➕ cruz suma,🔶 diamante,▬ línea,🏁 cuadros,♾️ infinito,📐 escuadra,🧊 cubo,🥚 óvalo,⬆️ punta,🔻 punta abajo'],
+['📏 Tamaño y cantidad','🤏 pequeño,🔍 grande,🐘 enorme,🐜 diminuto,📏 largo,↔️ ancho,↕️ alto,🪶 ligero,🪨 pesado,1️⃣ uno,2️⃣ dos,3️⃣ tres,4️⃣ cuatro,5️⃣ cinco,6️⃣ seis,7️⃣ siete,8️⃣ ocho,9️⃣ nueve,🔟 diez,0️⃣ nada,💯 todo,🔢 números,➕ más,➖ menos,✖️ por,➗ entre,🟰 igual,≠ distinto,½ mitad,🥇 primero,🥈 segundo,🥉 tercero,🔚 último,🫙 lleno,🕳️ vacío,🌫️ poco,👨‍👩‍👧‍👦 muchos,🔝 máximo'],
+['🧭 Direcciones y lugar','⬆️ arriba,⬇️ abajo,⬅️ izquierda,➡️ derecha,↗️ subir,↘️ bajar,🔄 girar,🔁 repetir,↩️ volver,🔀 mezclar,⤴️ salto arriba,⤵️ salto abajo,📍 aquí,🎯 centro,🔝 encima,🔙 atrás,🔛 delante,📥 dentro,📤 fuera,↔️ entre,🚏 parada,🧱 muro,🚧 barrera,🕳️ debajo,☁️ alto cielo,🌊 profundo,🛤️ camino,🧭 norte,↪️ desvío,🔃 vuelta'],
+['⏳ Tiempo','☀️ día,🌙 noche,🌅 amanecer,🌆 atardecer,⏰ hora,⌛ tiempo,📅 fecha,⏳ espera,⏪ pasado,⏩ futuro,▶️ ahora,🔜 pronto,🕰️ antiguo,🆕 nuevo,🧓 viejo,🎂 cumpleaños,🔚 fin,🚦 ya,⏱️ rápido,🐌 lento,🌸 primavera,🏖️ verano,🍂 otoño,⛄ invierno,🗓️ semana,🎄 Navidad,🎃 Halloween,🕛 medianoche,♻️ siempre,🚫 nunca'],
+['✨ Cualidades','🔥 caliente,🧊 frío,💨 veloz,🐢 despacio,💪 fuerte,🥀 débil,🌑 oscuro,💡 luz,🔊 ruido,🔇 silencio,🤫 secreto,💎 valioso,🗑️ basura,✨ brillante,🧼 limpio,💩 sucio,🌈 colorido,🍬 dulce,🍋 ácido,🧂 salado,🌶️ picante,👍 bueno,👎 malo,✅ cierto,❌ falso,🆓 gratis,💸 caro,🔒 cerrado,🔓 abierto,🔗 unido,💔 roto,🧩 encaja,🆚 contra,🍀 suerte,🎭 falso,👻 invisible,🧠 listo,🤪 tonto,🏆 mejor,💀 peligro,🌟 famoso,🧸 suave,🪨 duro,🌵 pincha,💧 mojado,🏜️ seco,⚖️ justo,🔮 mágico'],
+['🎨 Colores','🔴 rojo,🟠 naranja,🟡 amarillo,🟢 verde,🔵 azul,🟣 morado,🟤 marrón,⚫ negro,⚪ blanco,🩷 rosa,🩵 celeste,🩶 gris,🥇 dorado,🥈 plateado,🌈 colores'],
+['🧱 Materiales','🪵 madera,🧱 ladrillo,🪨 piedra,⚙️ metal,🔩 hierro,🪟 cristal,🧊 hielo,💧 agua,🔥 fuego,🌬️ aire,🌍 tierra,⚡ electricidad,🧵 tela,📄 papel,🛢️ aceite,🪙 oro,🧶 lana,🫧 jabón,🧴 plástico,🏺 barro,🕯️ cera,☁️ algodón,🍬 azúcar'],
+['❓ Símbolos','❓ pregunta,❗ exclamación,🚫 prohibido,⚠️ peligro,🆘 socorro,♻️ reciclar,💬 diálogo,💭 pensamiento,💥 explosión,⚡ rayo,💤 sueño,✅ sí,❌ no,🔔 aviso,🅰️ A,🅱️ B,🔠 letras,🔤 palabra,🎵 música,🎶 canción,📣 grito,🔕 mudo,🏳️ rendirse,🚩 bandera,🛑 stop,🔞 adultos,🧿 mal de ojo,☯️ equilibrio,✝️ cruz,💲 precio,#️⃣ número,🔱 tridente,⚜️ lis,🔰 novato,📶 señal,🔆 brillo,🔅 tenue']
+];
+const PICTOS=[];CATS.forEach(([,s],ci)=>{if(!s)return;s.split(',').forEach(x=>{x=x.trim();const i=x.indexOf(' ');if(i>0)PICTOS.push({e:x.slice(0,i),t:x.slice(i+1),c:ci})})});
+const CONCEPTS=`iglú,casa encantada,caja de Pandora,reloj de arena,isla desierta,montaña rusa,lluvia de estrellas,puente levadizo,caja fuerte,ojo de la tormenta,banco de peces,nido de avispas,pájaro carpintero,pez globo,cortina de humo,castillo de naipes,piedra filosofal,fuente de la juventud,mapa del tesoro,barco fantasma,ciudad sumergida,bosque encantado,hotel de hielo,casa del árbol,puerta secreta,pozo sin fondo,torre inclinada,guerra de almohadas,baile de máscaras,fiesta sorpresa,viaje en el tiempo,llover a cántaros,estar en las nubes,romper el hielo,perder el norte,lágrimas de cocodrilo,bola de cristal,alfombra voladora,escoba mágica,espejo roto,zapato de cristal,manzana envenenada,hombre invisible,corazón de piedra,memoria de pez,rey de la selva,reina de corazones,tres cerditos,siete enanitos,cuento de hadas,máquina del tiempo,agujero negro,sistema solar,eclipse solar,lluvia ácida,tormenta de arena,montaña nevada,volcán en erupción,isla del tesoro,carrera de caracoles,elefante en una cacharrería,pulpo pianista,gato astronauta,perro detective,tortuga ninja,jirafa pequeña,hormiga gigante,ballena azul,pingüino en el desierto,mono veloz,oso dormilón,águila calva,león dormido,serpiente de cascabel,lobo disfrazado,caballo de Troya,tiburón blanco,gallina de los huevos de oro,vaca voladora,torre de Babel,pirámide de Egipto,muralla china,gran cañón,cataratas del Niágara,torre Eiffel,estatua de la Libertad,Coliseo romano,faro en una isla,castillo de arena,casa de muñecas,casa de campo,noche en vela,día soleado,noche estrellada,amanecer en la playa,tarde de lluvia,cuatro estaciones,semana santa,fin de año,cumpleaños feliz,boda en la playa,cena a oscuras,desayuno en la cama,picnic en el campo,pastel de cumpleaños,helado de chocolate,pizza gigante,sopa de letras,huevo frito,tortilla de patatas,café con leche,zumo de naranja,hamburguesa doble,mundo al revés,tiempo es oro,calma antes de la tormenta,pájaro en mano,dos pájaros de un tiro,tirar la toalla,meter la pata,ver las estrellas,dormir como un tronco,hablar por los codos,costar un ojo de la cara,perder los nervios,cambiar de chaqueta,poner el grito en el cielo,estar en el séptimo cielo,ser pan comido,a caballo regalado,nadar contra corriente,echar leña al fuego,buscar una aguja en un pajar,tener un as en la manga,montaña de dinero,mar de dudas,círculo vicioso,callejón sin salida,laberinto de espejos,llave maestra,mensaje en una botella,estrella fugaz,globo terráqueo,tren sin destino,barco a la deriva,ciudad fantasma,pez fuera del agua,talón de Aquiles,toque de Midas,espada de Damocles,hilo de Ariadna,árbol genealógico,efecto mariposa,teléfono roto,piedra papel tijera,mesa redonda,último tren,primera piedra,luz al final del túnel,paso de gigante,salto al vacío,golpe de suerte,final feliz,segunda oportunidad,rueda de la fortuna,carrera contrarreloj,partida de ajedrez,jaque mate,dado trucado,ruleta rusa,tesoro escondido,moneda de la suerte,anillo único,corona robada,trono vacío,príncipe rana,bella durmiente,caperucita roja,flautista de Hamelín,gato con botas,pulgarcito,patito feo,lámpara de Aladino,genio de la lámpara,sirena varada,dragón dormido,fantasma amistoso,vampiro vegetariano,zombi bailarín,monstruo bajo la cama,bruja en escoba,mago sin varita,robot doméstico,astronauta perdido,extraterrestre turista,ovni aparcado,estación espacial,cohete de papel,coche volador,tren submarino,globo aerostático,submarino amarillo,helicóptero de rescate,bicicleta de montaña,patinete eléctrico,semáforo en rojo,paso de peatones,atasco infinito,viaje de novios,maleta perdida,vuelo retrasado,hotel con vistas,camping bajo las estrellas,concierto de rock,orquesta desafinada,pianista ciego,guitarra eléctrica,disco rayado,cantante de ópera,payaso triste,mago con sombrero,equilibrista en el circo,domador de leones,gol en el último minuto,carrera de obstáculos,medalla de oro,maratón de ciudad,partido de tenis,salto de trampolín,escalada en roca,esquiador en la nieve,surfista en una ola,buzo en el fondo del mar,pescador con caña,cazador de tormentas,jardinero de estrellas,cartero en bici,bombero valiente,médico de guardia,detective privado,ladrón de guante blanco,juez de paz,profesor despistado,astrónomo en la luna,científico loco,chef de estrella,payaso de hospital`.split(',').map(s=>s.trim()).filter(Boolean);
+const COLORS=['#35a66b','#327fd1','#e58a31','#915bd1','#d84d55','#e8e8e8'],SIZES=[20,32,54];
+const norm=s=>String(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+const normC=s=>norm(s).replace(/^(el|la|los|las|un|una|unos|unas) /,'');
+const hash=s=>{let h=5381;for(const c of normC(s))h=((h<<5)+h+c.charCodeAt(0))|0;return(h>>>0).toString(36)};
+function lev(a,b){const m=[];for(let i=0;i<=a.length;i++)m[i]=[i];for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function matches(g,ans){const a=normC(g),b=normC(ans);return !!a&&(a===b||(b.length>6&&lev(a,b)<=1))}
+const rand=n=>Math.floor(Math.random()*n);
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ own=saved?.own||{turn:0,ans:'',board:[],gn:0,g:null,win:null,pn:0,prop:null,ansTurn:0},
+ socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',color=0,cat=0,missing=0,log=[],seenG=new Set(),seenP=new Set(),logTurn=-1;
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state,own}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...extra}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-concept-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena (máx. 30).':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;persist()}}
+   collectGuesses();hostStep();performerStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;state={v:0,phase:'lobby',rpp:1,customWords:[]};own={turn:0,ans:'',board:[],gn:0,g:null,win:null,pn:0,prop:null,ansTurn:0};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;state=null;own={turn:0,ans:'',board:[],gn:0,g:null,win:null,pn:0,prop:null,ansTurn:0};persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión (turnos, puntos, propuestas) ----------
+const activePeer=()=>peers.find(x=>P(x).c_key===state?.activeKey);
+function startGame(){const ps=playerList();if(ps.length<2)return;const order=ps.map(p=>p.key).sort(()=>Math.random()-.5),names={},scores={};ps.forEach(p=>{names[p.key]=p.name;scores[p.key]=0});
+ Object.assign(state,{order,names,scores,turn:0,total:order.length*state.rpp,used:[],winKey:'',note:''});nextTurn()}
+function nextTurn(){if(state.turn>=state.total){state.phase='finished';return commit()}
+ state.turn++;state.activeKey=state.order[(state.turn-1)%state.order.length];state.phase='play';state.winKey='';state.note='';missing=0;commit()}
+function endTurn(winKey,note){if(state.phase!=='play')return;state.phase='result';state.winKey=winKey||'';state.note=note||'';if(winKey){state.scores[winKey]=(state.scores[winKey]||0)+1;state.scores[state.activeKey]=(state.scores[state.activeKey]||0)+1}commit()}
+function hostStep(){if(!isHost||!state)return;
+ const pool=CONCEPTS.map(norm).concat((state.customWords||[]).map(w=>norm(w.w)));
+ for(const pl of playerList()){const pr=pl.p.c_prop;if(!pr||seenP.has(pl.key+':'+pr.n))continue;seenP.add(pl.key+':'+pr.n);
+  const w=String(pr.w||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,50);
+  if(w.length>=3&&!pool.includes(norm(w))&&(state.customWords||[]).length<100){state.customWords.push({w,by:pl.name});commit()}}
+ if(state.phase!=='play')return;const ap=activePeer(),a=ap&&P(ap);
+ if(a?.c_h&&a.c_h.t===state.turn&&!(state.used||[]).includes(a.c_h.h)){state.used.push(a.c_h.h);state.used=state.used.slice(-200);commit()}
+ if(a?.c_win&&a.c_win.t===state.turn&&state.order.includes(a.c_win.key))return endTurn(a.c_win.key,'');
+ if(a?.c_end&&a.c_end===state.turn)return endTurn('','Se ha revelado la respuesta.');
+ if(!ap){missing=missing||Date.now();if(Date.now()-missing>6000)endTurn('','El jugador del turno se ha desconectado.')}else missing=0}
+
+// ---------- Lógica del jugador que representa ----------
+function pickWord(){const pool=CONCEPTS.concat((state.customWords||[]).map(w=>w.w)),used=state.used||[];const av=pool.filter(w=>!used.includes(hash(w)));const l=av.length?av:pool;return l[rand(l.length)]}
+function performerStep(){if(!state||!state.order||!state.order.includes(myKey)||state.activeKey!==myKey)return;
+ if(state.phase==='play'&&own.turn!==state.turn){own={...own,turn:state.turn,ans:pickWord(),board:[],win:null,ansTurn:0};persist();publish({c_h:{t:state.turn,h:hash(own.ans)},c_b:[],c_bt:state.turn,c_win:null,c_end:null,c_ans:null})}
+ if(state.phase==='play'&&own.ans&&!own.win)for(const pl of playerList()){const g=pl.p.c_g;if(pl.key===myKey||!g||g.t!==state.turn||!state.order.includes(pl.key))continue;
+  const id=pl.key+':'+g.t+':'+g.n;if(seenG.has('w'+id))continue;seenG.add('w'+id);if(matches(g.g,own.ans)){own.win={t:state.turn,key:pl.key};persist();publish({c_win:own.win,c_ans:{t:state.turn,a:own.ans}});own.ansTurn=state.turn;break}}
+ if(state.phase==='result'&&own.turn===state.turn&&own.ansTurn!==state.turn){own.ansTurn=state.turn;persist();publish({c_ans:{t:state.turn,a:own.ans}})}}
+function collectGuesses(){if(!state)return;if(logTurn!==state.turn){logTurn=state.turn;log=[];seenG=new Set([...seenG].filter(x=>x[0]==='w'))}
+ for(const pl of playerList()){const g=pl.p.c_g;if(!g||g.t!==state.turn)continue;const id='l'+pl.key+':'+g.n;if(seenG.has(id))continue;seenG.add(id);log.unshift({n:pl.name,g:g.g});log=log.slice(0,30)}}
+const pushBoard=()=>{own.board=board();persist();publish({c_b:own.board,c_bt:state.turn})};
+function board(){return own.board}
+function curBoard(){if(state?.activeKey===myKey)return own.board;const a=activePeer(),p=a&&P(a);return p&&p.c_bt===state.turn&&Array.isArray(p.c_b)?p.c_b:[]}
+function curAnswer(){if(state?.activeKey===myKey)return own.ans;const a=activePeer(),p=a&&P(a);return p?.c_ans&&p.c_ans.t===state.turn?p.c_ans.a:''}
+
+// ---------- Acciones ----------
+const isActive=()=>state?.phase==='play'&&state.activeKey===myKey;
+function addPicto(i){if(!isActive()||own.board.length>=10)return;own.board.push([i,color,1]);pushBoard();updateGame()}
+function sendGuess(){const el=$('guess'),g=el?.value.trim();if(!g||state?.phase!=='play')return;own.gn++;own.g={t:state.turn,n:own.gn,g:g.slice(0,60)};el.value='';persist();publish({c_g:own.g})}
+function sendProposal(){const el=$('prop'),w=el?.value.trim();if(!w||w.length<3)return;if(isHost){const pool=CONCEPTS.map(norm).concat(state.customWords.map(x=>norm(x.w)));if(!pool.includes(norm(w))&&state.customWords.length<100){state.customWords.push({w:w.slice(0,50),by:name});commit()}}else{own.pn++;own.prop={n:own.pn,w};persist();publish({c_prop:own.prop})}el.value='';$('pmsg').textContent='¡Propuesta enviada!'}
+function giveUp(){if(!isActive())return;publish({c_end:state.turn,c_ans:{t:state.turn,a:own.ans}});own.ansTurn=state.turn}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>CONCEPT</h1><p class="muted">Piensa en imágenes. Representa una idea con pictogramas y deja que los demás la descifren. 🧩</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">En cada turno una persona recibe un concepto <b>secreto</b> (solo lo ve ella) y lo representa colocando hasta 10 pictogramas. Toca un pictograma del tablero para cambiar su <b>tamaño</b> (pequeño, mediano, grande). Los demás escriben respuestas: quien acierta suma 1 punto y el que dibujaba también.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes</h3><div class="settings"><div><label>Turnos por jugador</label><select id="rpp"><option value="1">1 (partida corta)</option><option value="2">2</option><option value="3">3</option></select></div></div><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar partida</button></section>':'<section class="card center"><p class="muted">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
+ +'<section class="card"><h3>Propón nuevos conceptos</h3><p class="muted small">Se añaden al repertorio de esta sala y pueden salir en cualquier turno.</p><div class="row"><input id="prop" maxlength="50" placeholder="Ej. Caja de Pandora" style="flex:3"><button class="btn secondary" id="sp">Añadir</button></div><p class="small" id="pmsg"></p><div class="small muted" id="cl"></div></section><button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('sp').onclick=sendProposal;$('prop').addEventListener('keydown',e=>{if(e.key==='Enter')sendProposal()});$('leave').onclick=leaveRoom;
+  if($('start'))$('start').onclick=()=>{state.rpp=Number($('rpp').value);startGame()}});
+ const ps=playerList();$('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.c_host?' · anfitrión':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<2?' · hacen falta al menos 2':'')+'</p>';
+ const s=$('start');if(s)s.disabled=ps.length<2;const cw=state.customWords||[];$('cl').textContent=cw.length?cw.length+' añadidos: '+cw.slice(-6).map(x=>x.w).join(' · '):'Todavía no hay propuestas.'}
+function renderBoardHtml(list,edit){return list.length?list.map((b,i)=>{const p=PICTOS[b[0]]||{e:'❔',t:''};return'<div class="piece '+(edit?'edit':'')+'" data-i="'+i+'" style="border-color:'+COLORS[b[1]]+';background:'+COLORS[b[1]]+'22"><b style="font-size:'+SIZES[b[2]]+'px">'+p.e+'</b><small>'+safe(p.t)+'</small>'+(edit?'<button data-rm="'+i+'">×</button>':'')+'</div>'}).join(''):'<span class="muted small">Todavía no hay pictogramas.</span>'}
+function renderGrid(){const q=norm($('search')?.value||''),g=$('grid');if(!g)return;g.innerHTML=PICTOS.map((p,i)=>({p,i})).filter(({p})=>(!cat||p.c===cat)&&(!q||norm(p.t).includes(q))).map(({p,i})=>'<button class="picto" data-p="'+i+'"><b>'+p.e+'</b><span>'+safe(p.t)+'</span></button>').join('')||'<span class="muted small">Sin resultados.</span>'}
+function renderGame(){const act=state.activeKey===myKey,play=state.phase==='play',inOrder=state.order.includes(myKey);
+ mount('g|'+state.turn+'|'+state.phase+'|'+act+'|'+inOrder,
+ '<section class="card center"><div id="tags"></div><h2 id="head"></h2>'+(act&&play?'<p class="small muted">SOLO TÚ VES ESTO · REPRÉSENTALO CON PICTOGRAMAS</p><div class="secret" id="secret"></div>':'')+'<div class="board" id="board"></div>'
+ +(act&&play?'<div class="small muted" style="margin-top:6px">💡 Toca un pictograma del tablero para cambiar su tamaño · × para quitarlo</div><div class="palette" id="colors" style="justify-content:center;display:flex"></div><div class="cats" id="cats"></div><input id="search" placeholder="Buscar pictograma… (grande, cuadrado, rápido…)"><div class="grid" id="grid"></div><div class="row" style="margin-top:10px"><button class="btn secondary" id="clear">Borrar tablero</button><button class="btn ghost" id="giveup">Rendirme y revelar</button></div>':'')
+ +(!act&&play&&inOrder?'<div style="margin-top:14px;text-align:left"><h3>¿Qué concepto es?</h3><div class="row"><input id="guess" maxlength="60" autocomplete="off" placeholder="Escribe tu respuesta…" style="flex:3"><button class="btn" id="gb">Enviar</button></div><div class="log" id="log"></div></div>':'')
+ +(!act&&play&&!inOrder?'<p class="small muted">Estás de espectador en esta partida.</p>':'')
+ +(play&&act?'<div class="log" id="log"></div>':'')
+ +'<div class="status hidden" id="res"></div></section><section class="card"><h3>Marcador</h3><div id="scores"></div>'+(isHost&&play?'<button class="btn secondary" id="reveal" style="width:100%;margin-top:8px">Saltar turno y revelar</button>':'')+(isHost&&state.phase==='result'?'<button class="btn" id="next" style="width:100%;margin-top:8px">'+(state.turn>=state.total?'Ver resultado final 🏆':'Siguiente turno')+'</button>':'')+(!isHost&&state.phase==='result'?'<p class="small muted">Esperando al anfitrión…</p>':'')+'</section>',
+ ()=>{if($('colors')){$('colors').innerHTML=COLORS.map((c,i)=>'<button class="swatch '+(i===color?'on':'')+'" style="background:'+c+'" data-c="'+i+'"></button>').join('');$('colors').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;color=Number(b.dataset.c);$('colors').querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on',x===b))};
+   $('cats').innerHTML=CATS.map((c,i)=>'<button class="'+(i===cat?'on':'')+'" data-k="'+i+'">'+safe(c[0])+'</button>').join('');$('cats').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;cat=Number(b.dataset.k);$('cats').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderGrid()};
+   $('search').oninput=renderGrid;$('grid').onclick=e=>{const b=e.target.closest('[data-p]');if(b)addPicto(Number(b.dataset.p))};renderGrid();
+   $('clear').onclick=()=>{own.board=[];pushBoard();updateGame()};$('giveup').onclick=giveUp;
+   $('board').onclick=e=>{const r=e.target.closest('[data-rm]');if(r){own.board.splice(Number(r.dataset.rm),1);pushBoard();return updateGame()}const p=e.target.closest('[data-i]');if(p){const b=own.board[Number(p.dataset.i)];b[2]=(b[2]+1)%3;pushBoard();updateGame()}}}
+  if($('gb')){$('gb').onclick=sendGuess;$('guess').addEventListener('keydown',e=>{if(e.key==='Enter')sendGuess()})}
+  $('reveal')&&($('reveal').onclick=()=>endTurn('','El anfitrión ha saltado el turno.'));$('next')&&($('next').onclick=nextTurn)});
+ updateGame()}
+function updateGame(){if(!state||state.phase==='lobby'||state.phase==='finished')return;const act=state.activeKey===myKey;
+ $('tags').innerHTML='<span class="tag">TURNO '+state.turn+' / '+state.total+'</span><span class="tag">✏️ '+safe(pname(state.activeKey))+'</span>';
+ $('head').textContent=act?'¡Representa el concepto!':'¿Qué ha representado '+pname(state.activeKey)+'?';
+ if($('secret'))$('secret').textContent=own.ans||'…';
+ const edit=act&&state.phase==='play';$('board').innerHTML=renderBoardHtml(curBoard(),edit);
+ if($('log'))$('log').innerHTML=log.map(x=>'<div><b>'+safe(x.n)+':</b> '+safe(x.g)+'</div>').join('');
+ const r=$('res');if(state.phase==='result'){const ans=curAnswer();r.classList.remove('hidden');r.classList.toggle('no',!state.winKey);
+  r.innerHTML=state.winKey?'🎉 <b>'+safe(pname(state.winKey))+'</b> ha acertado: <b>'+safe(ans||'…')+'</b> (+1 para él/ella y +1 para '+safe(pname(state.activeKey))+')':safe(state.note||'Nadie acertó.')+' Era: <b>'+safe(ans||'…')+'</b>'}else r.classList.add('hidden');
+ $('scores').innerHTML=state.order.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]).map(([k,s])=>'<div class="sc"><span>'+safe(pname(k))+(k===state.activeKey&&state.phase==='play'?' · ✏️':'')+(k===myKey?' (tú)':'')+'</span><strong>'+s+' pts</strong></div>').join('')}
+function renderFinished(){const r=state.order.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]);
+ mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:80px">🏆</div><h1>'+safe(pname(r[0][0]))+' gana</h1></section><section class="card">'+r.map(([k,s],i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||i+1)+' '+safe(pname(k))+'</span><strong>'+s+' pts</strong></div>').join('')+'</section>'+(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+setInterval(()=>{if(roomCode&&state){hostStep()}},700);
+if(saved?.room&&saved?.name)connect();else renderHome();
+})();
+</script></body></html>

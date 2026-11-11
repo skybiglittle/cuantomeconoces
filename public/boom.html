@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Tic Tac Boom · ¿Cuánto me conoces?</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#2b3854;--text:#f4f7ff;--muted:#a8b4cc;--accent:#ff9f43;--green:#39d6a0;--yellow:#ffd166;--red:#ff5d73;--blue:#6cb6ff;--shadow:0 18px 50px #0005}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#4a2a3d 0,transparent 48%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(720px,100%);margin:auto;padding:22px 16px 70px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.brand{font-weight:850}.brand span{color:var(--accent)}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+.card{background:linear-gradient(145deg,#1c2238,#111a2d);border:1px solid var(--line);border-radius:20px;padding:20px;margin:14px 0;box-shadow:var(--shadow)}.center{text-align:center}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:850}.title{font-size:clamp(30px,7vw,50px);line-height:1.04;margin:8px 0 12px;font-weight:900}h2{margin:6px 0}
+.muted,.small{color:var(--muted)}.small{font-size:13px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.btn{border:0;border-radius:13px;padding:13px 17px;background:linear-gradient(135deg,#ff9f43,#ff5d73);color:#fff;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 7px 20px #ff5d7330}.btn.secondary{background:#263451;border:1px solid #405174;box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--muted)}.btn:disabled{opacity:.4;cursor:not-allowed}
+input,select{width:100%;padding:13px 14px;border:1px solid #3b4a69;border-radius:12px;background:#0d1628;color:var(--text);font:inherit;outline:none}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #ff9f4322}
+label{display:block;font-size:13px;color:var(--muted);font-weight:700;margin:12px 0 6px}.hidden{display:none!important}
+.code{font-size:32px;font-weight:950;letter-spacing:.22em;color:var(--yellow);margin:8px 0}.players{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center}
+.pill{padding:7px 11px;background:#202e49;border:1px solid #344564;border-radius:999px;font-size:13px}.pill.me{border-color:var(--green)}.pill.holder{border-color:var(--accent);color:#ffc078;font-weight:800;background:#3a2a2a}.pill.dead{opacity:.4;text-decoration:line-through}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bomb{font-size:104px;line-height:1.1;display:inline-block;animation:pulse var(--beat,1s) ease-in-out infinite}.bomb.roll{animation:shake .4s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}@keyframes shake{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.syl{font-size:clamp(44px,14vw,84px);font-weight:950;letter-spacing:.04em;background:linear-gradient(145deg,#ff9f43,#ff5d73);border-radius:24px;display:inline-block;padding:4px 26px;box-shadow:0 14px 40px #ff5d7355;margin:6px 0}
+.die{display:inline-block;border-radius:10px;padding:3px 12px;font-weight:950;letter-spacing:.08em;color:#0b1020}.d-TIC{background:var(--green)}.d-TAC{background:var(--blue)}.d-BOUM{background:var(--red);color:#fff}
+.event{background:#3a2f12;border:1px solid #7a6320;color:var(--yellow);border-radius:12px;padding:9px 12px;margin:10px 0;font-weight:700}
+.last{background:#111b2e;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}.chip{font-size:12px;padding:4px 9px;border-radius:99px;background:#18233a;color:var(--muted)}
+.notice{color:var(--yellow);font-size:13px;min-height:20px;margin:8px 0}.boom{font-size:110px;animation:pop .5s}.rank{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}.rank:last-child{border:0}.rank .pts{margin-left:auto;color:var(--muted);font-size:14px}.foot{margin-top:18px;text-align:center;color:#73819d;font-size:12px}
+@media(max-width:560px){.card{padding:16px}.settings{grid-template-columns:1fr}.bomb{font-size:86px}}
+</style>
+</head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Tic Tac <span>Boom</span></a><span><button class="btn ghost" id="snd" style="padding:6px 10px">🔊</button> <a class="back" href="/">← Juegos</a></span></header>
+<main id="app"></main>
+<div class="foot">Tic Tac Boom · Juego de grupo en tiempo real</div></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_ttb_session_v1',CID='cmc_ttb_cid_v1',KEY='cmc_ttb_key_v1';
+// Sílabas: 'a' sirve en cualquier posición, 's' solo al inicio/dentro, 'e' solo al final/dentro
+const SYL={a:'ca co cu da de di do la le li lo ma me mi mo na ne ni no pa pe pi po ra re ri ro sa se si so ta te ti to ba be bo ga go va ve vi tar ter tor mar can ten ton par cer cor sal sol pal pel pol tin tan'.split(' '),
+ s:'pre pro tra bra cla gra pla tri con des com ant est pri fra flo fre'.split(' '),
+ e:'ción dor dad mente ero era ista ura ico ica ble ado ido oso osa aje'.split(' ')};
+const MODES={TIC:'empiecen por',TAC:'acaben en',BOUM:'contengan'};
+const MODES_FOR={a:['TIC','TAC','BOUM'],s:['TIC','BOUM'],e:['TAC','BOUM']};
+const norm=s=>String(s||'').toLowerCase().replace(/ñ/g,'\u0001').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\u0001/g,'ñ').replace(/[^a-zñ]/g,'');
+const rand=n=>Math.floor(Math.random()*n);
+const hearts=n=>n>0?'❤️'.repeat(n):'💀';
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ own={word:null,flag:null},socket=null,peers=[],closed=false,retry=0,connecting=false,missing=0,lastStarted=false,nextBeat=0,boomShown=-1,muted=false;
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state}));
+
+// ---------- Sonido ----------
+let ac=null;
+function audio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch{}return ac}
+function tone(f,d,type='square',v=.06){if(muted)return;const c=audio();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.stop(c.currentTime+d)}
+function boomSound(){if(muted)return;const c=audio();if(!c)return;const n=c.sampleRate*.8,b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=700;g.gain.value=.7;s.buffer=b;s.connect(f);f.connect(g);g.connect(c.destination);s.start();navigator.vibrate?.([200,80,300])}
+
+// ---------- Red (mismo relé de salas por presencia que los otros juegos) ----------
+const pp=p=>p?.p||{};
+function playerList(){return peers.map(x=>pp(x)).filter(p=>p.t_key).map(p=>({key:p.t_key,name:p.t_name||'Jugador',host:!!p.t_host,word:p.t_word||null,flag:p.t_flag||null}))}
+function publish(extra={}){if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{t_name:name,t_key:myKey,t_host:isHost?1:0,t_word:own.word||null,t_flag:own.flag||null,...extra}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({t_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>{retry=0;socket.send(JSON.stringify({t:'join',room:'cmb-ttb-'+roomCode.toLowerCase(),cid}))};
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena (máx. 30).':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>pp(x).t_key===myKey))publish(isHost&&state?{t_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>pp(x).t_host===1&&pp(x).t_state);const inc=hp&&pp(hp).t_state;if(inc&&(!state||inc.v!==state.v)){state=inc;persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const notice=t=>{const e=$('notice');if(e)e.textContent=t};
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+function createRoom(){audio();name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;state={v:0,phase:'lobby',time:60,lives:3};own={word:null,flag:null};persist();connect();render()}
+function joinRoom(){audio();name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;state=null;own={word:null,flag:null};persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;own={word:null,flag:null};sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica (solo el anfitrión) ----------
+const alive=()=>state.order.filter(k=>state.players[k].lives>0);
+function nextAlive(from,dir){const L=state.order.length,i=state.order.indexOf(from);for(let n=1;n<=L;n++){const k=state.order[(((i+dir*n)%L)+L)%L];if(state.players[k].lives>0)return k}return from}
+function checkWord(raw){const t=String(raw||'').trim();if(!/^[a-záéíóúüñ]+$/i.test(t))return'Una sola palabra, solo letras.';
+ const w=norm(t),s=norm(state.syl);if(w.length<3||w.length<=s.length)return'Demasiado corta.';if(!/[aeiou]/.test(w)||/(.)\1\1/.test(w))return'Eso no parece una palabra.';
+ const ok=state.mode==='TIC'?w.startsWith(s):state.mode==='TAC'?w.endsWith(s):w.includes(s);if(!ok)return'Tiene que '+(state.mode==='TIC'?'empezar por':state.mode==='TAC'?'acabar en':'contener')+' «'+state.syl+'».';
+ if(state.used.includes(w))return'Esa palabra ya se ha dicho.';return''}
+function startRound(holder){const pool=[];for(const t of['a','s','e'])SYL[t].forEach(s=>pool.push([s,t]));let c;for(let i=0;i<30;i++){c=pool[rand(pool.length)];if(!state.seen.includes(c[0]))break}
+ if(state.seen.length>60)state.seen=[];state.seen.push(c[0]);const ms=MODES_FOR[c[1]];
+ Object.assign(state,{phase:'play',round:state.round+1,syl:c[0],sylType:c[1],mode:ms[rand(ms.length)],holder,dir:1,used:[],last:null,turn:0,event:'',loser:null,
+  startAt:Date.now()+3200});state.explodeAt=state.startAt+(state.time?state.time*1000:(25+rand(86))*1000);lastStarted=false;commit()}
+function startGame(){const ps=playerList().slice(0,30);if(ps.length<2)return;const order=ps.map(p=>p.key).sort(()=>Math.random()-.5);const players={};ps.forEach(p=>players[p.key]={name:p.name,lives:state.lives,words:0});
+ state={v:state.v,phase:'lobby',time:state.time,lives:state.lives,round:0,players,order,seen:[],final:false,winner:null};startRound(order[rand(order.length)])}
+function finish(w){state.phase='finished';state.winner=w||null;commit()}
+function drop(k){state.players[k].lives=0;state.players[k].left=true;const a=alive();if(a.length<=1)return finish(a[0]);state.holder=nextAlive(k,state.dir);state.turn++;state.last=null;state.event='🚪 '+state.players[k].name+' se ha ido. ¡La bomba sigue!';commit()}
+function accept(raw){const by=state.holder;state.used.push(norm(raw));state.players[by].words++;state.last={w:raw.trim().toLowerCase(),by,id:state.turn,pd:state.dir,pm:state.mode};state.turn++;state.event='';
+ const r=Math.random();if(r<.10&&alive().length>2){state.dir*=-1;state.event='🔄 ¡Cambio de sentido!'}
+ else if(r<.25){const ms=MODES_FOR[state.sylType].filter(m=>m!==state.mode);state.mode=ms[rand(ms.length)];state.event='🎲 ¡El dado cambia a '+state.mode+'!'}
+ state.holder=nextAlive(by,state.dir);commit()}
+function reject(){const l=state.last;state.players[l.by].words--;state.dir=l.pd;state.mode=l.pm;state.holder=l.by;state.turn++;state.event='🚩 El grupo ha rechazado «'+l.w+'». ¡Repite, '+state.players[l.by].name+'!';state.last=null;commit()}
+function boom(){const k=state.holder,p=state.players[k];p.lives--;state.loser=k;state.phase='boom';const a=alive();state.final=a.length<=1;state.winner=state.final?(a[0]||null):null;commit()}
+function nextRound(){if(!isHost)return;if(state.final)return finish(state.winner);const L=state.loser;startRound(state.players[L].lives>0?L:nextAlive(L,1))}
+function hostStep(){if(!isHost||!state||state.phase!=='play')return;const now=Date.now(),pl=playerList(),h=state.holder;
+ if(!pl.some(p=>p.key===h)){missing=missing||now;if(now-missing>5000){missing=0;return drop(h)}}else missing=0;
+ if(now<state.startAt)return;
+ if(now<state.explodeAt){const hp=pl.find(p=>p.key===h);if(hp?.word&&hp.word.r===state.round&&hp.word.n===state.turn&&!checkWord(hp.word.w))return accept(hp.word.w);
+  if(state.last){const o=alive().filter(k=>k!==state.last.by),f=pl.filter(p=>o.includes(p.key)&&p.flag&&p.flag.r===state.round&&p.flag.id===state.last.id).length;if(f>=Math.floor(o.length/2)+1)return reject()}}
+ if(now>=state.explodeAt)boom()}
+
+// ---------- Acciones de jugador ----------
+function submit(){const i=$('w');if(!i)return;const raw=i.value,err=checkWord(raw);if(err)return notice(err);audio();own.word={r:state.round,n:state.turn,w:raw.trim()};i.value='';publish();notice('¡Pasando la bomba…!')}
+function flagWord(){if(!state?.last||state.last.by===myKey)return;own.flag={r:state.round,id:state.last.id};publish();render()}
+
+// ---------- Vistas ----------
+function renderHome(msg=''){app.innerHTML='<section class="card center"><div class="eyebrow">Juego multijugador · 2–30 jugadores</div><h1 class="title">TIC TAC BOOM 💣</h1><p class="muted">Una sílaba, un dado y una bomba que no sabes cuándo explota. Di palabras antes de que te estalle en las manos.</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar en la sala</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><div class="eyebrow">Reglas</div><p class="muted" style="margin:6px 0"><b>🟢 TIC</b>: palabras que empiecen por la sílaba · <b>🔵 TAC</b>: que acaben en ella · <b>🔴 BOUM</b>: que la contengan en cualquier parte.</p><p class="muted" style="margin:6px 0">La bomba tiene un tiempo total (no se reinicia al pasarla) y no se ve cuánto queda: solo late más rápido. Quien la tenga cuando explote pierde una vida. ¡El último vivo gana!</p><p class="muted" style="margin:6px 0"><b>🚩 Impugnar:</b> si crees que una palabra no existe, márcala; si la mayoría de los demás también, se rechaza y el jugador debe repetir. Además, a veces <b>cambia el dado</b> o <b>el sentido</b> de giro.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){const ps=playerList();
+ app.innerHTML='<section class="card center"><div class="eyebrow">Sala de Tic Tac Boom</div><h1 class="title">Esperando jugadores</h1><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><p class="muted">Comparte el código. Con 2 o más jugadores el anfitrión puede empezar.</p><div class="players">'+ps.map(p=>'<span class="pill '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.host?' · anfitrión':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'</div></section>'
+ +(isHost?'<section class="card"><div class="eyebrow">Ajustes</div><div class="settings"><div><label>⏱ Duración de la bomba</label><select id="time">'+[30,60,90,120,0].map(t=>'<option value="'+t+'"'+(t===state.time?' selected':'')+'>'+(t?t+' segundos':'🎲 Sorpresa (25–110 s)')+'</option>').join('')+'</select></div><div><label>❤️ Vidas por jugador</label><select id="lives">'+[1,3,5].map(n=>'<option value="'+n+'"'+(n===state.lives?' selected':'')+'>'+n+(n===1?' vida':' vidas')+'</option>').join('')+'</select></div></div><button class="btn" id="start" style="width:100%;margin-top:16px" '+(ps.length<2?'disabled':'')+'>Encender la mecha</button></section>':'<section class="card center"><p class="muted">El anfitrión está preparando la partida…</p></section>')+'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>';
+ $('copy')?.addEventListener('click',()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{}));
+ $('start')?.addEventListener('click',()=>{audio();state.time=Number($('time').value);state.lives=Number($('lives').value);startGame()});$('leave').onclick=leaveRoom}
+function playersBar(){return'<div class="players">'+state.order.map(k=>{const p=state.players[k];return'<span class="pill '+(k===myKey?'me ':'')+(state.phase==='play'&&k===state.holder?'holder ':'')+(p.lives<=0?'dead':'')+'">'+(k===state.holder&&state.phase==='play'?'💣 ':'')+safe(p.name)+' '+hearts(p.lives)+'</span>'}).join('')+'</div>'}
+function renderPlay(){const now=Date.now(),started=now>=state.startAt,me=state.players[myKey],myTurn=started&&state.holder===myKey&&me&&me.lives>0,H=state.players[state.holder];lastStarted=started;
+ const sylTxt=state.mode==='TIC'?safe(state.syl.toUpperCase())+'…':state.mode==='TAC'?'…'+safe(state.syl.toUpperCase()):'…'+safe(state.syl.toUpperCase())+'…';
+ let h='<section class="card center"><div class="eyebrow">Ronda '+state.round+' · '+(state.time?'bomba de '+state.time+' s':'bomba sorpresa')+'</div>';
+ if(!started)h+='<div class="bomb roll">🎲</div><div class="syl">?</div><p class="muted">Sacando carta y tirando el dado… <b id="cd">3</b></p>';
+ else{h+='<div class="bomb" id="bomb">💣</div><br><div class="syl">'+sylTxt+'</div><p style="margin:8px 0"><span class="die d-'+state.mode+'">'+state.mode+'</span> Palabras que <b>'+MODES[state.mode]+'</b> «'+safe(state.syl)+'»</p>';
+  h+=myTurn?'<h2>¡Tienes la bomba! Escribe una palabra</h2>':'<p>💣 La bomba la tiene <b>'+safe(H.name)+'</b></p>';
+  if(state.event)h+='<div class="event">'+safe(state.event)+'</div>';
+  if(myTurn)h+='<div class="row"><input id="w" maxlength="30" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tu palabra…" style="flex:3"><button class="btn" id="send">Pasar 💣</button></div>';
+  if(state.last){const fl=own.flag&&own.flag.r===state.round&&own.flag.id===state.last.id,can=me&&me.lives>0&&state.last.by!==myKey;h+='<div class="last"><span>Última: <b>'+safe(state.last.w)+'</b> <span class="small">('+safe(state.players[state.last.by].name)+')</span></span>'+(can?'<button class="btn ghost" id="flag" style="padding:7px 11px" '+(fl?'disabled':'')+'>'+(fl?'🚩 Marcada':'🚩 No existe')+'</button>':'')+'</div>'}
+  h+='<p class="notice" id="notice"></p>'+(me?'':'<p class="small">Estás de espectador en esta partida.</p>');
+  if(state.used.length)h+='<div class="chips">'+state.used.slice(-12).reverse().map(w=>'<span class="chip">'+safe(w)+'</span>').join('')+'</div>'}
+ h+='</section><section class="card center"><div class="eyebrow">Jugadores</div>'+playersBar()+'</section>';app.innerHTML=h;
+ $('send')?.addEventListener('click',submit);$('w')?.addEventListener('keydown',e=>{if(e.key==='Enter')submit()});$('flag')?.addEventListener('click',flagWord)}
+function renderBoom(){const L=state.players[state.loser];if(boomShown!==state.round){boomShown=state.round;boomSound()}
+ app.innerHTML='<section class="card center"><div class="boom">💥</div><h1 class="title">¡BOOM!</h1><p>La bomba explotó en las manos de <b>'+safe(L.name)+'</b>'+(L.lives>0?' y pierde una vida ('+hearts(L.lives)+' restantes).':' y queda <b>eliminado/a</b> 💀')+'</p><p class="muted">Sílaba: <b>'+safe(state.syl)+'</b> · '+state.mode+' · '+state.used.length+' palabras dichas</p></section><section class="card center"><div class="eyebrow">Vidas</div>'+playersBar()+(isHost?'<button class="btn" id="next" style="width:100%;margin-top:16px">'+(state.final?'Ver ganador 🏆':'Siguiente ronda')+'</button>':'<p class="muted">Esperando al anfitrión…</p>')+'</section>';$('next')?.addEventListener('click',nextRound)}
+function renderFinished(){const r=state.order.map(k=>({k,...state.players[k]})).sort((a,b)=>b.lives-a.lives||b.words-a.words),w=state.winner&&state.players[state.winner];
+ app.innerHTML='<section class="card center"><div class="eyebrow">Partida terminada</div><div class="boom">🏆</div><h1 class="title">'+(w?safe(w.name):'Nadie')+' gana</h1><p class="muted">Último superviviente tras '+state.round+' rondas.</p></section><section class="card">'+r.map((p,i)=>'<div class="rank"><span>'+(['🥇','🥈','🥉'][i]||i+1)+'</span><b>'+safe(p.name)+'</b><span class="pts">'+hearts(p.lives)+' · '+p.words+' palabras</span></div>').join('')+'</section>'+(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>';
+ $('again')?.addEventListener('click',()=>{state={v:state.v,phase:'lobby',time:state.time,lives:state.lives};commit()});$('leave').onclick=leaveRoom}
+function render(){
+ const a=document.activeElement,keep=a&&a.id==='w'?a.selectionStart:null,old=$('w')?.value||'';
+ if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){app.innerHTML='<section class="card center"><div class="eyebrow">Conectando</div><h1 class="title">Entrando en la sala…</h1><p class="muted">Código '+safe(roomCode)+'</p><button class="btn ghost" id="cancel">Cancelar</button></section>';$('cancel').onclick=leaveRoom;return}
+ if(!state)app.innerHTML='<section class="card center"><h1 class="title">Esperando al anfitrión…</h1><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="leave">Salir</button></section>',$('leave').onclick=leaveRoom;
+ else if(state.phase==='lobby')renderLobby();else if(state.phase==='play')renderPlay();else if(state.phase==='boom')renderBoom();else renderFinished();
+ const n=$('w');if(n){n.value=old;if(keep!==null||state.holder===myKey){n.focus();try{n.setSelectionRange(n.value.length,n.value.length)}catch{}}}}
+$('snd').onclick=()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊'};
+
+// Bucle: lógica del anfitrión, cuenta atrás, latido de la bomba (más rápido cuanto menos queda)
+setInterval(()=>{if(!roomCode||!state)return;hostStep();if(state.phase!=='play')return;const now=Date.now(),st=now>=state.startAt;
+ if(st!==lastStarted){render();return}
+ if(!st){const c=$('cd');if(c)c.textContent=Math.max(1,Math.ceil((state.startAt-now)/1000));return}
+ const frac=Math.max(0,(state.explodeAt-now)/(state.explodeAt-state.startAt)),beat=frac>.35?1:.2+frac/.35*.8,b=$('bomb');
+ if(b)b.style.setProperty('--beat',beat+'s');
+ if(now>=nextBeat){tone(frac>.35?600:frac>.15?800:1000,.07);nextBeat=now+beat*1000}},60);
+if(saved?.room&&saved?.name){connect()}else renderHome();
+})();
+</script></body></html>

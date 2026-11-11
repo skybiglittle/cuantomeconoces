@@ -67,8 +67,8 @@ li.rk .sc{font-weight:800;font-size:18px}
 <script>
 // =====================================================================
 //  📸 FOTO CENSURADA
-//  La foto (Wikimedia Commons) empieza muy pixelada o muy ampliada y se
-//  va revelando. Quien crea que sabe qué es pulsa "¡Lo sé!", la partida se
+//  La foto (Wikimedia Commons) empieza muy ampliada, desenfocada o tapada por
+//  una ventana y se va revelando. Quien crea que sabe qué es pulsa "¡Lo sé!", la partida se
 //  pausa y el anfitrión juzga. Cuanto antes aciertes, más puntos.
 //  · Un dispositivo: funciona solo, sin servidor.
 //  · Online: usa la misma sala por WebSocket que el resto del juego.
@@ -133,8 +133,8 @@ function near(g,t){g=nz(g);t=nz(t);if(!g||!t)return false;if(g===t)return true;i
 
 // ---------- Estado ----------
 // Z = estado local de este dispositivo. H = estado de la partida (lo manda el anfitrión).
-var Z=null,H=null,IMG=null,IMGU='',OFF=document.createElement('canvas'),GRACE=8000;
-function newH(){return{v:1,ph:'lobby',r:-1,tot:10,theme:'mezcla',fx:'mix',dur:45000,free:'',img:null,ans:'',ansEn:'',kind:'pix',cx:.5,cy:.5,run:false,el:0,buz:null,lock:[],sc:{},last:null,seen:[],used:[],err:''}}
+var Z=null,H=null,IMG=null,IMGU='',OFF=document.createElement('canvas'),CANBLUR=(function(){try{return 'filter' in CanvasRenderingContext2D.prototype}catch(e){return false}})(),GRACE=8000;
+function newH(){return{v:1,ph:'lobby',r:-1,tot:10,theme:'mezcla',fx:'mix',dur:45000,free:'',img:null,ans:'',ansEn:'',kind:'zoom',cx:.5,cy:.5,run:false,el:0,buz:null,lock:[],sc:{},last:null,seen:[],used:[],err:''}}
 function peers(){return NR?NR.peers().filter(function(p){return p.presence&&p.presence.cz}).map(function(p){return{id:p.peer,me:p.isMe,p:p.presence}}):[]}
 function pidN(x){return parseInt(String(x.id).slice(1))||0}
 function players(){
@@ -186,7 +186,7 @@ async function prepRound(){
     try{
       var img=await fetchImg(t.en);
       if(!Z||!Z.host)return;
-      var kind=H.fx==='mix'?pick(['pix','zoom']):H.fx;
+      var kind=H.fx==='mix'?pick(['zoom','blur','win']):(H.fx==='pix'?'zoom':H.fx);
       hostSet({ph:'ready',img:{url:img.url,page:img.page,title:(img.title||'').slice(0,80),author:(img.author||'').slice(0,60),license:(img.license||'').slice(0,30)},ans:t.es,ansEn:t.en,kind:kind,cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,seen:(H.seen||[]).concat([img.title]).slice(-10),used:(H.used||[]).concat([t.es]).slice(-10),run:false,el:0});
       return;
     }catch(e){lastErr=e}
@@ -244,18 +244,20 @@ function drawCv(){
   var cv=document.getElementById('cv');
   if(!cv||!H||!IMG||!IMG.complete||!IMG.naturalWidth)return;
   var iw=IMG.naturalWidth,ih=IMG.naturalHeight;
-  if(cv.dataset.k!==IMGU){var cw=Math.min(900,iw),ch=Math.round(cw*ih/iw);if(ch>700){ch=700;cw=Math.round(ch*iw/ih)}cv.width=cw;cv.height=ch;cv.dataset.k=IMGU}
-  var cw2=cv.width,ch2=cv.height,x=cv.getContext('2d'),full=(H.ph==='reveal'||H.ph==='end'),lv=full?1:lvl();
-  x.imageSmoothingEnabled=true;
-  if(H.kind==='zoom'){
-    var s=full?1:.07+.93*Math.pow(lv,1.6),sw=iw*s,sh=ih*s,sx=Math.max(0,Math.min(iw-sw,H.cx*iw-sw/2)),sy=Math.max(0,Math.min(ih-sh,H.cy*ih-sh/2));
-    x.drawImage(IMG,sx,sy,sw,sh,0,0,cw2,ch2);
-  }else if(full||lv>=1){
-    x.drawImage(IMG,0,0,cw2,ch2);
+  if(cv.dataset.k!==IMGU){var w0=Math.min(900,iw),h0=Math.round(w0*ih/iw);if(h0>700){h0=700;w0=Math.round(h0*iw/ih)}cv.width=w0;cv.height=h0;cv.dataset.k=IMGU}
+  var cw=cv.width,ch=cv.height,x=cv.getContext('2d'),full=(H.ph==='reveal'||H.ph==='end'),lv=full?1:lvl();
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+  if(full||lv>=1){x.drawImage(IMG,0,0,cw,ch);return}
+  if(H.kind==='blur'){
+    var r=Math.pow(1-lv,1.4)*60*(cw/900);
+    if(CANBLUR){var m=Math.ceil(r*2)+2;x.fillStyle='#111';x.fillRect(0,0,cw,ch);x.filter='blur('+r.toFixed(1)+'px)';x.drawImage(IMG,-m,-m,cw+2*m,ch+2*m);x.filter='none'}
+    else{var c=Math.max(4,Math.round(4*Math.pow(75,lv))),w=c,h=Math.max(1,Math.round(c*ih/iw));OFF.width=w;OFF.height=h;OFF.getContext('2d').drawImage(IMG,0,0,w,h);x.drawImage(OFF,0,0,w,h,0,0,cw,ch)}
+  }else if(H.kind==='win'){
+    var rmin=.07*cw,rmax=Math.hypot(Math.max(H.cx,1-H.cx)*cw,Math.max(H.cy,1-H.cy)*ch),R=rmin+(rmax-rmin)*Math.pow(lv,1.3);
+    x.fillStyle='#111';x.fillRect(0,0,cw,ch);x.save();x.beginPath();x.arc(H.cx*cw,H.cy*ch,R,0,Math.PI*2);x.clip();x.drawImage(IMG,0,0,cw,ch);x.restore();
   }else{
-    var c=Math.max(3,Math.round(3*Math.pow(100,lv))),w=c,h=Math.max(1,Math.round(c*ih/iw));
-    OFF.width=w;OFF.height=h;OFF.getContext('2d').drawImage(IMG,0,0,w,h);
-    x.imageSmoothingEnabled=false;x.drawImage(OFF,0,0,w,h,0,0,cw2,ch2);
+    var sc=.07+.93*Math.pow(lv,1.6),sw=iw*sc,sh=ih*sc,sx=Math.max(0,Math.min(iw-sw,H.cx*iw-sw/2)),sy=Math.max(0,Math.min(ih-sh,H.cy*ih-sh/2));
+    x.drawImage(IMG,sx,sy,sw,sh,0,0,cw,ch);
   }
 }
 function loop(){
@@ -306,7 +308,7 @@ function vLobby(){
   var themes=[['mezcla','🎲 Mezcla']].concat(THEME_KEYS.map(function(k){return [k,TH[k].n]}));
   var set=host?'<div class="kick" style="margin-top:14px">Tema</div>'+setSeg('theme',themes,H.theme)
     +'<div class="kick" style="margin-top:14px">…o busca tú un tema libre (opcional)</div><input id="free" maxlength="40" placeholder="Ej: castle, vintage car, cat (en inglés suele ir mejor)" value="'+ea(H.free)+'"><p class="mut" style="font-size:12px;margin:-4px 0 0">Si escribes algo aquí, se usa en lugar del tema. Esa palabra será la respuesta.</p>'
-    +'<div class="kick" style="margin-top:14px">Efecto</div>'+setSeg('fx',[['mix','Mezcla'],['pix','Pixelado'],['zoom','Ampliado']],H.fx)
+    +'<div class="kick" style="margin-top:14px">Efecto</div>'+setSeg('fx',[['mix','Mezcla'],['zoom','Alejando'],['blur','Desenfoque'],['win','Ventana']],H.fx)
     +'<div class="kick" style="margin-top:14px">Tiempo hasta verla entera</div>'+setSeg('dur',[[30000,'30 s'],[45000,'45 s'],[60000,'60 s']],H.dur)
     +'<div class="kick" style="margin-top:14px">Fotos por partida</div>'+setSeg('tot',[[5,'5'],[10,'10'],[15,'15']],H.tot)
     :'<p class="mut" style="font-size:14px;margin:12px 0 0">El anfitrión está preparando la partida…</p>';
@@ -316,7 +318,7 @@ function vLobby(){
 }
 function vReady(){
   if(!Z.host){paint(hdr()+'<div class="card center"><h2>Preparando la foto…</h2><p class="mut">Mira la pantalla del anfitrión. Enseguida empieza.</p><span class="dots"><i></i><i></i><i></i></span></div>'+board()+warn());return}
-  paint(hdr()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+(H.kind==='zoom'?'ampliado':'pixelado')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto.</p></div>'
+  paint(hdr()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+({zoom:'alejando',blur:'desenfoque',win:'ventana'}[H.kind]||'')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto.</p></div>'
     +'<button class="btn" data-a="begin">▶ Empezar a revelar</button><button class="btn sec" data-a="other">🔄 Otra foto</button>'+board());
 }
 function vError(){
@@ -369,7 +371,7 @@ function vEnd(){
 function home(){
   Z=null;H=null;
   var msg=OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'';
-  app.innerHTML='<h1>Foto censurada</h1><div class="card"><div class="kick">📸 La foto se va revelando</div><p class="mut" style="font-size:14px">Una fotografía de Wikimedia empieza muy pixelada o muy ampliada y se va aclarando poco a poco. Pulsa «¡Lo sé!» antes que los demás: cuanto más borrosa esté, más puntos ganas. Pero si fallas, pierdes uno y te quedas fuera de esa foto.</p></div>'
+  app.innerHTML='<h1>Foto censurada</h1><div class="card"><div class="kick">📸 La foto se va revelando</div><p class="mut" style="font-size:14px">Una fotografía de Wikimedia empieza muy ampliada, muy desenfocada o tapada por una ventana diminuta, y se va revelando poco a poco. Pulsa «¡Lo sé!» antes que los demás: cuanto más borrosa esté, más puntos ganas. Pero si fallas, pierdes uno y te quedas fuera de esa foto.</p></div>'
   +'<div class="card"><div class="kick">Un solo dispositivo</div><p class="mut" style="font-size:14px">Todos miráis la misma pantalla y respondéis en voz alta. Funciona sin servidor.</p><label>Jugadores (separados por comas)<input id="ln" maxlength="120" placeholder="Ana, Luis, Marta"></label><button class="btn" data-a="local">Empezar</button></div>'
   +'<div class="card"><div class="kick">Online · cada uno en su móvil</div><p class="mut" style="font-size:14px">El anfitrión presenta y juzga; los demás pulsan desde su móvil. Necesita el servidor del juego.</p><label>Tu nombre<input id="nm" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="create">Crear sala</button><div class="or">o únete a una sala</div><input id="cd" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-a="join">Unirme</button>'+msg+'</div>';
 }

@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111827">
+<title>Mímica extrema · Juego de equipos</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--text:#f4f6ff;--muted:#aab5d0;--line:#2e3b59;--a:#8b7cff;--b:#34d6c3;--good:#39d98a;--bad:#ff657a;--gold:#ffd166}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 12% 0%,#28234e 0,transparent 42%),radial-gradient(ellipse at 100% 20%,#123c4b 0,transparent 36%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+main{width:min(850px,100%);margin:auto;padding:24px 16px 56px}
+h1{font-size:clamp(40px,9vw,68px);line-height:1;margin:0;letter-spacing:-.06em;background:linear-gradient(100deg,#fff,#a89dff 48%,#53ead7);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:24px;margin:0 0 8px}h3{margin:0 0 6px}
+.sub{color:var(--muted);margin:10px 0 22px}
+.panel{background:linear-gradient(145deg,rgba(29,41,67,.96),rgba(18,27,47,.96));border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 14px 40px #0003}
+.stack{display:grid;gap:10px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}
+.muted,.small{color:var(--muted)}.small{font-size:13px}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input,select{width:100%;border:1px solid var(--line);background:#0f172a;color:var(--text);border-radius:13px;padding:13px 14px;font:inherit;outline:none}
+input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#5f8cff);color:#fff;font-weight:800;box-shadow:0 8px 22px #6d65ff33}
+.btn.secondary{background:#263451;border:1px solid var(--line);box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--text)}
+.btn.good{background:linear-gradient(100deg,#16a56b,#27c99a)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.hidden{display:none!important}
+.notice,.status{padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:#0f172a;color:var(--muted);margin:10px 0}
+.status.good{border-color:#258d69;color:#9cf0cb}.status.warn{border-color:#9a7730;color:#ffe09a}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.tag.gold{border-color:#9a7730;color:var(--gold)}
+.code{font-size:32px;letter-spacing:.2em;font-weight:950;text-align:center;color:var(--gold)}
+.team{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 13px;background:#0f172a;border:1px solid var(--line);border-radius:13px;margin:7px 0}
+.player{display:inline-flex;margin:4px 4px 0 0;padding:5px 9px;border:1px solid var(--line);border-radius:99px;font-size:13px;color:var(--muted)}
+.player.me{border-color:var(--b);color:var(--b)}
+.bigword{font-size:clamp(38px,10vw,70px);font-weight:950;line-height:1.08;text-align:center;letter-spacing:-.04em;margin:22px 0;overflow-wrap:anywhere}
+.timer{height:9px;background:#0a1222;border-radius:99px;overflow:hidden;margin:15px 0 5px}
+.timer i{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--gold));width:100%;transition:width .2s}
+.score{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px;background:#0f172a;border-radius:12px;margin:6px 0}
+.score strong{color:var(--gold)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.proposal{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px;background:#0f172a;border:1px solid var(--line);border-radius:12px;margin:7px 0}
+.proposal span{flex:1;min-width:140px}
+.challenge{margin:14px 0;padding:15px;border:1px solid #7467d9;background:linear-gradient(135deg,#29234f,#172c46);border-radius:16px}
+.challenge h3{color:#c9c1ff;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.challenge ul{margin:8px 0 0;padding-left:22px}.challenge li{margin:5px 0;font-weight:700}
+.event{margin:14px 0;padding:13px 15px;border:1px solid #9a7730;background:linear-gradient(135deg,#3a2f12,#2a2210);border-radius:16px;color:var(--gold)}
+.event b{display:block;font-size:18px}
+.mini{padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:#263451;color:#fff}
+.mini.approve{border-color:#258d69;color:#9cf0cb}.mini.reject{border-color:#a64a5a;color:#ff9aa8}
+.center{text-align:center}
+.divider{height:1px;background:var(--line);margin:18px 0}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}.panel{padding:16px}.code{font-size:27px}}
+</style></head>
+<body><main>
+<header><h1>MÍMICA EXTREMA</h1><p class="sub">Representa palabras cada vez más complicadas mientras cumples restricciones aleatorias. ¡Que no cunda el pánico! 🎭</p></header>
+
+<section id="home">
+ <div class="panel stack"><h2>Crear una partida</h2><label>Tu nombre</label><input id="playerName" maxlength="20" placeholder="Cómo te llamas"><button class="btn" id="createBtn">Crear sala</button><div class="divider"></div><h2>Unirse a una partida</h2><div class="row"><input id="roomCode" maxlength="5" placeholder="CÓDIGO" autocomplete="off"><button class="btn secondary" id="joinBtn">Entrar</button></div><p id="homeMsg" class="notice"></p></div>
+ <div class="panel"><h3>Mecánicas</h3><p class="small">🔥 <b>Racha:</b> el turno no termina al acertar, sigue con otra palabra y cada acierto suma 3 segundos; a partir del tercero seguido, +1 punto. 🎴 <b>Cartas de azar:</b> al empezar un turno puede salir un efecto (palabra dorada, prisa, tiempo extra). 🦹 <b>Robo:</b> si se acaba el tiempo se revela la palabra y los rivales pueden robarla (+1). Cada equipo necesita al menos 2 personas.</p></div>
+</section>
+
+<section id="lobby" class="hidden">
+ <div class="panel center"><div class="tag">SALA DE JUEGO</div><div class="code" id="codeDisplay"></div><p class="small">Comparte este código con los demás jugadores.</p><button class="btn secondary" id="copyBtn">Copiar código</button></div>
+ <div class="panel"><h2>Tu equipo</h2><p class="muted">Elige el equipo al que perteneces. El anfitrión puede crear tantos equipos como quiera.</p><select id="myTeam"></select></div>
+ <div class="panel"><h2>Equipos y jugadores</h2><div id="teamsList"></div><div id="hostTeams" class="hidden"><label>Nombre del nuevo equipo</label><div class="row"><input id="newTeamName" maxlength="22" placeholder="Ej. Los relámpagos"><button class="btn secondary" id="addTeam">Añadir equipo</button></div></div></div>
+ <div class="panel"><h2>Propón palabras</h2><p class="muted">Las revisa el anfitrión. Una palabra propuesta por alguien de un equipo <b>nunca le tocará a ese equipo</b>. Cada jugador puede enviar hasta 20.</p><div class="row"><input id="customWord" maxlength="42" placeholder="Escribe una palabra o expresión"><select id="customLevel"><option value="easy">Fácil · 1 punto</option><option value="medium">Media · 2 puntos</option><option value="hard">Difícil · 3 puntos</option></select></div><button class="btn secondary" id="sendProposal" style="margin-top:10px">Enviar propuesta</button><p id="proposalMsg" class="small"></p><div id="proposalReview" class="hidden"><div class="divider"></div><h3>Revisar propuestas</h3><div id="proposalList"></div></div></div>
+ <div class="panel"><h2>Configuración</h2><div class="grid2"><div><label>Dificultad</label><select id="difficulty"><option value="all">Mezcla de las tres</option><option value="easy">Solo fácil</option><option value="medium">Solo media</option><option value="hard">Solo difícil</option></select></div><div><label>Duración del turno</label><select id="turnDuration"><option value="45">45 segundos</option><option value="60" selected>60 segundos</option><option value="90">90 segundos</option><option value="120">120 segundos</option></select></div></div><p class="small">Las palabras no se repiten en toda la partida.</p><button class="btn" id="startBtn">Empezar partida</button><p id="startMsg" class="notice"></p></div>
+ <button class="btn ghost" id="leaveLobby">Salir de la sala</button>
+</section>
+
+<section id="game" class="hidden"><div class="panel" id="gamePanel"></div></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* Banco base: puedes pegar aquí tus listas largas (mismo formato, separadas por comas). */
+const WORDS={
+easy:`perro,gato,conejo,caballo,vaca,oveja,cerdo,gallina,pato,pez,tortuga,ratón,león,elefante,jirafa,mono,oso,pingüino,delfín,serpiente,manzana,plátano,naranja,fresa,sandía,zanahoria,tomate,pan,queso,huevo,pizza,helado,sopa,mesa,silla,cama,sofá,puerta,ventana,espejo,lámpara,reloj,teléfono,ordenador,libro,lápiz,mochila,pelota,muñeca,coche,bicicleta,autobús,tren,avión,barco,moto,paraguas,cepillo de dientes,toalla,camisa,zapatos,sombrero,gafas,guantes,bufanda,maleta,llave,cuchara,botella,escoba,aspiradora,televisión,cámara,guitarra,piano,tambor,violín,raqueta,cometa,piscina,playa,montaña,árbol,flor,nube,sol,luna,estrella,lluvia,nieve,fuego,mariposa,abeja,rana,ardilla,canguro,cocodrilo,tiburón,ballena,pulpo,águila,búho,loro,payaso,bombero,médico,profesor,cocinero,policía,peluquero,pintor,astronauta,cantante,bailarín,futbolista,nadador,dentista,mecánico,abrazo,estornudo,bostezo,baile,siesta,ducha,cumpleaños,regalo,boda,concierto,picnic,ascensor,semáforo,castillo,hospital,aeropuerto,helicóptero,submarino,cohete,camión,dinosaurio,unicornio,fantasma,pirata,rey,dragón,hada,mago,sirena,vaquero,detective,superhéroe,muñeco de nieve,espantapájaros,columpio,tobogán,tiovivo,carrito de compra,despertador,dado,ajedrez,puzzle,tienda de campaña,microondas,lavadora,ventilador,robot`,
+medium:`malabarista,equilibrista,mimo,ilusionista,domador,acróbata,arqueólogo,paleontólogo,meteorólogo,electricista,fontanero,cerrajero,taxista,piloto,marinero,capitán,azafato,socorrista,árbitro,entrenador,portero,ciclista,escalador,esgrimista,gimnasta,patinador,surfista,buceador,director de cine,periodista,bibliotecario,científico,inventor,programador,arquitecto,traductor,diplomático,detective privado,guía turístico,afinador de pianos,sumiller,repostero,barista,florista,joyero,tatuador,maquillador,pianista,violinista,saxofonista,director de orquesta,bailarín de ballet,bailarín de flamenco,estatua viviente,repartidor,limpiacristales,apicultor,pastor,farero,cirujano,fisioterapeuta,cartero,herrero,carpintero,sastre,zapatero,relojero,espía,guardaespaldas,subastador,crítico gastronómico,DJ,rapero,humorista,hipnotizador,mago de cerca,escapista,vendedor de helados,churrero,carnicero,leñador,minero,albañil,soldador,streamer,astrónomo,biólogo marino,historiador,entrenador de delfines,cuidador de pingüinos,paracaidista,piloto de carreras,jinete,cetrero`,
+hard:`caminar como si el suelo quemara,intentar atrapar una mosca,fingir que se te pega un chicle al zapato,abrir un paraguas con viento,bailar en una baldosa diminuta,cruzar un río imaginario,subir una escalera interminable,caminar por la Luna,escapar de una habitación llena de láseres,buscar las gafas que llevas puestas,dirigir una orquesta invisible,perder un tren por un segundo,montar una tienda de campaña con viento,remar en una barca que gira en círculos,pescar un pez enorme,caminar sobre hielo resbaladizo,esquivar gotas de lluvia gigantes,pilotar un avión con turbulencias,montar un caballo desbocado,domar un pulpo gigante,alimentar a una jirafa muy alta,esconderse de un dinosaurio,rescatar a un gato de un árbol,perseguir un sombrero volador,abrir una caja pegajosa,caminar como un robot oxidado,bailar como un pingüino,correr como una tortuga,nadar como un perro,saltar como un canguro con hipo,estornudar como un elefante,cantar ópera sin voz,desfilar con zapatos enormes,celebrar una victoria exagerada,fallar un penalti decisivo,boxear contra una sombra,escalar una pared invisible,esquiar sin frenos,aparcar en un hueco imposible,quedarse atrapado en un ascensor,buscar cobertura en una montaña,pelearse con una impresora,hacerse un selfi con un pulpo,estudiar mientras todos bailan,entrevistar a un fantasma,seguir a un sospechoso sin ser visto,abrir una caja fuerte imaginaria,cruzar un puente colgante,equilibrar una torre de platos,comer espaguetis larguísimos,pelar una naranja con una mano,soplar velas que no se apagan,atrapar palomitas con la boca,tener hipo en una entrevista,contener la risa en un momento serio,caminar dormido,buscar el interruptor en la oscuridad,intentar atrapar una burbuja,montar un mueble sin instrucciones,meter un sofá por una puerta,colgar un cuadro torcido,cambiar una bombilla muy alta,cerrar una maleta demasiado llena,perseguir un autobús que se va,perderse en un aeropuerto,encender una hoguera bajo la lluvia,cruzar un desierto sin agua,esquivar una avalancha,descifrar jeroglíficos,caminar en gravedad cero,saludar a un extraterrestre,hacerse invisible,viajar al pasado,encogerse hasta ser diminuto,mover objetos con la mente,atravesar una pared,bailar un vals con una escoba,bailar tango con una silla,vender hielo a un pingüino,discutir con un semáforo,enseñar a nadar a una piedra,bañar a un gato,cepillar los dientes a un cocodrilo,ser una lavadora en centrifugado,ser un ventilador oscilante,ser un reloj de cuco,ser una montaña rusa,ser un tren que frena,ser un volcán a punto de erupcionar,ser un copo de nieve,ser un dragón estornudando fuego,ser un superhéroe con la capa atascada,ser un pirata mareado,ser un mimo atrapado en una caja invisible,ser un fantasma que no asusta a nadie,ser un zombi aprendiendo a bailar,ser un robot enamorado de una tostadora`};
+function expandWords(level){
+ const base=WORDS[level].split(',').map(s=>s.trim()).filter(Boolean);
+ const suffix=level==='easy'?['de juguete','gigante','diminuto','bajo la lluvia']:level==='medium'?['en una competición','con mucho cuidado','a toda velocidad','en mitad de la noche']:[];
+ const out=new Set(base);
+ for(const w of base){for(const s of suffix){out.add(w+' '+s);if(out.size>=400)break}if(out.size>=400)break}
+ return [...out];
+}
+const BANK={easy:expandWords('easy'),medium:expandWords('medium'),hard:expandWords('hard')};
+
+const RESTRICTIONS=['Solo puedes usar una mano.','No puedes mover los pies del sitio.','Representa todo a cámara lenta.','Hazlo como si fueras un robot.','No puedes doblar los codos.','Solo puedes moverte de cintura para arriba.','Mantén una mano sobre la cabeza.','No puedes señalar directamente a ningún objeto.','Representa la acción sentado.','Solo puedes usar gestos de la cara y la cabeza.','Haz cada movimiento dos veces.','Muévete como si estuvieras bajo el agua.','No puedes separar los brazos del cuerpo.','Representa como si estuvieras en gravedad cero.','Solo puedes dar pasos muy pequeños.','Usa movimientos exageradamente grandes.','No puedes mover la cabeza.','Representa como si tuvieras muchísimo sueño.','Hazlo con una mano detrás de la espalda.','No puedes mover las manos: usa el resto del cuerpo.'];
+/* Cartas de azar: time = segundos de más/menos, bonus = puntos extra por acierto, mult = multiplicador */
+const EVENTS=[
+ {n:'🌟 Palabra dorada',d:'Cada acierto da +2 puntos extra.',bonus:2},
+ {n:'⚡ Prisa',d:'15 segundos menos, pero cada acierto vale el doble.',time:-15,mult:2},
+ {n:'⏳ Tiempo extra',d:'15 segundos más para este turno.',time:15}
+];
+
+const cidKey='mimica_cid_tab_v1';
+const cid=sessionStorage.getItem(cidKey)||('m'+Math.random().toString(36).slice(2)+Date.now().toString(36));
+sessionStorage.setItem(cidKey,cid);
+let myKey=cid.slice(0,30),myName='Jugador',roomCode='',isHost=false,socket=null,peers=[],state=null,myWord=null,myTurn=0,localTeam='',hostWord='';
+
+const random=a=>a[Math.floor(Math.random()*a.length)];
+const norm=s=>String(s).toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+function show(id){['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+function setHomeMsg(s){$('homeMsg').textContent=s||''}
+
+/* ===== Sistema de salas (protocolo WebSocket del proyecto: join / pres / peers / direct) ===== */
+let pres={},closed=false,retry=0;
+function publish(p){Object.assign(pres,p);if(socket&&socket.readyState===1)socket.send(JSON.stringify({t:'pres',p:{m_name:myName,m_key:myKey,...pres}}))}
+function publishState(){if(isHost&&state)publish({m_host:1,m_state:state})}
+function players(){return peers.map(p=>({key:p.presence?.m_key||p.peer,name:p.presence?.m_name||'Jugador',team:p.presence?.m_team||'',peer:p.peer,presence:p.presence||{}}))}
+function hostPeer(){return peers.find(p=>p.presence?.m_host===1)}
+function getTeam(id){return state?.teams?.find(t=>t.id===id)}
+function teamPlayers(id){return players().filter(p=>p.team===id)}
+function teamLabel(id){return getTeam(id)?.name||'Sin equipo'}
+function connect(code){return new Promise((resolve,reject)=>{
+ let done=false;closed=false;retry=0;
+ const start=()=>{
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  const s=new WebSocket(proto+'//'+location.host);socket=s;
+  s.onopen=()=>s.send(JSON.stringify({t:'join',room:'cmm-'+code.toLowerCase(),cid}));
+  s.onmessage=e=>{
+   let m;try{m=JSON.parse(e.data)}catch{return}
+   if(m.t==='hello')return;
+   if(m.t==='peers'){
+    retry=0;
+    peers=m.peers.map(q=>({peer:q.id,presence:q.p||{}}));
+    if(!peers.some(q=>q.presence.m_key===myKey))publish({});
+    const hp=hostPeer();
+    if(hp&&!isHost&&hp.presence.m_state)state=hp.presence.m_state;
+    if(!done){done=true;resolve()}
+    if(state){if(isHost)hostSync();renderLobbyIfNeeded();renderGameIfNeeded()}
+   }else if(m.t==='direct'){
+    const p=m.p||{};
+    if(p.kind==='mimica_word'){myWord=p.word;myTurn=p.turn;renderGameIfNeeded()}
+    if(p.kind==='mimica_clear'){myWord=null;myTurn=p.turn;renderGameIfNeeded()}
+    if(p.kind==='mimica_team'){localTeam=p.team;publish({m_team:p.team});renderLobbyIfNeeded()}
+   }else if(m.t==='err'){
+    closed=true;try{s.close()}catch{}
+    const msg=m.code==='room_full'?'La sala está llena (máx. 30).':'No se pudo entrar en la sala.';
+    if(!done){done=true;reject(m.code)}else setHomeMsg(msg)
+   }
+  };
+  s.onclose=()=>{if(closed)return;if(!done){done=true;reject('closed');return}retry++;setTimeout(()=>{if(!closed)start()},Math.min(1000*retry,8000))};
+  s.onerror=()=>{};
+ };
+ start();
+})}
+function direct(to,p){if(socket?.readyState===1)socket.send(JSON.stringify({t:'direct',to,p}))}
+function sendWordTo(key,word,turn){const p=players().find(x=>x.key===key);if(p)direct(p.peer,{kind:'mimica_word',word,turn})}
+function clearWord(key,turn){const p=players().find(x=>x.key===key);if(p)direct(p.peer,{kind:'mimica_clear',turn})}
+
+function pickRestrictions(round){
+ const count=round>=6?3:round>=3?2:1,pool=[...RESTRICTIONS],out=[];
+ while(out.length<count&&pool.length)out.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+ return out;
+}
+function randomCode(){return Math.random().toString(36).slice(2,7).toUpperCase().padEnd(5,'X')}
+
+async function createRoom(){
+ myName=($('playerName').value.trim()||'Jugador').slice(0,20);
+ roomCode=randomCode();isHost=true;
+ state={phase:'lobby',host:myKey,teams:[{id:'t1',name:'Equipo 1'},{id:'t2',name:'Equipo 2'}],proposals:[],approved:[],rejected:[],used:[],scores:{},turnIndex:0,round:0,streak:0,settings:{difficulty:'all',duration:60}};
+ try{await connect(roomCode);publish({m_name:myName,m_key:myKey,m_host:1,m_team:'t1',m_state:state});show('lobby');renderLobby()}
+ catch(e){setHomeMsg('No se pudo crear la sala. Inténtalo otra vez.')}
+}
+async function joinRoom(){
+ myName=($('playerName').value.trim()||'Jugador').slice(0,20);
+ roomCode=$('roomCode').value.trim().toUpperCase();
+ if(!/^[A-Z0-9]{5}$/.test(roomCode)){setHomeMsg('Escribe un código de cinco caracteres.');return}
+ isHost=false;
+ try{
+  await connect(roomCode);
+  const hp=hostPeer();if(!state&&hp)state=hp.presence.m_state;
+  const first=state?.teams?.[0]?.id||'';
+  publish({m_name:myName,m_key:myKey,m_team:first});
+  if(state?.phase==='lobby'||!state){show('lobby');renderLobby()}else{show('game');renderGame()}
+ }catch(e){setHomeMsg('No se pudo entrar. Comprueba el código e inténtalo de nuevo.')}
+}
+
+/* ===== Sala de espera ===== */
+function renderLobbyIfNeeded(){if(!$('lobby').classList.contains('hidden')&&state?.phase==='lobby')renderLobby()}
+function renderLobby(){
+ if(!state)return;
+ $('codeDisplay').textContent=roomCode;
+ $('hostTeams').classList.toggle('hidden',!isHost);
+ $('startBtn').classList.toggle('hidden',!isHost);
+ $('startMsg').classList.toggle('hidden',!isHost);
+ $('difficulty').disabled=!isHost;$('turnDuration').disabled=!isHost;
+ const me=players().find(p=>p.key===myKey);
+ const selected=me?.team||localTeam||state.teams[0]?.id||'';
+ $('myTeam').innerHTML=state.teams.map(t=>'<option value="'+esc(t.id)+'" '+(selected===t.id?'selected':'')+'>'+esc(t.name)+'</option>').join('');
+ $('teamsList').innerHTML=state.teams.map(t=>{
+  const ps=teamPlayers(t.id);
+  return '<div class="team"><div><b>'+esc(t.name)+'</b><div>'+ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+esc(p.name)+(p.key===myKey?' (tú)':'')+'</span>').join('')+'</div><div class="small">'+ps.length+' jugador(es) · '+(ps.length>=2?'Listo':'Necesita 2 personas')+'</div></div>'+(isHost&&state.teams.length>2?'<button class="mini reject" data-remove-team="'+esc(t.id)+'">Eliminar</button>':'')+'</div>';
+ }).join('');
+ $('proposalReview').classList.toggle('hidden',!isHost);
+ if(isHost){
+  $('proposalList').innerHTML=state.proposals.length?state.proposals.map((p,i)=>'<div class="proposal"><span><b>'+esc(p.word)+'</b> <small>('+esc(p.level)+')</small><br><small>Propuesta por '+esc(p.byName)+' · '+esc(teamLabel(p.team))+'</small></span><button class="mini approve" data-approve="'+i+'">Aceptar</button><button class="mini reject" data-reject="'+i+'">Rechazar</button></div>').join(''):'<p class="small">Todavía no hay propuestas.</p>';
+ }
+}
+function addTeam(){
+ if(!isHost||!state)return;
+ const name=$('newTeamName').value.trim();if(!name)return;
+ state.teams.push({id:'t'+Math.random().toString(36).slice(2,9),name:name.slice(0,22)});
+ $('newTeamName').value='';publishState();renderLobby();
+}
+function removeTeam(id){
+ if(!isHost||state.teams.length<=2)return;
+ state.teams=state.teams.filter(t=>t.id!==id);
+ const fallback=state.teams[0]?.id;
+ for(const p of players())if(p.team===id)direct(p.peer,{kind:'mimica_team',team:fallback});
+ publishState();renderLobby();
+}
+function submitProposal(){
+ const word=$('customWord').value.trim();
+ if(word.length<2){$('proposalMsg').textContent='Escribe una palabra o expresión un poco más larga.';return}
+ if(!state)return;
+ const team=players().find(p=>p.key===myKey)?.team||state.teams[0]?.id;
+ const exists=[...state.approved,...state.proposals].some(p=>norm(p.word)===norm(word))||(state.rejected||[]).includes(norm(word));
+ if(exists){$('proposalMsg').textContent='Esa palabra ya está propuesta o aprobada. Prueba otra.';return}
+ const mine=state.proposals.filter(p=>p.by===myKey).length+state.approved.filter(p=>p.by===myKey).length;
+ if(mine>=20){$('proposalMsg').textContent='Cada jugador puede proponer hasta 20 palabras por partida.';return}
+ const p={word:word.slice(0,42),level:$('customLevel').value,by:myKey,byName:myName,team};
+ if(isHost){state.proposals.push(p);publishState();renderLobby()}else publish({m_proposal:p});
+ $('customWord').value='';$('proposalMsg').textContent='Propuesta enviada para revisión.';
+}
+function receiveProposals(){
+ if(!isHost||!state)return;
+ const known=new Set([...state.proposals,...state.approved].map(p=>norm(p.word)));
+ for(const pl of players()){
+  const p=pl.presence.m_proposal;
+  if(p&&p.by===pl.key&&!known.has(norm(p.word))&&!(state.rejected||[]).includes(norm(p.word))){state.proposals.push(p);known.add(norm(p.word))}
+ }
+}
+function approve(i){const p=state.proposals.splice(i,1)[0];if(!p)return;state.approved.push(p);publishState();renderLobby()}
+function reject(i){const p=state.proposals.splice(i,1)[0];if(p){state.rejected=state.rejected||[];state.rejected.push(norm(p.word))}publishState();renderLobby()}
+
+/* ===== Lógica de partida (la lleva el anfitrión) ===== */
+function eligibleWord(team){
+ const diff=state.settings.difficulty,used=new Set(state.used||[]);
+ let pool=[];
+ for(const level of ['easy','medium','hard'])if(diff==='all'||diff===level)pool.push(...BANK[level].map(word=>({word,level})));
+ const mates=new Set((state.players||[]).filter(p=>p.team===team).map(p=>p.key));
+ pool.push(...(state.approved||[]).filter(p=>(diff==='all'||p.level===diff)&&p.team!==team&&!mates.has(p.by)));
+ pool=pool.filter(p=>!used.has(norm(p.word)));
+ if(!pool.length)for(const level of ['easy','medium','hard'])pool.push(...BANK[level].map(word=>({word,level})).filter(p=>!used.has(norm(p.word))));
+ return pool.length?random(pool):null;
+}
+function teamOrder(){return state.teams.map(t=>t.id).filter(id=>state.players.filter(p=>p.team===id).length>=2)}
+function currentTeam(){const ids=teamOrder();return ids[state.turnIndex%ids.length]}
+function newWord(){
+ const picked=eligibleWord(state.activeTeam);
+ if(!picked){state.phase='finished';return false}
+ state.turn=(state.turn||0)+1;state.currentLevel=picked.level;
+ state.used.push(norm(picked.word));hostWord=picked.word;
+ sendWordTo(state.performer,picked.word,state.turn);
+ for(const p of state.players)if(p.key!==state.performer)clearWord(p.key,state.turn);
+ return true;
+}
+function beginTurn(){
+ const ids=teamOrder();
+ if(!ids.length){state.phase='finished';return}
+ const team=currentTeam(),members=state.players.filter(p=>p.team===team);
+ const performer=members[(state.round-1)%members.length];
+ state.activeTeam=team;state.performer=performer.key;state.streak=0;state.revealed='';state.lastResult='';
+ state.event=Math.random()<.5?{...random(EVENTS)}:null;
+ state.totalMs=(state.settings.duration+(state.event?.time||0))*1000;
+ state.deadline=Date.now()+state.totalMs;
+ state.currentRestrictions=pickRestrictions(state.round);
+ state.phase='playing';
+ newWord();
+}
+function startGame(){
+ if(!isHost)return;
+ receiveProposals();
+ const ps=players();
+ const bad=state.teams.map(t=>({...t,n:ps.filter(p=>p.team===t.id).length})).filter(t=>t.n<2);
+ if(bad.length){$('startMsg').textContent='Cada equipo debe tener al menos 2 jugadores. Revisa: '+bad.map(t=>t.name).join(', ');return}
+ state.players=ps.map(p=>({key:p.key,name:p.name,team:p.team}));
+ state.settings={difficulty:$('difficulty').value,duration:Number($('turnDuration').value)};
+ state.scores=Object.fromEntries(state.teams.map(t=>[t.id,0]));
+ state.used=[];state.turnIndex=0;state.round=1;state.turn=0;
+ beginTurn();publishState();renderGame();
+}
+function nextTeam(){
+ if(!isHost||!state)return;
+ const ids=teamOrder();
+ state.turnIndex++;
+ if(state.turnIndex>=ids.length){state.turnIndex=0;state.round++}
+ if(state.round>20){state.phase='finished';publishState();renderGame();return}
+ beginTurn();publishState();renderGame();
+}
+function awardPoint(){
+ if(!isHost||state.phase!=='playing')return;
+ const base=state.currentLevel==='easy'?1:state.currentLevel==='medium'?2:3,ev=state.event;
+ state.streak++;
+ const bonus=state.streak>=3?1:0;
+ const pts=(base+bonus+(ev?.bonus||0))*(ev?.mult||1);
+ state.scores[state.activeTeam]=(state.scores[state.activeTeam]||0)+pts;
+ state.deadline+=3000;state.totalMs+=3000;
+ state.lastResult='¡Acertada! +'+pts+' puntos'+(bonus?' (racha 🔥 x'+state.streak+')':'')+' y +3 s';
+ if(!newWord()){state.lastResult='No quedan palabras disponibles.'}
+ publishState();renderGame();
+}
+function passWord(){
+ if(!isHost||state.phase!=='playing')return;
+ state.streak=0;state.lastResult='Palabra pasada. Se corta la racha.';
+ if(!newWord())state.lastResult='No quedan palabras disponibles.';
+ publishState();renderGame();
+}
+function timeUp(){
+ state.revealed=hostWord;
+ state.lastResult='¡Se acabó el tiempo! Aciertos seguidos: '+state.streak;
+ state.phase=teamOrder().length>1?'steal':'result';
+ publishState();renderGame();
+}
+function resolveSteal(teamId){
+ if(!isHost||state.phase!=='steal')return;
+ if(teamId){state.scores[teamId]=(state.scores[teamId]||0)+1;state.lastResult='🦹 '+teamLabel(teamId)+' roba «'+state.revealed+'» (+1 punto)'}
+ else state.lastResult='Nadie robó la palabra.';
+ state.phase='result';publishState();renderGame();
+}
+
+/* ===== Interfaz de juego ===== */
+function renderGameIfNeeded(){if(!$('game').classList.contains('hidden'))renderGame()}
+function scoreHtml(){return [...state.teams].sort((a,b)=>(state.scores[b.id]||0)-(state.scores[a.id]||0)).map(t=>'<div class="score"><span>'+esc(t.name)+'</span><strong>'+(state.scores[t.id]||0)+' pts</strong></div>').join('')}
+function renderGame(){
+ if(!state)return;
+ show('game');
+ const team=getTeam(state.activeTeam),performer=state.players?.find(p=>p.key===state.performer),mine=state.players?.find(p=>p.key===myKey);
+ const isPerformer=state.performer===myKey,isActiveTeam=!!mine&&mine.team===state.activeTeam;
+ let html='';
+ if(state.phase==='finished'){
+  html='<div class="center"><div class="tag">PARTIDA TERMINADA</div><div class="bigword">🏆</div><h2>Clasificación final</h2>'+scoreHtml()+'</div>'+(isHost?'<button class="btn" id="backLobby">Volver a la sala</button>':'<p class="notice">El anfitrión puede volver a la sala.</p>');
+ }else if(state.phase==='steal'){
+  const rivals=state.teams.filter(t=>t.id!==state.activeTeam&&teamOrder().includes(t.id));
+  html='<div class="tag">RONDA '+state.round+' · ¡ROBO!</div><h2 class="center">'+esc(team?.name||'Equipo')+'</h2><div class="status warn center">'+esc(state.lastResult)+'</div><p class="center muted">La palabra era</p><div class="bigword">'+esc(state.revealed||'…')+'</div><p class="center muted">'+(isActiveTeam?'Los rivales pueden intentar robarla gritando su respuesta.':'¡Gritad vuestra respuesta! Si acertáis, robáis 1 punto.')+'</p>'+
+   (isHost?'<div class="stack">'+rivals.map(t=>'<button class="btn good" data-steal="'+esc(t.id)+'">🦹 Robó '+esc(t.name)+' (+1)</button>').join('')+'<button class="btn secondary" data-steal="">Nadie la roba</button></div>':'<p class="notice">El anfitrión decide quién la ha robado…</p>')+scoreHtml();
+ }else if(state.phase==='result'){
+  const ids=teamOrder();
+  html='<div class="tag">RONDA '+state.round+' · RESULTADO</div><h2 class="center">'+esc(team?.name||'Equipo')+'</h2><div class="status good center">'+esc(state.lastResult)+'</div><p class="center muted">Siguiente equipo: '+esc(teamLabel(ids[(state.turnIndex+1)%ids.length]))+'</p>'+scoreHtml()+(isHost?'<button class="btn" id="nextTeam">Siguiente turno</button>':'<p class="notice">Esperando a que el anfitrión continúe…</p>');
+ }else{
+  const left=Math.max(0,state.deadline-Date.now()),lvl=state.currentLevel;
+  html='<div class="row"><span class="tag">RONDA '+state.round+'</span><span class="tag">'+esc(team?.name||'Equipo')+'</span><span class="tag">'+(lvl==='easy'?'FÁCIL · 1 PUNTO':lvl==='medium'?'MEDIA · 2 PUNTOS':'DIFÍCIL · 3 PUNTOS')+'</span>'+(state.streak?'<span class="tag gold">🔥 Racha x'+state.streak+'</span>':'')+'</div>'+
+   (state.event?'<div class="event"><b>🎴 '+esc(state.event.n)+'</b>'+esc(state.event.d)+'</div>':'')+
+   '<div class="challenge"><h3>⚡ Restricciones de este turno</h3><ul>'+(state.currentRestrictions||['¡Sin restricciones!']).map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul><p class="small">Rondas 1–2: 1 restricción · 3–5: 2 · 6 en adelante: 3</p></div>'+
+   '<h2 class="center" style="margin-top:18px">'+(isPerformer?'¡Representa sin hablar!':isActiveTeam?'¡Adivina la palabra!':'Turno de '+esc(team?.name||'otro equipo'))+'</h2>';
+  if(isPerformer)html+='<div class="status good center">Solo tú debes mirar esta pantalla. Haz mímica; no hables ni señales letras.</div><div class="bigword">'+(myWord&&myTurn===state.turn?esc(myWord):'👀')+'</div><p class="center muted">'+(myWord?'¡Que tu equipo la adivine!':'Esperando la palabra privada…')+'</p>';
+  else if(isActiveTeam)html+='<div class="bigword">🎭</div><p class="center muted">'+esc(performer?.name||'Un compañero')+' está representando. Di tus respuestas en voz alta.</p>';
+  else html+='<div class="bigword">🎭</div><p class="center muted">Observa el turno de '+esc(team?.name||'otro equipo')+'.</p>';
+  if(state.lastResult)html+='<div class="status">'+esc(state.lastResult)+'</div>';
+  html+='<div class="timer"><i id="timeBar" style="width:'+Math.max(0,Math.min(100,left/state.totalMs*100))+'%"></i></div><p class="small center" id="timeText">'+Math.ceil(left/1000)+' segundos</p>';
+  if(isActiveTeam)html+='<div class="row"><button class="btn good" id="guessed">¡La hemos adivinado!</button><button class="btn secondary" id="pass">Pasar palabra</button></div><p class="small center">Cada acierto suma 3 segundos y continúa la racha. Pasar la corta.</p>';
+  html+=scoreHtml();
+ }
+ $('gamePanel').innerHTML=html;
+}
+function hostTick(){if(isHost&&state?.phase==='playing'&&Date.now()>=state.deadline)timeUp()}
+function hostSyncActions(){
+ if(!isHost||!state||state.phase!=='playing')return;
+ for(const p of players()){
+  const a=p.presence.m_action;
+  if(a&&a.turn===state.turn&&a.team===state.activeTeam){
+   if(a.type==='guessed')awardPoint();else if(a.type==='pass')passWord();
+   break;
+  }
+ }
+}
+function hostSync(){
+ if(!isHost||!state)return;
+ const next=players().map(p=>({key:p.key,name:p.name,team:p.team}));
+ let changed=false;
+ if(state.phase==='lobby'){changed=JSON.stringify(next)!==JSON.stringify(state.players||[]);state.players=next}
+ const before=state.proposals.length;receiveProposals();
+ if(state.proposals.length!==before)changed=true;
+ if(changed){publishState();if(!$('lobby').classList.contains('hidden'))renderLobby()}
+ hostSyncActions();
+}
+function refresh(){
+ if(isHost){hostSync();hostTick()}
+ if(state?.phase==='playing'&&!$('game').classList.contains('hidden')){
+  const left=Math.max(0,state.deadline-Date.now()),bar=$('timeBar'),txt=$('timeText');
+  if(bar)bar.style.width=(left/state.totalMs*100)+'%';
+  if(txt)txt.textContent=Math.ceil(left/1000)+' segundos';
+ }
+}
+
+/* ===== Eventos ===== */
+$('createBtn').onclick=createRoom;$('joinBtn').onclick=joinRoom;
+$('copyBtn').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copyBtn').textContent='¡Copiado!').catch(()=>{});
+$('addTeam').onclick=addTeam;
+$('myTeam').onchange=()=>{localTeam=$('myTeam').value;publish({m_team:localTeam})};
+$('sendProposal').onclick=submitProposal;$('startBtn').onclick=startGame;$('leaveLobby').onclick=()=>location.reload();
+$('roomCode').oninput=e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5)};
+$('lobby').addEventListener('click',e=>{
+ const a=e.target.closest('[data-approve]'),r=e.target.closest('[data-reject]'),d=e.target.closest('[data-remove-team]');
+ if(a&&isHost)approve(Number(a.dataset.approve));
+ if(r&&isHost)reject(Number(r.dataset.reject));
+ if(d&&isHost)removeTeam(d.dataset.removeTeam);
+});
+$('gamePanel').addEventListener('click',e=>{
+ const t=e.target;
+ if(t.id==='guessed'){if(isHost)awardPoint();else publish({m_action:{type:'guessed',turn:state.turn,team:state.activeTeam}})}
+ if(t.id==='pass'){if(isHost)passWord();else publish({m_action:{type:'pass',turn:state.turn,team:state.activeTeam}})}
+ if(t.id==='nextTeam'&&isHost)nextTeam();
+ const s=t.closest('[data-steal]');if(s&&isHost)resolveSteal(s.dataset.steal);
+ if(t.id==='backLobby'&&isHost){state.phase='lobby';state.used=[];state.proposals=[];state.approved=[];state.rejected=[];publishState();show('lobby');renderLobby()}
+});
+setInterval(refresh,250);
+})();
+</script></body></html>

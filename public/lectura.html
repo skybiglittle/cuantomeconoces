@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control de lectura de la Biblia</title>
+<style>
+:root{
+  --papel:#f5f6f4; --tarjeta:#ffffff; --tinta:#1d2733; --tinta-suave:#5b6673;
+  --linea:#d7dcd6; --azul:#2b4a6f; --azul-fondo:#e6edf5; --sobre-azul:#ffffff;
+  --verde:#25704a; --verde-fondo:#dcf0e4; --verde-linea:#9fd1b3; --aviso:#8a5a00; --aviso-fondo:#fff3d6;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --papel:#141a21; --tarjeta:#1c242d; --tinta:#e8ecef; --tinta-suave:#9aa6b2;
+    --linea:#2f3b47; --azul:#8fb3dc; --azul-fondo:#22303f; --sobre-azul:#101820;
+    --verde:#7fd3a0; --verde-fondo:#1c3a2b; --verde-linea:#2f6b4b; --aviso:#f2c56b; --aviso-fondo:#3a2f12;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--papel); color:var(--tinta);
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+}
+main{max-width:980px;margin:0 auto;padding:28px 18px 100px}
+h1{font:600 clamp(1.7rem,4vw,2.4rem)/1.15 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;margin:0 0 6px}
+.sub{margin:0 0 20px;color:var(--tinta-suave)}
+
+.progreso{background:var(--tarjeta);border:1px solid var(--linea);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.progreso-fila{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.progreso strong{font-size:1.5rem}
+.barra{height:10px;border-radius:6px;background:var(--azul-fondo);margin-top:10px;overflow:hidden}
+.barra>i{display:block;height:100%;width:0;background:var(--verde);transition:width .35s ease}
+.desglose{margin-top:8px;color:var(--tinta-suave);font-size:.9rem}
+
+.estado{border-radius:10px;padding:10px 14px;font-size:.9rem;margin-bottom:14px;background:var(--azul-fondo);color:var(--tinta)}
+.estado.aviso{background:var(--aviso-fondo);color:var(--aviso)}
+
+.barra-control{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.vistas{display:inline-flex;border:1px solid var(--linea);border-radius:10px;overflow:hidden;background:var(--tarjeta)}
+.vistas button{border:0;background:transparent;color:var(--tinta);padding:10px 16px;font:inherit;font-size:.95rem;cursor:pointer}
+.vistas button[aria-pressed="true"]{background:var(--azul);color:var(--sobre-azul)}
+.acciones{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--linea);background:var(--tarjeta);color:var(--tinta);padding:9px 14px;border-radius:10px;font:inherit;font-size:.92rem;cursor:pointer}
+.btn:hover{border-color:var(--azul)}
+.btn.principal{background:var(--azul);border-color:var(--azul);color:var(--sobre-azul)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+
+.buscar{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--linea);background:var(--tarjeta);color:var(--tinta);font:inherit;font-size:.95rem}
+
+section.grupo{margin-top:26px}
+section.grupo h2{font-size:1.15rem;font-weight:600;line-height:1.3;margin:0 0 10px;display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--linea);padding-bottom:6px}
+section.grupo h2 span{color:var(--tinta-suave);font-weight:400;font-size:.92rem}
+.lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;align-items:start}
+
+.libro{background:var(--tarjeta);border:1px solid var(--linea);border-radius:10px;overflow:hidden}
+.libro.completo{background:var(--verde-fondo);border-color:var(--verde-linea)}
+.cab{display:flex;align-items:stretch}
+.toggle{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;text-align:left;background:none;border:0;color:var(--tinta);font:inherit;padding:11px 13px;cursor:pointer}
+.toggle .linea1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.toggle .nombre{font-weight:600}
+.toggle .cuenta{font-size:.82rem;color:var(--tinta-suave);white-space:nowrap}
+.libro.completo .cuenta{color:var(--verde)}
+.mini{height:5px;border-radius:3px;background:var(--azul-fondo);overflow:hidden}
+.mini>i{display:block;height:100%;background:var(--verde)}
+.marcar-libro{flex:none;border:0;border-left:1px solid var(--linea);background:transparent;color:var(--azul);font:inherit;font-size:.8rem;padding:0 12px;cursor:pointer;max-width:92px}
+.libro.completo .marcar-libro{border-left-color:var(--verde-linea);color:var(--verde)}
+.caps{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;padding:4px 13px 13px}
+.cap{border:1px solid var(--linea);background:var(--papel);color:var(--tinta);border-radius:8px;padding:8px 0;font:inherit;font-size:.9rem;cursor:pointer;min-height:40px}
+.cap:hover{border-color:var(--azul)}
+.cap.leido{background:var(--verde);border-color:var(--verde);color:var(--sobre-azul)}
+.nota-vacia{padding:2px 13px 13px;color:var(--tinta-suave);font-size:.88rem}
+
+.vacio{padding:28px 10px;text-align:center;color:var(--tinta-suave)}
+
+#toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);
+  background:var(--tinta);color:var(--papel);padding:11px 16px;border-radius:10px;
+  display:flex;gap:14px;align-items:center;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;font-size:.92rem
+}
+#toast.visible{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+#toast button{background:none;border:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;padding:0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Control de lectura de la Biblia</h1>
+  <p class="sub">Marca cada capítulo al terminarlo. Un libro se da por leído cuando están todos sus capítulos.</p>
+
+  <div class="progreso" aria-live="polite">
+    <div class="progreso-fila">
+      <div><strong id="num-libros">0</strong> de <span id="tot-libros">66</span> libros · <strong id="num-caps">0</strong> de <span id="tot-caps">0</span> capítulos</div>
+      <div id="porcentaje">0 %</div>
+    </div>
+    <div class="barra"><i id="barra"></i></div>
+    <div class="desglose" id="desglose"></div>
+  </div>
+
+  <div class="estado" id="estado" role="status"></div>
+
+  <div class="barra-control">
+    <div class="vistas" role="group" aria-label="Elegir vista">
+      <button id="v-pendientes" aria-pressed="true">Solo pendientes</button>
+      <button id="v-todos" aria-pressed="false">Todos</button>
+    </div>
+    <div class="acciones">
+      <button class="btn principal" id="guardar">Descargar progreso-biblia.json</button>
+      <button class="btn" id="cargar">Cargar otro JSON</button>
+      <input type="file" id="archivo" accept="application/json,.json" hidden>
+    </div>
+  </div>
+
+  <input class="buscar" id="buscar" type="search" placeholder="Buscar un libro" aria-label="Buscar un libro">
+  <div id="contenido"></div>
+</main>
+
+<div id="toast" role="status"><span id="toast-texto"></span><button id="toast-accion" hidden>Deshacer</button></div>
+
+<script>
+const LIBROS = [
+  ["Antiguo Testamento", [
+    ["Génesis",50],["Éxodo",40],["Levítico",27],["Números",36],["Deuteronomio",34],["Josué",24],["Jueces",21],["Rut",4],
+    ["1 Samuel",31],["2 Samuel",24],["1 Reyes",22],["2 Reyes",25],["1 Crónicas",29],["2 Crónicas",36],["Esdras",10],
+    ["Nehemías",13],["Ester",10],["Job",42],["Salmos",150],["Proverbios",31],["Eclesiastés",12],["Cantares",8],
+    ["Isaías",66],["Jeremías",52],["Lamentaciones",5],["Ezequiel",48],["Daniel",12],["Oseas",14],["Joel",3],["Amós",9],
+    ["Abdías",1],["Jonás",4],["Miqueas",7],["Nahúm",3],["Habacuc",3],["Sofonías",3],["Hageo",2],["Zacarías",14],["Malaquías",4]
+  ]],
+  ["Nuevo Testamento", [
+    ["Mateo",28],["Marcos",16],["Lucas",24],["Juan",21],["Hechos",28],["Romanos",16],["1 Corintios",16],["2 Corintios",13],
+    ["Gálatas",6],["Efesios",6],["Filipenses",4],["Colosenses",4],["1 Tesalonicenses",5],["2 Tesalonicenses",3],
+    ["1 Timoteo",6],["2 Timoteo",4],["Tito",3],["Filemón",1],["Hebreos",13],["Santiago",5],["1 Pedro",5],["2 Pedro",3],
+    ["1 Juan",5],["2 Juan",1],["3 Juan",1],["Judas",1],["Apocalipsis",22]
+  ]]
+];
+const CAPS = {};
+LIBROS.forEach(g=>g[1].forEach(([n,c])=>CAPS[n]=c));
+const TOT_LIBROS = Object.keys(CAPS).length;
+const TOT_CAPS = Object.values(CAPS).reduce((a,b)=>a+b,0);
+
+const ARCHIVO = "progreso-biblia.json";   // debe estar en la misma carpeta que este HTML
+const CLAVE = "controlLecturaBiblia.v2";
+
+let cap = {};            // { "Génesis": { "1": "2026-11-11", "2": "2026-11-12" } }
+let modificado = "";     // ISO de la última modificación
+let baseModificado = null; // modificado del JSON del servidor / último guardado
+let origen = "";         // "archivo" | "local" | "nada"
+let vista = "pendientes";
+let filtro = "";
+let abiertos = new Set();
+let deshacerFn = null, tToast;
+
+const $ = id => document.getElementById(id);
+const hoy = () => new Date().toISOString().slice(0,10);
+const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const nLeidos = n => Object.keys(cap[n] || {}).length;
+
+/* ---------- Datos ---------- */
+function datos(){
+  return { app:"control-lectura-biblia", version:2, exportado:new Date().toISOString(), modificado, capitulos:cap };
+}
+function normalizar(d){
+  // Acepta v2 (capitulos) y v1 (leidos: libro completo)
+  if(!d || d.app !== "control-lectura-biblia") return null;
+  const out = {};
+  if(d.capitulos && typeof d.capitulos === "object"){
+    for(const [libro, caps] of Object.entries(d.capitulos)){
+      if(!CAPS[libro] || typeof caps !== "object") continue;
+      for(const [n, f] of Object.entries(caps)){
+        const num = Number(n);
+        if(Number.isInteger(num) && num>=1 && num<=CAPS[libro]){ (out[libro] ||= {})[num] = f || hoy(); }
+      }
+    }
+  } else if(d.leidos && typeof d.leidos === "object"){
+    for(const [libro, f] of Object.entries(d.leidos)){
+      if(!CAPS[libro]) continue;
+      out[libro] = {};
+      for(let i=1;i<=CAPS[libro];i++) out[libro][i] = f || hoy();
+    }
+  } else return null;
+  return { cap:out, modificado: d.modificado || "" };
+}
+function leerLocal(){
+  try{ return normalizar(JSON.parse(localStorage.getItem(CLAVE))); }catch(e){ return null; }
+}
+function guardarLocal(){
+  try{ localStorage.setItem(CLAVE, JSON.stringify(datos())); }catch(e){}
+}
+async function leerServidor(){
+  try{
+    const r = await fetch(ARCHIVO + "?t=" + Date.now(), {cache:"no-store"});
+    if(!r.ok) return null;
+    return normalizar(await r.json());
+  }catch(e){ return null; }
+}
+function tocar(){
+  modificado = new Date().toISOString();
+  guardarLocal();
+  estado();
+}
+
+/* ---------- Estado visible ---------- */
+function estado(){
+  const el = $("estado");
+  const sinGuardar = baseModificado !== null && modificado !== baseModificado;
+  el.classList.toggle("aviso", sinGuardar || origen !== "archivo");
+  if(origen === "archivo" && !sinGuardar){
+    el.textContent = "Progreso leído de " + ARCHIVO + ". Todo está al día.";
+  } else if(sinGuardar){
+    el.textContent = "Tienes cambios sin guardar en " + ARCHIVO + ". Descárgalo y reemplaza el de tu carpeta del servidor.";
+  } else if(origen === "local"){
+    el.textContent = "No encontré " + ARCHIVO + " junto a esta página (necesita abrirse desde tu servidor). Uso lo guardado en este navegador; descarga el JSON para tener copia.";
+  } else {
+    el.textContent = "No encontré " + ARCHIVO + " junto a esta página. Empiezas de cero: descarga el JSON y guárdalo en la misma carpeta.";
+  }
+}
+
+/* ---------- Toast ---------- */
+function toast(texto, fn){
+  clearTimeout(tToast);
+  $("toast-texto").textContent = texto;
+  $("toast-accion").hidden = !fn;
+  deshacerFn = fn || null;
+  $("toast").classList.add("visible");
+  tToast = setTimeout(()=>$("toast").classList.remove("visible"), fn ? 6000 : 3500);
+}
+$("toast-accion").onclick = () => { if(deshacerFn) deshacerFn(); $("toast").classList.remove("visible"); };
+
+/* ---------- Acciones ---------- */
+function instantanea(){ return JSON.stringify(cap); }
+function aplicar(texto, hacer){
+  const antes = instantanea();
+  hacer();
+  tocar(); pintar();
+  toast(texto, () => { cap = JSON.parse(antes); tocar(); pintar(); });
+}
+function alternarCap(libro, n){
+  const leido = !!(cap[libro] && cap[libro][n]);
+  aplicar(libro + " " + n + (leido ? " desmarcado" : " marcado"), () => {
+    cap[libro] ||= {};
+    if(leido) delete cap[libro][n]; else cap[libro][n] = hoy();
+    if(!Object.keys(cap[libro]).length) delete cap[libro];
+  });
+}
+function alternarLibro(libro){
+  const completo = nLeidos(libro) === CAPS[libro];
+  aplicar(libro + (completo ? " vuelve a pendientes" : " marcado completo"), () => {
+    if(completo) delete cap[libro];
+    else { cap[libro] ||= {}; for(let i=1;i<=CAPS[libro];i++) cap[libro][i] ||= hoy(); }
+  });
+}
+
+/* ---------- Pintar ---------- */
+function pintar(){
+  const cont = $("contenido");
+  cont.innerHTML = "";
+  const q = norm(filtro.trim());
+  let mostrados = 0;
+
+  LIBROS.forEach(([grupo, libros])=>{
+    const hechos = libros.filter(([n,c])=>nLeidos(n)===c).length;
+    const visibles = libros.filter(([n,c])=>{
+      if(vista === "pendientes" && nLeidos(n) === c) return false;
+      return !q || norm(n).includes(q);
+    });
+    if(!visibles.length) return;
+    mostrados += visibles.length;
+
+    const sec = document.createElement("section");
+    sec.className = "grupo";
+    sec.innerHTML = `<h2>${grupo}<span>${hechos} de ${libros.length} libros leídos</span></h2>`;
+    const lista = document.createElement("div");
+    lista.className = "lista";
+
+    visibles.forEach(([nombre, total])=>{
+      const n = nLeidos(nombre);
+      const completo = n === total;
+      const abierto = abiertos.has(nombre) || !!q && visibles.length === 1;
+      const div = document.createElement("div");
+      div.className = "libro" + (completo ? " completo" : "");
+
+      const cab = document.createElement("div");
+      cab.className = "cab";
+      const t = document.createElement("button");
+      t.className = "toggle"; t.type = "button";
+      t.setAttribute("aria-expanded", abierto);
+      t.innerHTML = `<span class="linea1"><span class="nombre">${nombre}</span><span class="cuenta">${n} de ${total}</span></span><span class="mini"><i style="width:${n/total*100}%"></i></span>`;
+      t.onclick = () => { abiertos.has(nombre) ? abiertos.delete(nombre) : abiertos.add(nombre); pintar(); };
+      const m = document.createElement("button");
+      m.className = "marcar-libro"; m.type = "button";
+      m.textContent = completo ? "Desmarcar libro" : "Marcar libro";
+      m.onclick = () => alternarLibro(nombre);
+      cab.append(t, m);
+      div.appendChild(cab);
+
+      if(abierto){
+        const caps = document.createElement("div");
+        caps.className = "caps";
+        let pintados = 0;
+        for(let i=1;i<=total;i++){
+          const leido = !!(cap[nombre] && cap[nombre][i]);
+          if(vista === "pendientes" && leido) continue;
+          pintados++;
+          const b = document.createElement("button");
+          b.className = "cap" + (leido ? " leido" : ""); b.type = "button";
+          b.textContent = i;
+          b.setAttribute("aria-pressed", leido);
+          b.setAttribute("aria-label", nombre + " capítulo " + i + (leido ? ", leído" : ", pendiente"));
+          if(leido) b.title = "Leído el " + cap[nombre][i];
+          b.onclick = () => alternarCap(nombre, i);
+          caps.appendChild(b);
+        }
+        div.appendChild(caps);
+        if(!pintados){ const p = document.createElement("div"); p.className = "nota-vacia"; p.textContent = "No quedan capítulos pendientes."; div.appendChild(p); }
+      }
+      lista.appendChild(div);
+    });
+    sec.appendChild(lista);
+    cont.appendChild(sec);
+  });
+
+  if(!mostrados){
+    const v = document.createElement("div");
+    v.className = "vacio";
+    v.textContent = q ? "Ningún libro coincide con la búsqueda."
+      : "No te queda ningún libro pendiente. Cambia a «Todos» para repasar tu lectura.";
+    cont.appendChild(v);
+  }
+  resumen();
+}
+
+function resumen(){
+  let libros = 0, caps = 0;
+  for(const n in CAPS){ const k = nLeidos(n); caps += k; if(k === CAPS[n]) libros++; }
+  const pct = Math.round(caps / TOT_CAPS * 100);
+  $("num-libros").textContent = libros; $("tot-libros").textContent = TOT_LIBROS;
+  $("num-caps").textContent = caps; $("tot-caps").textContent = TOT_CAPS;
+  $("porcentaje").textContent = pct + " %";
+  $("barra").style.width = pct + "%";
+  $("desglose").textContent = LIBROS.map(([g,ls])=>{
+    const c = ls.reduce((a,[n])=>a+nLeidos(n),0), t = ls.reduce((a,[,k])=>a+k,0);
+    return g + ": " + c + " de " + t + " capítulos";
+  }).join("   ·   ");
+  $("v-pendientes").textContent = "Solo pendientes (" + (TOT_LIBROS - libros) + ")";
+  $("v-todos").textContent = "Todos (" + TOT_LIBROS + ")";
+}
+
+function cambiarVista(v){
+  vista = v;
+  $("v-pendientes").setAttribute("aria-pressed", v==="pendientes");
+  $("v-todos").setAttribute("aria-pressed", v==="todos");
+  try{ localStorage.setItem(CLAVE + ".vista", v); }catch(e){}
+  pintar();
+}
+$("v-pendientes").onclick = () => cambiarVista("pendientes");
+$("v-todos").onclick = () => cambiarVista("todos");
+$("buscar").oninput = e => { filtro = e.target.value; pintar(); };
+
+/* ---------- Guardar / cargar JSON ---------- */
+async function guardarArchivo(){
+  if(!modificado) modificado = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(datos(), null, 2)], {type:"application/json"});
+  if(window.showSaveFilePicker){
+    try{
+      const h = await window.showSaveFilePicker({
+        suggestedName: ARCHIVO,
+        types:[{description:"Progreso de lectura (JSON)", accept:{"application/json":[".json"]}}]
+      });
+      const w = await h.createWritable();
+      await w.write(blob); await w.close();
+      baseModificado = modificado; estado();
+      toast("Guardado en " + h.name);
+      return;
+    }catch(e){ if(e && e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = ARCHIVO;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  baseModificado = modificado; estado();
+  toast("Descargado. Sustituye el JSON de la carpeta de tu servidor.");
+}
+$("guardar").onclick = guardarArchivo;
+
+$("cargar").onclick = () => $("archivo").click();
+$("archivo").onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if(!f) return;
+  try{
+    const d = normalizar(JSON.parse(await f.text()));
+    if(!d) throw new Error("formato");
+    let nuevos = 0;
+    for(const [libro, caps] of Object.entries(d.cap)){
+      for(const [n, fecha] of Object.entries(caps)){
+        cap[libro] ||= {};
+        if(!cap[libro][n]){ cap[libro][n] = fecha; nuevos++; }
+        else if(fecha < cap[libro][n]) cap[libro][n] = fecha;
+      }
+    }
+    tocar(); pintar();
+    toast(nuevos ? "Cargado: " + nuevos + " capítulos añadidos" : "Cargado: no había capítulos nuevos");
+  }catch(err){
+    toast("No se pudo leer el archivo. Elige un JSON guardado desde esta página.");
+  }
+};
+
+/* ---------- Inicio ---------- */
+(async function(){
+  try{ if(localStorage.getItem(CLAVE + ".vista") === "todos") vista = "todos"; }catch(e){}
+  $("v-pendientes").setAttribute("aria-pressed", vista==="pendientes");
+  $("v-todos").setAttribute("aria-pressed", vista==="todos");
+
+  const local = leerLocal();
+  const servidor = await leerServidor();
+
+  if(servidor && (!local || servidor.modificado >= local.modificado)){
+    cap = servidor.cap; modificado = servidor.modificado; baseModificado = servidor.modificado; origen = "archivo";
+  } else if(servidor){            // el navegador tiene cambios más recientes que el JSON
+    cap = local.cap; modificado = local.modificado; baseModificado = servidor.modificado; origen = "archivo";
+  } else if(local){
+    cap = local.cap; modificado = local.modificado; origen = "local";
+  } else { origen = "nada"; }
+
+  // Abre por defecto los libros que ya empezaste pero no has terminado
+  for(const n in cap){ if(nLeidos(n) < CAPS[n]) abiertos.add(n); }
+
+  guardarLocal();
+  estado();
+  pintar();
+})();
+</script>
+</body>
+</html>

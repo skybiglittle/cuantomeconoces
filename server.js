@@ -240,6 +240,23 @@ wss.on('connection', (ws) => {
       return;
     }
 
+        // Reenviar mensajes a otros jugadores de la misma sala
+    if (m.t === 'direct' && ws.room && typeof m.to === 'string' && m.p &&
+        typeof m.p === 'object' && !Array.isArray(m.p)) {
+
+      const set = rooms.get(ws.room);
+      if (!set) return;
+
+      if (Buffer.byteLength(JSON.stringify(m.p)) > 4096) return;
+
+      const target = [...set].find(peer => peer.pid === m.to);
+      if (!target || target === ws || target.readyState !== 1) return;
+
+      send(target, { t: 'direct', from: ws.pid, p: m.p });
+      return;
+    }
+
+    // TU BLOQUE PRES ORIGINAL
     if (m.t === 'pres' && ws.room && m.p && typeof m.p === 'object' && !Array.isArray(m.p)) {
       const next = { ...ws.pres };
       for (const k of Object.keys(m.p)) {

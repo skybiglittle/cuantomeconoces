@@ -36,6 +36,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 
 <section id="setup" class="card">
 <h2>Prepara la partida</h2>
+<div class="stats"><div class="stat"><strong id="playerCount">0</strong><span>Jugadores</span></div><div class="stat"><strong id="missionCount">0</strong><span>Misiones disponibles</span></div></div>
 <p>Añade a los participantes y reparte una misión diferente a cada uno. Después, pasad el móvil para que cada persona vea únicamente la suya.</p>
 <div class="field"><label for="playerInput">Nombre de un jugador</label><div class="row"><input id="playerInput" placeholder="Ej. Dani" maxlength="24"><button class="btn" id="addPlayer">Añadir</button></div></div>
 <div id="playersList" class="chips"></div>
@@ -45,7 +46,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 </section>
 
 <section id="reveal" class="card hidden">
-<div class="small" id="revealProgress"></div><h2 id="revealTitle">Turno de...</h2>
+<div class="small" id="revealProgress"></div>
+<div class="progress-track"><div class="progress-fill" id="revealBar"></div></div>
+<h2 id="revealTitle">Turno de...</h2>
 <p>Que los demás no miren la pantalla. Pulsa para descubrir tu misión, memorízala y pasa el móvil al siguiente.</p>
 <button class="btn" id="showMission">👁️ Ver mi misión</button>
 <div id="missionReveal" class="hidden">
@@ -60,7 +63,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 <p>Cada participante intenta completar su propia misión durante la conversación o actividad del grupo. No hay eliminaciones ni intercambios: cada jugador conserva su misión durante toda la partida.</p>
 <div id="gamePlayers"></div>
 <div class="notice">🤫 No contéis vuestras misiones. Al final podéis revelar los objetivos y comprobar quién consiguió cumplirlos.</div>
+<button class="btn green" id="finishGame">Terminar partida y revelar misiones</button>
 </section>
+
+<section id="results" class="card hidden">
+<h2>Resultados</h2>
+<p class="small" id="resultSummary"></p>
+<div id="resultsList"></div>
+<div class="row stack"><button class="btn ghost" id="backToGame">Volver a la partida</button><button class="btn secondary" id="backToSetup">Preparar otra partida</button></div>
+</section>
+
 <p class="footer">Juego local para un solo dispositivo. Los participantes se pasan el móvil para consultar su misión en privado.</p>
 </main>
 <script>
@@ -166,7 +178,7 @@ const DEFAULT_MISSIONS = [
 "Consigue que alguien te pregunte por qué estás sonriendo.",
 "Logra que alguien diga «me parece justo».",
 "Consigue que alguien recuerde una experiencia divertida del grupo.",
- "Consigue que alguien te haga una pregunta sin que tú hayas preguntado nada antes.",
+"Consigue que alguien te haga una pregunta sin que tú hayas preguntado nada antes.",
 "Haz que dos jugadores coincidan en una opinión.",
 "Consigue que alguien diga una palabra en otro idioma.",
 "Haz que alguien te pregunte qué te pasa.",
@@ -265,7 +277,7 @@ const DEFAULT_MISSIONS = [
 "Consigue que alguien diga «ahora lo entiendo».",
 "Haz que alguien cuente qué pequeño cambio mejoraría su día.",
 "Consigue que alguien proponga una pregunta para que responda todo el grupo.",
- "Consigue que alguien te proponga un nombre para un animal imaginario.",
+"Consigue que alguien te proponga un nombre para un animal imaginario.",
 "Haz que alguien defienda cuál es el mejor día de la semana.",
 "Consigue que alguien te recomiende una película que hayas visto ya.",
 "Introduce el tema de los extraterrestres y consigue que alguien dé su opinión.",
@@ -316,7 +328,7 @@ const DEFAULT_MISSIONS = [
 "Consigue que alguien te diga qué persona famosa invitaría a cenar y por qué.",
 "Consigue que alguien proponga una competición absurda en la que todos podrían participar.",
 "Haz que alguien te cuente qué haría si pudiera intercambiar su vida con otra persona durante 24 horas.",
- "Consigue que alguien dé un salto.",
+"Consigue que alguien dé un salto.",
 "Consigue que alguien juegue contigo a piedra, papel o tijera.",
 "Consigue que alguien te choque los cinco.",
 "Consigue que alguien dé una vuelta completa sobre sí mismo.",
@@ -389,7 +401,7 @@ function updateStats(){
  $('missionCount').textContent=data.unique.length;
  const ready=players.length>=2&&data.unique.length>=players.length;
  $('startGame').disabled=!ready;
- if(data.duplicates){$('setupMsg').textContent=`Hay ${data.duplicates} línea(s) repetida(s); solo se contará una copia de cada misión.`;}
+ if(data.duplicates){$('setupMsg').textContent=`Hay ${data.duplicates} línea(s) repetida(s); solo se contará una copia de cada misión.`;$('setupMsg').dataset.kind='duplicate';}
  else if($('setupMsg').dataset.kind==='duplicate'){$('setupMsg').textContent='';$('setupMsg').dataset.kind='';}
 }
 function renderPlayers(){

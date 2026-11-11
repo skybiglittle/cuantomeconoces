@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Escenas absurdas · Improvisa</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#ff7a59;--b:#43d9c5;--gold:#ffd166;--good:#48d597}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#4a1f2f 0,transparent 45%),radial-gradient(ellipse at 100% 15%,#123c4b 0,transparent 38%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(760px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:var(--a)}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(34px,8vw,56px);line-height:1;margin:0 0 8px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffb199 45%,#ff7a59);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:21px;margin:6px 0}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:13px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 4px}
+input,select{width:100%;border:1px solid var(--line);background:#0d1629;color:var(--text);border-radius:11px;padding:12px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:13px;padding:13px 16px;background:linear-gradient(120deg,#ff7a59,#ff4f7b);color:#fff;font-weight:800;box-shadow:0 8px 22px #ff4f7b30}.btn.secondary{background:#293753;border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--text)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px}.player.me{border-color:var(--b);color:var(--b)}.player.on{border-color:var(--a);color:#ffb199}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--a);font-weight:850}
+.scene{font-size:clamp(22px,5.5vw,32px);font-weight:900;margin:6px 0 12px}
+.role{border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin:8px 0;background:#101a2e;text-align:left}.role b{display:block;font-size:17px}.role span{color:var(--muted);font-size:14px}.role.me{border-color:var(--a);background:#2b1a20}.role em{font-style:normal;color:var(--b);font-size:12px;font-weight:800}
+.mine{border:2px solid var(--a);background:linear-gradient(135deg,#3a1d24,#1b2540);border-radius:18px;padding:16px;margin:12px 0;text-align:left}.mine .n{font-size:26px;font-weight:950;color:#ffb199}
+.timer{font-size:46px;font-weight:950;font-variant-numeric:tabular-nums;color:var(--gold)}.twist{border:2px dashed var(--gold);border-radius:14px;padding:12px;margin:12px 0;background:#2a2410;color:var(--gold);font-weight:800;animation:pop .4s}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#101a2e;color:var(--text);border-radius:12px;padding:10px 12px;margin:6px 0}.opt.on{border-color:var(--gold);background:#2a2410}.chips{display:flex;flex-wrap:wrap;gap:6px}.chips .opt{width:auto;margin:0}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#101a2e;margin:5px 0}.sc strong{color:var(--gold)}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:560px){.settings{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Escenas <span>absurdas</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Escenas absurdas · 2 a 30 jugadores · se actúa en persona o por llamada</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_esc_session_v1',CID='cmc_esc_cid_v1',KEY='cmc_esc_key_v1';
+// Cada rol: "Nombre|Objetivo". El orden de los roles = orden de los miembros del grupo.
+const SC={
+2:[['Ventanilla del ayuntamiento',['Vecino indignado|Su calle lleva 3 años con un bache gigante y hoy exige solución','Funcionario|Su turno acaba "justo ahora" y no quiere hacer nada']],
+['La cita a ciegas',['Cita ideal|Mintió en todo su perfil y ahora tiene que sostenerlo','Cita desesperada|Se ha traído a su madre escondida bajo la mesa']],
+['Seguros del apocalipsis',['Vendedor|Vende un seguro contra invasiones de calamares gigantes','Cliente|Cree que el vendedor es su amigo de la infancia']],
+['Entrevista de trabajo',['Entrevistador|Solo hace preguntas absurdas y se lo toma muy en serio','Candidato|Lo sabe todo salvo a qué puesto se presenta']],
+['El fantasma y el inquilino',['Fantasma|Ya no recuerda cómo asustar y está muy deprimido','Inquilino nuevo|Quiere negociar el alquiler con el fantasma']],
+['Devolución en la tienda',['Cliente|Quiere devolver un único calcetín sin ticket','Dependiente|No admite devoluciones de nada, ni de sonrisas']],
+['En el dentista',['Dentista|Tiene pánico a los pacientes','Paciente|No puede parar de hablar con la boca abierta']],
+['La ruptura',['El que rompe|Solo sabe hablar como en un cuento de hadas','El que no se entera|Cree que es una felicitación']],
+['Taxi urgente',['Taxista|Cree que conduce un avión','Pasajero|Llega tarde a una boda... la suya']],
+['Restaurante pijo',['Camarero|Es el dueño disfrazado y nadie debe saberlo','Cliente crítico|Pide un plato inexistente y se ofende']],
+['Interrogatorio',['Policía|Está convencido de que el sospechoso roba gnomos de jardín','Sospechoso|Es inocente pero responde solo con refranes']],
+['Gimnasio',['Monitor|Odia el deporte y lo oculta fatal','Cliente|Solo viene a hacer amigos y no a entrenar']],
+['Pedir la mano',['Yerno|Está tan nervioso que habla en tercera persona','Suegro|Solo quiere hablar del tiempo']],
+['El adivino',['Adivino|Solo predice desgracias, pero con mucho entusiasmo','Cliente|Exige únicamente buenas noticias']]],
+3:[['Calle sin arreglar',['Vecino indignado|Su calle lleva años sin arreglar y no se va sin respuesta','Funcionario del ayuntamiento|Todo es culpa de "otro departamento"','Abuelita|Se cae cada dos minutos y exige que alguien lo vea']],
+['Restaurante en crisis',['Camarero estresado|Se ha equivocado con todas las mesas','Crítico incógnito|Finge ser un cliente normal y lo hace fatal','Cocinero|Sale de la cocina a defender su plato a gritos']],
+['Ascensor atascado',['Claustrofóbico|Está a punto de perder los nervios','Vendedor de cursos|Aprovecha para vender su curso de éxito','Técnico|No encuentra el botón de emergencia']],
+['El juicio',['Juez|Se duerme a cada rato','Abogado|Ha olvidado de qué va el caso','Acusado|Se declara culpable de lo que haga falta']],
+['La boda',['Novio|Tiene dudas y busca excusas','Suegra|Quiere controlar hasta el último detalle','Oficiante|Tiene hipo y un micrófono demasiado potente']],
+['Nave espacial',['Capitán|Solo le importa que haya wifi','Alienígena infiltrado|Intenta pasar por humano y es evidente','Robot|Es tan educado que da miedo']],
+['Reunión de vecinos',['Presidente|Cree que dirige un imperio','Vecino ruidoso|Defiende su derecho a tocar la tuba','Vecina chismosa|Lo sabe todo de todos y lo cuenta']],
+['Supermercado',['Cajero lento|Cada producto es un drama','Cliente de cupones|Trae mil cupones caducados','Reponedor misterioso|Susurra secretos mientras coloca latas']],
+['Escape room',['Guía|Se ha quedado encerrado dentro por error','Participante líder|Cree que es el único que sabe','Participante escéptico|Piensa que todo es una estafa']],
+['Urgencias',['Médico|Receta lo mismo para todo','Hipocondríaco|Está seguro de tener una enfermedad inventada','Enfermero|Ha leído demasiadas novelas médicas']],
+['Hotel de ciudad',['Recepcionista|Jura que el hotel tiene vistas al mar','Huésped|Exige su habitación con vistas al mar','Botones|Intenta vender souvenirs a todo el que pasa']],
+['Casting de cine',['Director|Solo quiere lloros dramáticos','Actor|Sobreactúa todo, hasta decir su nombre','Ayudante|Quiere el papel y se mete en la escena']],
+['Cuento retorcido',['Caperucita|No se cree nada de lo que oye','Lobo|Es vegetariano y está harto de los malentendidos','Abuelita|Es sorda y entiende lo que quiere']],
+['Oficina motivacional',['Jefe|Habla solo con frases de póster motivacional','Empleado|Viene a pedir un aumento a toda costa','Compañero|Trae un rumor muy jugoso']]],
+4:[['Cena con los suegros',['Yerno|Quiere caer bien y lo estropea todo','Suegra|Critica hasta la forma de respirar','Suegro|Se queda dormido en mitad de las frases','Cuñado|Sabe de todo y corrige a todos']],
+['Atraco torpe',['Atracador novato|Se ha olvidado de qué iba a pedir','Cajero|Está totalmente impasible','Cliente|Cree que es una performance artística','Policía de paisano|Intenta intervenir sin que se note']],
+['Concurso de la tele',['Presentador|Improvisa chistes malos sin parar','Concursante|Se bloquea con la primera pregunta','Comodín|Solo sabe respuestas inútiles','Villano|Siempre adivina todo y nadie sabe cómo']],
+['Clase de yoga',['Profesor|Habla sin parar de su aura','Alumno competitivo|Quiere ser el mejor en relajarse','Alumno dormido|Ronca y responde en sueños','Vendedor|Intenta vender cristales mágicos']],
+['Isla desierta',['Náufrago líder|Reparte tareas sin que nadie se lo pida','Náufrago pesimista|Cree que no saldrán nunca','Náufrago con tienda|Ha encontrado un súper y lo oculta','Loro parlante|Cuenta los secretos de todos']],
+['Mansión del crimen',['Detective|Sospecha de todos menos del culpable','Mayordomo|Dice que no ha sido él cada diez segundos','Heredera|Finge llorar muy mal','Cadáver|Sigue comentando desde el suelo']],
+['Barbería',['Barbero|Chismoso e incapaz de callarse','Cliente con prisa|Tiene una cita en cinco minutos','Cliente indeciso|No sabe qué corte quiere','Niño|Da instrucciones que contradicen a todos']],
+['Vuelo con turbulencias',['Piloto|Está leyendo el manual por primera vez','Azafata|Mantiene la sonrisa a toda costa','Pasajero miedoso|Se despide de su familia','Pasajero experto|Se cree que sabe más que el piloto']],
+['Fútbol amateur',['Entrenador|Dibuja tácticas imposibles','Delantero estrella|Solo piensa en su peinado','Portero miedoso|Se esconde de la pelota','Árbitro|Ha sido sobornado con un bocadillo']],
+['Día de playa',['Socorrista|Se toma muy en serio su silbato','Bañista dramático|Finge ahogarse para ligar','Heladero|Solo vende sabores raros','Turista|Pregunta dónde está la piscina']],
+['Reunión de empresa',['Jefe|Habla en inglés inventado','Becario|Sabe más que todos pero nadie le escucha','Contable|Está obsesionado con los clips','Fichaje nuevo|Cree que está en otra empresa']],
+['Cuartel de superhéroes',['Líder|Convoca reuniones para todo','Héroe con poder inútil|Solo puede teñir el pelo de verde','Villano|Viene a pedir trabajo','Contable|Reclama las facturas del último destrozo']],
+['Parto accidentado',['Padre|Se desmaya a cada rato','Madre|Mantiene la calma sospechosamente','Matrona|Lleva el control con mano de hierro','Médico|Ha olvidado todo lo que sabe']],
+['Concierto de rock',['Cantante|Se ha olvidado todas las letras','Guitarrista|Solo toca solos eternos','Técnico de sonido|Cree que es el verdadero artista','Fan|Ha subido al escenario y no se baja']]]};
+const TWISTS=['¡GIRO! Todos pasan a hablar como en una telenovela dramática.','¡GIRO! A partir de ahora todo el mundo susurra.','¡GIRO! Aparece un perro invisible que todos fingen ver.','¡GIRO! Cada frase debe empezar por «Sinceramente…».','¡GIRO! Anuncian un terremoto y hay que seguir con la escena.','¡GIRO! Todos hablan en cámara lenta.','¡GIRO! Hay que decir la palabra «plátano» tres veces.','¡GIRO! Uno revela que es el padre/madre de otro personaje.','¡GIRO! Hay que decir todo cantando.','¡GIRO! Se va la luz: continúan «a oscuras».','¡GIRO! Todos adoptan un acento exagerado.','¡GIRO! Alguien se declara locamente enamorado de otro personaje.','¡GIRO! Entra la policía y todos son sospechosos.','¡GIRO! El suelo es lava.','¡GIRO! Descubren que están en un reality con cámaras ocultas.','¡GIRO! Cada personaje intercambia su papel con el de al lado.'];
+const rand=n=>Math.floor(Math.random()*n);
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',voteS=-1,voteM='',voted=false,voteRound=-1;
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.e_key).map(p=>({key:p.e_key,name:p.e_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{e_name:name,e_key:myKey,e_host:isHost?1:0,...extra}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({e_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-escenas-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena (máx. 30).':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).e_key===myKey))publish(isHost&&state?{e_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).e_host===1&&P(x).e_state),inc=hp&&P(hp).e_state;if(inc&&(!state||inc.v!==state.v)){state=inc;persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;state={v:0,phase:'lobby',rounds:5,actSec:90};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión ----------
+function partition(n){const out=[];let r=n;while(r>=2){const o=[2,3,4].filter(s=>s<=r&&r-s!==1);const s=o[rand(o.length)];out.push(s);r-=s}return out}
+function startGame(){state.rounds=Number($('rounds').value);state.actSec=Number($('act').value);Object.assign(state,{round:0,names:{},scores:{},usedSc:[],groups:[],gi:0});startRound()}
+function startRound(){const ps=playerList().slice(0,30);if(ps.length<2)return;ps.forEach(p=>{state.names[p.key]=p.name;if(state.scores[p.key]==null)state.scores[p.key]=0});
+ const keys=ps.map(p=>p.key).sort(()=>Math.random()-.5);let pos=0;
+ state.groups=partition(keys.length).map(s=>{const m=keys.slice(pos,pos+s);pos+=s;let pool=SC[s].map((_,i)=>i).filter(i=>!state.usedSc.includes(s+':'+i));if(!pool.length){state.usedSc=state.usedSc.filter(x=>x[0]!==String(s));pool=SC[s].map((_,i)=>i)}const i=pool[rand(pool.length)];state.usedSc.push(s+':'+i);return{s,i,m,w:rand(TWISTS.length)}}).sort(()=>Math.random()-.5);
+ state.round++;state.phase='brief';state.gi=0;state.endsAt=Date.now()+35000;state.res=null;commit()}
+function beginAct(gi){state.gi=gi;state.phase='act';state.startAt=Date.now()+(gi===0?4000:8000);state.endsAt=state.startAt+state.actSec*1000;state.twistAt=state.startAt+state.actSec*500;commit()}
+function nextScene(){if(state.gi+1>=state.groups.length){state.phase='vote';state.endsAt=Date.now()+50000;commit()}else beginAct(state.gi+1)}
+function tally(){const gain={},sv={},mv={},add=(k,n)=>gain[k]=(gain[k]||0)+n;
+ for(const pl of playerList()){const v=pl.p.e_vote;if(!v||v.r!==state.round)continue;const mine=state.groups.findIndex(g=>g.m.includes(pl.key));
+  if(Number.isInteger(v.s)&&v.s>=0&&v.s<state.groups.length&&v.s!==mine)sv[v.s]=(sv[v.s]||0)+1;
+  if(v.m&&v.m!==pl.key&&state.names[v.m])mv[v.m]=(mv[v.m]||0)+1}
+ Object.entries(sv).forEach(([g,n])=>state.groups[g].m.forEach(k=>add(k,2*n)));Object.entries(mv).forEach(([k,n])=>add(k,3*n));
+ Object.entries(gain).forEach(([k,n])=>state.scores[k]=(state.scores[k]||0)+n);state.res={sv,mv,gain};state.phase='results';commit()}
+function nextRound(){if(state.round>=state.rounds){state.phase='finished';commit()}else startRound()}
+function hostStep(){if(!isHost||!state)return;const now=Date.now();
+ if(state.phase==='brief'&&now>=state.endsAt)beginAct(0);
+ else if(state.phase==='act'&&now>=state.endsAt)nextScene();
+ else if(state.phase==='vote'){const ps=playerList();if(now>=state.endsAt||(ps.length&&ps.every(p=>p.p.e_vote&&p.p.e_vote.r===state.round)))tally()}}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return false;curSig=sig;app.innerHTML=html;bind&&bind();return true}
+const T=(id,t)=>{const e=$(id);if(e&&e.textContent!==t)e.textContent=t};
+const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const myGroup=()=>state.groups.findIndex(g=>g.m.includes(myKey));
+const scene=g=>SC[g.s][g.i],role=(g,k)=>{const r=scene(g)[1][g.m.indexOf(k)]||'|';const [a,b]=r.split('|');return{n:a,o:b}};
+function rolesHtml(g,hl){return g.m.map(k=>{const r=role(g,k);return'<div class="role '+(k===hl?'me':'')+'"><em>'+safe(pname(k))+(k===myKey?' (tú)':'')+'</em><b>'+safe(r.n)+'</b><span>'+safe(r.o)+'</span></div>'}).join('')}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>ESCENAS ABSURDAS 🎭</h1><p class="muted">Improvisa situaciones disparatadas con tus amigos. La app reparte los papeles y vosotros los actuáis.</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small" style="margin:4px 0">Cada ronda la app forma <b>grupos de 2, 3 o 4 jugadores</b> según cuántos estéis y les da una situación absurda con un papel para cada uno (el vecino indignado, el funcionario, la abuelita que se cae…).</p><p class="muted small" style="margin:4px 0">Los grupos actúan por turnos, <b>delante del resto, que hace de público</b>. A mitad de escena salta un <b>¡GIRO!</b> sorpresa. Al final todos votan la <b>mejor escena</b> (+2 por voto a cada actor) y al <b>mejor actor</b> (+3 por voto).</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes</h3><div class="settings"><div><label>Rondas</label><select id="rounds"><option>3</option><option selected>5</option><option>8</option></select></div><div><label>Duración de cada escena</label><select id="act"><option value="60">1 minuto</option><option value="90" selected>1 min 30 s</option><option value="120">2 minutos</option><option value="180">3 minutos</option></select></div></div><p class="small muted" id="plan"></p><button class="btn" id="start" style="width:100%;margin-top:12px">¡Empezar!</button></section>':'<section class="card center"><p class="muted">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
+ +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;$('start')&&($('start').onclick=startGame)});
+ const ps=playerList();$('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.e_host?' · anfitrión':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<2?' · hacen falta al menos 2':'')+'</p>';
+ if($('start')){$('start').disabled=ps.length<2;const n=ps.length;$('plan').textContent=n<2?'':'Con '+n+' jugadores: '+(n<=4?'1 grupo de '+n:'varios grupos de 2, 3 o 4')+' por ronda. Los nuevos pueden entrar entre rondas.'}}
+function renderBrief(){const gi=myGroup(),g=state.groups[gi];
+ mount('brief|'+state.round,'<section class="card center"><div class="eyebrow">Ronda '+state.round+' de '+state.rounds+' · Preparación</div>'+(g?'<h2>Tu escena</h2><div class="scene">'+safe(scene(g)[0])+'</div><div class="mine"><div class="eyebrow">Tu papel</div><div class="n">'+safe(role(g,myKey).n)+'</div><div>'+safe(role(g,myKey).o)+'</div></div><p class="small muted">Tu grupo:</p>'+rolesHtml(g,myKey)+'<p class="muted small">Pensad vuestra entrada: actuaréis por turnos delante de todos.</p>':'<h2>Esta ronda eres público 👀</h2><p class="muted">Te has unido con la ronda empezada. Mira las escenas y vota al final.</p>')+'<div class="timer" id="t"></div>'+(isHost?'<button class="btn secondary" id="go" style="width:100%">Empezar ya las escenas</button>':'')+'</section>',()=>{$('go')&&($('go').onclick=()=>beginAct(0))});
+ T('t',fmt(state.endsAt-Date.now()))}
+function renderAct(){const g=state.groups[state.gi],on=g.m.includes(myKey);
+ mount('act|'+state.round+'|'+state.gi,'<section class="card center"><div class="eyebrow">Ronda '+state.round+' · Escena '+(state.gi+1)+' de '+state.groups.length+'</div><div class="scene">'+safe(scene(g)[0])+'</div>'+(on?'<div class="mine"><div class="eyebrow">¡Estás en escena! Tu papel</div><div class="n">'+safe(role(g,myKey).n)+'</div><div>'+safe(role(g,myKey).o)+'</div></div>':'<p class="muted">🎟️ Eres público: mirad, reíos y tomad nota para votar.</p>')+rolesHtml(g,on?myKey:'')+'<div class="timer" id="t"></div><div id="tw"></div>'+(isHost?'<button class="btn secondary" id="skip" style="width:100%;margin-top:8px">Terminar esta escena</button>':'')+'</section>',()=>{$('skip')&&($('skip').onclick=nextScene)});
+ const now=Date.now();if(now<state.startAt)T('t','🎬 '+Math.ceil((state.startAt-now)/1000)+' s');else T('t',fmt(state.endsAt-now));
+ const tw=$('tw');if(tw){const show=now>=state.twistAt&&now<state.endsAt;if(show&&!tw.firstChild)tw.innerHTML='<div class="twist">'+safe(TWISTS[g.w])+'</div>';if(!show&&tw.firstChild&&now<state.twistAt)tw.innerHTML=''}}
+function renderVote(){if(voteRound!==state.round){voteRound=state.round;voteS=-1;voteM='';voted=false}const mine=myGroup(),keys=Object.keys(state.names).filter(k=>k!==myKey&&playerList().some(p=>p.key===k));
+ const first=mount('vote|'+state.round,'<section class="card"><div class="center"><div class="eyebrow">Ronda '+state.round+' · Votación</div><div class="timer" id="t" style="font-size:30px"></div></div><h3>🎭 Mejor escena <span class="small muted">(no puedes votar la tuya)</span></h3><div id="vs">'+state.groups.map((g,i)=>i===mine?'':'<button class="opt" data-s="'+i+'"><b>'+safe(scene(g)[0])+'</b><br><span class="small muted">'+g.m.map(k=>safe(pname(k))).join(', ')+'</span></button>').join('')+'</div><h3 style="margin-top:14px">⭐ Mejor actor o actriz</h3><div class="chips" id="vm">'+keys.map(k=>'<button class="opt" data-m="'+safe(k)+'">'+safe(pname(k))+'</button>').join('')+'</div><button class="btn" id="send" style="width:100%;margin-top:16px">Enviar votos</button><p class="notice" id="vn"></p></section>',
+ ()=>{$('vs').onclick=e=>{const b=e.target.closest('[data-s]');if(b){voteS=Number(b.dataset.s);voted=false;upVote()}};$('vm').onclick=e=>{const b=e.target.closest('[data-m]');if(b){voteM=b.dataset.m;voted=false;upVote()}};$('send').onclick=()=>{publish({e_vote:{r:state.round,s:voteS,m:voteM}});voted=true;upVote()}});
+ T('t',fmt(state.endsAt-Date.now()));upVote()}
+function upVote(){document.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',Number(b.dataset.s)===voteS));document.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===voteM));T('vn',voted?'✓ Votos enviados. Esperando al resto…':'')}
+function renderResults(){const r=state.res||{sv:{},mv:{},gain:{}};
+ const best=Object.entries(r.mv).sort((a,b)=>b[1]-a[1])[0];
+ mount('res|'+state.round,'<section class="card"><div class="center"><div class="eyebrow">Resultados de la ronda '+state.round+'</div></div>'+state.groups.map((g,i)=>'<div class="role"><b>'+safe(scene(g)[0])+'</b><span>'+g.m.map(k=>safe(pname(k))).join(', ')+' · <b style="color:var(--gold)">'+(r.sv[i]||0)+' voto(s)</b></span></div>').join('')+(best?'<p class="center">⭐ Mejor actor/actriz: <b style="color:var(--gold)">'+safe(pname(best[0]))+'</b> ('+best[1]+' voto'+(best[1]>1?'s':'')+')</p>':'')+'</section><section class="card"><h3>Marcador</h3>'+Object.keys(state.scores).sort((a,b)=>state.scores[b]-state.scores[a]).map(k=>'<div class="sc"><span>'+safe(pname(k))+(k===myKey?' (tú)':'')+'</span><strong>'+state.scores[k]+' pts'+(r.gain[k]?' <small style="color:var(--good)">+'+r.gain[k]+'</small>':'')+'</strong></div>').join('')+(isHost?'<button class="btn" id="next" style="width:100%;margin-top:10px">'+(state.round>=state.rounds?'Ver resultado final 🏆':'Siguiente ronda')+'</button>':'<p class="small muted">Esperando al anfitrión…</p>')+'</section>',()=>{$('next')&&($('next').onclick=nextRound)})}
+function renderFinished(){const r=Object.keys(state.scores).sort((a,b)=>state.scores[b]-state.scores[a]);
+ mount('fin','<section class="card center"><div class="eyebrow">Fin de la función</div><div style="font-size:80px">🏆</div><h1>'+safe(pname(r[0]))+' gana</h1><p class="muted">¡Aplausos para todo el reparto!</p></section><section class="card">'+r.map((k,i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||i+1)+' '+safe(pname(k))+'</span><strong>'+state.scores[k]+' pts</strong></div>').join('')+'</section>'+(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1)return void mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);
+ if(!state)return void mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ ({lobby:renderLobby,brief:renderBrief,act:renderAct,vote:renderVote,results:renderResults,finished:renderFinished})[state.phase]()}
+setInterval(()=>{if(!roomCode||!state)return;hostStep();if(['brief','act','vote'].includes(state.phase))render()},250);
+if(saved?.room&&saved?.name)connect();else renderHome();
+})();
+</script></body></html>

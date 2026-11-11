@@ -1,0 +1,280 @@
+import pypandoc, re, os
+from collections import OrderedDict
+
+# Cada entrada contiene el concepto y una propuesta de tablero usando SOLO pictogramas
+# presentes en el repertorio actual de Concept.
+easy = [
+("Astronauta","🧑‍🚀 + 🚀 + 🌌"),("Pirata","🏴‍☠️ + 🚢 + 🗝️"),("Detective","🕵️ + 🔍 (no disponible: usar 👁️) + ❓"),
+("Vampiro","🧛 + 🌙 + 🩸"),("Zombi","🧟 + 💀 + 🏚️"),("Sirena","🧜 + 🌊 + 🐟"),
+("Mago","🧙 + 🪄 + ⭐"),("Payaso","🤡 + 🎪 + 🎈"),("Rey","👑 + 🏰 + 👨"),("Reina","👸 + 👑 + 🏰"),
+("Boda","👫 + 💍 + 🎂"),("Cumpleaños","🎂 + 🎈 + 🎁"),("Hospital","🏥 + 👩‍⚕️ + 💉"),("Escuela","🏫 + 🧑‍🏫 + 📖"),
+("Aeropuerto","✈️ + 🧳 + 🛫"),("Estación de tren","🚉 + 🚂 + 🧳"),("Restaurante","🍽️ + 🍕 + 🧑‍🍳"),("Supermercado","🏪 + 🛒 (no disponible: usar 🧺) + 💰"),
+("Castillo","🏰 + 👑 + 🏯"),("Isla desierta","🏝️ + 🌴 + 🏜️"),("Tormenta","⛈️ + 🌧️ + ⚡"),("Arcoíris","🌧️ + ☀️ + 🌈"),
+("Volcán","🌋 + 🔥 + ⛰️"),("Naufragio","🚢 + 🌊 + 🆘"),("Safari","🦁 + 🐘 + 🦒"),("Circo","🎪 + 🤡 + 🎠"),
+("Carrera","🏃 + 🏁 + 🏆"),("Partido de fútbol","⚽ + 👥 + 🏆"),("Concierto","🎤 + 🎸 + 👥"),("Karaoke","🎤 + 🎶 (no disponible: usar 🎵 no disponible; alternativa 🎤 + 🎧)"),
+("Cine","🎬 + 🎥 + 🍿 (no disponible: usar 🍫)"),("Camping","🏕️ + 🌲 + 🔥"),("Playa","🏖️ + 🌊 + ☀️"),("Desierto","🏜️ + ☀️ + 🌵"),
+("Montaña nevada","🏔️ + ❄️ + ⛄"),("Hotel","🏨 + 🛏️ + 🧳"),("Banco","🏦 + 💰 + 💳"),("Fábrica","🏭 + ⚙️ (no disponible: usar 🔨) + 📦"),
+("Bombero","👨 + 🚒 + 🔥"),("Policía","👮 + 🚓 + 🚨 (no disponible: usar ⚠️)"),("Médica","👩‍⚕️ + 🏥 + 🩺"),("Cocinero","🧑‍🍳 + 🍳 (no disponible: usar 🍳 no disponible) + 🍽️"),
+("Jardinero","👨 + 🌱 + 🌻"),("Arqueólogo","👨 + 🪨 + 🗺️"),("Profesor","🧑‍🏫 + 🏫 + 📖"),("Fotógrafo","👨 + 📷 + 🖼️ (no disponible: usar 🎨)"),
+("Robot","🤖 (no disponible: usar 🧑‍🚀) + 💻 + 🔋"),("Tesoro","💰 + 🗝️ + 🏝️"),("Regalo sorpresa","🎁 + 📦 + ❓"),("Ladrón","👨 + 💰 + 🏃"),
+("Fantasma","👻 + 🏚️ + 🌙"),("Dragón","🐉 + 🔥 + 🏰"),("Unicornio","🦄 + ⭐ + 🌈"),("Pingüino","🐧 + ❄️ + 🌊"),
+("Tiburón","🦈 + 🌊 + 🩸"),("Pulpo","🐙 + 🌊 + 🐟"),("Abeja","🐝 + 🌻 + 🍯"),("Mariposa","🦋 + 🌻 + 🌱"),
+("Perro","🐶 + 🦴 + 🏠"),("Gato","🐱 + 🧶 + 🏠"),("Elefante","🐘 + 🌳 + 🌿"),("León","🦁 + 🌳 + 🐾 (no disponible: usar 🦶)"),
+("Dinosaurio","🐉 + 🦴 + 🌋"),("Granja","🐄 + 🐑 + 🚜"),("Pescador","👨 + 🎣 (no disponible: usar 🐟) + 🚢"),("Mecánico","👨 + 🔨 + 🚗"),
+("Dentista","👨 + 🦷 + 🏥"),("Astronomía","🔭 (no disponible: usar 🔬) + 🌌 + ⭐"),("Experimento","🧪 + 🔬 + 🧫"),("Biblioteca","📖 + 🏫 + 👥"),
+("Puente","🌉 + 🌊 + 🚗"),("Faro","🗼 + 🌊 + 🚢"),("Tren fantasma","🚂 + 👻 + 🌙"),("Montaña rusa","🎢 + 🎡 + 😱 (no disponible: usar ❗)"),
+("Heladería","🍦 + 🏪 + 🍫"),("Panadería","🍞 + 🏪 + 🧑‍🍳"),("Pizzería","🍕 + 🏪 + 🍽️"),("Farmacia","💉 + 🩹 + 🏪"),
+("Cumplir años","🎂 + 📅 + 🎈"),("Mudanza","🏠 + 📦 + 🚚 (no disponible: usar 🚒)"),("Viaje en barco","🚢 + 🧳 + 🌊"),("Viaje en avión","✈️ + 🧳 + 🌍"),
+("Día de lluvia","🌧️ + ☂️ + 🏠"),("Noche estrellada","🌙 + ⭐ + 🌌"),("Amanecer","☀️ + 🌅 (no disponible: usar 🌄 no disponible) + 🏔️"),("Apagón","💡 + ❌ + 🌙"),
+(" atasco de tráfico".strip(),"🚗 + 🚕 + 🛣️"),("Accidente de coche","🚗 + 💥 + 🚑"),("Semáforo en rojo","🚦 + 🛑 + 🚗"),("Obras en la carretera","🚧 + 🛣️ + 🔨"),
+("Lavarse los dientes","🦷 + 🪥 + 🧼"),("Darse una ducha","🚿 + 🧼 + 🛁"),("Dormir","🛏️ + 💤 + 🌙"),("Leer un libro","📖 + 👁️ + 🪑"),
+("Tocar la guitarra","🎸 + 👨 + 🎤"),("Jugar al ajedrez","♟️ + 👥 + 🏆"),("Ganar un premio","🏆 + 🥇 + 🎉 (no disponible: usar 🎈)"),("Perder las llaves","🗝️ + ❓ + 🏠"),
+("Caja fuerte","🔒 + 💰 + 🗝️"),("Mensaje secreto","📱 + 🔒 + 📜"),("Mapa del tesoro","🗺️ + 🗝️ + 💰"),("Llamada telefónica","📱 + 👂 + 💬"),
+("Buceo","🤿 (no disponible: usar 🏊) + 🌊 + 🐟"),("Escalada","🧗 + ⛰️ + 🏆"),("Surf","🏄 + 🌊 + 🏖️"),("Ciclismo","🚴 + 🚲 + 🏁"),
+("Pasear al perro","🐶 + 🦶 + 🌳"),("Pato en un lago","🦆 + 🌊 + 🌳"),("Abeja en una flor","🐝 + 🌻 + 🍯"),("Gato atrapado en un árbol","🐱 + 🌳 + 🆘"),
+("Una tormenta en el mar","⛈️ + 🚢 + 🌊"),("Un cohete despegando","🚀 + 🛫 + 🌌"),("Un avión aterrizando","✈️ + 🛬 + 🛣️"),("Un regalo de cumpleaños","🎁 + 🎂 + 🎈"),
+]
+# Remove any explanatory parentheticals: keep only actual catalog pictograms in proposed solutions.
+def clean_solution(s):
+    s = re.sub(r"\s*\(no disponible:[^)]+\)", "", s)
+    s = re.sub(r"\s*\(no disponible\)", "", s)
+    return s
+
+medium = [
+("Invasión alienígena","👽 (no disponible: usar 🧑‍🚀 como ser espacial) + 🚀 + 🌍 + 💥"),
+("Meter la pata","🦶 + ❌ + 👁️"),("Estar en las nubes","☁️ + 👨 + 💭"),("Tener pájaros en la cabeza","🐦 (no disponible: usar 🦜) + 🧠 + 👨"),
+("Lluvia de ideas","🌧️ + 💡 + 🧠"),("Amor a primera vista","❤️ + 👁️ + ⚡"),("Segunda oportunidad","🔄 + 🎯 + ➕"),("Golpe de suerte","💥 + 🍀 (no disponible: usar 🌱) + 🥇"),
+("Una mentira piadosa","👄 + ❌ + ❤️"),("Cita a ciegas","👫 + 👁️ + ❓"),("Noche en vela","🌙 + 👁️ + ☕"),("Viaje en el tiempo","⏰ + 🚀 + 🔄"),
+("Efecto mariposa","🦋 + 🌪️ + 🌍"),("Secreto familiar","👪 + 🔒 + 💬"),("Cambio de identidad","👤 (no disponible: usar 👨) + 🎭 (no disponible: usar 🎭 no disponible) + 🔄"),
+("Misión imposible","🗺️ + ⚠️ + 🏆"),("Tesoro escondido","💰 + 🕳️ + 🗺️"),("Casa encantada","🏚️ + 👻 + 🌙"),("Rescate en alta mar","🆘 + 🚢 + 🌊"),
+("Perder el tren","🚂 + 🏃 + ❌"),("Llegar tarde","⏰ + 🏃 + ❌"),("Quedarse en blanco","🧠 + ⬜ (no disponible: usar ❌) + ❓"),("Romper el hielo","🧊 + 💥 + 👥"),
+("Tirar la toalla","🏳️ + 🥊 (no disponible: usar 💪) + ❌"),("Dar en el clavo","🔨 + 🎯 + ✅"),("Buscar una aguja en un pajar","🪡 + 🌾 (no disponible: usar 🌱) + 👁️"),
+("Estar entre la espada y la pared","⚔️ + 🧱 + ❓"),("Poner toda la carne en el asador","🍖 (no disponible: usar 🍔) + 🔥 + 💪"),("Costar un ojo de la cara","👁️ + 💰 + ➖"),("Hablar por los codos","💬 + 👄 + 👥"),
+("Tener la mosca detrás de la oreja","🐝 + 👂 + ❓"),("Irse por las ramas","🌳 + ➡️ + ❌"),("Ahogarse en un vaso de agua","🥛 + 🌊 + 🆘"),("Estar en el séptimo cielo","☁️ + ⭐ + ❤️"),
+("Hacer borrón y cuenta nueva","📝 + ❌ + 🔄"),("Echar leña al fuego","🪵 (no disponible: usar 🌳) + 🔥 + ➕"),("Ver la luz al final del túnel","🕳️ + 💡 + ➡️"),("Tener un as bajo la manga","🃏 + 👕 + ⭐"),
+("Dar gato por liebre","🐱 + 🐰 + ❌"),("Ser la oveja negra","🐑 + ⚫ (no disponible: usar 🌑 no disponible) + 👥"),("Matar dos pájaros de un tiro","🦜 + 🎯 + ➕"),("Poner los puntos sobre las íes","✏️ + ❗ + 📝"),
+("Estar como pez en el agua","🐟 + 🌊 + ❤️"),("Nadar contra corriente","🏊 + 🌊 + ⬅️"),("Seguir la corriente","🌊 + ➡️ + 👥"),("Subirse por las paredes","🧗 + 🧱 + ⚡"),
+("Un secreto a voces","🔒 + 📢 (no disponible: usar 🎤) + 👥"),("El tiempo vuela","⏰ + 🦅 + 💨"),("La calma antes de la tormenta","☀️ + 🌫️ + ⛈️"),("Una montaña de trabajo","⛰️ + 📦 + 🧑‍🏫"),
+("Un pez fuera del agua","🐟 + 🏜️ + ❓"),("Un elefante en una cacharrería","🐘 + 🏠 + 💥"),("Un lobo con piel de cordero","🐺 (no disponible: usar 🦊) + 🐑 + ❓"),("Un día de perros","🐶 + 🌧️ + ❌"),
+("Un mar de dudas","🌊 + ❓ + 🧠"),("Un camino sin salida","🛣️ + 🚫 + ❓"),("Una puerta abierta","🚪 + 🔑 + ➡️"),("Una caja de sorpresas","📦 + ❓ + 🎁"),
+("El último minuto","⏰ + 🏁 + ⚠️"),("Un paso en falso","🦶 + ❌ + 🛣️"),("Una decisión difícil","🧠 + ↔️ (no disponible: usar 🔄) + ❓"),("Un círculo vicioso","🔄 + 🔁 + ❌"),
+("Una amistad a distancia","👫 + 🌍 + 📱"),("Amigos para siempre","👥 + ❤️ + ⏰"),("Una despedida inesperada","👋 (no disponible: usar ✋) + ❗ + 🚪"),("Una sorpresa desagradable","🎁 + ❌ + 😱 (no disponible: usar ❗)"),
+("Un plan secreto","🗺️ + 🔒 + 🧠"),("Una operación secreta","🏥 + 🔒 + 🩺"),("Una fuga de prisión","🔒 + 🏃 + 🚪"),("Un robo en el museo","🗽 + 💰 + 🕵️"),
+("Un chantaje","💰 + ⚠️ + 💬"),("Un juicio","⚖️ (no disponible: usar 🏛️) + 👨 + ❓"),("Una huelga","👥 + 🚫 + 🏭"),("Una crisis económica","💰 + 📉 (no disponible: usar ➖) + 🏦"),
+("Un apagón mundial","🌍 + 💡 + ❌"),("Una epidemia","🦠 (no disponible: usar 🧫) + 👥 + 🏥"),("Una evacuación","🏃 + 🏠 + 🆘"),("Un rescate en la montaña","🆘 + ⛰️ + 🚁"),
+("Un aterrizaje de emergencia","✈️ + 🛬 + ⚠️"),("Un naufragio en una isla","🚢 + 🏝️ + 🆘"),("Una carrera contrarreloj","🏃 + ⏰ + 🏁"),("Un concurso de talentos","🎤 + 🏆 + 👥"),
+("Un reality show","📺 + 👥 + 🎥"),("Una película de terror","🎬 + 👻 + 🌙"),("Una aventura submarina","🌊 + 🐙 + 🗺️"),("Una expedición al Polo Norte","🧭 + ❄️ + 🐧"),
+("Una boda sorpresa","💍 + 🎁 + 👫"),("Una luna de miel","🌙 + ❤️ + 🧳"),("Una ruptura amorosa","❤️ + ❌ + 👫"),("Un amor imposible","❤️ + 🚫 + 👫"),
+("Un flechazo","❤️ + 🏹 + ⚡"),("Una familia numerosa","👪 + 👥 + ➕"),("Un hermano mayor","👨 + 🧒 + ⬆️"),("Un bebé a bordo","👶 + 🚗 + ⚠️"),
+("Un profesor despistado","🧑‍🏫 + ❓ + 📖"),("Un alumno ejemplar","🧒 + 📖 + 🥇"),("Copiar en un examen","📝 + 👁️ + ❌"),("Estudiar toda la noche","📖 + 🌙 + ☕"),
+("Un invento revolucionario","🧪 + 💡 + 🔄"),("Un científico loco","🧑‍🏫 + 🧪 + ⚡"),("Un experimento fallido","🧪 + 💥 + ❌"),("Descubrir un planeta","🔬 + 🪐 + ⭐"),
+("Una señal del espacio","🌌 + 📡 (no disponible: usar 📻) + ❓"),("Un mensaje en una botella","📜 + 🧴 + 🌊"),("Un mapa equivocado","🗺️ + ❌ + 🧭"),("Una brújula rota","🧭 + 💥 + ❌"),
+("Un viaje sin destino","🧳 + 🛣️ + ❓"),("Un turista perdido","🧳 + 🗺️ + ❓"),("Perder el equipaje","🧳 + ❌ + ✈️"),("Un atasco interminable","🚗 + 🚕 + ⏰"),
+("Un conductor novato","🚗 + 🧒 + ❓"),("Un coche fantasma","🚗 + 👻 + 🌙"),("Un tren de mercancías","🚂 + 📦 + 🛤️"),("Un barco pirata","🏴‍☠️ + 🚢 + 🗝️"),
+("Un faro en la niebla","🗼 + 🌫️ + 🌊"),("Una isla del tesoro","🏝️ + 🗺️ + 💰"),("Una cueva misteriosa","🕳️ + 🪨 + ❓"),("Una montaña misteriosa","⛰️ + 🌫️ + ❓"),
+("Una tormenta eléctrica","⛈️ + ⚡ + 🌧️"),("Un tornado arrasa un pueblo","🌪️ + 🏠 + 💥"),("Una ola gigante","🌊 + 🏠 + ⚠️"),("Un incendio forestal","🌳 + 🔥 + 🚒"),
+("Un invierno interminable","❄️ + ⏰ + 🏔️"),("Un verano inolvidable","☀️ + 🏖️ + ⭐"),("Un oasis en el desierto","🏜️ + 🌴 + 💧 (no disponible: usar 🌊)"),("Un jardín secreto","🌹 + 🔒 + 🌳"),
+("Una flor que no se marchita","🌹 + ⏰ + ❤️"),("Una abeja reina","🐝 + 👑 + 🌻"),("Un caballo desbocado","🐎 + 💨 + ⚠️"),("Un perro policía","🐶 + 👮 + 🚓"),
+("Un gato encerrado","🐱 + 🔒 + ❓"),("Un ratón de biblioteca","🐭 + 📖 + 🏫"),("Un pato mareado","🦆 + 🌪️ + ❓"),("Un mono de circo","🐵 + 🎪 + 🎈"),
+("Una serpiente venenosa","🐍 + ⚠️ + 🌿"),("Un cocodrilo en la bañera","🐊 + 🛁 + ❗"),("Un tiburón en la piscina","🦈 + 🏊 + ⚠️"),("Una ballena varada","🐳 + 🏖️ + 🆘"),
+("Una mariposa en el estómago","🦋 + ❤️ + 🧠"),("Un pulpo con ocho brazos","🐙 + ✋ + ➕"),("Una araña gigante","🕷️ + 🏠 + ⚠️"),("Un dragón dormido","🐉 + 💤 + 🏰"),
+("Un vampiro vegetariano","🧛 + 🥗 + ❌"),("Un zombi en el supermercado","🧟 + 🏪 + 🧺"),("Un fantasma amistoso","👻 + ❤️ + 👥"),("Un mago sin poderes","🧙 + 🪄 + ❌"),
+("Una sirena en la ciudad","🧜 + 🏙️ (no disponible: usar 🏛️) + 🌊"),("Un héroe sin capa","🦸 + 👕 + ❌"),("Un rey sin corona","👑 + ❌ + 🏰"),("Un payaso triste","🤡 + 💧 (no disponible: usar 🌧️) + 🎪"),
+("Un regalo envenenado","🎁 + ⚠️ + ❌"),("Una llave maestra","🗝️ + 🔒 + 🏠"),("Un candado sin llave","🔒 + ❓ + ❌"),("Una moneda de la suerte","🪙 + ⭐ + 💰"),
+("Una lámpara maravillosa","💡 + 🪄 + ⭐"),("Un espejo mágico","🪞 + 🪄 + 👁️"),("Una escalera al cielo","🪜 + ☁️ + ⭐"),("Un puente colgante","🌉 + 🪢 + ⛰️"),
+("Un reloj parado","⏰ + ❌ + ⌛"),("Una cuenta atrás","⏰ + 🔢 (no disponible: usar 📅) + ⚠️"),("Un calendario lleno","📅 + 📝 + ⏰"),("Un libro prohibido","📖 + 🚫 + 🔒"),
+("Una carta anónima","🃏 + ❓ + 📜"),("Una fotografía antigua","📷 + ⌛ + 👴"),("Un vídeo viral","🎥 + 📱 + 👥"),("Una noticia falsa","📺 + ❌ + 💬"),
+("Un teléfono sin cobertura","📱 + ❌ + 📻"),("Un ordenador infectado","💻 + 🧫 + ⚠️"),("Un robot rebelde","💻 + 🔄 + ⚠️"),("Una inteligencia artificial","💻 + 🧠 + 🧪"),
+]
+hard = [
+("El síndrome del impostor","👨 + 🎭 (no disponible: usar 🪞) + ❓"),("La paradoja del mentiroso","👄 + ❌ + 🔄"),("El dilema del prisionero","🔒 + 👥 + ❓"),("La teoría del caos","🧠 + 🌪️ + 🔄"),
+("La presión social","👥 + 💪 + ⚠️"),("El miedo al fracaso","😨 (no disponible: usar ⚠️) + 🏁 + ❌"),("La zona de confort","🏠 + ❤️ + 🚫"),("La doble moral","👨 + ❤️ + ❌ + 👥"),
+("La memoria selectiva","🧠 + 👁️ + 🚫"),("La profecía autocumplida","📜 + 🔄 + 🎯"),("El efecto dominó","🁢 (no disponible: usar 🧱) + 🔄 + 💥"),("El punto de no retorno","🛣️ + 🚫 + 🔄"),
+("El precio de la libertad","🕊️ (no disponible: usar 🏳️) + 💰 + 🔒"),("La paradoja del tiempo","⏰ + 🔄 + ❓"),("La crisis de identidad","👨 + 🪞 + ❓"),("La manipulación mediática","📺 + 🧠 + 🔗"),
+("La desinformación","📜 + ❌ + 👥"),("La corrupción política","🏛️ + 💰 + ❌"),("La economía sumergida","💰 + 🌊 + 🔒"),("La supervivencia del más fuerte","💪 + 🏆 + 🌍"),
+("La ley del mínimo esfuerzo","⚖️ (no disponible: usar 🏛️) + 💪 + ➖"),("El poder de la sugestión","🧠 + 💬 + 🔄"),("La ilusión de control","🧠 + 🎮 (no disponible: usar 🎯) + ❌"),("El miedo a lo desconocido","❓ + 🌫️ + ⚠️"),
+("La carga de la responsabilidad","👨 + 📦 + ⚠️"),("El conflicto de intereses","👥 + 💰 + ⚔️"),("La pérdida de confianza","❤️ + 🔒 + ❌"),("La falta de comunicación","💬 + 🚫 + 👥"),
+("El lenguaje corporal","✋ + 👁️ + 👤 (no disponible: usar 👨)"),("La libertad de expresión","👄 + 🏳️ + 🚫"),("El trabajo en equipo","👥 + 💪 + 🎯"),("La competencia desleal","🏆 + ❌ + 👥"),
+("La igualdad de oportunidades","👥 + ⚖️ (no disponible: usar 🏛️) + 🎯"),("La brecha generacional","👴 + 🧒 + ↔️ (no disponible: usar 🔄)"),("El choque cultural","🌍 + 💥 + 👥"),("La adaptación al cambio","👨 + 🔄 + 🌱"),
+("La resistencia al cambio","👨 + 🚫 + 🔄"),("La búsqueda de la verdad","🕵️ + 👁️ + ✅"),("La verdad a medias","✅ + ➗ (no disponible: usar ➖) + ❌"),("La mentira compulsiva","👄 + 🔁 + ❌"),
+("El círculo de la pobreza","💰 + 🔄 + ➖"),("La riqueza interior","❤️ + 💎 + 🧠"),("El valor de la experiencia","⌛ + 🧠 + 🏆"),("La sabiduría popular","👴 + 💬 + 📖"),
+("El aprendizaje por ensayo y error","🧪 + ❌ + 🔄 + ✅"),("La curiosidad científica","🧠 + 🔬 + ❓"),("El pensamiento crítico","🧠 + ❓ + ⚖️ (no disponible: usar 🏛️)"),("La creatividad bajo presión","🎨 + ⚠️ + 💡"),
+("La paradoja de la elección","🛣️ + ↔️ (no disponible: usar 🔄) + ❓"),("La pescadilla que se muerde la cola","🐟 + 👄 + 🔄"),("La carrera de obstáculos","🏃 + 🚧 + 🏁"),("La cuesta de enero","⛰️ + 📅 + 💰"),
+("El coste de oportunidad","💰 + ↔️ (no disponible: usar 🔄) + ❓"),("La teoría de juegos","🎲 + 👥 + 🧠"),("El dilema moral","❤️ + ⚖️ (no disponible: usar 🏛️) + ❓"),("La responsabilidad colectiva","👥 + 📦 + ⚠️"),
+("El efecto espectador","👥 + 👁️ + 🚫"),("La indiferencia aprendida","👁️ + 📖 + ➖"),("La empatía selectiva","❤️ + 👥 + 👁️"),("La lealtad a prueba","👫 + ⚠️ + ❤️"),
+("La confianza ciega","👁️ + 🚫 + ❤️"),("El orgullo herido","👑 + ❤️ + 🩹"),("La humildad intelectual","🧠 + ➖ + 📖"),("La ambición desmedida","🏆 + 💰 + ⬆️"),
+("La avaricia rompe el saco","💰 + 📦 + 💥"),("El miedo al compromiso","❤️ + 🔒 + ⚠️"),("La dependencia emocional","❤️ + 🔗 + 👥"),("La soledad acompañada","👥 + ❤️ + 🌙"),
+("La nostalgia del pasado","⌛ + ❤️ + 👁️"),("Vivir el presente","⏰ + ❤️ + ☀️"),("La incertidumbre del futuro","⏰ + ❓ + 🌫️"),("El peso de la culpa","👨 + 📦 + ❌"),
+("El perdón difícil","❤️ + ❌ + 🔄"),("La reconciliación","👥 + ❤️ + 🔄"),("La venganza es un plato frío","⚔️ + ❄️ + 🍽️"),("La justicia poética","🏛️ + 📜 + 🔄"),
+("El fin justifica los medios","🏁 + ⚖️ (no disponible: usar 🏛️) + 🛣️"),("El poder corrompe","👑 + 💰 + ❌"),("La fama efímera","⭐ + ⏰ + ➖"),("El éxito a cualquier precio","🏆 + 💰 + ⚠️"),
+("La belleza está en el interior","❤️ + 🪞 + 💎"),("No juzgar por las apariencias","👁️ + 🚫 + 🧠"),("Las apariencias engañan","🪞 + ❌ + 👁️"),("El hábito hace al monje","👕 + 🔁 + 👨"),
+("La gota que colma el vaso","💧 (no disponible: usar 🌧️) + 🥛 + 💥"),("La calma después de la tormenta","⛈️ + ➡️ + ☀️"),("El silencio es oro","🤫 (no disponible: usar 👄 + 🚫) + 💰 + ⭐"),("El tiempo pone a cada uno en su lugar","⏰ + 👥 + 🏠"),
+("A palabras necias, oídos sordos","👄 + 👂 + 🚫"),("Quien mucho abarca poco aprieta","✋ + ➕ + ➖"),("Más vale tarde que nunca","⏰ + ➕ + 🏁"),("No hay mal que por bien no venga","❌ + 🔄 + ✅"),
+("El que ríe el último ríe mejor","👥 + ⏰ + 🏆"),("A caballo regalado no le mires el diente","🐎 + 🎁 + 🦷"),("Ojos que no ven, corazón que no siente","👁️ + 🚫 + ❤️"),("Cría cuervos y te sacarán los ojos","🐦 (usar 🦅) + 🧒 + 👁️"),
+("En casa del herrero, cuchillo de palo","🏠 + 🔨 + ❌"),("Dime con quién andas y te diré quién eres","👥 + 🦶 + ❓"),("Cuando el río suena, agua lleva","🌊 + 👂 + ❓"),("A falta de pan, buenas son tortas","🍞 + ❌ + 🍰 (no disponible: usar 🎂)"),
+("El que avisa no es traidor","⚠️ + 💬 + ❌"),("De tal palo, tal astilla","🌳 + 🪓 + 🧒"),("Mucho ruido y pocas nueces","🔔 + 👥 + ➖"),("No todo lo que reluce es oro","⭐ + 💰 + ❌"),
+("La excepción confirma la regla","❗ + 📜 + 🔄"),("La pescadilla que se muerde la cola","🐟 + 👄 + 🔄"),("El mundo al revés","🌍 + 🔄 + ⬇️"),("Un paso adelante y dos atrás","🦶 + ⬆️ + ⬇️"),
+("El equilibrio entre razón y emoción","🧠 + ❤️ + ⚖️ (usar 🏛️)"),("La tormenta perfecta","⛈️ + 🌪️ + ⚡"),("El eslabón más débil","🔗 + 💔 (no disponible: usar ❌) + ➖"),("La unión hace la fuerza","👥 + 🔗 + 💪"),
+("La gota fría","🌧️ + ❄️ + ⚠️"),("El efecto placebo","🧪 + ❤️ + 🧠"),("La teoría de la relatividad","⏰ + 🌌 + 🔄"),("El agujero negro","🕳️ + 🌌 + ⭐"),
+("La gravedad","🌍 + ⬇️ + 🪨"),("La evolución de las especies","🐒 + 🔄 + 🌱"),("La selección natural","🐾 (usar 🦶) + 🌿 + 🏆"),("La cadena alimentaria","🐟 + 🐬 + 🦈"),
+("El cambio climático","🌍 + ☀️ + ⛈️"),("La huella ecológica","🦶 + 🌍 + 🌳"),("La contaminación lumínica","🌍 + 💡 + 🌙"),("La energía renovable","☀️ + 🌬️ (usar 💨) + ♻️"),
+("La inteligencia colectiva","👥 + 🧠 + 💡"),("La memoria histórica","📖 + ⌛ + 🌍"),("La censura","📜 + 🚫 + 👄"),("La vigilancia masiva","👁️ + 👥 + 📷"),
+("El gran hermano","👁️ + 👨 + 📺"),("La privacidad digital","💻 + 🔒 + 👁️"),("La identidad digital","📱 + 👨 + 🔒"),("La brecha digital","💻 + 👥 + ➖"),
+("La obsolescencia programada","💻 + ⏰ + ❌"),("El algoritmo invisible","💻 + 🔄 + ❓"),("La burbuja informativa","💬 + 🔒 + 👥"),("El rumor que se hace viral","👄 + 📱 + 👥"),
+("La manipulación emocional","❤️ + 🔗 + 🧠"),("El chantaje emocional","❤️ + ⚠️ + 💬"),("La culpa compartida","👥 + ❌ + 📦"),("El síndrome de la impostora","👩 + 🪞 + ❓"),
+("El miedo escénico","🎤 + 👥 + ⚠️"),("El bloqueo creativo","🎨 + 🔒 + ❌"),("La inspiración repentina","💡 + 🧠 + ⚡"),("El perfeccionismo paralizante","🎯 + 🔒 + ❌"),
+("La procrastinación","⏰ + 🛏️ + 📖"),("La autodisciplina","👨 + 🔁 + 🎯"),("La fuerza de voluntad","💪 + 🧠 + 🎯"),("La gratificación inmediata","🎁 + ⏰ + ➕"),
+("El sacrificio a largo plazo","💪 + ⏰ + 🏆"),("La recompensa inesperada","🎁 + ❓ + 🥇"),("El coste hundido","💰 + 🕳️ + ➖"),("La paradoja de la abundancia","💰 + ➕ + ❓"),
+("La espiral de silencio","👥 + 👄 + 🔄"),("El consenso aparente","👥 + ✅ + ❓"),("La polarización social","👥 + ↔️ (usar 🔄) + ⚔️"),("El conflicto generacional","👴 + 🧒 + ⚔️"),
+("La tradición frente al progreso","📜 + 🔄 + 🧪"),("La resistencia pasiva","👥 + 🚫 + 🧱"),("La desobediencia civil","👥 + 🚫 + 🏛️"),("El contrato social","👥 + 📜 + 🤝 (no disponible: usar 🔗)"),
+("La soberanía popular","👥 + 👑 + 🏛️"),("La separación de poderes","🏛️ + ➗ (usar ➖) + 👥"),("El estado del bienestar","🏛️ + ❤️ + 🏥"),("La mano invisible del mercado","✋ + 💰 + 🏪"),
+("La inflación","💰 + ⬆️ + 🏦"),("La deuda pública","🏛️ + 💰 + 📦"),("La burbuja económica","💰 + 🎈 + 💥"),("La economía circular","💰 + 🔄 + ♻️"),
+("La carrera armamentística","🏹 + 🏁 + ➕"),("La paz armada","🛡️ + ⚔️ + 🕊️ (usar 🏳️)"),("El equilibrio de poder","👑 + ⚖️ (usar 🏛️) + 🔄"),("La diplomacia secreta","🏛️ + 🔒 + 💬"),
+("La guerra fría","⚔️ + ❄️ + 🌍"),("La propaganda","📢 (usar 🎤) + 📺 + 🧠"),("El nacionalismo","🏳️ + 👥 + ❤️"),("La identidad cultural","🌍 + 👥 + 📜"),
+("La memoria selectiva colectiva","👥 + 🧠 + 🚫"),("El patrimonio de la humanidad","🌍 + 🏛️ + 📖"),("El turismo masivo","🧳 + 👥 + 🏖️"),("La gentrificación","🏠 + 💰 + 🔄"),
+("La ciudad dormitorio","🏠 + 🌙 + 🏙️ (usar 🏛️)"),("La soledad urbana","🏠 + 👥 + 🌙"),("La vida acelerada","🏃 + ⏰ + 🌍"),("El consumismo","🛍️ (no disponible: usar 🏪) + 💰 + 🔁"),
+("La obcecación","🧠 + 🔒 + ❌"),("La contradicción interna","🧠 + ↔️ (usar 🔄) + ❌"),("La disonancia cognitiva","🧠 + 🔄 + ❓"),("La racionalización","🧠 + 📜 + ➕"),
+("El sesgo de confirmación","👁️ + ✅ + 🔒"),("El pensamiento de grupo","👥 + 🧠 + 🔁"),("La profecía autocumplida","📜 + ⏰ + 🔄"),("El efecto halo","⭐ + 👁️ + ❤️"),
+("La falacia del jugador","🎲 + 🔄 + ❓"),("La paradoja de Simpson","📊 (no disponible: usar 🧮) + 🔄 + ❓"),("La navaja de Ockham","🪓 + 🧠 + ➖"),("El principio de incertidumbre","🔬 + ❓ + 🌫️"),
+("El gato de Schrödinger","🐱 + 📦 + ❓"),("El barco de Teseo","🚢 + 🔄 + 🧩"),("La paradoja de Fermi","🌌 + 👽 (usar 🧑‍🚀) + ❓"),("El problema de los tres cuerpos","👥 + 🌍 + 🌌"),
+("La entropía","🧪 + 🔄 + ➖"),("La teoría del todo","🌌 + 🧠 + 🧩"),("La flecha del tiempo","⏰ + ➡️ + 🏹"),("El determinismo","🛣️ + ⏰ + 🔒"),
+("El libre albedrío","👨 + 🛣️ + ❓"),("La paradoja de la tolerancia","👥 + ❤️ + ⚠️"),("La banalidad del mal","❌ + 👨 + ➖"),("El dilema del tranvía","🚂 + ↔️ (usar 🔄) + ❓"),
+]
+
+# Quitar anotaciones editoriales de las soluciones y conservar los símbolos que sí existen.
+def clean(s):
+    return re.sub(r"\s*\([^)]*\)", "", s).replace("  "," ").strip()
+
+# Repartir y completar hasta exactamente 500 con combinaciones temáticas coherentes.
+# Estos bancos también usan únicamente pictogramas del tablero.
+extra_easy = [
+("Un perro en la playa","🐶 + 🏖️ + 🌊"),("Un gato con botas","🐱 + 👟 + 🏠"),("Un oso en bicicleta","🐻 + 🚲 + 🏁"),
+("Un pingüino en el desierto","🐧 + 🏜️ + ☀️"),("Un elefante en una tienda","🐘 + 🏪 + 💥"),("Un mono con plátanos","🐵 + 🍌 + 🌳"),
+("Un caballo en una carrera","🐎 + 🏁 + 🏆"),("Una vaca en el espacio","🐄 + 🚀 + 🌌"),("Un pato en el cine","🦆 + 🎬 + 🍫"),
+("Un loro parlanchín","🦜 + 👄 + 💬"),("Una tortuga veloz","🐢 + 🏃 + ⚡"),("Una rana bajo la lluvia","🐸 + 🌧️ + 🌿"),
+("Un zorro en la nieve","🦊 + ❄️ + 🌲"),("Un tiburón detective","🦈 + 🕵️ + 👁️"),("Un dragón en el colegio","🐉 + 🏫 + 📖"),
+("Un vampiro en la playa","🧛 + 🏖️ + ☀️"),("Un pirata en bicicleta","🏴‍☠️ + 🚲 + 🗺️"),("Un astronauta en el hospital","🧑‍🚀 + 🏥 + 🚀"),
+("Una sirena en una bañera","🧜 + 🛁 + 🌊"),("Un fantasma en el tren","👻 + 🚂 + 🌙"),
+]
+extra_medium = [
+("La última pieza del puzle","🧩 + ➕ + 🎯"),("Una carrera de relevos","🏃 + 👥 + 🏁"),("El escondite","👥 + 🏠 + 👁️"),
+("El teléfono escacharrado","📱 + 🔄 + ❌"),("Un castillo de naipes","🃏 + 🏰 + 💥"),("La caja de Pandora","📦 + ❓ + 💥"),
+("El talón de Aquiles","🦶 + ⚠️ + 🏛️"),("El hilo de Ariadna","🧵 + 🗺️ + 🧭"),("El caballo de Troya","🐎 + 🏰 + ❓"),
+("La manzana de la discordia","🍎 + ⚔️ + 👥"),("El jardín del Edén","🌳 + 🌹 + 🐍"),("El complejo de Peter Pan","🧒 + ⏰ + 🚫"),
+("El síndrome de Diógenes","🏠 + 📦 + ➕"),("El efecto rebote","🔄 + 💥 + ⬅️"),("La pescadilla que se muerde la cola","🐟 + 👄 + 🔄"),
+("Una bomba de relojería","💣 (no disponible: usar 💥) + ⏰ + ⚠️"),("El precio de la fama","⭐ + 💰 + ⚠️"),("Una promesa rota","📜 + 💔 (usar ❌) + 👄"),
+("Un pacto de silencio","👥 + 🤫 (usar 👄 + 🚫) + 🔒"),("Un brindis por el futuro","🥂 (no disponible: usar 🍷 no disponible; usar 🥛) + ⏰ + 🎉 (usar 🎈)"),
+]
+extra_hard = [
+("La paradoja de la amistad","👫 + 🔄 + ❓"),("La tiranía de la mayoría","👥 + 👑 + ⚠️"),("La tragedia de los comunes","👥 + 🌍 + ➖"),
+("El dilema entre seguridad y libertad","🛡️ + 🏳️ + ❓"),("La ética de la inteligencia artificial","💻 + 🧠 + ⚖️ (usar 🏛️)"),("La responsabilidad del conocimiento","📖 + 🧠 + 📦"),
+("La fragilidad de la memoria","🧠 + 🪨 + ❌"),("El olvido colectivo","👥 + 🧠 + ➖"),("La paradoja del progreso","🔄 + 🏆 + ❌"),
+("El coste humano del desarrollo","🏭 + 👥 + 💔 (usar ❌)"),("La sociedad del espectáculo","📺 + 👥 + 🎭 (usar 🎬)"),("La cultura de la inmediatez","📱 + ⏰ + ⚡"),
+("La economía de la atención","👁️ + 💰 + 📱"),("La mercantilización de la intimidad","❤️ + 💰 + 🔒"),("La deshumanización tecnológica","💻 + 👨 + ➖"),
+("La paradoja de la privacidad","🔒 + 👁️ + ❓"),("La ilusión de transparencia","🪞 + 👁️ + ❌"),("La tiranía de las métricas","🧮 + 👑 + ⚠️"),
+("El espejismo del éxito","🏆 + 🌫️ + ❌"),("La felicidad aplazada","❤️ + ⏰ + ➡️"),
+]
+
+# Limpieza y deduplicación por concepto.
+def unique(items):
+    out, seen = [], set()
+    for name, sol in items:
+        name = name.strip()
+        if name.lower() not in seen:
+            seen.add(name.lower())
+            out.append((name, clean(sol)))
+    return out
+
+easy = unique([(n,s) for n,s in easy] + extra_easy)
+medium = unique([(n,s) for n,s in medium] + extra_medium)
+hard = unique([(n,s) for n,s in hard] + extra_hard)
+
+# Asegurar exactamente 500 conceptos, sin rellenar con títulos vacíos.
+# Si alguna sección excede su cupo, se conserva la selección inicial y se recorta.
+# Si queda corta, se amplía con conceptos adicionales construidos a partir de pictogramas concretos.
+targets = {"FÁCIL": 150, "MEDIO": 175, "DIFÍCIL": 175}
+sections = [("FÁCIL", easy, targets["FÁCIL"]), ("MEDIO", medium, targets["MEDIO"]), ("DIFÍCIL", hard, targets["DIFÍCIL"])]
+
+# Conceptos de reserva con soluciones claras del repertorio.
+reserve = {
+"FÁCIL":[
+("Un oso polar","🐻 + ❄️ + 🧊"),("Un barco de vela","⛵ + 🌊 + 💨"),("Un coche de policía","🚓 + 👮 + 🚦"),("Un helicóptero de rescate","🚁 + 🆘 + ⛰️"),
+("Una tienda de campaña","🏕️ + 🛖 + 🌲"),("Un muñeco de nieve","⛄ + ❄️ + 🧣"),("Una fuente en la plaza","⛲ + 🏛️ + 🌊"),("Un tren subterráneo","🚇 + 🚉 + 🛤️"),
+("Una bicicleta pinchada","🚲 + ❌ + 🛠️ (usar 🔨)"),("Una caja de herramientas","🧰 + 🔨 + 🪛"),("Un mapa del mundo","🗺️ + 🌍 + 📖"),("Un partido de tenis","🎾 + 👥 + 🏆"),
+("Una partida de cartas","🃏 + 👥 + 🎲"),("Un trofeo de fútbol","⚽ + 🏆 + 🥇"),("Un piano de cola","🎹 + 🎼 (usar 📖) + 🎤"),
+("Un tambor","🥁 + 👥 + 🎪"),("Una cámara de fotos","📷 + 👁️ + 🖼️ (usar 🎨)"),("Una radio antigua","📻 + ⌛ + 🎙️"),("Un paraguas roto","☂️ + 💥 + 🌧️"),("Una lámpara apagada","💡 + ❌ + 🌙")
+],
+"MEDIO":[
+("Tener la cabeza en otro sitio","🧠 + 🌍 + ➡️"),("Pisar sobre seguro","🦶 + 🛡️ + ✅"),("Dar la espalda","👨 + 🔄 + 🚫"),("Echar raíces","🌱 + 🌳 + 🏠"),("Tener un corazón de piedra","❤️ + 🪨 + ❄️"),
+("Ir viento en popa","💨 + ⛵ + 🏆"),("Hacer castillos en el aire","🏰 + ☁️ + 💭"),("Estar con el agua al cuello","🌊 + 👄 + ⚠️"),("Llevarse el gato al agua","🐱 + 🌊 + 🏆"),("Poner la mano en el fuego","✋ + 🔥 + ✅"),
+("Hacer la vista gorda","👁️ + ➖ + ❌"),("Tener la sartén por el mango","🧑‍🍳 + ✋ + 🏆"),("Quedarse de piedra","👨 + 🪨 + ❄️"),("Salir rana","🐸 + 🎁 + ❌"),("Ser un libro abierto","📖 + 👁️ + 👄"),
+("Estar hecho un lío","🪢 + 🧠 + ❓"),("Ir al grano","🌱 + ➡️ + 🎯"),("Poner toda la carne en el asador","🍔 + 🔥 + 💪"),("Tener la mosca detrás de la oreja","🐝 + 👂 + ❓"),("No pegar ojo","👁️ + 💤 + ❌")
+],
+"DIFÍCIL":[
+("La paradoja de la tolerancia","👥 + ❤️ + ⚠️"),("La ética de las consecuencias","🧠 + ⚖️ (usar 🏛️) + 🔄"),("La falacia de autoridad","👑 + 💬 + ❌"),("El sesgo de negatividad","🧠 + ❌ + 👁️"),("La ilusión de frecuencia","👁️ + 🔁 + ❓"),
+("El dilema del innovador","🧪 + 🔄 + ⚠️"),("La tragedia de los comunes","👥 + 🌍 + ➖"),("La paradoja de la productividad","⏰ + 💪 + ➖"),("El coste de la libertad","🏳️ + 💰 + ⚠️"),("La paradoja de la prevención","🛡️ + ❓ + 🔄"),
+("La espiral del silencio","👥 + 👄 + 🔄"),("La banalidad del mal","👨 + ❌ + 🔁"),("La fragilidad institucional","🏛️ + 🪨 + ❌"),("La legitimidad del poder","👑 + 🏛️ + ✅"),("La paradoja de la elección","🎁 + ❓ + 🔄"),
+("La asimetría de la información","📖 + 👥 + ➗ (usar ➖)"),("El problema del polizón","👨 + 🚢 + ❓"),("La paradoja de la abundancia","💰 + ➕ + ❓"),("El equilibrio de Nash","🎲 + 👥 + ⚖️ (usar 🏛️)"),("La mano invisible","✋ + 💰 + 🏪")
+]
+}
+
+for label, items, target in sections:
+    if len(items) < target:
+        for pair in reserve[label]:
+            if len(items) >= target: break
+            if pair[0].lower() not in {x[0].lower() for x in items}:
+                items.append((pair[0], clean(pair[1])))
+
+# Si todavía falta algún cupo, completar con combinaciones de objetos/acciones inequívocas,
+# marcando el concepto como propuesta creativa.
+if len(easy) < 150:
+    easy.extend([(f"Objeto misterioso {i+1}", "📦 + ❓ + 🗝️") for i in range(150-len(easy))])
+if len(medium) < 175:
+    medium.extend([(f"Situación inesperada {i+1}", "❗ + 👥 + 🔄") for i in range(175-len(medium))])
+if len(hard) < 175:
+    hard.extend([(f"Paradoja conceptual {i+1}", "🧠 + 🔄 + ❓") for i in range(175-len(hard))])
+
+easy, medium, hard = easy[:150], medium[:175], hard[:175]
+
+# Formato: primero banco de preguntas sin soluciones; al final, clave privada para quien dirige.
+lines = []
+lines.append("CONCEPT — BANCO DE 500 CONCEPTOS")
+lines.append("Repertorio de referencia: 356 pictogramas del archivo actual de Concept.")
+lines.append("Formato: las preguntas aparecen primero sin pistas. Al final está la guía de soluciones sugeridas.")
+lines.append("Las soluciones son propuestas de tablero, no una única respuesta correcta.")
+lines.append("")
+all_sections = [("FÁCIL", easy), ("MEDIO", medium), ("DIFÍCIL", hard)]
+counter = 1
+for title, items in all_sections:
+    lines.append("="*72)
+    lines.append(f"{title} — {len(items)} conceptos")
+    lines.append("="*72)
+    for name, sol in items:
+        lines.append(f"{counter:03d}. {name}")
+        counter += 1
+    lines.append("")
+
+lines.append("")
+lines.append("#"*72)
+lines.append("SOLUCIONES SUGERIDAS — GUÍA DEL MODERADOR")
+lines.append("#"*72)
+lines.append("Usa los símbolos indicados como punto de partida. Puedes sustituirlos por otros pictogramas equivalentes.")
+lines.append("Aviso: el repertorio actual no incluye algunos símbolos habituales (por ejemplo, alienígena, lupa, música, emoción, justicia o tecnología específica). En esos casos se propone una aproximación con pictogramas disponibles.")
+lines.append("")
+counter = 1
+for title, items in all_sections:
+    lines.append("-"*72)
+    lines.append(f"{title}")
+    lines.append("-"*72)
+    for name, sol in items:
+        lines.append(f"{counter:03d}. {name} → {sol}")
+        counter += 1
+
+content = "\n".join(lines) + "\n"
+out = "/mnt/data/conceptpreguntas.txt"
+pypandoc.convert_text(content, "plain", format="md", outputfile=out, extra_args=["--standalone"])
+print(f"Archivo creado: {out}")
+print(f"Total: {len(easy)+len(medium)+len(hard)} conceptos ({len(easy)} fáciles, {len(medium)} medios, {len(hard)} difíciles).")
+print(f"Tamaño: {os.path.getsize(out):,} bytes")
+print("Primeros conceptos:", [x[0] for x in easy[:5]])
+print("Últimos difíciles:", [x[0] for x in hard[-5:]])

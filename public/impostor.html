@@ -1,3 +1,4 @@
+//MEJORAS. AHORA MISMO NO APARECE LA FASE FINAL DE LA PARTIDA EN LA UQE SE SEPA QUINEN ERA QUE, EL IMPOSTOR NO PUEDE INTENTAR ADIVINAR LA PALABRA, NO SE PUEDE VOTAR CON LA APLICACION....
 <!doctype html>
 <html lang="es">
 <head>
@@ -232,13 +233,13 @@ function startGame(){
   if(errors.length){renderConfig(errors.join(' '));return}
   saveConfig();
   const roles=rolePool();
-  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now()};
+  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now(),names:Array(config.players).fill('')};
   screen='reveal';render();
 }
 function newGame(){
   saveConfig();
   const roles=rolePool();
-  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now()};
+  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now(),names:Array(config.players).fill('')};
   screen='reveal';render();
 }
 function roleGetsWord(role){return ['citizen','infiltrated','king','robot'].includes(role)}
@@ -331,15 +332,15 @@ function renderReveal(){
   const total=game.roles.length, n=game.index+1;
   const role=game.roles[game.index];
   const r=ROLES[role];
-  const playerName=game.names?.[game.index] || `Jugador ${n}`;
   app.innerHTML=`
     <section class="card center">
-      <div class="turn">${safe(playerName)} · ${n} de ${total}</div>
+      <div class="turn">${game.names?.[game.index] ? `${safe(game.names[game.index])} · ` : ''}Jugador ${n} de ${total}</div>
       <div class="progress"><div style="width:${(n/total)*100}%"></div></div>
       <div class="hero-emoji">📱</div>
       <h2>${game.phase==='reveal'?'Coge el móvil':'Listo'}</h2>
       ${game.phase==='reveal'?`
-        <p class="muted">${safe(playerName)}, coge el móvil y pulsa el botón cuando estés preparado.</p><input id="playerName" type="text" maxlength="20" placeholder="Tu nombre" value="${safe(game.names?.[game.index]||'')}" autocomplete="off">
+        <p class="muted">${game.names?.[game.index] ? `${safe(game.names[game.index])}, coge el móvil y pulsa el botón cuando estés preparado.` : `Jugador ${n}, escribe tu nombre y pulsa el botón cuando estés preparado.`}</p>
+        <input id="playerName" type="text" maxlength="20" placeholder="Tu nombre" value="${safe(game.names?.[game.index] || '')}" autocomplete="off">
         <button class="btn" id="show">👀 Ver mi personaje</button>`:''}
     </section>
     ${game.phase==='shown'?`
@@ -358,160 +359,42 @@ function renderReveal(){
   `;
   if($('show'))$('show').onclick=()=>{
     const input=$('playerName');
-    if(input && !input.value.trim()) return;
-    if(input) game.names[game.index]=input.value.trim();
-    game.phase='shown';render();
+    const name=input ? input.value.trim() : '';
+    if(!name){ if(input){input.focus();input.style.borderColor='#ff5577';} return; }
+    game.names[game.index]=name;
+    game.phase='shown';
+    render();
   };
   if($('hide'))$('hide').onclick=nextReveal;
 }
-
 function nextReveal(){
   game.index++;
-  if(game.index>=game.roles.length){
-    game.phase='discussion';
-    screen='discussion';
-    game.eliminated=[];
-    render();
-  } else {
-    game.phase='reveal';render();
-  }
+  if(game.index>=game.roles.length){game.phase='finished';screen='finished';render();}
+  else{game.phase='reveal';render();}
 }
-
-function activePlayers(){
-  return game.roles.map((role,i)=>({i,role,name:game.names?.[i]||`Jugador ${i+1}`}))
-    .filter(p=>!game.eliminated.includes(p.i));
-}
-function impostorIndexes(){
-  return game.roles.map((r,i)=>({r,i})).filter(x=>x.r==='impostor'||x.r==='infiltrated').map(x=>x.i)
-    .filter(i=>!game.eliminated.includes(i));
-}
-function roleLabel(role){ return ROLES[role]?.name || role; }
-
-function renderDiscussion(){
+function renderFinished(){
   app.innerHTML=`
   <section class="card center">
-    <div class="hero-emoji">🗣️</div>
-    <h1>¡A debatir!</h1>
-    <p class="muted">Dad vuestras pistas, debatid y tratad de descubrir a los impostores.</p>
-    <button class="btn" id="vote">🗳️ Pasar a la votación</button>
+    <div class="hero-emoji">🎭</div>
+    <h1>¡Que empiece la partida!</h1>
+    <p class="muted">Todos los personajes están repartidos. Guardad los móviles y empezad a dar pistas.</p>
   </section>
   <section class="card">
     <h3>📋 Recordatorio</h3>
-    <p class="muted small">La aplicación no controla las pistas. Cuando hayáis terminado de debatir, pulsad el botón para votar.</p>
-  </section>`;
-  $('vote').onclick=()=>{screen='vote';render()};
-}
-
-function renderVote(){
-  const players=activePlayers();
-  app.innerHTML=`
-  <section class="card center">
-    <div class="hero-emoji">🗳️</div>
-    <h1>¿A quién expulsáis?</h1>
-    <p class="muted">Elegid entre todos a un jugador. La aplicación revelará su personaje después.</p>
+    <p class="muted small">La votación se hace entre vosotros. El <b>Rey</b> puede anunciar su voto doble una sola vez. Si elimináis a <b>Mister White</b>, puede intentar adivinar la palabra. El <b>Bromista</b> gana si consigue que lo eliminéis.</p>
   </section>
-  <section class="card">
-    <div class="vote-list">
-      ${players.map(p=>`<button class="answer vote-player" data-i="${p.i}">👤 ${safe(p.name)}</button>`).join('')}
-    </div>
-  </section>`;
-  document.querySelectorAll('.vote-player').forEach(b=>b.onclick=()=>{
-    game.lastEliminated=Number(b.dataset.i);
-    game.eliminated.push(game.lastEliminated);
-    screen='eliminated';
-    render();
-  });
-}
-
-function renderEliminated(){
-  const i=game.lastEliminated, role=game.roles[i], name=game.names?.[i]||`Jugador ${i+1}`;
-  const isImpostor=role==='impostor'||role==='infiltrated';
-  const isWhite=role==='white';
-  const isJoker=role==='joker';
-  app.innerHTML=`
-  <section class="card center">
-    <div class="hero-emoji">${isImpostor?'💀':'😱'}</div>
-    <h1>${safe(name)} ha sido eliminado</h1>
-    <p class="muted">Su personaje era...</p>
-    <div class="role-card">
-      <div class="hero-emoji">${ROLES[role].emoji}</div>
-      <div class="role-title">${ROLES[role].name}</div>
-      <div class="role-team">${teamClass(role)}</div>
-    </div>
-  </section>
-  ${isJoker?`
-  <section class="card center">
-    <h2>🃏 ¡El Bromista gana!</h2>
-    <p class="muted">Su objetivo era conseguir que lo eliminaran. Gana individualmente, pero la partida puede continuar.</p>
-    <button class="btn" id="continue">➡️ Continuar partida</button>
-  </section>`:
-  (isImpostor||isWhite)?`
-  <section class="card center">
-    <h2>${isWhite?'⚪ Última oportunidad de Mister White':'🕵️ Última oportunidad del equipo impostor'}</h2>
-    <p class="muted">Antes de continuar, puede intentar adivinar la palabra secreta.</p>
-    <input id="guess" type="text" maxlength="50" placeholder="Escribe la palabra secreta" autocomplete="off">
-    <button class="btn" id="guessBtn">🎯 Intentar adivinar</button>
-    <div id="guessMsg"></div>
-  </section>`:
-  `<section class="card center">
-    <p class="muted">La partida continúa. Todavía puede quedar un impostor.</p>
-    <button class="btn" id="continue">➡️ Continuar</button>
-  </section>`}`;
-  if($('continue'))$('continue').onclick=afterElimination;
-  if($('guessBtn'))$('guessBtn').onclick=()=>{
-    const guess=$('guess').value.trim();
-    if(!guess){$('guess').focus();return}
-    if(normalizeWord(guess)===normalizeWord(game.word)){
-      game.winner=isWhite?'Mister White':'Impostores';
-      screen='winner';render();
-    }else{
-      $('guessMsg').innerHTML='<div class="feedback bad">❌ No era esa palabra. La partida continúa.</div><button class="btn" id="continueAfter">➡️ Continuar</button>';
-      $('guessBtn').disabled=true;
-      $('guess').disabled=true;
-      $('continueAfter').onclick=afterElimination;
-    }
-  };
-}
-function normalizeWord(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()}
-function afterElimination(){
-  const remainingImps=impostorIndexes();
-  if(remainingImps.length===0){game.winner='Ciudadanos';screen='winner';render();return}
-  if(activePlayers().length<=2){game.winner='Impostores';screen='winner';render();return}
-  screen='discussion';render();
-}
-function renderWinner(){
-  const w=game.winner;
-  const title=w==='Ciudadanos'?'🎉 ¡GANAN LOS CIUDADANOS!':w==='Impostores'?'🕵️ ¡GANAN LOS IMPOSTORES!':'🃏 ¡GANA MISTER WHITE!';
-  app.innerHTML=`
-  <section class="card center">
-    <div class="hero-emoji">${w==='Ciudadanos'?'🎉':'🏆'}</div>
-    <h1>${title}</h1>
-    <p class="muted">La palabra secreta era:</p>
-    <div class="secret-word">${safe(game.word)}</div>
-  </section>
-  <section class="card">
-    <h3>👥 Personajes</h3>
-    ${game.roles.map((role,i)=>`<div class="result-row" style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #27334a"><b>${safe(game.names?.[i]||`Jugador ${i+1}`)}</b><span>${ROLES[role].emoji} ${ROLES[role].name}</span></div>`).join('')}
-  </section>
-  <button class="btn" id="again">🔄 Repetir partida</button>
-  <button class="btn secondary" id="config">⚙️ Cambiar configuración</button>`;
+  <div class="stack">
+    <button class="btn" id="again">🔄 Repetir partida</button>
+    <button class="btn secondary" id="config">⚙️ Cambiar configuración</button>
+  </div>`;
   $('again').onclick=newGame;
-  $('config').onclick=()=>{screen='config';game=null;render()};
+  $('config').onclick=()=>renderConfig();
 }
-
-function renderFinished(){
-  screen='discussion';render();
-}
-
 function render(){
-  if(screen==='config') renderConfig();
-  else if(screen==='reveal') renderReveal();
-  else if(screen==='discussion') renderDiscussion();
-  else if(screen==='vote') renderVote();
-  else if(screen==='eliminated') renderEliminated();
-  else if(screen==='winner') renderWinner();
+  if(screen==='config')renderConfig();
+  else if(screen==='reveal')renderReveal();
+  else renderFinished();
 }
-
 render();
 
 })();

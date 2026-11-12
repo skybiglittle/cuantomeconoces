@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Tabú</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#3b1d4d,transparent 42%),radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:max(22px,env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(40px,10vw,64px);line-height:1;margin:12px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ff9aa8 50%,#ffd166);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:22px;margin:0 0 8px}h3{font-size:17px;margin:16px 0 6px}h4{margin:0 0 6px;font-size:15px}.m,.sub{color:var(--m)}.sub{margin:0 0 18px}
+.tag,.pill{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}.pill{background:#4a1d3a;color:#ffc2cf;border:0}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:20px;margin:14px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.btn.r{background:linear-gradient(100deg,#d6264a,#ff5a6e)}.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}.big{font-size:22px;padding:20px;width:100%;margin-top:12px}
+.pl{display:inline-block;background:#0f172a;border:1px solid var(--l);padding:6px 11px;border-radius:99px;font-size:13px;margin:3px 3px 0 0}.pl.me{border-color:var(--b);color:var(--b)}
+.team{background:#101a2e;border:1px solid var(--l);border-radius:15px;padding:12px;min-height:90px}
+.code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}.small{font-size:13px;color:var(--m)}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}.notice.good{background:#102b25;border-color:#226448;color:#a8f0ca}
+.tcard{background:#fffaf0;color:#1b1b2f;border-radius:18px;padding:14px;text-align:center;margin:12px 0}.tcard .w{background:#b3283d;color:#fff;border-radius:12px;padding:12px 8px;margin-bottom:8px;font-size:clamp(24px,7vw,38px);font-weight:900;overflow-wrap:anywhere}.tcard .t{font-size:19px;padding:7px 0;border-top:1px solid #e6dcc8;color:#444;font-weight:600}
+.meter{height:9px;background:#303b55;border-radius:99px;overflow:hidden;margin:8px 0 14px}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--a));transition:width 1s linear}
+.tl{display:flex;justify-content:space-between;font-size:12px;color:var(--m);font-weight:700}
+.sbd{display:flex;gap:10px;margin:10px 0}.sbd>div{flex:1;background:#101a2e;border:1px solid var(--l);border-radius:14px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:14px}.sbd b{font-size:28px}
+.ln{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--l)}.ln:last-child{border:0}
+</style></head><body><main>
+<header><span class="tag">🤐 MULTIJUGADOR · SALAS PRIVADAS</span><h1>Tabú</h1><p class="sub">Haz que tu equipo adivine la palabra… sin decir ninguna de las prohibidas.</p></header>
+<section id="home" class="panel"><h2>Entra en partida</h2><p class="m">Crea una sala y comparte el código, o únete a la de otra persona. Es un juego para jugar hablando en persona o en llamada.</p>
+<label for="pn">Tu nombre</label><input id="pn" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="cb">Crear sala</button><button class="btn s" id="sj">Unirme a una sala</button></div>
+<div id="jb" class="hidden"><label for="rc">Código de sala</label><input id="rc" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn full" id="jn">Entrar en la sala</button></div>
+<p id="hm" class="notice hidden" aria-live="polite"></p></section>
+<section id="lobby" class="panel hidden">
+<div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
+<h3>Equipos</h3><div id="lp" class="row"></div><button class="btn s full" id="sw">Cambiar de equipo</button>
+<label for="rounds">Duración</label><select id="rounds"><option value="1">1 vuelta (cada jugador describe 1 vez)</option><option value="2" selected>2 vueltas</option><option value="3">3 vueltas</option></select>
+<div class="notice">Un jugador describe la palabra sin decir las prohibidas, su equipo adivina y el equipo rival vigila y pulsa ¡TABÚ! si se las pillan. Acertar +1, tabú −1. Cada turno dura 90 segundos.</div>
+<div class="row"><button class="btn g" id="st">Empezar partida</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
+<section id="game" class="panel hidden"></section>
+</main>
+<script>
+(()=>{'use strict';
+
+const CARDS=[
+["NAVIDAD",["Diciembre","Papa Noel","Villancicos","Arbolito","Nacimiento"]],
+["PICTIONARY",["Juego","Dibujar","Lápiz","Marca","Tablero"]],
+["GUARDAPOLVO",["Blanco","Escuela","Primaria","Maestra","Alumno"]],
+["PALMERA",["Datil","Coco","Árbol","Mono","Trópico"]],
+["MOSQUITO",["Picadura","Rascarse","Raid","Espiral","Insecto"]],
+["CARGA",["Bultos","Pesada","Camión","Barco","Tren"]],
+["CUNA",["Dormir","Bebe","Canción","Barrotes","Muebles"]],
+["RONCAR",["Noche","Ruido","Nariz","Dormir","Molestar"]],
+["MICRO ESCOLAR",["Colegio","Niño","Vehiculo","Chicos","Naranja"]],
+["TENIS",["Deporte","Pelota","Cancha","Raqueta","Red"]],
+["ANGEL",["Paraíso","Diablo","Demonio","Cielo","Alas"]],
+["CORPIÑO",["Ropa","Sostén","Pechos","Mujer","Bombacha"]],
+["CINE",["Película","Pantalla","Filmar","Proyectar","Cámara"]],
+["NIDO",["Pájaro","Pichones","Huevos","Casa","Árbol"]],
+["BANDONEON",["Música","Acordeón","Instrumento","Tango","Piazzola"]],
+["RISA",["Ridículo","Cómico","Carcajada","Chiste","Broma"]],
+["ESPOSAS",["Arresto","Policía","Mano","Preso","Muñeca"]],
+["CENIZAS",["Fuego","Fumar","Polvo","Quemar","Cigarrillo"]],
+["BOTIQUIN",["Baño","Espejo","Remedios","Guardar","Armario"]],
+["PASAPORTE",["Documento","Extranjero","Viajar","Aduana","Visa"]],
+["ANTIFAZ",["Ojos","Tapar","Mascara","Carnaval","Cara"]],
+["RADIADOR",["Anticongelante","Enfriar","Coche","Agua","Motor"]],
+["PINOCHO",["Mentira","Nariz","Gepetto","Muñeco","Cuento"]],
+["LAGRIMA",["Ojos","Llorar","Agua","Gotas","Triste"]],
+["GRUA",["Levantar","Auto","Avería","Estacionamiento","Auxilio"]],
+["PAIS",["Estado","Nación","Gobierno","Frontera","Bandera"]],
+["BILLIKEN",["Anteojito","Revista","Infantil","Quiosco","Niños"]],
+["CONVENTO",["Iglesia","Habito","Religión","Monja","Cura"]],
+["NUBE",["Cielo","Despejado","Lluvia","Sol","Trueno"]],
+["CARPA",["Campamento","Tienda","Dormir","Camping","Circo"]],
+["UNIFORME",["Vestido","Igual","Colegio","Ejercito","Policía"]],
+["PIMPOLLO",["Capullo","Botón","Flor","Rosa","Cerrado"]],
+["MONJA",["Habito","Religión","Hermana","Convento","Novicia"]],
+["LAVARROPAS",["Maquina","Electrodoméstico","Tambor","Centrifugar","Jabón"]],
+["TERREMOTO",["Derrumbe","Sismo","Temblor","Tierra","Movimiento"]],
+["KREMLIN",["Moscu","URSS","Palacio","Rusia","Plaza Roja"]],
+["DIA",["Noche","Sol","Horas","Semana","Despierto"]],
+["RELOJ",["Hora","Tiempo","Despertador","Muñeca","Agujas"]],
+["CONFUCIO",["Filosofo","Chino","Proverbio","Religión","Sabio"]],
+["HIPNOTIZAR",["Dormir","Mirada","Mago","Despertar","Sueño"]],
+["INCENDIO",["Quemar","Apagar","Fuego","Llama","Bomberos"]],
+["QUIOSCO",["Golosinas","Negocio","Caramelos","Cigarrillos","Vender"]],
+["SUERTE",["Buena","Yeta","Amuleto","Mala","Culo"]],
+["ROSA",["Espinas","Flor","Pantera","Color","Rojo"]],
+["ARQUITECTO",["Obra","Planos","Dibujo","Diseño","Construcción"]],
+["ESTOMAGO",["Panza","Tripa","Comida","Cuerpo","Digestión"]],
+["PLOMERO",["Gotera","Agua","Caños","Arreglar","Canillas"]],
+["POLVO",["Limpio","Sucio","Tierra","Plumero","Muebles"]],
+["MUSEO",["Arte","Edificio","Pinturas","Exhibición","Colecciones"]],
+["BARRO",["Lluvia","Tierra","Lodo","Agua","Fango"]],
+["PIMIENTA",["Cocina","Picante","Sabor","Condimento","Sal"]],
+["MANEJAR",["Auto","Volante","Coche","Conductor","Vehiculo"]],
+["CUCHILLO",["Cuchara","Tenedor","Cortar","Cubierto","Afilado"]],
+["COWBOY",["Pistola","Sombrero","Caballo","Indios","Oeste"]],
+["CERDO",["Animal","Embutido","Jamón","Chancho","Fiambre"]],
+["FECHA",["Mes","Año","Almanaque","Día","Calendario"]],
+["PONCHO",["Gaucho","Cubrir","Ropa","Cabeza","Capa"]],
+["ARENA",["Playa","Fina","Piedra","Rocas","Erosión"]],
+["FUTBOL",["Maradona","Deporte","Arco","Gol","Pelota"]],
+["ALBAÑIL",["Construcción","Ladrillo","Casa","Obra","Cemento"]],
+["CALENDARIO",["Mes","Almanaque","Fecha","Días","Año"]],
+["PODIO",["Campeón","Ganador","Pedestal","Triunfador","Subir"]],
+["DEDAL",["Aguja","Pinchar","Metal","Protección","Coser"]],
+["CIRCULO",["Anillo","Redondo","Compás","Línea","Curva"]],
+["PESCADOR",["Pez","Caña","Anzuelo","Carnada","Lombriz"]],
+["FLAN",["Leche","Molde","Postre","Huevos","Caramelo"]],
+["SKATE",["Patineta","Monopatín","Cuatro","Ruedas","Tabla"]],
+["IZQUIERDA",["Lado","Derecha","Zurdo","Comunista","Dirección"]],
+["GAS",["Estufa","Cocinar","Envasado","Calefón","Termotanque"]],
+["CAMELLO",["Animal","Desierto","Joroba","Arena","Dromedario"]],
+["COMPACT DISC",["Escuchar","Láser","Canción","Casette","Música"]],
+["CARREFOUR",["Supermercado","Caja","Carrito","Comprar","Góndolas"]],
+["POCHOCLO",["Maíz","Dulce","Salado","Cine","Blanco"]],
+["ALUMINIO",["Metal","Cacerola","Avión","Acero","Liviano"]],
+["POLLO",["Ave","Plumas","Comer","Gallina","Pavo"]],
+["CONTRATO",["Papel","Firmar","Acuerdo","Alquiler","Escritorio"]],
+["MUÑECO",["Niñas","Bebote","Juguete","Mama","Regalo"]],
+["AGENDA",["Abecedario","Días","Direcciones","Teléfonos","Morgan"]],
+["FARMACIA",["Medico","Inyección","Remedios","Receta","Turno"]],
+["ESTACION",["Terminal","Tren","Parada","Anden","Bonetería"]],
+["CARNE",["Vaca","Asado","Comer","Milanesa","Hamburguesa"]],
+["COSQUILLAS",["Dedos","Hacer","Pies","Sensación","Risa"]],
+["FUEGO",["Fósforo","Llamas","Hoguera","Quemar","Leña"]],
+["OFICIAL DE POLICIA",["Esposas","Agente","Patrullero","Comisaría","Arrestar"]],
+["IDIOMA",["Lengua","País","Diccionario","Traducir","Estudiar"]],
+["HERIDA",["Sangre","Corte","Curita","Coser","Puntos"]],
+["ARROZ",["Cereal","Comida","Grano","Chino","Integral"]],
+["LEVADURA",["Masa","Pan","Harina","Cocinar","Royal"]],
+["HUMOR",["Alegría","Animo","Broma","Risa","Comedia"]],
+["COSTILLAS",["Esqueleto","Espalda","Huesos","Pecho","Cuerpo"]],
+["HOJA",["Verde","Caer","Árbol","Planta","Rama"]],
+["BASQUET",["Deporte","Pelota","Equipo","Aro","Cancha"]],
+["TELEFONO PUBLICO",["Llamar","Calle","Hablar","Cospeles","Fichas"]],
+["PIZZA",["Napolitana","Mozzarella","Queso","Faina","Fugaza"]],
+["ALGODÓN",["Cura","Sangre","Herida","Rama","Farmacia"]],
+["OSTRA",["Perla","Mar","Bivalvo","Marisco","Comer"]],
+["RECREO",["Patio","Escuela","Jugar","Campana","Tiempo"]],
+["ANCHOA",["Sardina","Pescado","Lata","Comida","Salado"]],
+["FANTASMA",["Sabana","Miedo","Cadenas","Castillo","Espíritu"]],
+["CUADRO",["Museo","Pintor","Óleo","Caballete","Tela"]],
+["GOL",["Pelota","Hacer","Puntuación","Futbol","Arco"]],
+["CIRCO",["Pista","Carpa","Payasos","Trapecista","Domador"]],
+["PINTAR",["Artista","Cuadro","Colores","Pincel","Pared"]],
+["NOCHE",["Día","Oscuridad","Luna","Estrellas","Sol"]],
+["HAMSTER",["Animal","Jaula","Mascota","Rata","Roedor"]],
+["COLCHON",["Cama","Almohada","Acostarse","Sabanas","Dormir"]],
+["SALA DE ESPERA",["Consultorio","Revistas","Paciente","Medico","Asientos"]],
+["CHINA",["Oriental","Amarillo","País","Asia","Muralla"]],
+["FOTOGRAFIA",["Revelar","Rollo","Film","Álbum","Cámara"]],
+["ESPIA",["CIA","Side","Traidor","Secreto","James Bond"]],
+["BRUJULA",["Orientarse","Norte","Aguja","Imantada","Cardinales"]],
+["CALEFACCION",["Invierno","Estufa","Aire","Caldera","Frío"]],
+["RIMMEL",["Ojos","Maquillaje","Cepillo","Cosmético","Pestaña"]],
+["GIRASOL",["Planta","Semillas","Aceite","Flor","Amarillo"]],
+["NASHUA",["Japonesa","Fotocopiadora","Marca","Librería","Maquina"]],
+["LENTES DE CONTACTO",["Duras","Blandas","Anteojos","Colores","Vista"]],
+["GRANERO",["Trigo","Edificio","Silo","Cereales","Campo"]],
+["BEBIDA",["Liquido","Tomar","Agua","Sed","Brindar"]],
+["CIUDAD",["Municipio","Capital","Población","Edificios","Intendente"]],
+["DINERO",["Comprar","Plata","Moneda","Billetes","Guita"]],
+["PELOTA",["Balón","Redonda","Futbol","Bola","Patear"]],
+["BOTELLA",["Tapón","Envase","Recipiente","Vidrio","Frasco"]],
+["ARTISTA",["Pintor","Escultor","Actor","Fama","Premio"]],
+["PAÑUELO",["Nariz","Sonarse","Tela","Mocos","Resfrió"]],
+["DIABLO",["Lucifer","Ángel","Demonio","Infierno","Satanás"]],
+["CUPIDO",["Arco","Flechazo","Amor","Dios","Corazón"]],
+["AZULEJO",["Cerámica","Pared","Baño","Cocina","Decoración"]],
+["MANZANA",["Comer","Sidra","Verde","Rojo","Fruta"]],
+["NIEVE",["Blanca","Agua","Invierno","Esquiar","Frío"]],
+["TELEFONO",["Numero","Llamar","Movicom","Tomo","Ocupado"]],
+["ERUCTO",["Ruido","Bebe","Comer","Boca","Provechito"]],
+["CABALLO",["Estribos","Ensillar","Jinete","Montar","Carrera"]],
+["ESTRIBOS",["Montura","Ensillar","Pies","Espuelas","Caballo"]],
+["BOLEADORAS",["Cazar","Caballo","Lanzar","Indios","Avestruz"]],
+["PARQUIMETRO",["Ficha","Coche","Estacionar","Tiempo","Reloj"]],
+["SURF",["Playa","Tabla","Mar","Olas","Equilibrio"]],
+["EDAD",["Años","Vida","Nacer","Fecha","Tiempo"]],
+["COLUMNA VERTEBRAL",["Esqueleto","Cuerpo","Costillas","Huesos","Sostener"]],
+["GORILA",["Mono","Chimpance","Orangutan","Kingkong","Zoológico"]],
+["PIRAMIDE",["Tumba","Momia","Egipto","Keops","Faraón"]],
+["BATERIA",["Platillos","Instrumento","Música","Ritmo","Bombo"]],
+["PRONOSTICO",["Predicción","Nublado","Lluvia","Temperatura","Tiempo"]],
+["ANDEN",["Tren","Estación","Esperar","Subir","Bajar"]],
+["MATE",["Yerba","Bombilla","Agua","Amargo","Azúcar"]],
+["CIRUJANO",["Hospital","Anestesia","Operación","Doctor","Escalpelo"]],
+["CRITICO",["Película","Opinión","Teatro","Arte","Comentar"]],
+["ANGULO",["Recta","Grado","Geometría","Polígono","Lado"]],
+["BANCO",["Cheque","Cuenta","Cajero","Dinero","Cambio"]],
+["GENIOL",["Aspirina","Dolor","Farmacia","Remedio","Marca"]],
+["PAN",["Harina","Levadura","Galletitas","Sándwich","Tostadas"]],
+["FIESTA",["Cumpleaños","Celebración","Regalos","Amigos","Invitaciones"]],
+["SUGUS",["Caramelo","Masticar","Quiosco","Marca","Golosina"]],
+["FIRMA",["Nombre","Apellido","Rubrica","Autógrafo","Contrato"]],
+["PIJAMA",["Dormir","Cama","Ponerse","Ropa","Camisón"]],
+["ALFOMBRA",["Carpeta","Kalpakian","Piso","Moqueta","Suelo"]],
+["DULCE",["Chocolate","Caramelo","Sabor","Galletitas","Bombón"]],
+["ALMOHADA",["Cama","Dormir","Pluma","Acostarse","Cabeza"]],
+["LUNA",["Noche","Sol","Satélite","Espacio","Estrellas"]],
+["CICATRIZ",["Señal","Marca","Herida","Piel","Huella"]],
+["REPASADOR",["Trapo","Secar","Platos","Cocina","Tela"]],
+["PAYASO",["Circo","Nariz","Zapatones","Bofetada","Reír"]],
+["ALBINO",["Blanco","Ojos","Cara","Piel","Color"]],
+["GELATINA",["Flan","Comer","Postre","Helado","Transparente"]],
+["HUELLA",["Digital","Rastro","Pisada","Señal","Mano"]],
+["OXIGENO",["Respirar","Aire","Atmosfera","Hidrogeno","Gas"]],
+["NAFTA",["Combustible","Surtidor","Auto","Tanque","Estación"]],
+["OLIMPICO",["Atletas","Medallas","Juegos","Competición","Países"]],
+["INODORO",["Caca","Pis","Baño","Agua","Sentarse"]],
+["MEDIALUNA",["Panadería","Factura","Comer","Grasa","Croissant"]],
+["COLOR",["Amarillo","Tojo","Verde","Azul","Marrón"]],
+["ANALISIS",["Sangre","Orina","Laboratorio","Medico","Enfermo"]],
+["ANIMAL",["Vivo","Salvaje","Domestico","Veterinario","Irracional"]],
+["INOCENTE",["Absuelto","Niño","Culpable","Ingenuo","Veredicto"]],
+["MERCENARIO",["Soldado","Guerra","Pago","Extranjero","Militar"]],
+["CORONA",["Rey","Cabeza","Oro","Redonda","Símbolo"]],
+["COCKTAIL",["Alcohol","Trago","Copa","Mezcla","Bebida"]],
+["OBELISCO",["Monumento","Buenos Aires","Corrientes","Símbolo","República"]],
+["SEMANA",["Mes","Cuatro","Tiempo","Siete","Días"]],
+["HELICOPTERO",["Avión","Volar","Rotor","Vertical","Hélice"]],
+["MONSTRUO",["Miedo","Criatura","Asustar","Horrible","Feo"]],
+["CONGRESO",["Cámara","Senado","Gobierno","Diputados","Poder Legislativo"]],
+["TESORO",["Piratas","Mapa","Cofre","Oro","Isla"]],
+["ASADO",["Fuego","Parrilla","Carbón","Carne","Cocinar"]],
+["SUBMARINO",["Barco","Periscopio","Torpedo","Inmersión","Guerra"]],
+["AGUIJON",["Clavar","Abeja","Veneno","Mosquito","Avispa"]],
+["HOSPITAL",["Doctor","Medico","Curar","Internar","Enfermo"]],
+["PUÑAL",["Arma","Mano","Cuchillo","Espada","Daga"]],
+["CAMISA DE FUERZA",["Mangas","Atar","Manicomio","Loco","Demente"]],
+["VOTO",["Sufragio","Presidente","Cuarto Oscuro","Urna","Elecciones"]],
+["ANILLO",["Dedos","Mano","Sortija","Compromiso","Alianza"]],
+["ANESTESIA",["Dolor","Operación","Dormir","Sentir","Medico"]],
+["SILLON",["Respaldo","Cómodo","Asiento","Sentarse","Sofá"]],
+["XUXA",["Brasil","TV","Niños","Paquitas","Pele"]],
+["LAGARTO",["Cocodrilo","Animal","Sol","Reptil","Pequeño"]],
+["LACOSTE",["Chomba","Marca","Ropa","Cocodrilo","Lagarto"]],
+["FLECHA",["Arco","Punta","Lanzar","Ballesta","Indios"]],
+["AIWA",["Grabador","Música","Minicomponente","Marca","Parlantes"]],
+["SHOPPING",["Alto Palermo","Comprar","Unicenter","Negocios","Galería"]],
+["INSOMNIO",["Cama","Dormir","Desvelo","Sueño","Noche"]],
+["VENTANA",["Casa","Pared","Vidrio","Mirar","Luz"]],
+["LANZAR",["Pelota","Jabalina","Tirar","Echar","Arrojar"]],
+["ALMIBAR",["Azúcar","Dulce","Fruta","Lata","Liquido"]],
+["COLADOR",["Te","Agujeros","Filtro","Fideos","Agua"]],
+["MASTIL",["Bandera","Palo","Poste","Izar","Velas"]],
+["DUCHA",["Baño","Canilla","Toallon","Agua","Cuerpo"]],
+["ESTAMPILLA",["Carta","Sobre","Correo","Lamer","Sello"]],
+["BALA",["Cartucho","Pistola","Disparar","Proyectil","Escopeta"]],
+["BOSQUE",["Plantas","Árboles","Animales","Madera","Selva"]],
+["HOGUERA",["Madera","Quemar","Leña","Fuego","Campamento"]],
+["ALARMA",["Robo","Casa","Banco","Atraco","Ladrón"]],
+["HAVANNA",["Alfajor","Marca","Golosina","Mar del Plata","Chocolate"]],
+["HORMIGA",["Insecto","Comer","Jardín","Fila","Plantas"]],
+["SOFTWARE",["Computadora","Programa","Disquette","Lenguaje","Hardware"]],
+["CORBATA",["Vestir","Seda","Camisa","Cuello","Nudo"]],
+["GATILLO",["Dedo","Tirar","Apretar","Disparar","Pistola"]],
+["MARATON",["Carrera","Competencia","Kilómetros","Olimpiadas","Grecia"]],
+["ESCARBADIENTES",["Madera","Palito","Aperitivo","Boca","Hilo dental"]],
+["FLORERO",["Planta","Recipiente","Ramo","Pote","Agua"]],
+["ANZUELO",["Caña","Pescador","Tirar","Cebo","Lombriz"]],
+["ELECTRICIDAD",["Luz","Corriente","Energía","Enchufe","Lámpara"]],
+["UVA",["Vid","Fruta","Parra","Racimo","Vino"]],
+["POKER",["Apostar","Naipes","Juego","Baraja","Cartas"]],
+["SOMBRERO",["Gorra","Casco","Poner","Cabeza","Ala"]],
+["VALIENTE",["Cobarde","Miedo","Defender","Héroe","Salvar"]],
+["CHATARRA",["Autos","Coche","Hierro","Basura","Metal"]],
+["MOCHILA",["Bolso","Hombro","Caminata","Llevar","Espalda"]],
+["MAMADERA",["Leche","Tetina","Comer","Bebe","Chupar"]],
+["DOLAR",["Verde","Dinero","Moneda","EE UU","Plata"]],
+["ADUANA",["Control","Frontera","Pasaporte","Declarar","Contrabando"]],
+["PLAYA",["Arena","Costa","Verano","Mar","Olas"]],
+["PARAGUAS",["Lluvia","Mojado","Tormenta","Abrir","Varillas"]],
+["ASCENSOR",["Edificio","Piso","Botones","Subir","Bajar"]],
+["SEMÁFORO",["Rojo","Verde","Coche","Cruzar","Tráfico"]],
+["LINTERNA",["Oscuridad","Pilas","Luz","Cuevas","Alumbrar"]],
+["LAVAVAJILLAS",["Platos","Cocina","Detergente","Vasos","Electrodoméstico"]],
+["CANGURO",["Australia","Bolsa","Cría","Marsupial","Salto"]],
+["TERMÓMETRO",["Temperatura","Fiebre","Grados","Mercurio","Medir"]],
+["ESPEJO",["Reflejo","Cristal","Mirarse","Baño","Imagen"]],
+["CHIMENEA",["Leña","Humo","Fuego","Invierno","Casa"]],
+["TIBURÓN",["Océano","Aletas","Dientes","Peligro","Pez"]],
+["VOLCÁN",["Lava","Erupción","Cráter","Magma","Montaña"]],
+["LABERINTO",["Salida","Pasillos","Perderse","Camino","Paredes"]],
+["DETECTIVE",["Misterio","Pista","Investigar","Policía","Lupa"]],
+["ASTRONAUTA",["Espacio","Cohete","Luna","Traje","Gravedad"]],
+["FOTOCOPIADORA",["Papel","Tinta","Imprimir","Escáner","Oficina"]],
+["BIBLIOTECA",["Libros","Silencio","Leer","Estanterías","Préstamo"]],
+["DENTISTA",["Dientes","Boca","Caries","Empaste","Consulta"]],
+["FOTÓGRAFO",["Cámara","Retrato","Objetivo","Flash","Fotografía"]],
+["BOMBERO",["Manguera","Incendio","Casco","Rescate","Camión"]],
+["CARPINTERO",["Madera","Sierra","Martillo","Muebles","Serrín"]],
+["PIRATA",["Barco","Tesoro","Parche","Isla","Garfio"]],
+["MALABARISTA",["Circo","Pelotas","Lanzar","Equilibrio","Artista"]],
+["CAMARERO",["Restaurante","Bandeja","Servir","Propina","Menú"]],
+["ASTRÓNOMO",["Estrellas","Planetas","Telescopio","Universo","Galaxia"]],
+["FONTANERO",["Tuberías","Grifo","Fuga","Llave","Desagüe"]],
+["NOTARIO",["Firma","Escritura","Documento","Legal","Testamento"]],
+["PANADERO",["Horno","Masa","Harina","Barra","Madrugar"]],
+["JARDINERO",["Tijeras","Césped","Regar","Flores","Maceta"]],
+["ALPINISTA",["Montaña","Escalar","Cuerda","Cumbre","Nieve"]],
+["SASTRE",["Aguja","Hilo","Traje","Medidas","Tela"]],
+["MURCIÉLAGO",["Alas","Cueva","Noche","Volar","Mamífero"]],
+["PINGÜINO",["Hielo","Antártida","Blanco","Negro","Pico"]],
+["ERIZO",["Pinchos","Bolas","Jardín","Animal","Espinas"]],
+["CAMaleÓN",["Color","Lengua","Reptil","Insectos","Camuflaje"]],
+["AVESTRUZ",["África","Huevos","Corredor","Cuello","Plumas"]],
+["PULPO",["Tentáculos","Mar","Tinta","Ocho","Molusco"]],
+["CASTOR",["Dientes","Madera","Río","Presa","Roedor"]],
+["JIRAFA",["Cuello","Manchas","África","Alto","Sábana"]],
+["RINOCERONTE",["Cuerno","Animal","África","Piel","Grande"]],
+["TORTUGA",["Caparazón","Lenta","Reptil","Huevos","Playa"]],
+["MARIPOSA",["Alas","Oruga","Flor","Polen","Colores"]],
+["GRANIZO",["Tormenta","Hielo","Nubes","Lluvia","Piedras"]],
+["ARCOÍRIS",["Colores","Lluvia","Sol","Cielo","Siete"]],
+["ECLIPSE",["Luna","Sol","Oscuridad","Sombra","Astronomía"]],
+["TSUNAMI",["Olas","Mar","Terremoto","Costa","Inundación"]],
+["BRÚJULA HUMANA",["Norte","Orientarse","Persona","Dirección","Caminar"]],
+["CASCADA",["Agua","Caída","Río","Montaña","Salto"]],
+["GLACIAR",["Hielo","Frío","Montaña","Deshielo","Masa"]],
+["DESIERTO",["Arena","Camello","Sequía","Calor","Dunas"]],
+["PARACAÍDAS",["Saltar","Avión","Aire","Caída","Tela"]],
+["TRAMPOLÍN",["Piscina","Saltar","Rebote","Gimnasia","Altura"]],
+["TOBOGÁN",["Parque","Niños","Deslizarse","Bajar","Juegos"]],
+["HAMACA",["Cuerda","Colgar","Descansar","Balancearse","Jardín"]],
+["CARRUSEL",["Feria","Caballos","Girar","Música","Atracción"]],
+["MÁQUINA DEL TIEMPO",["Pasado","Futuro","Viajar","Años","Ciencia"]],
+["CERRADURA",["Llave","Puerta","Abrir","Metal","Candado"]],
+["CANDADO",["Llave","Cerrar","Bicicleta","Seguridad","Combinación"]],
+["DESTORNILLADOR",["Tornillo","Herramienta","Girar","Punta","Arreglar"]],
+["TALADRO",["Agujero","Pared","Broca","Electricidad","Obra"]],
+["EXTINTOR",["Fuego","Emergencia","Rojo","Apagar","Seguridad"]],
+["GRAPADORA",["Oficina","Papel","Grapas","Unir","Escritorio"]],
+["BRIDA",["Plástico","Cable","Atar","Sujetar","Cierre"]],
+["CALCULADORA",["Números","Sumar","Restar","Pantalla","Operaciones"]],
+["MICROSCOPIO",["Lente","Célula","Laboratorio","Aumentar","Ciencia"]],
+["TELESCOPIO",["Estrellas","Luna","Espacio","Observar","Lente"]],
+["DRON",["Volador","Cámara","Mando","Hélices","Control remoto"]],
+["ROBOT",["Máquina","Automático","Programar","Metal","Inteligencia"]],
+["SATÉLITE",["Órbita","Espacio","Tierra","Comunicaciones","Antena"]],
+["COHETE",["Despegar","Espacio","Combustible","Astronauta","Propulsión"]],
+["RADAR",["Avión","Velocidad","Detectar","Pantalla","Ondas"]],
+["IMPRESORA 3D",["Plástico","Filamento","Diseño","Capas","Fabricar"]],
+["WIFI",["Internet","Router","Conexión","Contraseña","Inalámbrico"]],
+["CONTRASEÑA",["Secreto","Acceso","Cuenta","Seguridad","Iniciar"]],
+["VIDEOLLAMADA",["Cámara","Internet","Hablar","Pantalla","Reunión"]],
+["PODCAST",["Audio","Micrófono","Escuchar","Episodio","Programa"]],
+["SELFIE",["Móvil","Foto","Brazo","Cámara","Autorretrato"]],
+["CARGADOR",["Batería","Enchufe","Móvil","Cable","Electricidad"]],
+["AURICULARES",["Oídos","Música","Sonido","Cable","Escuchar"]],
+["MANDO A DISTANCIA",["Televisión","Botones","Pilas","Canal","Sofá"]],
+["DRAMATURGO",["Teatro","Obra","Escribir","Actores","Guion"]],
+["MIMO",["Silencio","Gestos","Pintura","Teatro","Invisible"]],
+["ILUSIONISTA",["Magia","Truco","Sombrero","Cartas","Público"]],
+["MARIONETA",["Hilos","Muñeco","Teatro","Mover","Títere"]],
+["CARICATURA",["Dibujo","Exagerar","Humor","Retrato","Viñeta"]],
+["ACERTIJO",["Enigma","Resolver","Pregunta","Pensar","Respuesta"]],
+["DISFRAZ",["Carnaval","Vestido","Máscara","Personaje","Fiesta"]],
+["SIRENA",["Mar","Cola","Cantar","Leyenda","Pez"]],
+["UNICORNIO",["Cuerno","Caballo","Mágico","Blanco","Leyenda"]],
+["GENIO",["Lámpara","Deseos","Frotar","Mágico","Aladino"]],
+["ESPEJISMO",["Desierto","Agua","Calor","Ilusión","Ver"]],
+["INVENTOR",["Crear","Ideas","Patente","Máquina","Descubrir"]],
+["NAUFRAGIO",["Barco","Mar","Hundirse","Supervivientes","Isla"]],
+["SECUESTRO",["Raptar","Rescate","Prisionero","Policía","Desaparecer"]],
+["COARTADA",["Mentira","Policía","Delito","Hora","Sospechoso"]],
+["TESTIGO",["Juicio","Declarar","Ver","Juez","Acontecimiento"]],
+["SUBASTA",["Precio","Pujar","Dinero","Vender","Comprador"]],
+["HUELGA",["Trabajo","Protesta","Trabajadores","Salario","Manifestación"]],
+["INVENTARIO",["Lista","Productos","Almacén","Contar","Existencias"]],
+["MUDANZA",["Cajas","Casa","Camión","Trasladar","Muebles"]],
+["REUNIÓN",["Personas","Hablar","Trabajo","Acuerdo","Sala"]],
+["EMBOTELLAMIENTO",["Tráfico","Coches","Carretera","Atasco","Retención"]],
+["COLAPSO",["Caos","Derrumbe","Sistema","Problema","Saturación"]],
+["PROCRASTINAR",["Dejar","Mañana","Aplazar","Tiempo","Pereza"]],
+["DEJA VU",["Sensación","Repetido","Pasado","Recordar","Momento"]],
+["MALENTENDIDO",["Confusión","Hablar","Error","Explicar","Interpretar"]],
+["CASUALIDAD",["Suerte","Coincidencia","Destino","Azar","Imprevisto"]],
+["CONTRADICCIÓN",["Opuesto","Decir","Opinión","Incoherencia","Argumento"]],
+["VERGÜENZA",["Rubor","Tierra","Tragar","Timidez","Público"]],
+["NOSTALGIA",["Recuerdo","Pasado","Añorar","Melancolía","Infancia"]],
+["IMPACIENCIA",["Esperar","Prisa","Nervios","Tiempo","Desesperación"]],
+["GENEROSIDAD",["Compartir","Dar","Ayudar","Desinterés","Regalo"]],
+["TERQUEDAD",["Obstinado","Opinión","Cambiar","Insistir","Cabezonería"]],
+["PACIENCIA",["Esperar","Calma","Tiempo","Tranquilidad","Prisa"]],
+["DESPISTE",["Olvidar","Confusión","Error","Cabeza","Atención"]],
+["EXAGERACIÓN",["Demasiado","Aumentar","Mentira","Historia","Grande"]],
+["SARCASMO",["Ironía","Broma","Burla","Comentario","Humor"]],
+["AMBICIÓN",["Meta","Éxito","Dinero","Objetivo","Deseo"]],
+["DILEMA",["Elegir","Decisión","Dos","Problema","Alternativa"]],
+["PARADOJA",["Contrario","Lógica","Contradicción","Razonamiento","Imposible"]]
+];
+const TIME=90,TN=['Equipo 1 🔴','Equipo 2 🔵'];
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),shuf=a=>{a=a.slice();for(let i=a.length;--i>0;){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={},lastKey='',offs=0;const seen={};
+const uid=()=>Math.random().toString(36).slice(2,10),now=()=>Date.now()+offs,msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),on=k=>peers.some(p=>p.k===k);
+const fresh=()=>({ph:'lobby',v:0,n:0,rounds:2,sc:[0,0],nm:{},tm:{},tms:[[],[]],ix:[0,0],tn:-1,ci:0,dk:[],tl:[]});
+const card=()=>CARDS[S.dk[S.ci%S.dk.length]];
+const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now();pub({h:1,s:S});rend()};
+function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
+ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
+const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'tabu-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
+else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};
+sock.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))}};
+open();setTimeout(()=>{if(!done){done=1;closed=1;rej('timeout')}},15000)})}
+function onPeers(){
+const hs=peers.filter(p=>p.h&&p.s).sort((a,b)=>(b.s.v-a.s.v)||(a.k<b.k?-1:1));
+if(H&&hs.length&&hs[0].k!==K&&hs[0].s.v>=S.v){H=false;pub({h:0,s:null})}
+if(!H){const hp=hs[0];
+if(hp){if(!S||hp.s.v>S.v){S=hp.s;offs=S.t-Date.now()}}
+else if(ready&&roster()[0]&&roster()[0].k===K){H=true;S=S||fresh();pubS()}}
+rend();if(H){proc();hostTick()}}
+async function start(host){N=($('pn').value.trim()||'Jugador').slice(0,18);K=uid();H=host;S=host?fresh():null;ready=0;
+if(host)code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+else{code=$('rc').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(code))return msg('Escribe un código de cinco caracteres.')}
+try{await connect(code);const c1=peers.filter(p=>p.k&&p.m===1).length,c0=peers.filter(p=>p.k&&p.m!==1).length;
+P={k:K,n:N,t:Date.now(),m:c1<c0?1:0,d:{}};ready=1;if(host)pubS();else pub({})}catch(e){H=false;msg(e==='room_full'?'La sala está llena.':host?'No se pudo crear la sala. Inténtalo de nuevo.':'No se pudo entrar. Comprueba el código.')}}
+function startGame(){if(!H)return;const ps=roster().slice(0,8),t0=ps.filter(p=>p.m!==1),t1=ps.filter(p=>p.m===1);if(t0.length<2||t1.length<2)return;
+S.tms=[t0.map(p=>p.k),t1.map(p=>p.k)];S.tm={};ps.forEach(p=>{S.tm[p.k]=p.m===1?1:0;S.nm[p.k]=p.n});
+S.sc=[0,0];S.ix=[0,0];S.tn=-1;S.dk=shuf(CARDS.map((_,i)=>i));S.ci=0;S.total=2*S.rounds*Math.max(t0.length,t1.length);nextTurn()}
+function nextTurn(){S.tn++;if(S.tn>=S.total){S.ph='end';pubS();return}
+const tm=S.tn%2,l=S.tms[tm];let k=null;for(let i=0;i<l.length;i++){const c=l[S.ix[tm]++%l.length];if(on(c)){k=c;break}}
+if(!k){S.ph='end';pubS();return}
+S.n++;S.dsc=k;S.team=tm;S.tl=[];S.dl=0;S.ph='ready';pubS()}
+function proc(){if(!H||!S||(S.ph!=='ready'&&S.ph!=='play'))return;
+for(const p of roster()){const d=p.d||{};if(d.r!==S.n||!d.c)continue;const sk=S.n+p.k;if(seen[sk]===d.c)continue;seen[sk]=d.c;
+const isD=p.k===S.dsc,rival=S.tm[p.k]!==undefined&&S.tm[p.k]!==S.team;
+if(S.ph==='ready'){if(isD&&d.a==='start'){S.ph='play';S.dl=Date.now()+TIME*1000;pubS();return}continue}
+if(d.ci===S.ci&&((isD&&(d.a==='ok'||d.a==='pass'))||(rival&&d.a==='tabu'))){S.tl.push({w:card()[0],r:d.a});if(d.a==='ok')S.sc[S.team]++;if(d.a==='tabu')S.sc[S.team]--;S.ci++;pubS();return}}}
+function hostTick(){if(!H||!S||(S.ph!=='play'&&S.ph!=='ready'))return;
+if((S.ph==='play'&&Date.now()>S.dl)||!on(S.dsc)){S.ph='turnend';S.dl=0;pubS()}}
+function upd(){if(!S||S.ph!=='play')return;const s=Math.max(0,Math.ceil((S.dl-now())/1000)),t=$('tm'),b=$('bar');if(t)t.textContent=s+' s';if(b)b.style.width=s/TIME*100+'%'}
+function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k,t=[0,1].map(i=>ps.filter(p=>(p.m===1?1:0)===i));$('cl').textContent=code;
+$('lp').innerHTML=t.map((l,i)=>'<div class="team"><h4>'+TN[i]+'</h4>'+l.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('')+'</div>').join('');
+$('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';
+$('st').classList.toggle('hidden',!H);$('st').disabled=t[0].length<2||t[1].length<2||ps.length>8;$('rounds').disabled=!H;if(S)$('rounds').value=S.rounds;
+$('lm').textContent=ps.length>8?'Máximo 8 jugadores por partida.':(t[0].length<2||t[1].length<2)?'Cada equipo necesita al menos 2 jugadores.':H?'Ya podéis empezar.':'El anfitrión empezará cuando estéis listos.'}
+function rend(){if(!code)return;if(!S||S.ph==='lobby'){show('lobby');lastKey='';rLobby();return}
+show('game');const me=S.tm[K]!==undefined,isD=K===S.dsc,mine=S.tm[K]===S.team;
+if(S.n!==L.n){L={n:S.n,c:0};if(me)pub({d:{r:S.n}})}
+const key=S.ph+S.n+S.ci;if(key===lastKey){upd();return}lastKey=key;
+const g=$('game'),act=a=>{L.c++;pub({d:{r:S.n,ci:S.ci,a,c:L.c}})},
+sb='<div class="sbd">'+[0,1].map(i=>'<div><span>'+TN[i]+(me&&S.tm[K]===i?' (tú)':'')+'</span><b>'+S.sc[i]+'</b></div>').join('')+'</div>',
+head='<div class="tl"><span>TURNO '+(S.tn+1)+' / '+S.total+'</span><span id="tm"></span></div><div class="meter"><span id="bar"></span></div>',
+tc='<div class="tcard"><div class="w">'+(S.ph==='play'?esc(card()[0]):'')+'</div>'+(S.ph==='play'?card()[1].map(t=>'<div class="t">'+esc(t)+'</div>').join(''):'')+'</div>',
+who='<b>'+esc(S.nm[S.dsc])+'</b> · '+TN[S.team];
+if(S.ph==='end'){const w=S.sc[0]===S.sc[1]?'¡Empate!':'🏆 Gana el '+TN[S.sc[0]>S.sc[1]?0:1];
+g.innerHTML='<span class="pill">PARTIDA TERMINADA</span><h2>'+w+'</h2>'+sb+'<div class="row" style="margin-top:16px">'+(H?'<button class="btn g" id="ag">Jugar otra vez</button>':'<span class="small">Esperando al anfitrión…</span>')+'<button class="btn gh" id="ex">Salir</button></div>';
+if(H)$('ag').onclick=()=>{S.ph='lobby';pubS()};$('ex').onclick=()=>location.reload();return}
+if(S.ph==='turnend'){const pts=S.tl.reduce((a,x)=>a+(x.r==='ok'?1:x.r==='tabu'?-1:0),0);
+g.innerHTML='<span class="pill">FIN DEL TURNO</span><h2>'+who+': '+(pts>0?'+':'')+pts+' puntos</h2>'+(S.tl.length?S.tl.map(x=>'<div class="ln"><span>'+(x.r==='ok'?'✅':x.r==='tabu'?'❌ Tabú':'⏭ Pasada')+'</span><span>'+esc(x.w)+'</span></div>').join(''):'<p class="m">No se jugó ninguna carta.</p>')+sb+(H?'<button class="btn g full" id="nx">'+(S.tn+1>=S.total?'Ver resultado final':'Siguiente turno')+'</button>':'<p class="small">Esperando al anfitrión…</p>');
+if(H)$('nx').onclick=nextTurn;return}
+if(!me){g.innerHTML='<div class="notice">Hay una partida en marcha. Entrarás en la siguiente.</div><p class="m">Ahora describe '+who+'.</p>'+sb;return}
+if(S.ph==='ready'){g.innerHTML='<span class="pill">PREPARADOS</span><h2>Turno de '+who+'</h2>'+(isD?'<p class="m">Describirás palabras sin decir la palabra ni las 5 prohibidas. Tu equipo tiene 90 segundos.</p><button class="btn g big" id="go">¡Empezar!</button>':mine?'<div class="notice good">Tu equipo juega. Prepárate para adivinar en voz alta.</div>':'<div class="notice">Vigila al otro equipo. Verás la carta y podrás pulsar ¡TABÚ! si se les escapa una palabra prohibida.</div>')+sb;
+if(isD)$('go').onclick=()=>act('start');return}
+if(isD){g.innerHTML=head+tc+'<div class="row"><button class="btn g big" id="ok">✓ Acertada</button><button class="btn s big" id="ps">⏭ Pasar</button></div><p class="small">Pulsa ✓ cuando tu equipo diga la palabra exacta.</p>'+sb;
+$('ok').onclick=()=>act('ok');$('ps').onclick=()=>act('pass')}
+else if(!mine){g.innerHTML=head+'<p class="m">Describe '+who+'. Si dice una palabra prohibida, ¡pulsa tabú!</p>'+tc+'<button class="btn r big" id="tb">🚫 ¡TABÚ!</button>'+sb;$('tb').onclick=()=>act('tabu')}
+else g.innerHTML=head+'<h2>¡Adivina la palabra!</h2><div class="notice good">'+who+' está describiendo. Gritad respuestas en voz alta.</div>'+sb;
+upd()}
+$('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
+$('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+$('cp').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>$('cp').textContent='¡Copiado!').catch(()=>{})};
+$('sw').onclick=()=>pub({m:P.m===1?0:1});
+$('st').onclick=startGame;$('rounds').onchange=()=>{if(H){S.rounds=+$('rounds').value;pubS()}};$('lv').onclick=()=>{if(ws)ws.leave();location.reload()};
+setInterval(()=>{hostTick();upd()},1000);addEventListener('beforeunload',()=>{if(ws)ws.leave()});
+})();
+</script></body></html>

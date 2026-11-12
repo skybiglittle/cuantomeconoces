@@ -51,7 +51,9 @@ const genLetters=()=>{const v=4+rnd(2),a=[];for(let i=0;i<v;i++)a.push(pick(VOW)
 const genNums=()=>{const g=[0,1,1,2,2,2,3,4][rnd(8)],sm=shuf([1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10]).slice(0,6-g),bg=shuf([25,50,75,100]).slice(0,g);return{nums:sm.concat(bg),target:101+rnd(899)}};
 const normW=w=>{const s=String(w).toUpperCase().replace(/Ñ/g,'#').normalize('NFD').replace(/[\u0300-\u036f]/g,'');return/^[A-Z]+$/.test(s)?s:null};
 function checkWord(w,letters){const n=normW(w);if(!n)return'Solo letras (sin Ñ ni símbolos).';if(n.length<2)return'Mínimo 2 letras.';const pool=letters.slice();for(const c of n){const k=pool.indexOf(c);if(k<0)return'No puedes usar «'+c+'»: no está o ya la has gastado.';pool.splice(k,1)}return''}
-const DICT_URL=['diccionario.txt','palabras.txt','dic.txt']; // archivo de palabras (una por línea) junto a este HTML
+// NO SE USA. AL FINAL LO TENGO EN OTRA CARPETA const DICT_URL=['diccionario.txt','palabras.txt','dic.txt']; // archivo de palabras (una por línea) junto a este HTML
+const DICT_URL=['diccionario/español.txt']; // archivo de palabras (una por línea)
+      
 const DICT=new Set();let DREADY=0;
 const setDstat=t=>document.querySelectorAll('.ds').forEach(e=>e.textContent=t);
 const inDict=w=>{const n=normW(w);return!!n&&DICT.has(n.toLowerCase())};

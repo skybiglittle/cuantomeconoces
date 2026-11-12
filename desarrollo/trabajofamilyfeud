@@ -1,0 +1,668 @@
+le digo a claude que me mejore esto
+Quiero que continúes el desarrollo de una web de **Family Feud multijugador en tiempo real** a partir del archivo HTML que te adjunto.
+
+## CONTEXTO DEL PROYECTO
+
+Estoy creando un juego estilo **Family Feud / 100 españoles dijeron**, pensado para jugar con varias personas desde distintos móviles u ordenadores.
+
+La web actual ya tiene:
+
+- Pantalla inicial para crear una sala.
+- Código de sala de 5 caracteres.
+- Posibilidad de unirse a una sala.
+- Sistema de anfitrión (host).
+- Lobby con jugadores.
+- Reparto automático entre equipo azul 🔵 y equipo rojo 🔴.
+- Comunicación mediante **WebSocket**.
+- Estado de partida sincronizado entre jugadores.
+- Preguntas con respuestas y puntuaciones.
+- Enfrentamiento inicial.
+- Turnos.
+- Strikes ❌.
+- Robo 🔥.
+- Multiplicadores x1, x2 y x3.
+- Puntuaciones.
+- 5 rondas.
+- Fast Money.
+- Pantalla de ganador.
+- Diseño responsive para ordenador y móvil.
+
+## ARCHIVO ACTUAL
+
+El archivo que te adjunto es la versión actual de la web. **No empieces desde cero y no sustituyas la arquitectura sin necesidad.**
+
+Analiza primero el código completo y entiende cómo funciona.
+
+Actualmente el frontend utiliza:
+
+```text
+WebSocket
+localStorage
+HTML
+CSS
+JavaScript vanilla
+```
+
+La conexión WebSocket se hace contra el mismo host de la página:
+
+```javascript
+const proto=location.protocol==='https:'?'wss':'ws';
+const wsUrl=(location.host?`${proto}://${location.host}`:'ws://localhost:8080');
+ws=new WebSocket(wsUrl);
+```
+
+Por tanto, el proyecto necesita un servidor WebSocket compatible.
+
+## IMPORTANTE: OBJETIVO PRINCIPAL
+
+Quiero que me ayudes a **seguir desarrollando y mejorando este juego**, manteniendo el funcionamiento multijugador.
+
+No quiero simplemente una explicación teórica.
+
+Cuando te pida una modificación:
+
+1. Analiza primero el código existente.
+2. Dime brevemente qué vas a cambiar.
+3. Haz los cambios directamente en el código.
+4. Devuélveme el código completo actualizado cuando sea necesario.
+5. No elimines funcionalidades que ya funcionan.
+6. Mantén la compatibilidad con el sistema WebSocket.
+7. Si para una función hace falta modificar también el servidor, indícalo y proporciona también el código necesario del servidor.
+8. Evita dependencias innecesarias.
+9. Prioriza una experiencia de juego sencilla, visual y divertida.
+
+## ESTADO ACTUAL DEL JUEGO
+
+La estructura principal es:
+
+```text
+INICIO
+ ↓
+Crear sala / Unirse
+ ↓
+LOBBY
+ ↓
+Mínimo 4 jugadores
+ ↓
+PARTIDA
+ ↓
+5 RONDAS
+ ↓
+FAST MONEY
+ ↓
+GANADOR
+```
+
+Los equipos son:
+
+🔵 Equipo Azul  
+🔴 Equipo Rojo
+
+El anfitrión controla actualmente buena parte de la partida.
+
+## CÓDIGO IMPORTANTE
+
+El estado de partida tiene aproximadamente esta estructura:
+
+```javascript
+{
+  phase: 'lobby',
+  players: [],
+  scores: {
+    blue: 0,
+    red: 0
+  },
+  round: 0,
+  questionIndex: 0,
+  currentTeam: 'blue',
+  board: [false,false,false,false,false],
+  strikes: 0,
+  target: 300,
+  faceoff: {
+    blue: null,
+    red: null
+  },
+  faceoffWinner: null,
+  roundPoints: 0,
+  roundLocked: false,
+  fastMoney: {
+    active: false,
+    player: null,
+    answers: [],
+    score: 0,
+    index: 0
+  }
+}
+```
+
+Las preguntas tienen esta estructura:
+
+```javascript
+{
+  mult: 1,
+  q: 'Pregunta',
+  a: [
+    ['Respuesta 1', 35],
+    ['Respuesta 2', 25],
+    ['Respuesta 3', 18],
+    ['Respuesta 4', 12],
+    ['Respuesta 5', 10]
+  ]
+}
+```
+
+## WEBSOCKET
+
+El cliente ya utiliza mensajes como:
+
+```javascript
+{
+  type: 'join',
+  room: ...,
+  name: ...,
+  host: ...
+}
+```
+
+y recibe:
+
+```javascript
+{
+  type: 'joined'
+}
+```
+
+o:
+
+```javascript
+{
+  type: 'state',
+  state: ...
+}
+```
+
+También envía:
+
+```javascript
+{
+  type: 'set_state',
+  room: ...,
+  state: state
+}
+```
+
+Quiero que mantengas este concepto si no existe una razón importante para cambiarlo.
+
+## COSAS QUE QUIERO EVITAR
+
+No quiero:
+
+- Reinventar todo el proyecto.
+- Convertirlo en React/Vue/etc. salvo que yo lo pida.
+- Eliminar WebSockets.
+- Hacer que cada jugador tenga una partida independiente.
+- Depender de localStorage para sincronizar la partida.
+- Romper el sistema de salas.
+- Eliminar el diseño actual sin motivo.
+- Añadir muchas librerías innecesarias.
+
+## SI DETECTAS ERRORES
+
+Si al analizar el código encuentras errores importantes, señálalos y corrígelos cuando sea seguro hacerlo.
+
+Por ejemplo, comprueba especialmente:
+
+- Sincronización entre jugadores.
+- Control del host.
+- Cambio de rondas.
+- Sistema de strikes.
+- Sistema de robo.
+- Puntuaciones.
+- Fast Money.
+- Desconexiones.
+- Entrada y salida de jugadores.
+- Reconexión.
+- Salas inexistentes.
+- Dos hosts.
+- Jugadores duplicados.
+- Estado desincronizado.
+
+## MUY IMPORTANTE SOBRE EL SERVIDOR
+
+El HTML actual espera encontrar un servidor WebSocket en el mismo dominio.
+
+Si estoy ejecutándolo en local, puede utilizar:
+
+```text
+ws://localhost:8080
+```
+
+Si está publicado mediante HTTPS, debe utilizar:
+
+```text
+wss://...
+```
+
+Quiero que, si hace falta, me prepares también un servidor Node.js sencillo con `ws` para que varias personas puedan conectarse realmente a la misma sala.
+
+La arquitectura ideal sería:
+
+```text
+              ┌──────────────────┐
+              │  SERVIDOR NODE   │
+              │    WEBSOCKET     │
+              └────────┬─────────┘
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+       Móvil 1       Móvil 2      Móvil 3
+          │            │            │
+        🔵             🔴           🔵
+```
+
+El servidor debe ser quien mantenga el estado real de cada sala cuando sea necesario, en lugar de confiar únicamente en el navegador de un jugador.
+
+## ESTILO DE LA WEB
+
+Quiero mantener un estilo:
+
+- Moderno.
+- Oscuro.
+- Tipo programa de televisión.
+- Grandes puntuaciones.
+- Colores azul 🔵 y rojo 🔴.
+- Animaciones cuando tenga sentido.
+- Muy fácil de usar desde móvil.
+- Botones grandes.
+- Información clara.
+- Sensación de concurso de televisión.
+
+## CÓMO QUIERO QUE TRABAJES
+
+Cuando te diga algo como:
+
+> "Añade un temporizador"
+
+no quiero que simplemente me expliques cómo hacerlo.
+
+Quiero que:
+
+1. Localices dónde encaja en el código.
+2. Implementes la función.
+3. Mantengas todo lo demás.
+4. Me entregues el código necesario.
+
+Si una modificación requiere varios archivos, dime claramente:
+
+```text
+📄 index.html
+📄 server.js
+📄 package.json
+```
+
+y proporciona cada archivo completo o las modificaciones exactas necesarias.
+
+Si hay una decisión de diseño importante, elige la opción más sencilla y profesional y explícame brevemente por qué.
+
+## PRIORIDAD
+
+La prioridad absoluta es:
+
+**Que varias personas puedan entrar desde dispositivos diferentes, compartir una sala y jugar realmente juntos en tiempo real.**
+
+Después, iremos añadiendo mejoras de jugabilidad, diseño, sonidos, animaciones, preguntas, estadísticas, etc.
+
+Empieza analizando el archivo que te he proporcionado y dime:
+
+1. Qué partes ya están implementadas.
+2. Qué partes dependen del servidor y todavía faltan.
+3. Qué errores o problemas importantes detectas.
+4. Qué recomendarías hacer como siguiente paso.
+
+**No borres ni reemplaces el proyecto actual. Quiero continuar sobre él.**
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Family Feud — Multijugador PRO</title>
+<style>
+:root{--bg:#070b16;--panel:#10182b;--panel2:#151f36;--line:#263554;--text:#f4f7ff;--muted:#9aa8c7;--blue:#2d7dff;--red:#ff405c;--gold:#ffd35a;--green:#37d39a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#142448 0,#070b16 48%);color:var(--text);font-family:Inter,system-ui,Segoe UI,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:12px 18px;font-weight:800;color:#fff;background:var(--blue)}button.secondary{background:#27334f}button.red{background:var(--red)}button.gold{background:#b98b16}button:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1100px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}.brand{font-size:27px;font-weight:950;letter-spacing:.5px}.badge{padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:13px}
+.card{background:rgba(16,24,43,.94);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 18px 55px #0005;margin-bottom:16px}
+h1,h2,h3{margin-top:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+input,select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:#0a1121;color:#fff;outline:none}.stack>*{margin-bottom:10px}
+.small{color:var(--muted);font-size:14px}.center{text-align:center}.hidden{display:none!important}
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.player{padding:12px;border:1px solid var(--line);border-radius:13px;background:#0b1325}.teamBlue{border-color:#236dff66}.teamRed{border-color:#ff405c66}
+.teambar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px}.team{border-radius:17px;padding:15px;background:#0b1325;border:2px solid var(--line)}.team.blue{border-color:#2878ff}.team.red{border-color:#ff405c}.score{font-size:38px;font-weight:950}
+.board{background:#08101f;border:1px solid var(--line);border-radius:18px;padding:22px}.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.answer{min-height:66px;border:1px solid #334463;background:#101a2e;border-radius:14px;display:flex;align-items:center;justify-content:space-between;padding:13px 18px;font-size:20px;font-weight:900}.answer.revealed{background:#17283b;border-color:#5c769f}.answer .pts{color:var(--gold);font-size:22px}.x{font-size:38px;font-weight:1000;color:var(--red);text-align:center;padding:8px}
+.control{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.question{font-size:27px;font-weight:950;margin:4px 0 18px}.turn{padding:10px 13px;border-radius:10px;background:#17233a;display:inline-block;color:#dbe6ff;font-weight:800}.hostOnly{border-left:3px solid var(--gold);padding-left:12px}
+.log{max-height:180px;overflow:auto;font-size:13px;color:var(--muted);line-height:1.5}
+@media(max-width:700px){.grid,.grid3,.teambar,.answers{grid-template-columns:1fr}.wrap{padding:12px}.card{padding:16px}.question{font-size:21px}.score{font-size:31px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">👨‍👩‍👧‍👦 FAMILY FEUD <span style="color:var(--gold)">PRO</span></div><div class="badge" id="roomBadge">Sin sala</div></div>
+
+  <section id="home" class="card">
+    <h1>El juego de las encuestas</h1>
+    <p class="small">Crea una sala, comparte el código y juega por equipos desde móviles diferentes.</p>
+    <div class="grid">
+      <div class="stack">
+        <h3>Crear sala</h3>
+        <input id="nameCreate" placeholder="Tu nombre" maxlength="18">
+        <select id="target"><option value="300">300 puntos</option><option value="200">200 puntos</option><option value="500">500 puntos</option></select>
+        <button onclick="createRoom()">Crear sala</button>
+      </div>
+      <div class="stack">
+        <h3>Unirse</h3>
+        <input id="nameJoin" placeholder="Tu nombre" maxlength="18">
+        <input id="roomJoin" placeholder="Código de sala" maxlength="5">
+        <button class="secondary" onclick="joinRoom()">Entrar en sala</button>
+      </div>
+    </div>
+    <p id="homeMsg" class="small"></p>
+  </section>
+
+  <section id="lobby" class="card hidden">
+    <h2>Sala <span id="lobbyCode"></span></h2>
+    <p class="small">El anfitrión inicia cuando haya al menos 4 jugadores. Los equipos se reparten automáticamente.</p>
+    <div class="players" id="players"></div>
+    <div class="control" style="margin-top:16px">
+      <button id="startBtn" onclick="startGame()">Empezar partida</button>
+      <button class="secondary" onclick="copyRoom()">Copiar código</button>
+    </div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="teambar">
+      <div class="team blue"><div>🔵 EQUIPO AZUL</div><div class="score" id="blueScore">0</div></div>
+      <div class="team red"><div>🔴 EQUIPO ROJO</div><div class="score" id="redScore">0</div></div>
+    </div>
+    <div class="card">
+      <div class="control" style="justify-content:space-between">
+        <span class="turn" id="turnInfo"></span>
+        <span class="badge" id="roundInfo"></span>
+      </div>
+      <div class="board" style="margin-top:14px">
+        <div class="question" id="question"></div><div id="faceoff" class="turn"></div>
+        <div class="small" id="boardHint"></div><div id="multiplier" class="badge" style="margin-top:8px"></div>
+        <div class="answers" id="answers"></div>
+        <div class="x" id="strikes"></div>
+      </div>
+      <div class="card" style="margin-top:15px;background:#0b1324">
+        <div class="control" id="controls"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" class="card hidden center">
+    <h1 id="winnerTitle"></h1>
+    <p id="winnerText"></p>
+    <button onclick="backToLobby()">Volver a la sala</button>
+  </section>
+
+  <section class="card">
+    <h3>Jugadores</h3><div class="players" id="livePlayers"></div>
+  </section>
+</div>
+
+<script>
+const PREFIX='cmb-familyfeud-';
+const KEY='ff_session_v1';
+let ws=null, me=null, room='', host=false, state=null;
+
+const QUESTIONS=[
+ {mult:1,q:'¿Qué cosa hace la gente justo después de despertarse?',a:[['Mirar el móvil',35],['Ir al baño',25],['Lavarse la cara / dientes',18],['Desayunar',12],['Ducharse',10]]},
+ {mult:1,q:'¿Qué comida suele pedir la gente a domicilio?',a:[['Pizza',36],['Hamburguesa',24],['Sushi',16],['Kebab',13],['Pollo',11]]},
+ {mult:1,q:'¿Qué llevas normalmente a la playa?',a:[['Toalla',30],['Crema solar',25],['Bañador',18],['Agua',15],['Gafas de sol',12]]},
+ {mult:2,q:'¿Qué animal da más miedo encontrar en casa?',a:[['Serpiente',28],['Araña',27],['Rata',19],['Cucaracha',17],['Ratón',9]]},
+ {mult:2,q:'¿Qué haces cuando estás aburrido?',a:[['Mirar series',29],['Mirar el móvil',25],['Jugar',20],['Escuchar música',15],['Dormir',11]]},
+ {mult:2,q:'¿Qué se te puede olvidar antes de salir de casa?',a:[['Llaves',34],['Móvil',27],['Cartera',18],['Abrigo',11],['Gafas',10]]},
+ {mult:3,q:'¿Qué cosa suele haber en una nevera?',a:[['Leche',25],['Huevos',22],['Agua',19],['Fruta',18],['Queso',16]]},
+ {mult:3,q:'¿Qué haces cuando llegas tarde?',a:[['Correr',30],['Pedir disculpas',24],['Avisar',20],['Poner una excusa',15],['Entrar en silencio',11]]},
+ {mult:3,q:'¿Qué regalo es fácil de hacer a última hora?',a:[['Dinero',31],['Chocolate',25],['Flores',19],['Tarjeta',14],['Perfume',11]]},
+ {mult:3,q:'¿Qué suele hacer la gente los domingos?',a:[['Descansar',30],['Comer en familia',23],['Ver películas',20],['Salir',16],['Dormir mucho',11]]}
+];
+
+function $(id){return document.getElementById(id)}
+function code(){return Math.random().toString(36).slice(2,7).toUpperCase()}
+function nameClean(v){return (v||'Jugador').trim().slice(0,18)||'Jugador'}
+function connect(){
+  const proto=location.protocol==='https:'?'wss':'ws';
+  const wsUrl=(location.host?`${proto}://${location.host}`:'ws://localhost:8080');
+  ws=new WebSocket(wsUrl);
+  ws.onopen=()=>send({type:'join',room:PREFIX+room.toLowerCase(),name:me,host});
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}handle(m)};
+  ws.onclose=()=>setTimeout(()=>room&&connect(),1500);
+}
+function send(x){if(ws&&ws.readyState===1)ws.send(JSON.stringify(x))}
+function createRoom(){me=nameClean($('nameCreate').value);room=code();host=true;localStorage.setItem(KEY,JSON.stringify({room,me,host}));connect()}
+function joinRoom(){me=nameClean($('nameJoin').value);room=($('roomJoin').value||'').trim().toUpperCase();if(room.length!==5){$('homeMsg').textContent='El código debe tener 5 caracteres.';return}host=false;localStorage.setItem(KEY,JSON.stringify({room,me,host}));connect()}
+function handle(m){
+  if(m.type==='joined'){showLobby();return}
+  if(m.type==='state'){state=m.state;render();return}
+  if(m.type==='error')alert(m.message||'Error');
+}
+function showLobby(){$('home').classList.add('hidden');$('lobby').classList.remove('hidden');$('game').classList.add('hidden');$('result').classList.add('hidden');$('roomBadge').textContent='Sala '+room;$('lobbyCode').textContent=room}
+function showGame(){$('home').classList.add('hidden');$('lobby').classList.add('hidden');$('game').classList.remove('hidden');$('result').classList.add('hidden')}
+function render(){
+ if(!state)return;
+ $('roomBadge').textContent='Sala '+room;
+ const ps=state.players||[];
+ $('players').innerHTML=ps.map(p=>`<div class="player ${p.team==='blue'?'teamBlue':'teamRed'}">${p.name} ${p.host?'⭐':''}<br><span class="small">${p.team==='blue'?'🔵 Azul':'🔴 Rojo'}</span></div>`).join('');
+ $('livePlayers').innerHTML=ps.map(p=>`<div class="player ${p.team==='blue'?'teamBlue':'teamRed'}">${p.name} — ${p.team==='blue'?'🔵':'🔴'}</div>`).join('');
+
+ if(state.phase==='lobby'){
+   showLobby(); $('startBtn').disabled=!host||ps.length<4; return;
+ }
+ if(state.phase==='finished'){
+   $('winnerTitle').textContent='🏆 '+(state.scores.blue>state.scores.red?'¡Gana Azul!':state.scores.red>state.scores.blue?'¡Gana Rojo!':'¡Empate!');
+   $('winnerText').textContent=`Resultado final: Azul ${state.scores.blue} — Rojo ${state.scores.red}`;
+   $('result').classList.remove('hidden'); $('game').classList.add('hidden'); return;
+ }
+
+ showGame();
+ $('blueScore').textContent=state.scores.blue;
+ $('redScore').textContent=state.scores.red;
+
+ if(state.phase==='fastmoney'){
+   $('turnInfo').textContent='⚡ FAST MONEY';
+   $('roundInfo').textContent='Ronda final';
+   $('question').textContent=state.fastMoney.player?`Jugador: ${state.fastMoney.player}`:'Elige al jugador';
+   $('faceoff').textContent=state.fastMoney.player?`Pregunta ${Math.min(state.fastMoney.index+1,5)} de 5`:'';
+   $('multiplier').textContent='Objetivo: 200 puntos';
+   $('answers').innerHTML=state.fastMoney.answers.map((x,i)=>`<div class="answer revealed"><span>${i+1}. ${x}</span></div>`).join('');
+   $('strikes').textContent='';
+   $('controls').innerHTML=host
+     ? `<button onclick="startFastMoney()">Elegir jugador</button><button class="gold" onclick="fastAnswer()" ${state.fastMoney.player?'':'disabled'}>Siguiente pregunta</button>`
+     : `<span class="small">Fast Money en curso.</span>`;
+   return;
+ }
+
+ const q=QUESTIONS[state.questionIndex];
+ $('turnInfo').textContent=state.phase==='faceoff'?'⚡ ENFRENTAMIENTO':
+   state.phase==='steal'?'🔥 ROBO':
+   (state.currentTeam==='blue'?'Turno del EQUIPO AZUL':'Turno del EQUIPO ROJO');
+ $('roundInfo').textContent=`Ronda ${state.round+1} / 5`;
+ $('question').textContent=q.q;
+ $('faceoff').textContent=state.phase==='faceoff'?'Los dos equipos compiten por encontrar la respuesta mejor situada.':'';
+ $('multiplier').textContent=`Multiplicador de esta ronda: x${q.mult}`;
+ $('boardHint').textContent=`Puntos de la ronda: ${state.roundPoints}`;
+ $('answers').innerHTML=q.a.map((x,i)=>`<div class="answer ${state.board[i]?'revealed':''}"><span>${state.board[i]?x[0]:'???'}</span><span class="pts">${state.board[i]?x[1]:'—'}</span></div>`).join('');
+ $('strikes').textContent='✕ '.repeat(state.strikes||0);
+
+ let c='';
+ if(host&&state.phase==='faceoff'){
+   const blue=state.players.find(p=>p.team==='blue'), red=state.players.find(p=>p.team==='red');
+   c=`<span class="hostOnly small">Pregunta a los dos jugadores y pulsa el equipo cuya respuesta coincida.</span>
+   <button onclick="answerFaceoff('blue','${blue?blue.name:'Azul'}')">🔵 Respuesta Azul</button>
+   <button class="red" onclick="answerFaceoff('red','${red?red.name:'Rojo'}')">🔴 Respuesta Rojo</button>`;
+ }else if(host&&state.phase==='playing'){
+   c=`<button onclick="revealAnswer()">Revelar respuesta</button>
+   <button class="red" onclick="strike()">❌ Strike</button>
+   <button class="gold" onclick="nextRound()">${state.strikes>=3?'Pasar al ROBO':'Cerrar ronda'}</button>`;
+ }else if(host&&state.phase==='steal'){
+   c=`<button class="gold" onclick="steal()">🔥 Resolver ROBO</button>`;
+ }else c=`<span class="small">El anfitrión controla el tablero. Podéis responder en voz alta.</span>`;
+ $('controls').innerHTML=c;
+}
+
+function baseState(){
+ return {
+  phase:'lobby',players:[],scores:{blue:0,red:0},round:0,questionIndex:0,
+  currentTeam:'blue',board:[false,false,false,false,false],strikes:0,target:300,
+  faceoff:{blue:null,red:null},faceoffWinner:null,roundPoints:0,roundLocked:false,
+  fastMoney:{active:false,player:null,answers:[],score:0,index:0}
+ };
+}
+function hostStateMutation(fn){if(!host||!state)return;fn();broadcast()}
+function broadcast(){send({type:'set_state',room:PREFIX+room.toLowerCase(),state})}
+
+function startGame(){
+ hostStateMutation(()=>{
+  if(state.players.length<4)return;
+  state.phase='faceoff'; state.round=0; state.questionIndex=0;
+  state.currentTeam='blue'; state.board=[false,false,false,false,false];
+  state.strikes=0; state.faceoff={blue:null,red:null}; state.faceoffWinner=null;
+  state.roundPoints=0; state.roundLocked=false;
+ });
+}
+
+function answerFaceoff(team,playerName){
+ hostStateMutation(()=>{
+  if(state.phase!=='faceoff'||state.faceoff[team])return;
+  const q=QUESTIONS[state.questionIndex];
+  let ans=prompt('Escribe la respuesta que dio '+playerName+'.\nDebe coincidir exactamente con una respuesta del tablero.');
+  if(ans===null)return;
+  let idx=q.a.findIndex(x=>x[0].toLowerCase()===ans.trim().toLowerCase());
+  state.faceoff[team]={player:playerName,index:idx};
+  if(idx>=0){
+    state.board[idx]=true;
+    state.faceoffWinner=team;
+    state.currentTeam=team;
+    state.roundPoints=q.a[idx][1];
+    state.phase='playing';
+    state.strikes=0;
+  }
+ });
+}
+
+function revealAnswer(){
+ hostStateMutation(()=>{
+  if(state.phase!=='playing')return;
+  let i=state.board.findIndex(v=>!v); if(i<0)return;
+  state.board[i]=true;
+  state.roundPoints+=QUESTIONS[state.questionIndex].a[i][1];
+ });
+}
+
+function strike(){
+ hostStateMutation(()=>{
+  if(state.phase!=='playing')return;
+  state.strikes++;
+  if(state.strikes>=3)state.roundLocked=true;
+ });
+}
+
+function steal(){
+ hostStateMutation(()=>{
+  if(state.phase!=='steal')return;
+  const q=QUESTIONS[state.questionIndex];
+  let ans=prompt('ROBO: escribe la respuesta dada por el equipo rival.');
+  if(ans===null)return;
+  let idx=q.a.findIndex(x=>x[0].toLowerCase()===ans.trim().toLowerCase());
+  if(idx>=0){
+    state.board[idx]=true;
+    state.roundPoints+=q.a[idx][1];
+    state.scores[state.currentTeam]+=state.roundPoints*q.mult;
+  }else{
+    const other=state.currentTeam==='blue'?'red':'blue';
+    state.scores[other]+=state.roundPoints*q.mult;
+  }
+  finishRoundInternal();
+ });
+}
+
+function nextRound(){
+ hostStateMutation(()=>{
+  if(state.phase==='playing' && state.strikes>=3){
+    state.currentTeam=state.currentTeam==='blue'?'red':'blue';
+    state.phase='steal';
+    return;
+  }
+  if(state.phase==='playing'){
+    state.scores[state.currentTeam]+=state.roundPoints*QUESTIONS[state.questionIndex].mult;
+    finishRoundInternal();
+  }
+ });
+}
+
+function finishRoundInternal(){
+ state.round++;
+ if(state.scores.blue>=state.target||state.scores.red>=state.target){state.phase='finished';return;}
+ if(state.round>=5){
+   state.phase='fastmoney';
+   state.fastMoney={active:true,player:null,answers:[],score:0,index:0};
+   return;
+ }
+ state.questionIndex=(state.questionIndex+1)%QUESTIONS.length;
+ state.currentTeam=state.round%2===0?'blue':'red';
+ state.board=[false,false,false,false,false];
+ state.strikes=0; state.roundPoints=0; state.roundLocked=false;
+ state.faceoff={blue:null,red:null}; state.faceoffWinner=null;
+ state.phase='faceoff';
+}
+
+function startFastMoney(){
+ hostStateMutation(()=>{
+  if(state.phase!=='fastmoney')return;
+  let p=prompt('Nombre del jugador que hará Fast Money:');
+  if(!p)return;
+  state.fastMoney.player=p; state.fastMoney.index=0; state.fastMoney.answers=[]; state.fastMoney.score=0;
+ });
+}
+
+function fastAnswer(){
+ hostStateMutation(()=>{
+  if(!state.fastMoney.player)return;
+  const pool=[
+   ['Algo que haces al levantarte',['mirar el móvil','baño','lavarse','desayunar'],35],
+   ['Una comida que pedirías a domicilio',['pizza','hamburguesa','sushi','kebab'],35],
+   ['Algo que llevas a la playa',['toalla','crema','bañador','agua'],30],
+   ['Un animal que da miedo',['araña','serpiente','rata','cucaracha'],30],
+   ['Algo que haces cuando estás aburrido',['móvil','series','jugar','dormir'],25]
+  ];
+  const item=pool[state.fastMoney.index];
+  let ans=prompt(item[0]+':');
+  if(ans===null)return;
+  state.fastMoney.answers.push(ans);
+  if(item[1].some(x=>ans.toLowerCase().includes(x)))state.fastMoney.score+=item[2];
+  state.fastMoney.index++;
+  if(state.fastMoney.index>=pool.length){
+    state.scores[state.currentTeam]+=state.fastMoney.score;
+    state.phase='finished';
+  }
+ });
+}
+
+function finishGame(){hostStateMutation(()=>state.phase='finished')}
+function backToLobby(){
+ if(host)hostStateMutation(()=>{
+   const ps=state.players||[];
+   state=baseState(); state.players=ps;
+ });
+}
+function copyRoom(){navigator.clipboard?.writeText(room);alert('Código copiado: '+room)}
+function boot(){
+ const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){me=s.me;room=s.room;host=s.host}
+}
+boot();
+
+</script>
+</body>
+</html>

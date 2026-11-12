@@ -1,0 +1,2589 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reacción en Cadena — CuántoMeConoces</title>
+<style>
+:root{
+  --bg:#080b14;
+  --panel:#111727;
+  --panel2:#181f33;
+  --line:#303953;
+  --txt:#f6f7fb;
+  --muted:#aab3c9;
+  --a:#ff365f;
+  --b:#00d4ff;
+  --gold:#ffd166;
+  --ok:#37d68a;
+  --bad:#ff5b70
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:radial-gradient(circle at 50% -10%,#29304e 0,#080b14 48%);
+  color:var(--txt);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+  min-height:100vh
+}
+
+.app{
+  width:min(100%,900px);
+  margin:auto;
+  padding:16px
+}
+
+.top{
+  text-align:center;
+  padding:10px 0 16px
+}
+
+.brand{
+  font-weight:950;
+  font-size:clamp(1.7rem,7vw,2.6rem);
+  letter-spacing:-1.5px
+}
+
+.brand span{
+  color:var(--b)
+}
+
+.sub{
+  color:var(--muted)
+}
+
+.screen{
+  display:none
+}
+
+.screen.on{
+  display:block
+}
+
+.card{
+  background:rgba(17,23,39,.96);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 20px 70px #0007;
+  margin-bottom:14px
+}
+
+h1,h2,h3{
+  margin:0 0 12px
+}
+
+p{
+  line-height:1.45
+}
+
+.muted{
+  color:var(--muted)
+}
+
+label{
+  display:block;
+  font-weight:800;
+  margin-top:10px
+}
+
+input{
+  width:100%;
+  background:#0b101c;
+  color:var(--txt);
+  border:1px solid #3b4562;
+  border-radius:14px;
+  padding:14px;
+  font-size:1rem;
+  outline:0;
+  margin-top:7px
+}
+
+button{
+  border:0;
+  border-radius:14px;
+  padding:14px 16px;
+  background:linear-gradient(135deg,#ff365f,#9b3dff);
+  color:#fff;
+  font-weight:900;
+  font-size:1rem;
+  cursor:pointer;
+  width:100%;
+  margin-top:9px
+}
+
+button.alt{
+  background:#252d45
+}
+
+button.ok{
+  background:var(--ok);
+  color:#07130d
+}
+
+button.warn{
+  background:#b88518
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+
+.team{
+  background:#151b2c;
+  border:1px solid var(--line);
+  padding:14px;
+  border-radius:18px
+}
+
+.team.blue{
+  border-color:#007c99
+}
+
+.team.red{
+  border-color:#8e2544
+}
+
+.team h3{
+  margin-bottom:6px
+}
+
+.scoreboard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:12px
+}
+
+.score{
+  padding:12px;
+  border-radius:15px;
+  background:#151b2c;
+  border:1px solid var(--line);
+  text-align:center
+}
+
+.score b{
+  display:block;
+  font-size:1.5rem;
+  color:var(--gold)
+}
+
+.phase{
+  display:inline-block;
+  background:#262e47;
+  border:1px solid #3a4666;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:.8rem;
+  font-weight:900;
+  margin-bottom:10px
+}
+
+.turn{
+  font-weight:900;
+  color:var(--b)
+}
+
+.timer{
+  height:10px;
+  background:#252d43;
+  border-radius:99px;
+  overflow:hidden;
+  margin:14px 0
+}
+
+.timer i{
+  display:block;
+  width:100%;
+  height:100%;
+  background:linear-gradient(
+    90deg,
+    var(--ok),
+    var(--gold),
+    var(--a)
+  );
+  transition:width .1s linear
+}
+
+.choices{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.choice{
+  background:#20283d
+}
+
+.choice.correct{
+  background:var(--ok);
+  color:#06130c
+}
+
+.choice.wrong{
+  background:var(--bad)
+}
+
+.chain{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin:18px 0
+}
+
+.node{
+  padding:11px 13px;
+  background:#232b42;
+  border:1px solid #36415d;
+  border-radius:13px;
+  font-weight:900
+}
+
+.node.hidden{
+  color:#8e98b2;
+  background:#151b2b
+}
+
+.node.active{
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px #ffd16622
+}
+
+.big{
+  text-align:center;
+  font-size:clamp(2.5rem,12vw,5rem);
+  font-weight:950;
+  color:var(--gold);
+  margin:18px 0
+}
+
+.center{
+  text-align:center
+}
+
+.private{
+  background:#0b101b;
+  border:1px dashed #596580;
+  border-radius:18px;
+  padding:18px;
+  text-align:center;
+  margin:15px 0
+}
+
+.secret{
+  font-size:clamp(2rem,8vw,4rem);
+  font-weight:950;
+  color:var(--gold);
+  margin:12px 0
+}
+
+.role{
+  font-size:1.1rem;
+  font-weight:900;
+  color:var(--b)
+}
+
+.notice{
+  background:#151b2b;
+  border-radius:14px;
+  padding:12px;
+  color:#d0d7e8;
+  margin:12px 0
+}
+
+.money{
+  font-size:2rem;
+  font-weight:950;
+  color:var(--gold);
+  text-align:center;
+  margin:10px
+}
+
+.tiny{
+  font-size:.85rem;
+  color:var(--muted)
+}
+
+@media(max-width:600px){
+  .grid,
+  .choices{
+    grid-template-columns:1fr
+  }
+
+  .card{
+    padding:17px
+  }
+
+  .scoreboard{
+    position:sticky;
+    top:0;
+    z-index:5
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header class="top">
+  <div class="brand">
+    🔗 Reacción<span> en Cadena</span>
+  </div>
+
+  <div class="sub">
+    Una adaptación para jugar en casa, inspirada en la mecánica del concurso.
+  </div>
+</header>
+
+<!-- =========================
+     CONFIGURACIÓN
+========================= -->
+
+<section id="setup" class="screen on">
+
+<div class="card">
+
+<h2>🎬 Preparar concurso</h2>
+
+<p class="muted">
+La partida está pensada para dos equipos de tres jugadores.
+</p>
+
+<div class="grid">
+
+<div class="team blue">
+
+<h3>🔵 Equipo 1</h3>
+
+<input
+  id="t1"
+  placeholder="Nombre del equipo"
+  value="Equipo Azul"
+>
+
+<input
+  id="a1"
+  placeholder="Jugador 1"
+>
+
+<input
+  id="a2"
+  placeholder="Jugador 2"
+>
+
+<input
+  id="a3"
+  placeholder="Jugador 3"
+>
+
+</div>
+
+<div class="team red">
+
+<h3>🔴 Equipo 2</h3>
+
+<input
+  id="t2"
+  placeholder="Nombre del equipo"
+  value="Equipo Rojo"
+>
+
+<input
+  id="b1"
+  placeholder="Jugador 1"
+>
+
+<input
+  id="b2"
+  placeholder="Jugador 2"
+>
+
+<input
+  id="b3"
+  placeholder="Jugador 3"
+>
+
+</div>
+
+</div>
+
+<button onclick="start()">
+🚀 Empezar concurso
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>📺 Cómo funciona</h3>
+
+<p class="muted">
+La partida combina asociaciones de palabras,
+cadenas, una prueba de complicidad entre los tres jugadores
+y una gran final.
+</p>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     JUEGO
+========================= -->
+
+<section id="play" class="screen">
+
+<div class="scoreboard">
+
+<div class="score">
+🔵
+<span id="sn1"></span>
+<b id="s1">0 €</b>
+</div>
+
+<div class="score">
+🔴
+<span id="sn2"></span>
+<b id="s2">0 €</b>
+</div>
+
+</div>
+
+<div class="card" id="content"></div>
+
+</section>
+
+
+<!-- =========================
+     FINAL
+========================= -->
+
+<section id="end" class="screen">
+
+<div class="card center">
+
+<div class="big">
+🏆
+</div>
+
+<h1 id="endTitle"></h1>
+
+<p
+  id="endText"
+  class="muted"
+></p>
+
+<div class="scoreboard">
+
+<div class="score">
+🔵
+<span id="en1"></span>
+<b id="es1"></b>
+</div>
+
+<div class="score">
+🔴
+<span id="en2"></span>
+<b id="es2"></b>
+</div>
+
+</div>
+
+<button onclick="location.reload()">
+🔄 Nueva partida
+</button>
+
+</div>
+
+</section>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   PREGUNTAS
+========================================= */
+
+const Q = {
+
+  tres: [
+
+    {
+      cat:"Animales",
+      a:"PERRO",
+      b:"GATO",
+      c:"RATÓN",
+      opts:[
+        "RATÓN",
+        "MESA",
+        "ROJO",
+        "AVIÓN"
+      ]
+    },
+
+    {
+      cat:"Frutas",
+      a:"MANZANA",
+      b:"PERA",
+      c:"PLÁTANO",
+      opts:[
+        "PLÁTANO",
+        "CAMISA",
+        "LUNA",
+        "CINE"
+      ]
+    },
+
+    {
+      cat:"Transporte",
+      a:"COCHE",
+      b:"TREN",
+      c:"AVIÓN",
+      opts:[
+        "AVIÓN",
+        "PIZZA",
+        "NIEVE",
+        "RELOJ"
+      ]
+    },
+
+    {
+      cat:"Profesiones",
+      a:"MÉDICO",
+      b:"PROFESOR",
+      c:"POLICÍA",
+      opts:[
+        "POLICÍA",
+        "MONTAÑA",
+        "QUESO",
+        "FIESTA"
+      ]
+    },
+
+    {
+      cat:"Casa",
+      a:"MESA",
+      b:"SILLA",
+      c:"ARMARIO",
+      opts:[
+        "ARMARIO",
+        "TIBURÓN",
+        "FÚTBOL",
+        "PLAYA"
+      ]
+    },
+
+    {
+      cat:"Mar",
+      a:"OLAS",
+      b:"ARENA",
+      c:"CONCHA",
+      opts:[
+        "CONCHA",
+        "BICICLETA",
+        "CAFÉ",
+        "LÁPIZ"
+      ]
+    }
+
+  ],
+
+
+  super: [
+
+    {
+      super:"SALTO",
+      words:[
+        "TRAMPOLÍN",
+        "ALTURA",
+        "LONGITUD",
+        "VERDADERO",
+        "CABALLO",
+        "PUERTA"
+      ]
+    },
+
+    {
+      super:"DULCE",
+      words:[
+        "MIEL",
+        "CHOCOLATE",
+        "AZÚCAR",
+        "TARTA",
+        "POSTRE",
+        "CARAMELO"
+      ]
+    },
+
+    {
+      super:"BANCO",
+      words:[
+        "DINERO",
+        "PARQUE",
+        "PEZ",
+        "ASIENTO",
+        "CAJERO",
+        "PLAZA"
+      ]
+    },
+
+    {
+      super:"PLANTA",
+      words:[
+        "MACETA",
+        "HOJA",
+        "RAÍZ",
+        "JARDÍN",
+        "VERDE",
+        "ÁRBOL"
+      ]
+    }
+
+  ],
+
+
+  mobile: [
+
+    [
+      "SOL",
+      "CALOR",
+      "VERANO",
+      "PLAYA",
+      "ARENA",
+      "MAR",
+      "VACACIONES"
+    ],
+
+    [
+      "PERRO",
+      "ANIMAL",
+      "ZOO",
+      "JAULA",
+      "LEÓN",
+      "SELVA",
+      "ÁFRICA"
+    ],
+
+    [
+      "CAFÉ",
+      "DESAYUNO",
+      "MAÑANA",
+      "TRABAJO",
+      "OFICINA",
+      "ORDENADOR",
+      "EMAIL"
+    ],
+
+    [
+      "FÚTBOL",
+      "PELOTA",
+      "DEPORTE",
+      "PARTIDO",
+      "ÁRBITRO",
+      "ESTADIO",
+      "GRADA"
+    ],
+
+    [
+      "LIBRO",
+      "LECTURA",
+      "BIBLIOTECA",
+      "ESTUDIO",
+      "EXAMEN",
+      "NOTA",
+      "COLEGIO"
+    ]
+
+  ],
+
+
+  finals: [
+
+    [
+      "MAR",
+      "ARENA",
+      "PLAYA",
+      "VERANO",
+      "CALOR",
+      "FUEGO",
+      "BOMBERO"
+    ],
+
+    [
+      "NOCHE",
+      "LUNA",
+      "CIELO",
+      "ESTRELLA",
+      "FAMOSO",
+      "CINE",
+      "PELÍCULA"
+    ],
+
+    [
+      "CAFÉ",
+      "LECHE",
+      "DESAYUNO",
+      "MAÑANA",
+      "TRABAJO",
+      "OFICINA",
+      "EMPRESA"
+    ],
+
+    [
+      "FÚTBOL",
+      "BALÓN",
+      "DEPORTE",
+      "EQUIPO",
+      "CAMPEÓN",
+      "TROFEO",
+      "VICTORIA"
+    ]
+
+  ],
+
+
+  last: [
+
+    {
+      hint:"Algo relacionado con CORTE",
+      start:"CE",
+      end:"L",
+      answer:"CELESTIAL",
+      myst:"MÚSICA"
+    },
+
+    {
+      hint:"Algo relacionado con RAÍZ",
+      start:"RA",
+      end:"O",
+      answer:"RÁBANO",
+      myst:"IMPORTA"
+    },
+
+    {
+      hint:"Algo relacionado con VOLCÁN",
+      start:"FU",
+      end:"O",
+      answer:"FUEGO",
+      myst:"CHIMENEA"
+    },
+
+    {
+      hint:"Algo relacionado con DISCO",
+      start:"PE",
+      end:"O",
+      answer:"PESO",
+      myst:"MÚSICA"
+    }
+
+  ],
+
+
+  comp: [
+
+    [
+      "ARCOÍRIS",
+      "NUBE",
+      "LLUVIA",
+      "COCHE",
+      "SOL",
+      "MONTAÑA",
+      "PIZZA",
+      "RELOJ",
+      "ELEFANTE",
+      "BICICLETA",
+      "PLAYA",
+      "TREN",
+      "TIBURÓN",
+      "MÉDICO"
+    ],
+
+    [
+      "FUEGO",
+      "BOSQUE",
+      "HOSPITAL",
+      "GUITARRA",
+      "PIRATA",
+      "ESCUELA",
+      "HELADO",
+      "AVIÓN",
+      "DINOSAURIO",
+      "CINE",
+      "MÉDICO",
+      "CASTILLO",
+      "CAFÉ",
+      "VOLCÁN"
+    ],
+
+    [
+      "MAR",
+      "PERRO",
+      "RELOJ",
+      "FÚTBOL",
+      "LIBRO",
+      "PIZZA",
+      "NIEVE",
+      "MÚSICA",
+      "TREN",
+      "JARDÍN",
+      "CIRCO",
+      "POLICÍA",
+      "CHOCOLATE",
+      "LUNA"
+    ]
+
+  ]
+
+};
+
+
+/* =========================================
+   ESTADO DEL JUEGO
+========================================= */
+
+let G = {
+
+  phase:0,
+
+  round:0,
+
+  team:0,
+
+  scores:[0,0],
+
+  teams:[],
+
+  timer:null,
+
+  time:0,
+
+  active:null,
+
+  sub:0,
+
+  chain:null,
+
+  idx:0,
+
+  comp:null,
+
+  compIdx:0,
+
+  compScore:0,
+
+  last:null
+
+};
+
+
+/* =========================================
+   UTILIDADES
+========================================= */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+const norm = s =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toUpperCase()
+    .trim()
+    .replace(/\s+/g," ");
+
+
+const shuffle = arr =>
+  [...arr].sort(() => Math.random() - .5);
+
+
+function start(){
+
+  G.teams = [
+
+    {
+      name:$("t1").value.trim() || "Equipo Azul",
+
+      players:[
+        $("a1").value.trim() || "Jugador 1",
+        $("a2").value.trim() || "Jugador 2",
+        $("a3").value.trim() || "Jugador 3"
+      ]
+    },
+
+    {
+      name:$("t2").value.trim() || "Equipo Rojo",
+
+      players:[
+        $("b1").value.trim() || "Jugador 1",
+        $("b2").value.trim() || "Jugador 2",
+        $("b3").value.trim() || "Jugador 3"
+      ]
+    }
+
+  ];
+
+  G.scores = [0,0];
+
+  G.phase = 0;
+
+  G.round = 0;
+
+  G.team = 0;
+
+  show("play");
+
+  score();
+
+  next();
+
+}
+
+
+function show(id){
+
+  document
+    .querySelectorAll(".screen")
+    .forEach(x => x.classList.remove("on"));
+
+  $(id).classList.add("on");
+
+}
+
+
+function score(){
+
+  $("sn1").textContent = G.teams[0].name;
+
+  $("sn2").textContent = G.teams[1].name;
+
+  $("s1").textContent = fmt(G.scores[0]);
+
+  $("s2").textContent = fmt(G.scores[1]);
+
+}
+
+
+function fmt(n){
+
+  return n.toLocaleString("es-ES") + " €";
+
+}
+
+
+function next(){
+
+  clearInterval(G.timer);
+
+  if(G.phase === 0)
+    return tres();
+
+  if(G.phase === 1)
+    return superword();
+
+  if(G.phase === 2)
+    return mobile();
+
+  if(G.phase === 3)
+    return compSetup();
+
+  if(G.phase === 4)
+    return finalChain();
+
+  if(G.phase === 5)
+    return lastWord();
+
+  finish();
+
+}
+
+
+function nextPhase(){
+
+  G.phase++;
+
+  G.round=0;
+
+  G.team=0;
+
+  G.sub=0;
+
+  next();
+
+}
+
+
+function timer(seconds,cb){
+
+  clearInterval(G.timer);
+
+  G.time=seconds;
+
+  const bar =
+    document.querySelector(".timer i");
+
+  G.timer =
+    setInterval(() => {
+
+      G.time -= .1;
+
+      if(bar){
+
+        bar.style.width =
+          Math.max(
+            0,
+            G.time / seconds * 100
+          ) + "%";
+
+      }
+
+      if(G.time <= 0){
+
+        clearInterval(G.timer);
+
+        cb();
+
+      }
+
+    },100);
+
+}
+
+
+function frame(title,body){
+
+  $("content").innerHTML =
+
+    `<div class="phase">${title}</div>${body}`;
+
+}
+
+
+/* =========================================
+   DE TRES EN TRES
+========================================= */
+
+function tres(){
+
+  if(G.round >= 4){
+
+    return nextPhase();
+
+  }
+
+  G.team = G.round % 2;
+
+  const q =
+    Q.tres[
+      Math.floor(
+        Math.random() * Q.tres.length
+      )
+    ];
+
+  const opts = shuffle(q.opts);
+
+  frame(
+    "1 · DE TRES EN TRES",
+
+    `
+    <h2>Completa el trío</h2>
+
+    <p class="muted">
+      <span class="turn">
+        ${G.teams[G.team].name}
+      </span>
+
+      · Tema:
+      <b>${q.cat}</b>
+    </p>
+
+    <div class="chain">
+
+      <div class="node">
+        ${q.a}
+      </div>
+
+      <div class="node">
+        ${q.b}
+      </div>
+
+      <div class="node hidden">
+        ?
+      </div>
+
+    </div>
+
+    <div class="choices">
+
+      ${opts.map(o => `
+
+        <button
+          class="choice"
+          onclick="
+            pickThree(
+              this,
+              '${esc(o)}',
+              '${esc(q.c)}'
+            )
+          "
+        >
+          ${o}
+        </button>
+
+      `).join("")}
+
+    </div>
+
+    <div class="timer">
+      <i></i>
+    </div>
+
+    <p class="tiny">
+      Una asociación correcta completa el trío.
+    </p>
+    `
+  );
+
+  timer(
+    15,
+    () =>
+      pickThree(
+        null,
+        "",
+        q.c,
+        true
+      )
+  );
+
+}
+
+
+function pickThree(
+  btn,
+  v,
+  c,
+  timeout=false
+){
+
+  clearInterval(G.timer);
+
+  document
+    .querySelectorAll(".choice")
+    .forEach(x =>
+      x.disabled=true
+    );
+
+  const ok =
+    norm(v) === norm(c);
+
+  if(btn){
+
+    btn.classList.add(
+      ok
+        ? "correct"
+        : "wrong"
+    );
+
+  }
+
+  if(ok)
+    G.scores[G.team] += 5000;
+
+  score();
+
+  result(
+    ok,
+    timeout
+      ? `⏰ Era ${c}.`
+      : ok
+        ? "¡Trío completado!"
+        : `Era ${c}.`,
+
+    () => {
+
+      G.round++;
+
+      next();
+
+    }
+
+  );
+
+}
+
+
+/* =========================================
+   TODAS A UNA
+========================================= */
+
+function superword(){
+
+  if(G.round >= 2){
+
+    return nextPhase();
+
+  }
+
+  G.team = G.round % 2;
+
+  const q =
+    Q.super[
+      Math.floor(
+        Math.random() * Q.super.length
+      )
+    ];
+
+  frame(
+    "2 · TODAS A UNA",
+
+    `
+    <h2>La Superpalabra</h2>
+
+    <p class="muted">
+
+      <span class="turn">
+        ${G.teams[G.team].name}
+      </span>
+
+      tiene que encontrar las palabras
+      relacionadas con:
+
+    </p>
+
+    <div class="secret">
+      ${q.super}
+    </div>
+
+    <p class="muted">
+      Hay <b>6 palabras</b> relacionadas.
+      Descúbrelas una a una.
+    </p>
+
+    <input
+      id="ans"
+      placeholder="Escribe una palabra..."
+      autocomplete="off"
+    >
+
+    <button onclick="checkSuper()">
+      ➡️ Comprobar
+    </button>
+
+    <div class="notice">
+      Acierto:
+      <b>+2.000 €</b>.
+      Hay que completar las seis.
+    </div>
+
+    <div
+      class="chain"
+      id="superChain"
+    >
+
+      ${q.words.map(
+        (_,i) => `
+
+        <div
+          class="node hidden"
+          id="sw${i}"
+        >
+          ?
+        </div>
+
+      `).join("")}
+
+    </div>
+
+    <div class="timer">
+      <i></i>
+    </div>
+
+    `
+  );
+
+  G.active=q;
+
+  G.sub=0;
+
+  $("ans").focus();
+
+  $("ans").addEventListener(
+    "keydown",
+    e => {
+
+      if(e.key==="Enter")
+        checkSuper();
+
+    }
+  );
+
+  timer(
+    45,
+    () =>
+      finishSuper()
+  );
+
+}
+
+
+function checkSuper(){
+
+  const v =
+    $("ans").value;
+
+  if(!v)
+    return;
+
+  const q=G.active;
+
+  const i =
+    q.words.findIndex(
+      (w,k) =>
+        k>=G.sub &&
+        norm(w)===norm(v)
+    );
+
+  if(i<0){
+
+    $("ans").value="";
+
+    $("ans").placeholder =
+      "No es esa… prueba otra";
+
+    return;
+
+  }
+
+  $("sw"+i).textContent =
+    q.words[i];
+
+  $("sw"+i)
+    .classList
+    .remove("hidden");
+
+  $("ans").value="";
+
+  G.scores[G.team]+=2000;
+
+  G.sub++;
+
+  score();
+
+  if(G.sub>=6)
+    finishSuper();
+
+  else
+    $("ans").focus();
+
+}
+
+
+function finishSuper(){
+
+  clearInterval(G.timer);
+
+  result(
+
+    G.sub>=6,
+
+    G.sub>=6
+      ? "¡Las seis!"
+      : "Tiempo terminado: " +
+        G.sub +
+        " de 6.",
+
+    () => {
+
+      G.round++;
+
+      next();
+
+    }
+
+  );
+
+}
+
+
+/* =========================================
+   EL ESLABÓN MÓVIL
+========================================= */
+
+function mobile(){
+
+  if(G.round>=2){
+
+    return nextPhase();
+
+  }
+
+  G.team=G.round%2;
+
+  G.chain =
+    Q.mobile[
+      Math.floor(
+        Math.random() *
+        Q.mobile.length
+      )
+    ];
+
+  G.idx=3;
+
+  frame(
+    "3 · EL ESLABÓN MÓVIL",
+
+    `
+    <h2>
+      Completa la cadena
+      desde el eslabón móvil
+    </h2>
+
+    <p class="muted">
+
+      <span class="turn">
+        ${G.teams[G.team].name}
+      </span>.
+
+      El eslabón inicial puede estar
+      en una posición distinta.
+
+    </p>
+
+    <div
+      class="chain"
+      id="mobChain"
+    >
+
+      ${G.chain.map(
+        (w,i) => `
+
+        <div
+          class="node
+            ${i===G.idx ? "active" : ""}
+            ${i<G.idx ? "" : "hidden"}
+          "
+          id="mc${i}"
+        >
+
+          ${i<=G.idx ? w : "?"}
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+    <p class="notice">
+
+      Empieza desde
+      <b>${G.chain[G.idx]}</b>
+      y completa hacia un lado.
+
+    </p>
+
+    <input
+      id="mAns"
+      placeholder="Siguiente palabra..."
+      autocomplete="off"
+    >
+
+    <button onclick="checkMobile()">
+      ➡️ Comprobar
+    </button>
+
+    <div class="timer">
+      <i></i>
+    </div>
+
+    `
+  );
+
+  $("mAns").focus();
+
+  $("mAns").addEventListener(
+    "keydown",
+    e => {
+
+      if(e.key==="Enter")
+        checkMobile();
+
+    }
+  );
+
+  G.sub=G.idx-1;
+
+  timer(
+    35,
+    () =>
+      finishMobile()
+  );
+
+}
+
+
+function checkMobile(){
+
+  const v =
+    $("mAns").value;
+
+  if(!v)
+    return;
+
+  const expected =
+    G.chain[G.sub];
+
+  if(norm(v)===norm(expected)){
+
+    $("mc"+G.sub).textContent =
+      expected;
+
+    $("mc"+G.sub)
+      .classList
+      .remove("hidden");
+
+    G.scores[G.team]+=3000;
+
+    G.sub--;
+
+    score();
+
+    $("mAns").value="";
+
+    if(G.sub<0)
+
+      finishMobile(true);
+
+    else
+
+      $("mAns").focus();
+
+  }
+
+  else{
+
+    $("mAns").value="";
+
+    $("mAns").placeholder =
+      "No encaja con la cadena";
+
+  }
+
+}
+
+
+function finishMobile(ok=false){
+
+  clearInterval(G.timer);
+
+  result(
+
+    ok,
+
+    ok
+      ? "¡Cadena completada!"
+      : "⏰ Se acabó el tiempo.",
+
+    () => {
+
+      G.round++;
+
+      next();
+
+    }
+
+  );
+
+}
+
+
+/* =========================================
+   COMPLICIDAD GANADORA
+========================================= */
+
+function compSetup(){
+
+  G.team=0;
+
+  G.comp=[0,0];
+
+  G.compIdx=0;
+
+  frame(
+
+    "4 · COMPLICIDAD GANADORA",
+
+    `
+    <h2>
+      🔥 El duelo decisivo
+    </h2>
+
+    <p class="muted">
+
+      Cada equipo tiene
+      <b>60 segundos</b>.
+
+      Dos jugadores dan
+      <b>una palabra cada uno</b>,
+      alternándose, para que el tercero
+      adivine la palabra.
+
+    </p>
+
+    <div class="notice">
+
+      🔵 Primero juega
+      <b>${G.teams[0].name}</b>.
+
+      <br>
+
+      🔴 Después jugará
+      <b>${G.teams[1].name}</b>.
+
+    </div>
+
+    <button onclick="compTurn()">
+
+      ▶️ Empezar
+      ${G.teams[0].name}
+
+    </button>
+
+    `
+  );
+
+}
+
+
+function compTurn(){
+
+  if(G.compIdx>=2){
+
+    finishComp();
+
+    return;
+
+  }
+
+  G.team=G.compIdx;
+
+  G.compScore=0;
+
+  G.sub=0;
+
+  G.compWordIndex=0;
+
+  renderCompPrivate();
+
+}
+
+
+function renderCompPrivate(){
+
+  const pool =
+    Q.comp[G.team];
+
+  const word =
+    pool[
+      Math.floor(
+        Math.random() *
+        pool.length
+      )
+    ];
+
+  G.active={
+    word,
+    pool
+  };
+
+  G.sub=0;
+
+  frame(
+
+    "4 · COMPLICIDAD GANADORA",
+
+    `
+    <h2>
+      🔒 Solo para los dos que dan pistas
+    </h2>
+
+    <p class="muted">
+
+      Que el tercer jugador
+      <b>NO mire la pantalla</b>.
+
+    </p>
+
+    <div class="private">
+
+      <div class="role">
+        Palabra que hay que definir
+      </div>
+
+      <div class="secret">
+        ${word}
+      </div>
+
+      <p class="tiny">
+
+        Jugador 1 y Jugador 2:
+        dad una palabra cada uno,
+        por turnos.
+
+        No digáis la palabra objetivo
+        ni partes de ella.
+
+      </p>
+
+    </div>
+
+    <button onclick="showCompGuess()">
+
+      🙈 Ocultar y pasar
+      al que adivina
+
+    </button>
+
+    `
+  );
+
+}
+
+
+function showCompGuess(){
+
+  frame(
+
+    "4 · COMPLICIDAD GANADORA",
+
+    `
+    <h2>
+      🎯 Ahora adivina
+    </h2>
+
+    <p class="muted">
+
+      Las dos pistas se dicen
+      en voz alta, una por cada
+      compañero.
+
+      El que adivina escribe
+      su respuesta.
+
+    </p>
+
+    <input
+      id="cAns"
+      placeholder="¿Qué palabra es?"
+      autocomplete="off"
+    >
+
+    <button onclick="checkComp()">
+      Comprobar
+    </button>
+
+    <button
+      class="alt"
+      onclick="compSkip()"
+    >
+      ⏭️ Pasar
+    </button>
+
+    <div class="money">
+      ${G.compScore} aciertos
+    </div>
+
+    <div class="timer">
+      <i></i>
+    </div>
+
+    `
+  );
+
+  $("cAns").focus();
+
+  $("cAns").addEventListener(
+    "keydown",
+    e => {
+
+      if(e.key==="Enter")
+        checkComp();
+
+    }
+  );
+
+  if(G.sub===0)
+
+    timer(
+      60,
+      () =>
+        endCompTeam()
+    );
+
+}
+
+
+function checkComp(){
+
+  const v =
+    $("cAns").value;
+
+  if(!v)
+    return;
+
+  const ok =
+    norm(v) ===
+    norm(G.active.word);
+
+  if(ok){
+
+    G.compScore++;
+
+    G.comp[G.team] =
+      G.compScore;
+
+  }
+
+  $("cAns").value="";
+
+  if(G.time<=0)
+
+    return endCompTeam();
+
+  result(
+
+    ok,
+
+    ok
+      ? "¡Acierto!"
+      : `Era ${G.active.word}.`,
+
+    () => {
+
+      if(G.time>0)
+
+        renderCompPrivate();
+
+    }
+
+  );
+
+}
+
+
+function compSkip(){
+
+  if(G.time<=0)
+
+    return endCompTeam();
+
+  renderCompPrivate();
+
+}
+
+
+function endCompTeam(){
+
+  clearInterval(G.timer);
+
+  G.comp[G.team] =
+    G.compScore;
+
+  if(G.team===0){
+
+    G.compIdx=1;
+
+    frame(
+
+      "4 · COMPLICIDAD GANADORA",
+
+      `
+
+      <div class="big">
+        ⏱️
+      </div>
+
+      <h2>
+        ${G.teams[0].name}:
+        ${G.comp[0]} aciertos
+      </h2>
+
+      <p class="muted">
+        Ahora juega el segundo equipo.
+      </p>
+
+      <button onclick="compTurn()">
+
+        ▶️ Empezar
+        ${G.teams[1].name}
+
+      </button>
+
+      `
+    );
+
+  }
+
+  else{
+
+    finishComp();
+
+  }
+
+}
+
+
+function finishComp(){
+
+  clearInterval(G.timer);
+
+  const a=G.comp[0];
+
+  const b=G.comp[1];
+
+  if(a===b){
+
+    frame(
+
+      "4 · COMPLICIDAD GANADORA",
+
+      `
+
+      <div class="big">
+        🤝
+      </div>
+
+      <h2>
+        ¡Empate ${a}-${b}!
+      </h2>
+
+      <p class="muted">
+        Desempate: una palabra.
+        El primer acierto gana.
+      </p>
+
+      <button onclick="suddenDeath()">
+
+        ⚡ Desempate
+
+      </button>
+
+      `
+
+    );
+
+    return;
+
+  }
+
+  G.team =
+    a>b
+      ? 0
+      : 1;
+
+  G.scores[G.team]+=30000;
+
+  score();
+
+  result(
+
+    true,
+
+    `🏆 ${G.teams[G.team].name}
+     gana Complicidad Ganadora
+     (${Math.max(a,b)} aciertos).`,
+
+    () =>
+      nextPhase()
+
+  );
+
+}
+
+
+function suddenDeath(){
+
+  G.team =
+    Math.random()<.5
+      ? 0
+      : 1;
+
+  G.active={
+    word:"CHOCOLATE"
+  };
+
+  frame(
+
+    "DESEMPATE",
+
+    `
+
+    <h2>
+      ⚡ Muerte súbita
+    </h2>
+
+    <p class="muted">
+
+      Los dos equipos pueden responder.
+
+      La palabra es para los que
+      dan las pistas:
+
+    </p>
+
+    <div class="private">
+
+      <div class="secret">
+        CHOCOLATE
+      </div>
+
+      <p>
+        Dad una única pista al otro equipo
+        y que responda.
+      </p>
+
+    </div>
+
+    <input
+      id="sd"
+      placeholder="Respuesta"
+    >
+
+    <button onclick="sdCheck()">
+      Comprobar
+    </button>
+
+    `
+
+  );
+
+}
+
+
+function sdCheck(){
+
+  const ok =
+    norm($("sd").value) ===
+    "CHOCOLATE";
+
+  if(!ok){
+
+    $("sd").value="";
+
+    $("sd").placeholder =
+      "No. El otro equipo puede intentarlo.";
+
+    G.team=1-G.team;
+
+    return;
+
+  }
+
+  G.scores[G.team]+=30000;
+
+  score();
+
+  result(
+
+    true,
+
+    `Gana ${G.teams[G.team].name}.`,
+
+    () =>
+      nextPhase()
+
+  );
+
+}
+
+
+/* =========================================
+   LA ÚLTIMA CADENA
+========================================= */
+
+function finalChain(){
+
+  G.chain =
+    Q.finals[
+      Math.floor(
+        Math.random() *
+        Q.finals.length
+      )
+    ];
+
+  G.idx=1;
+
+  G.sub=0;
+
+  frame(
+
+    "5 · LA ÚLTIMA CADENA",
+
+    `
+
+    <h2>
+      💰 La última cadena
+    </h2>
+
+    <div class="money">
+      ${fmt(G.scores[G.team])}
+    </div>
+
+    <p class="muted">
+
+      Completa las cinco palabras ocultas.
+
+      Cada fallo reduce el dinero
+      <b>a la mitad</b>.
+
+      La cadena se resuelve
+      de izquierda a derecha.
+
+    </p>
+
+    <div
+      class="chain"
+      id="finChain"
+    >
+
+      ${G.chain.map(
+        (w,i) => `
+
+        <div
+          class="node
+            ${i===0||i===6 ? "" : "hidden"}
+          "
+          id="fc${i}"
+        >
+
+          ${i===0||i===6 ? w : "?"}
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+    <input
+      id="fAns"
+      placeholder="Siguiente eslabón..."
+      autocomplete="off"
+    >
+
+    <button onclick="checkFinal()">
+
+      ➡️ Comprobar
+
+    </button>
+
+    <div class="notice">
+
+      Puedes avanzar
+      desde el extremo izquierdo.
+
+    </div>
+
+    <div class="timer">
+      <i></i>
+    </div>
+
+    `
+
+  );
+
+  $("fAns").focus();
+
+  $("fAns").addEventListener(
+    "keydown",
+    e => {
+
+      if(e.key==="Enter")
+        checkFinal();
+
+    }
+  );
+
+  G.finalPos=1;
+
+  G.finalSide="left";
+
+  timer(
+    90,
+    () =>
+      finishFinal()
+  );
+
+}
+
+
+function checkFinal(){
+
+  const v =
+    $("fAns").value.trim();
+
+  if(!v)
+    return;
+
+  const expected =
+    G.chain[G.finalPos];
+
+  if(norm(v)===norm(expected)){
+
+    $("fc"+G.finalPos).textContent =
+      expected;
+
+    $("fc"+G.finalPos)
+      .classList
+      .remove("hidden");
+
+    G.finalPos++;
+
+    $("fAns").value="";
+
+    score();
+
+    if(G.finalPos>=6)
+
+      finishFinal(true);
+
+    else
+
+      $("fAns").focus();
+
+  }
+
+  else{
+
+    G.scores[G.team] =
+      Math.floor(
+        G.scores[G.team]/2
+      );
+
+    score();
+
+    $("fAns").value="";
+
+    $("fAns").placeholder =
+      "❌ Fallo: el dinero se divide por 2";
+
+  }
+
+}
+
+
+function finishFinal(ok=false){
+
+  clearInterval(G.timer);
+
+  if(ok)
+
+    G.scores[G.team] =
+      Math.max(
+        G.scores[G.team],
+        1
+      );
+
+  score();
+
+  result(
+
+    ok,
+
+    ok
+      ? "¡Habéis completado La última cadena!"
+      : "⏰ Se acabó el tiempo.",
+
+    () =>
+      nextPhase()
+
+  );
+
+}
+
+
+/* =========================================
+   LA ÚLTIMA PALABRA
+========================================= */
+
+function lastWord(){
+
+  const q =
+    Q.last[
+      Math.floor(
+        Math.random() *
+        Q.last.length
+      )
+    ];
+
+  G.last=q;
+
+  frame(
+
+    "6 · LA ÚLTIMA PALABRA",
+
+    `
+
+    <h2>
+      La última palabra
+    </h2>
+
+    <div class="money">
+      ${fmt(G.scores[G.team])}
+    </div>
+
+    <div class="private">
+
+      <div class="role">
+        Pista
+      </div>
+
+      <div class="secret">
+        ${q.hint}
+      </div>
+
+      <p class="tiny">
+
+        La palabra empieza por
+        <b>${q.start}</b>
+
+        y termina en
+        <b>${q.end}</b>.
+
+      </p>
+
+    </div>
+
+    <input
+      id="lAns"
+      placeholder="Vuestra palabra final..."
+      autocomplete="off"
+    >
+
+    <button onclick="checkLast()">
+
+      🎯 Jugársela
+
+    </button>
+
+    <button
+      class="warn"
+      onclick="buyMystery()"
+    >
+
+      💡 Comprar eslabón misterioso
+      · cuesta la mitad
+
+    </button>
+
+    `
+
+  );
+
+  $("lAns").focus();
+
+}
+
+
+function checkLast(){
+
+  const v =
+    $("lAns").value;
+
+  if(!v)
+    return;
+
+  const ok =
+    norm(v) ===
+    norm(G.last.answer);
+
+  finishLast(ok);
+
+}
+
+
+function buyMystery(){
+
+  G.scores[G.team] =
+    Math.floor(
+      G.scores[G.team]/2
+    );
+
+  score();
+
+  frame(
+
+    "6 · LA ÚLTIMA PALABRA",
+
+    `
+
+    <h2>
+      💡 Eslabón misterioso
+    </h2>
+
+    <div class="money">
+      ${fmt(G.scores[G.team])}
+    </div>
+
+    <div class="private">
+
+      <div class="role">
+        Nueva pista
+      </div>
+
+      <div class="secret">
+        ${G.last.myst}
+      </div>
+
+      <p class="tiny">
+
+        La palabra sigue empezando por
+        <b>${G.last.start}</b>
+
+        y terminando en
+        <b>${G.last.end}</b>.
+
+      </p>
+
+    </div>
+
+    <input
+      id="lAns"
+      placeholder="Última oportunidad..."
+      autocomplete="off"
+    >
+
+    <button onclick="checkLast()">
+
+      🎯 Responder
+
+    </button>
+
+    `
+
+  );
+
+}
+
+
+function finishLast(ok){
+
+  clearInterval(G.timer);
+
+  score();
+
+  show("end");
+
+  $("en1").textContent =
+    G.teams[0].name;
+
+  $("en2").textContent =
+    G.teams[1].name;
+
+  $("es1").textContent =
+    fmt(G.scores[0]);
+
+  $("es2").textContent =
+    fmt(G.scores[1]);
+
+  $("endTitle").textContent =
+    ok
+      ? "🎉 ¡Habéis acertado!"
+      : "😬 La última palabra se escapa";
+
+  $("endText").textContent =
+    ok
+
+      ? `${G.teams[G.team].name}
+         consigue cerrar el concurso
+         con ${fmt(G.scores[G.team])}.
+         La palabra era ${G.last.answer}.`
+
+      : `La palabra era
+         ${G.last.answer}.
+         El dinero final de
+         ${G.teams[G.team].name}:
+         ${fmt(G.scores[G.team])}.`;
+
+}
+
+
+function finish(){
+
+  finishLast(false);
+
+}
+
+
+/* =========================================
+   RESULTADOS
+========================================= */
+
+let pending=null;
+
+
+function result(ok,msg,cb){
+
+  clearInterval(G.timer);
+
+  pending=cb;
+
+  $("content").innerHTML = `
+
+    <div class="big">
+      ${ok ? "🎉" : "😬"}
+    </div>
+
+    <h2 class="center">
+      ${msg}
+    </h2>
+
+    <button onclick="continueResult()">
+
+      ➡️ Continuar
+
+    </button>
+
+  `;
+
+}
+
+
+function continueResult(){
+
+  const cb=pending;
+
+  pending=null;
+
+  if(cb)
+    cb();
+
+}
+
+
+function esc(s){
+
+  return String(s)
+    .replace(/\\/g,"\\\\")
+    .replace(/'/g,"\\'")
+    .replace(/"/g,"&quot;");
+
+}
+
+</script>
+
+</body>
+</html>

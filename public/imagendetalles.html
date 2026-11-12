@@ -6,121 +6,532 @@
 <title>Memoria Visual — CuántoMeConoces</title>
 <style>
 :root{--bg:#080b14;--card:#111827;--card2:#172033;--text:#f5f7fb;--muted:#9ca8bd;--accent:#7c5cff;--ok:#35d07f;--bad:#ff5577}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1b2340,#080b14 55%);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh}
-button,input{font:inherit}.wrap{width:min(920px,94%);margin:auto;padding:20px 0 40px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.brand{font-weight:900}.back{color:var(--muted);text-decoration:none}
-.card{background:rgba(17,24,39,.94);border:1px solid #27334a;border-radius:24px;padding:26px;box-shadow:0 18px 50px #0005;margin:16px 0}.center{text-align:center}.emoji{font-size:60px}.muted{color:var(--muted)}.small{font-size:.9rem}
-h1{font-size:clamp(2rem,7vw,4rem);margin:8px 0}h2{font-size:1.6rem}.btn{width:100%;border:0;border-radius:16px;padding:16px;margin-top:14px;background:var(--accent);color:white;font-weight:800;cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#26334c}
-.stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.pill{padding:8px 12px;border-radius:999px;background:#202b40;color:#dce3f2}
-.scene-wrap{position:relative;overflow:hidden;border-radius:20px;background:#dfe8f2;margin:16px auto;max-width:760px}.scene{display:block;width:100%;height:auto}.timer{font-size:1.4rem;font-weight:900;margin:10px}.bar{height:9px;background:#27334a;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);width:100%;transition:width .1s linear}
-.question{font-size:1.35rem;font-weight:800;margin:12px 0 20px}.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{border:1px solid #33415d;background:#1a2539;color:white;padding:15px;border-radius:15px;cursor:pointer;font-weight:700}.answer:hover{background:#263550}.answer.correct{background:#145c3b;border-color:var(--ok)}.answer.wrong{background:#65223a;border-color:var(--bad)}.answer:disabled{cursor:default}
-.feedback{padding:15px;border-radius:15px;margin-top:15px}.good{background:#113c2b}.bad{background:#4b1d2e}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#1b2340,#080b14 55%);
+  color:var(--text);
+  font-family:Inter,system-ui,Arial,sans-serif;
+  min-height:100vh
+}
+button,input{font:inherit}
+.wrap{width:min(920px,94%);margin:auto;padding:20px 0 40px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.brand{font-weight:900}
+.back{color:var(--muted);text-decoration:none}
+.card{
+  background:rgba(17,24,39,.94);
+  border:1px solid #27334a;
+  border-radius:24px;
+  padding:26px;
+  box-shadow:0 18px 50px #0005;
+  margin:16px 0
+}
+.center{text-align:center}
+.emoji{font-size:60px}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+h1{font-size:clamp(2rem,7vw,4rem);margin:8px 0}
+h2{font-size:1.6rem}
+
+.btn{
+  width:100%;
+  border:0;
+  border-radius:16px;
+  padding:16px;
+  margin-top:14px;
+  background:var(--accent);
+  color:white;
+  font-weight:800;
+  cursor:pointer
+}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:#26334c}
+
+.stats{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap
+}
+.pill{
+  padding:8px 12px;
+  border-radius:999px;
+  background:#202b40;
+  color:#dce3f2
+}
+
+.scene-wrap{
+  position:relative;
+  overflow:hidden;
+  border-radius:20px;
+  background:#dfe8f2;
+  margin:16px auto;
+  max-width:760px
+}
+
+.scene{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:520px;
+  object-fit:cover
+}
+
+.timer{
+  font-size:1.4rem;
+  font-weight:900;
+  margin:10px
+}
+
+.bar{
+  height:9px;
+  background:#27334a;
+  border-radius:99px;
+  overflow:hidden
+}
+
+.bar i{
+  display:block;
+  height:100%;
+  background:var(--accent);
+  width:100%;
+  transition:width .1s linear
+}
+
+.question{
+  font-size:1.35rem;
+  font-weight:800;
+  margin:12px 0 20px
+}
+
+.answers{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+
+.answer{
+  border:1px solid #33415d;
+  background:#1a2539;
+  color:white;
+  padding:15px;
+  border-radius:15px;
+  cursor:pointer;
+  font-weight:700
+}
+
+.answer:hover{background:#263550}
+
+.answer.correct{
+  background:#145c3b;
+  border-color:var(--ok)
+}
+
+.answer.wrong{
+  background:#65223a;
+  border-color:var(--bad)
+}
+
+.answer:disabled{cursor:default}
+
+.feedback{
+  padding:15px;
+  border-radius:15px;
+  margin-top:15px
+}
+
+.good{background:#113c2b}
+.bad{background:#4b1d2e}
 .hidden{display:none!important}
-@media(max-width:600px){.card{padding:18px}.answers{grid-template-columns:1fr}.wrap{padding-top:12px}}
+
+@media(max-width:600px){
+  .card{padding:18px}
+  .answers{grid-template-columns:1fr}
+  .wrap{padding-top:12px}
+}
 </style>
 </head>
+
 <body>
+
 <div class="wrap">
-  <div class="top"><div class="brand">🧠 CuántoMeConoces</div><a class="back" href="#">← Juegos</a></div>
+
+  <div class="top">
+    <div class="brand">🧠 CuántoMeConoces</div>
+    <a class="back" href="#">← Juegos</a>
+  </div>
+
   <main id="app"></main>
+
 </div>
 
 <script>
+
 const app=document.getElementById('app');
 
 const rounds=[
+
 {
-  bg:'#f4d9a8',
-  svg:`<svg class="scene" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
-    <rect width="800" height="480" fill="#f4d9a8"/><rect y="340" width="800" height="140" fill="#82b96b"/>
-    <rect x="75" y="170" width="180" height="170" rx="8" fill="#e66b55"/><polygon points="60,170 165,90 270,170" fill="#8b4a3b"/>
-    <rect x="140" y="255" width="52" height="85" fill="#704a35"/><rect x="92" y="205" width="48" height="45" fill="#aee0ef"/>
-    <circle cx="620" cy="118" r="55" fill="#ffd34e"/><path d="M560 340 Q620 250 680 340" fill="#6a8fd5"/>
-    <circle cx="610" cy="310" r="24" fill="#f0b18a"/><rect x="590" y="330" width="42" height="65" fill="#e95b67"/>
-    <circle cx="592" cy="396" r="11" fill="#333"/><circle cx="630" cy="396" r="11" fill="#333"/>
-    <rect x="410" y="300" width="100" height="38" rx="18" fill="#d94f45"/><circle cx="435" cy="300" r="25" fill="#f0b18a"/>
-    <text x="400" y="55" font-size="28" font-family="Arial" fill="#5d4a36">☀️</text>
-  </svg>`,
-  q:'¿De qué color era la puerta de la casa?',
-  a:['Marrón','Azul','Roja','Verde'], correct:2
+  image:"https://images.unsplash.com/photo-1715765036065-32539cf43710?fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-4.0.3&q=80&w=1600",
+  q:"¿De qué color era la camiseta de la mujer sentada en el picnic?",
+  a:["Roja","Azul","Verde","Amarilla"],
+  correct:0
 },
+
 {
-  bg:'#b9d8ed',
-  svg:`<svg class="scene" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
-    <rect width="800" height="480" fill="#b9d8ed"/><rect y="320" width="800" height="160" fill="#e7c98e"/>
-    <circle cx="120" cy="100" r="55" fill="#ffe06a"/><path d="M80 320 Q180 190 280 320" fill="#4d9b62"/>
-    <path d="M500 320 Q590 200 680 320" fill="#d65f4e"/><circle cx="590" cy="235" r="34" fill="#f1b18a"/>
-    <rect x="555" y="268" width="70" height="75" fill="#3c6fb6"/><rect x="540" y="340" width="35" height="70" fill="#4a3a31"/><rect x="605" y="340" width="35" height="70" fill="#4a3a31"/>
-    <rect x="330" y="300" width="100" height="70" rx="8" fill="#e7e1d3"/><circle cx="350" cy="285" r="25" fill="#f1b18a"/><path d="M325 280 Q350 245 375 280" fill="#4b3028"/>
-    <circle cx="365" cy="337" r="13" fill="#f1b18a"/><path d="M410 360 Q450 330 485 360" stroke="#6d8b5a" stroke-width="12" fill="none"/>
-  </svg>`,
-  q:'¿Qué color llevaba la persona que estaba de pie a la derecha?',
-  a:['Rojo','Verde','Azul','Amarillo'], correct:2
+  image:"https://media.estatesit.uk/data/SEYMOURGREEN/PHOTOS/seymo-001868-p-w-79u13uu4n.jpg",
+  q:"¿Qué color tenía el horno de la cocina?",
+  a:["Negro","Blanco","Rojo","Azul"],
+  correct:0
 },
+
 {
-  bg:'#d8c5e9',
-  svg:`<svg class="scene" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
-    <rect width="800" height="480" fill="#d8c5e9"/><rect y="360" width="800" height="120" fill="#8b6b57"/>
-    <rect x="120" y="90" width="560" height="270" rx="18" fill="#f5f0df"/>
-    <rect x="160" y="125" width="160" height="95" fill="#86bde0"/><circle cx="245" cy="170" r="28" fill="#ffe06a"/>
-    <rect x="350" y="150" width="190" height="125" rx="12" fill="#6b8fd4"/><rect x="385" y="115" width="120" height="45" rx="8" fill="#d7a94e"/>
-    <circle cx="590" cy="285" r="35" fill="#e36c63"/><rect x="565" y="315" width="50" height="35" fill="#4d9b62"/>
-    <rect x="200" y="285" width="100" height="18" rx="9" fill="#c85f8a"/>
-  </svg>`,
-  q:'¿Qué objeto había encima del mueble azul?',
-  a:['Una lámpara','Un libro','Una caja amarilla','Un reloj'], correct:2
+  image:"https://images.squarespace-cdn.com/content/v1/60c031c765d57a47e1eed764/6a1d82e4-f247-413a-9e8d-a09c45d45ece/Shop%2BIn%2BEthnic%2BGrocery%2BStores.jpg?format=1500w",
+  q:"¿Qué tipo de alimentos destacaban en los puestos del mercado?",
+  a:["Frutas y verduras","Pan y dulces","Pescado","Carne"],
+  correct:0
 }
+
 ];
 
-let index=0,score=0,timer=null;
+let index=0;
+let score=0;
+let timer=null;
+
 function renderStart(){
- app.innerHTML=`<section class="card center">
-   <div class="emoji">👀</div><h1>MEMORIA VISUAL</h1>
-   <p class="muted">Mira la imagen con atención. Solo tendrás unos segundos para memorizar los detalles. Después desaparecerá y tendrás que responder una pregunta.</p>
-   <div class="stats"><span class="pill">🖼️ ${rounds.length} rondas</span><span class="pill">⏱️ 7 segundos</span><span class="pill">🏆 1 punto por acierto</span></div>
-   <button class="btn" id="start">🎬 Empezar</button>
- </section>`;
- document.getElementById('start').onclick=()=>{index=0;score=0;showRound()};
+
+ app.innerHTML=`
+
+ <section class="card center">
+
+   <div class="emoji">👀</div>
+
+   <h1>MEMORIA VISUAL</h1>
+
+   <p class="muted">
+     Mira una fotografía real con atención.
+     Solo tendrás unos segundos para memorizar
+     los detalles. Después desaparecerá y tendrás
+     que responder una pregunta.
+   </p>
+
+   <div class="stats">
+
+     <span class="pill">
+       🖼️ ${rounds.length} rondas
+     </span>
+
+     <span class="pill">
+       ⏱️ 7 segundos
+     </span>
+
+     <span class="pill">
+       🏆 1 punto por acierto
+     </span>
+
+   </div>
+
+   <button class="btn" id="start">
+     🎬 Empezar
+   </button>
+
+ </section>
+
+ `;
+
+ document.getElementById('start').onclick=()=>{
+
+   index=0;
+   score=0;
+
+   showRound();
+
+ };
+
 }
+
+
 function showRound(){
+
  const r=rounds[index];
- app.innerHTML=`<section class="card center">
-   <div class="stats"><span class="pill">Ronda ${index+1}/${rounds.length}</span><span class="pill">🏆 ${score} puntos</span></div>
-   <h2>👀 ¡Mira todos los detalles!</h2>
-   <div class="scene-wrap">${r.svg}</div>
-   <div class="timer" id="timer">7.0 s</div><div class="bar"><i id="bar"></i></div>
- </section>`;
- let left=7000,start=performance.now();
- function tick(now){left=7000-(now-start);if(left<=0){clearInterval(timer);ask();return}document.getElementById('timer').textContent=(left/1000).toFixed(1)+' s';document.getElementById('bar').style.width=(left/7000*100)+'%'}
- timer=setInterval(()=>tick(performance.now()),50);
+
+ app.innerHTML=`
+
+ <section class="card center">
+
+   <div class="stats">
+
+     <span class="pill">
+       Ronda ${index+1}/${rounds.length}
+     </span>
+
+     <span class="pill">
+       🏆 ${score} puntos
+     </span>
+
+   </div>
+
+   <h2>
+     👀 ¡Mira todos los detalles!
+   </h2>
+
+   <div class="scene-wrap">
+
+     <img
+       class="scene"
+       src="${r.image}"
+       alt="Imagen de la ronda"
+       loading="eager"
+     >
+
+   </div>
+
+   <div class="timer" id="timer">
+     7.0 s
+   </div>
+
+   <div class="bar">
+     <i id="bar"></i>
+   </div>
+
+   <p class="muted small">
+     Fíjate en colores, objetos, personas,
+     posiciones y pequeños detalles.
+   </p>
+
+ </section>
+
+ `;
+
+ let left=7000;
+ let start=performance.now();
+
+ function tick(now){
+
+   left=7000-(now-start);
+
+   if(left<=0){
+
+     clearInterval(timer);
+
+     ask();
+
+     return;
+
+   }
+
+   const t=document.getElementById('timer');
+   const bar=document.getElementById('bar');
+
+   if(t)
+     t.textContent=(left/1000).toFixed(1)+' s';
+
+   if(bar)
+     bar.style.width=(left/7000*100)+'%';
+
+ }
+
+ timer=setInterval(
+   ()=>tick(performance.now()),
+   50
+ );
+
 }
+
+
 function ask(){
+
  const r=rounds[index];
- app.innerHTML=`<section class="card center">
-   <div class="stats"><span class="pill">Ronda ${index+1}/${rounds.length}</span><span class="pill">🏆 ${score} puntos</span></div>
-   <div class="emoji">🧠</div><h2>¡A ver qué recuerdas!</h2>
-   <div class="question">${r.q}</div>
-   <div class="answers">${r.a.map((x,i)=>`<button class="answer" data-i="${i}">${x}</button>`).join('')}</div>
+
+ app.innerHTML=`
+
+ <section class="card center">
+
+   <div class="stats">
+
+     <span class="pill">
+       Ronda ${index+1}/${rounds.length}
+     </span>
+
+     <span class="pill">
+       🏆 ${score} puntos
+     </span>
+
+   </div>
+
+   <div class="emoji">
+     🧠
+   </div>
+
+   <h2>
+     ¡A ver qué recuerdas!
+   </h2>
+
+   <div class="question">
+     ${r.q}
+   </div>
+
+   <div class="answers">
+
+     ${r.a.map((x,i)=>`
+
+       <button
+         class="answer"
+         data-i="${i}"
+       >
+         ${x}
+       </button>
+
+     `).join('')}
+
+   </div>
+
    <div id="feedback"></div>
- </section>`;
- document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>answer(Number(b.dataset.i)));
+
+ </section>
+
+ `;
+
+ document
+   .querySelectorAll('.answer')
+   .forEach(
+     b=>b.onclick=
+       ()=>answer(Number(b.dataset.i))
+   );
+
 }
+
+
 function answer(i){
- const r=rounds[index], buttons=[...document.querySelectorAll('.answer')];
- buttons.forEach(b=>b.disabled=true);
- buttons[r.correct].classList.add('correct');
+
+ const r=rounds[index];
+
+ const buttons=[
+   ...document.querySelectorAll('.answer')
+ ];
+
+ buttons.forEach(
+   b=>b.disabled=true
+ );
+
+ buttons[r.correct]
+   .classList
+   .add('correct');
+
  const ok=i===r.correct;
- if(ok)score++;
- if(!ok)buttons[i].classList.add('wrong');
- document.getElementById('feedback').innerHTML=`<div class="feedback ${ok?'good':'bad'}">${ok?'✅ ¡Correcto!':'❌ Incorrecto.'} ${ok?'':'La respuesta era <b>'+r.a[r.correct]+'</b>.'}</div><button class="btn" id="next">${index===rounds.length-1?'🏆 Ver resultado':'➡️ Siguiente ronda'}</button>`;
- document.getElementById('next').onclick=()=>{index++;index<rounds.length?showRound():finish()};
+
+ if(ok)
+   score++;
+
+ if(!ok)
+   buttons[i].classList.add('wrong');
+
+ document.getElementById('feedback').innerHTML=`
+
+   <div class="feedback ${ok?'good':'bad'}">
+
+     ${
+       ok
+       ? '✅ ¡Correcto!'
+       : '❌ Incorrecto.'
+     }
+
+     ${
+       ok
+       ? ''
+       : 'La respuesta era <b>'+
+         r.a[r.correct]+
+         '</b>.'
+     }
+
+   </div>
+
+   <button class="btn" id="next">
+
+     ${
+       index===rounds.length-1
+       ? '🏆 Ver resultado'
+       : '➡️ Siguiente ronda'
+     }
+
+   </button>
+
+ `;
+
+ document.getElementById('next').onclick=()=>{
+
+   index++;
+
+   if(index<rounds.length)
+     showRound();
+   else
+     finish();
+
+ };
+
 }
+
+
 function finish(){
- const pct=Math.round(score/rounds.length*100);
- let msg=pct===100?'¡Memoria de campeón! 🧠🔥':pct>=66?'¡Muy buena memoria! 👀👏':pct>=33?'No está mal, pero hay que fijarse más 😄':'¡Hay que entrenar esa memoria! 😂';
- app.innerHTML=`<section class="card center"><div class="emoji">🏆</div><h1>Resultado</h1><h2>${score} / ${rounds.length}</h2><p class="muted">${msg}</p><button class="btn" id="again">🔄 Jugar otra vez</button></section>`;
- document.getElementById('again').onclick=()=>{index=0;score=0;showRound()};
+
+ const pct=
+   Math.round(
+     score/rounds.length*100
+   );
+
+ let msg=
+   pct===100
+   ? '¡Memoria de campeón! 🧠🔥'
+   : pct>=66
+   ? '¡Muy buena memoria! 👀👏'
+   : pct>=33
+   ? 'No está mal, pero hay que fijarse más 😄'
+   : '¡Hay que entrenar esa memoria! 😂';
+
+ app.innerHTML=`
+
+ <section class="card center">
+
+   <div class="emoji">
+     🏆
+   </div>
+
+   <h1>
+     Resultado
+   </h1>
+
+   <h2>
+     ${score} / ${rounds.length}
+   </h2>
+
+   <p class="muted">
+     ${msg}
+   </p>
+
+   <button class="btn" id="again">
+     🔄 Jugar otra vez
+   </button>
+
+ </section>
+
+ `;
+
+ document.getElementById('again').onclick=()=>{
+
+   index=0;
+   score=0;
+
+   showRound();
+
+ };
+
 }
+
+
 renderStart();
+
 </script>
+
 </body>
 </html>

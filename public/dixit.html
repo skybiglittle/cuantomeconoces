@@ -37,94 +37,27 @@ const STORE='cmc_fab_session_v1',CID='cmc_fab_cid_v1',KEY='cmc_fab_key_v1';
 const HAND=6,MAXP=12,MINP=3;
 
 /* =====================================================================
-   🖼️  IMÁGENES DE LAS CARTAS  —  PLANTILLA PARA PONER LAS TUYAS
+   🖼️  IMÁGENES DE LAS CARTAS  —  CONFIGURACIÓN DANI
    =====================================================================
-   Cada carta del mazo es una imagen. Si una carta no tiene imagen (o no carga),
-   se muestra una ilustración generada por código, así nunca queda un hueco.
+   Cada imagen de CUSTOM_IMAGES es una LÁMINA con 8 cartas (4 columnas × 2 filas).
+   El juego las recorta solo: detecta los marcos negros entre cartas y corta cada
+   carta por dentro. Cada lámina aporta 8 cartas al mazo.
 
-   ▶ CÓMO AÑADIR UNA IMAGEN PERSONALIZADA
-     1) Sube tu imagen a tu web (por ejemplo a la carpeta /cartas/) o usa una URL pública.
-        Formato vertical 2:3 (ej. 600×900 px). JPG, PNG o WEBP. Menos de 300 KB cada una.
-     2) Pega su dirección dentro de CUSTOM_IMAGES, una por línea y entre comillas:
-
-          const CUSTOM_IMAGES=[
-            'https://tudominio.com/cartas/carta-01.jpg',   // URL completa
-            'cartas/carta-02.png',                          // ruta relativa a este HTML
-            commons('Nombre_del_archivo_en_Commons.jpg'),   // cualquier archivo de Wikimedia Commons
-          ];
-
-     3) Guarda y recarga. Tus imágenes pasan a ser las primeras cartas del mazo.
-
+   ▶ PARA AÑADIR MÁS LÁMINAS: pon su ruta dentro de CUSTOM_IMAGES, una por línea.
+     Si el archivo es .jpg/.png/.webp da igual: el juego prueba las tres extensiones.
+   ▶ Si una lámina no carga, sus 8 cartas se sustituyen por cartas generadas
+     y aparece un aviso en la pantalla de inicio con el nombre del archivo.
    ▶ AJUSTES
-     • USE_PUBLIC_DOMAIN_IMAGES = false  → quita las ilustraciones de dominio público de abajo.
-     • USE_GENERATED_CARDS = false       → el mazo serán SOLO tus imágenes (necesitas 40 o más).
+     • USE_PUBLIC_DOMAIN_IMAGES = true  → usa también ilustraciones de Wikimedia Commons en las cartas generadas.
+     • USE_GENERATED_CARDS = true       → completa el mazo con cartas generadas hasta MIN_DECK_SIZE.
    ▶ IMPORTANTE: todos los jugadores deben cargar la misma versión de este archivo.
    ===================================================================== */
 const commons=n=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(n)+'?width=420';
 //DANI. AQUI PONGO LAS PERSONALIZADAS
-      const CUSTOM_IMAGES=[
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png',
-  '/cartasdixit/lamina01.png'
-
-
+const CUSTOM_IMAGES=[
+  ...Array(57).fill('/cartasdixit/lamina01.png'), // 57 copias de la lámina 1, solo para probar
+  // '/cartasdixit/lamina02.png',
+  // '/cartasdixit/lamina03.png',
 ];
 const USE_PUBLIC_DOMAIN_IMAGES=false;
 const USE_GENERATED_CARDS=false; //USO CARTAS GENERADAS O NO. AQUI PUEDO CAMBIAR. CONFIGURACION DANI.
@@ -138,67 +71,17 @@ const PD_FILES=[
  'Theodor_Kittelsen_-_Nøkken_som_hvit_hest.jpg','The_Star_Lovers,_by_Warwick_Goble.jpg','Goble-Book_of_Fairy_Poetry034Kelpie_of_Corrievreckan.jpg','HJFord-giant-enters.JPG',
  'Firebird.jpg','Vasilisa.jpg','Vasilisa_the_Beautiful_(Bilibin)_-_cover.jpg','Bilitower.jpg','Ivanbilibin.jpg','Solovej.jpg','Biliwar.jpg','Russian_Wonder_Tales_081.jpg','Dobrynya_Nikitich_rescues_Zabava_from_the_Gorynych,_1941.jpg','Baba_Yaga.jpg'
 ];
-const ART=
-  USE_PUBLIC_DOMAIN_IMAGES
-  ? PD_FILES.map(commons)
-  : [];
-const SHEET_COLS = 4;
-const SHEET_ROWS = 2;
+const ART=USE_PUBLIC_DOMAIN_IMAGES?PD_FILES.map(commons):[];
+const SHEET_COLS=4,SHEET_ROWS=2;
 
-function buildSheetCards(){
-
-  const cards=[];
-
-  CUSTOM_IMAGES.forEach((url,sheet)=>{
-
-    for(let row=0;row<SHEET_ROWS;row++){
-
-      for(let col=0;col<SHEET_COLS;col++){
-
-        cards.push({
-          type:'sheet',
-          url,
-          sheet,
-          row,
-          col
-        });
-
-      }
-
-    }
-
-  });
-
-  return cards;
-}
-
+function buildSheetCards(){const cards=[];
+  CUSTOM_IMAGES.forEach((url,sheet)=>{for(let row=0;row<SHEET_ROWS;row++)for(let col=0;col<SHEET_COLS;col++)cards.push({type:'sheet',url,sheet,row,col})});
+  return cards}
 const SHEET_CARDS=buildSheetCards();
-
 const CARD_POOL=[];
-
 CARD_POOL.push(...SHEET_CARDS);
-
-const MIN_DECK_SIZE = 84;
-
-if(USE_GENERATED_CARDS){
-
-    const faltan =
-        Math.max(
-            0,
-            MIN_DECK_SIZE - CARD_POOL.length
-        );
-
-    for(let i=0;i<faltan;i++){
-
-        CARD_POOL.push({
-            type:'generated',
-            id:i
-        });
-
-    }
-
-}
-
+const MIN_DECK_SIZE=84;
+if(USE_GENERATED_CARDS){const faltan=Math.max(0,MIN_DECK_SIZE-CARD_POOL.length);for(let i=0;i<faltan;i++)CARD_POOL.push({type:'generated',id:i})}
 const DECK=CARD_POOL.length;
 const rand=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -219,52 +102,36 @@ function renderGeneratedCard(i,cls='',attrs=''){
  g+='<text x="'+((30+r()*40)|0)+'" y="'+((220+r()*50)|0)+'" font-size="'+((26+r()*16)|0)+'" text-anchor="middle">'+s1+'</text>';
  g+='<text x="'+((140+r()*40)|0)+'" y="'+((200+r()*60)|0)+'" font-size="'+((24+r()*16)|0)+'" text-anchor="middle">'+s2+'</text>';
  return'<div class="art '+cls+'" style="background:'+bg+'" '+attrs+'><svg viewBox="0 0 200 300" aria-hidden="true">'+g+'</svg>'+(ART[i]?'<img src="'+safe(ART[i])+'" alt="" loading="lazy" decoding="async" draggable="false" referrerpolicy="no-referrer">':'')+'</div>'}
-      function renderSheetCard(card,cls='',attrs=''){
 
-return `
-  <div class="art ${cls}" ${attrs}>
-   <div style="
-     position:relative;
-     width:100%;
-     height:100%;
-     overflow:hidden;
-   ">
-
-    <img
-      src="${card.url}"
-      loading="lazy"
-      draggable="false"
-      style="
-        position:absolute;
-        width:${SHEET_COLS*100}%;
-        height:${SHEET_ROWS*100}%;
-
-        left:${-(card.col*100)}%;
-        top:${-(card.row*100)}%;
-
-        object-fit:cover;
-        pointer-events:none;
-        user-select:none;
-      "
-    >
-
-   </div>
-  </div>
-`;
-}
+// ---------- RECORTE DE LÁMINAS (4 columnas × 2 filas = 8 cartas) ----------
+// Detecta solo los bordes negros entre cartas. Si no puede, usa márgenes por defecto.
+const SHEET_DEF={mx:.0117,my:.013,gx:.0195,gy:.0224};
+const SHEET_INFO={},SHEET_FAILED=[];
+function spans(f,n,count){const out=[];let s=-1;for(let i=0;i<=n;i++){const card=i<n&&f[i]<=.97;if(card&&s<0)s=i;if(!card&&s>=0){if(i-s>n/count/2)out.push([s,i]);s=-1}}return out.length===count?out:null}
+function fromPixels(d,W,H,cols,rows){const cd=new Float32Array(W),rd=new Float32Array(H);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4;if(d[i]*.3+d[i+1]*.59+d[i+2]*.11<45){cd[x]++;rd[y]++}}
+ const cs=spans(Array.from(cd,v=>v/H),W,cols),rs=spans(Array.from(rd,v=>v/W),H,rows);if(!cs||!rs)return null;
+ const out=[];for(const r of rs)for(const c of cs){const ix=Math.max(1,Math.round((c[1]-c[0])*.006)),iy=Math.max(1,Math.round((r[1]-r[0])*.006));
+  out.push([(c[0]+ix)/W,(r[0]+iy)/H,(c[1]-c[0]-2*ix)/W,(r[1]-r[0]-2*iy)/H])}return out}
+function defRects(cols,rows){const D=SHEET_DEF,cw=(1-2*D.mx-(cols-1)*D.gx)/cols,ch=(1-2*D.my-(rows-1)*D.gy)/rows,o=[];
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)o.push([D.mx+c*(cw+D.gx),D.my+r*(ch+D.gy),cw,ch]);return o}
+function detect(img,cols,rows){try{const W=Math.min(800,img.naturalWidth),H=Math.round(img.naturalHeight*W/img.naturalWidth),c=document.createElement('canvas');c.width=W;c.height=H;
+ const x=c.getContext('2d');x.drawImage(img,0,0,W,H);return fromPixels(x.getImageData(0,0,W,H).data,W,H,cols,rows)}catch(e){return null}}
+function loadSheet(url){return new Promise(res=>{const tries=[url],m=url.match(/^(.*)\.(\w+)$/);
+ if(m)['jpg','jpeg','png','webp'].forEach(e=>{const u=m[1]+'.'+e;if(!tries.includes(u))tries.push(u)});
+ let i=0;const next=()=>{if(i>=tries.length)return res(null);const img=new Image(),u=tries[i++];
+  img.onload=()=>res({url:u,rects:detect(img,SHEET_COLS,SHEET_ROWS)||defRects(SHEET_COLS,SHEET_ROWS)});img.onerror=next;img.src=u};next()})}
+const SHEETS_READY=Promise.all([...new Set(CUSTOM_IMAGES)].map(async u=>{SHEET_INFO[u]=await loadSheet(u);if(!SHEET_INFO[u])SHEET_FAILED.push(u)}));
+function renderSheetCard(card,cls='',attrs=''){const inf=SHEET_INFO[card.url];
+ if(!inf)return renderGeneratedCard(card.sheet*100+card.row*SHEET_COLS+card.col,cls,attrs);
+ const [x,y,w,h]=inf.rects[card.row*SHEET_COLS+card.col],px=x/(1-w)*100,py=y/(1-h)*100;
+ return'<div class="art '+cls+'" '+attrs+' style="background:#111 url(\''+safe(inf.url)+'\') '+px.toFixed(3)+'% '+py.toFixed(3)+'%/'+(100/w).toFixed(3)+'% '+(100/h).toFixed(3)+'% no-repeat"></div>'}
 
 function cardHTML(cardIndex,cls='',attrs=''){
-
  const card=CARD_POOL[cardIndex];
-
  if(!card)return '';
-
- if(card.type==='sheet'){
-   return renderSheetCard(card,cls,attrs);
- }
-
- return renderGeneratedCard(card.id,cls,attrs);
-}
+ if(card.type==='sheet')return renderSheetCard(card,cls,attrs);
+ return renderGeneratedCard(card.id,cls,attrs)}
 // ---------- Estado local y red (mismo sistema de salas que Concept) ----------
 const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
 let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
@@ -296,20 +163,7 @@ function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[]
 // ---------- Lógica del anfitrión ----------
 function startGame(){const ps=playerList().sort((a,b)=>(b.p.c_host?1:0)-(a.p.c_host?1:0)).slice(0,MAXP);if(ps.length<MINP)return;
  const order=shuffle(ps.map(p=>p.key)),names={},scores={},hands={};ps.forEach(p=>{names[p.key]=p.name;scores[p.key]=0;hands[p.key]=[]});
- Object.assign(state,{
- order,
- names,
- scores,
- hands,
- deck:shuffle(CARD_POOL.map((_,i)=>i)),
- round:0,
- story:'',
- clue:'',
- plays:{},
- votes:{},
- table:[],
- result:null
-});nextRound()}
+ Object.assign(state,{order,names,scores,hands,deck:shuffle(CARD_POOL.map((_,i)=>i)),round:0,story:'',clue:'',plays:{},votes:{},table:[],result:null});nextRound()}
 function nextRound(){
  const need=state.order.reduce((a,k)=>a+Math.max(0,HAND-state.hands[k].length),0),top=Math.max(...Object.values(state.scores));
  if(state.round>0&&(top>=state.target||state.deck.length<need)){state.phase='finished';return commit()}
@@ -420,6 +274,8 @@ function render(){if(!roomCode)return renderHome();
  if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
  if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
 setInterval(()=>{if(roomCode&&state)hostStep()},700);
-if(saved?.room&&saved?.name){connect();render()}else renderHome();
+app.innerHTML='<section class="card center"><h2>Cargando cartas…</h2></section>';
+SHEETS_READY.then(()=>{const aviso=SHEET_FAILED.length?'⚠️ No se pudo cargar: '+SHEET_FAILED.join(', ')+'. Se usan cartas generadas en su lugar.':'';
+ if(saved?.room&&saved?.name){connect();render()}else renderHome(aviso)});
 })();
 </script></body></html>

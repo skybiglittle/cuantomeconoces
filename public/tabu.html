@@ -404,7 +404,7 @@ const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now()
 function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
 ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
 const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
-sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'tabu-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'cmb-tabu-'+c.toLowerCase(),cid}));if(done)ws.send()};
 sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
 if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
 else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};

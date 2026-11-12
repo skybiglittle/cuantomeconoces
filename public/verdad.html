@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Dos verdades y una mentira</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff758f}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#29234d,transparent 42%),radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:max(22px,env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8vw,54px);line-height:1.03;margin:12px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b6aaff 50%,#64e9d8);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:22px;margin:0 0 8px}h3{font-size:17px;margin:16px 0 6px}.m,.sub{color:var(--m)}.sub{margin:0 0 18px}
+.tag,.pill{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}.pill{background:#29234e;color:#c8c0ff;border:0}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:20px;margin:14px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+input,textarea{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}input:focus,textarea:focus{border-color:var(--a)}
+.rd{display:flex;gap:8px;align-items:center;margin:8px 0 0;color:var(--r)}.rd input{width:auto}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}
+.pls{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.pl{background:#0f172a;border:1px solid var(--l);padding:6px 11px;border-radius:99px;font-size:13px}.pl.me{border-color:var(--b);color:var(--b)}
+.code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}.small{font-size:13px;color:var(--m)}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}.notice.good{background:#102b25;border-color:#226448;color:#a8f0ca}
+.card{background:#101a2e;border:1px solid var(--l);border-radius:15px;padding:14px;margin:10px 0}.hd{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--g)}.at{font-size:17px;overflow-wrap:anywhere}
+.opt{display:block;width:100%;text-align:left;color:var(--t);font:inherit;font-size:17px;cursor:pointer}.opt:hover{border-color:var(--a)}
+.card.lie{border-color:var(--r)}.card.lie .hd{color:var(--r)}
+.meter{height:9px;background:#303b55;border-radius:99px;overflow:hidden;margin:8px 0 14px}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--a));transition:width 1s linear}
+.tl{display:flex;justify-content:space-between;font-size:12px;color:var(--m);font-weight:700}.sc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--l)}.sc:last-child{border:0}.ok{color:var(--g)}.ko{color:var(--r)}
+</style></head><body><main>
+<header><span class="tag">🤥 MULTIJUGADOR · SALAS PRIVADAS</span><h1>Dos verdades y una mentira</h1><p class="sub">Escribe tres frases sobre ti, una falsa. Los demás intentan descubrir cuál.</p></header>
+<section id="home" class="panel"><h2>Entra en partida</h2><p class="m">Crea una sala y comparte el código, o únete a la de otra persona.</p>
+<label for="pn">Tu nombre</label><input id="pn" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="cb">Crear sala</button><button class="btn s" id="sj">Unirme a una sala</button></div>
+<div id="jb" class="hidden"><label for="rc">Código de sala</label><input id="rc" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn full" id="jn">Entrar en la sala</button></div>
+<p id="hm" class="notice hidden" aria-live="polite"></p></section>
+<section id="lobby" class="panel hidden">
+<div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
+<h3>Jugadores conectados</h3><div id="lp" class="pls"></div>
+<div class="notice">Todos escribís tres frases sobre vosotros (una mentira). Luego cada persona tiene su turno: los demás votan cuál es falsa. Aciertas: +2. Si engañas a alguien: +1 por cada uno.</div>
+<div class="row"><button class="btn g" id="st">Empezar partida</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
+<section id="game" class="panel hidden"></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),pick=a=>a[Math.random()*a.length|0],shuf=a=>{a=a.slice();for(let i=a.length;--i>0;){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const TIPS=['Algo que hayas comido una vez','Un sitio donde hayas vivido o viajado','Un trabajo raro que hayas tenido','Una habilidad escondida','Algo que te haya pasado de pequeño','Un famoso al que hayas visto o conocido','Un miedo o una manía','Un accidente o una anécdota absurda','Algo que nunca hayas hecho (y todos creen que sí)','Un talento inútil'];
+let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={},lastKey='',offs=0;
+const uid=()=>Math.random().toString(36).slice(2,10),now=()=>Date.now()+offs,msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),dat=k=>{const p=peers.find(q=>q.k===k);return(p&&p.d)||{}},on=k=>peers.some(p=>p.k===k);
+const dd=p=>{const d=dat(p.k);return d.r===S.n?d:{}};
+const fresh=()=>({ph:'lobby',n:0,v:0,sc:{},nm:{},pl:[],items:[],cur:0});
+const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now();pub({h:1,s:S});rend()};
+function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
+ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
+const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'dyv-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
+else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};
+sock.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))}};
+open();setTimeout(()=>{if(!done){done=1;closed=1;rej('timeout')}},15000)})}
+function onPeers(){
+const hs=peers.filter(p=>p.h&&p.s).sort((a,b)=>(b.s.v-a.s.v)||(a.k<b.k?-1:1));
+if(H&&hs.length&&hs[0].k!==K&&hs[0].s.v>=S.v){H=false;pub({h:0,s:null})}
+if(!H){const hp=hs[0];
+if(hp){if(!S||hp.s.v>S.v){S=hp.s;offs=S.t-Date.now()}}
+else if(ready&&roster()[0]&&roster()[0].k===K){H=true;S=S||fresh();pubS()}}
+rend();if(H)hostTick()}
+async function start(host){N=($('pn').value.trim()||'Jugador').slice(0,18);K=uid();H=host;S=host?fresh():null;ready=0;
+if(host)code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+else{code=$('rc').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(code))return msg('Escribe un código de cinco caracteres.')}
+try{await connect(code);P={k:K,n:N,t:Date.now(),d:{}};ready=1;if(host)pubS();else pub({})}catch(e){H=false;msg(e==='room_full'?'La sala está llena.':host?'No se pudo crear la sala. Inténtalo de nuevo.':'No se pudo entrar. Comprueba el código.')}}
+function startGame(){if(!H)return;const ps=roster().slice(0,8);if(ps.length<3)return;
+S.pl=ps.map(p=>({k:p.k,n:p.n}));S.sc={};S.items=[];S.cur=0;ps.forEach(p=>{S.nm[p.k]=p.n;S.sc[p.k]=0});
+S.n++;S.ph='write';S.dl=Date.now()+120000;pubS()}
+function nextTurn(){S.cur++;while(S.cur<S.items.length&&!on(S.items[S.cur].k))S.cur++;
+if(S.cur>=S.items.length)S.ph='end';else{S.ph='guess';S.n++;S.dl=Date.now()+40000;S.res=null}pubS()}
+function hostTick(){if(!H||!S||(S.ph!=='write'&&S.ph!=='guess'))return;const late=Date.now()>S.dl;
+if(S.ph==='write'){const act=S.pl.filter(p=>on(p.k)),okp=p=>{const x=dd(p);return x.ok&&Array.isArray(x.s)&&x.s.length===3};
+if((act.length&&act.every(okp))||late){S.items=shuf(S.pl.filter(okp).map(p=>{const x=dd(p),o=shuf([0,1,2]);return{k:p.k,st:o.map(i=>String(x.s[i]).slice(0,100)),li:o.indexOf(x.l)}}));
+if(!S.items.length){S.ph='lobby';pubS();return}S.cur=-1;nextTurn()}}
+else{const it=S.items[S.cur],gs=S.pl.filter(p=>p.k!==it.k&&on(p.k));
+if(!gs.length||gs.every(p=>typeof dd(p).g==='number')||late){const right=[],wrong=[],none=[],pts={};S.pl.forEach(p=>pts[p.k]=0);
+gs.forEach(p=>{const g=dd(p).g;if(typeof g!=='number')none.push(p.n);else if(g===it.li){right.push(p.n);pts[p.k]+=2}else{wrong.push(p.n);pts[it.k]++}});
+S.pl.forEach(p=>S.sc[p.k]+=pts[p.k]);S.res={right,wrong,none,pts};S.ph='reveal';S.dl=0;pubS()}}}
+function upd(){if(!S||!S.dl||(S.ph!=='write'&&S.ph!=='guess'))return;const w=S.ph==='write',s=Math.max(0,Math.ceil((S.dl-now())/1000)),t=$('tm'),b=$('bar'),c=$('cnt');
+if(t)t.textContent=s+' s';if(b)b.style.width=s/(w?120:40)*100+'%';
+if(c){const a=S.pl.filter(p=>on(p.k)&&(w||p.k!==S.items[S.cur].k));c.textContent='Listos: '+a.filter(p=>w?dd(p).ok:typeof dd(p).g==='number').length+' de '+a.length}}
+function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k;$('cl').textContent=code;
+$('lp').innerHTML=ps.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('');
+$('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';
+$('st').classList.toggle('hidden',!H);$('st').disabled=ps.length<3||ps.length>8;
+$('lm').textContent=ps.length<3?'Hacen falta al menos 3 jugadores.':ps.length>8?'Máximo 8 jugadores por partida.':H?'Ya podéis empezar.':'El anfitrión empezará cuando estéis listos.'}
+function rend(){if(!code)return;if(!S||S.ph==='lobby'){show('lobby');lastKey='';rLobby();return}
+show('game');const me=S.pl.some(p=>p.k===K);
+if(S.n!==L.n){L={n:S.n,tip:pick(TIPS)};if(me)pub({d:{r:S.n}})}
+const key=S.ph+S.n+(L.done?1:0)+(me?1:0);if(key===lastKey){upd();return}lastKey=key;
+const g=$('game'),it=S.items[S.cur],rk=()=>Object.keys(S.sc).sort((a,b)=>S.sc[b]-S.sc[a]).map((k,i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+esc(S.nm[k]||'Jugador')+(k===K?' (tú)':'')+'</span><strong>'+S.sc[k]+' pts</strong></div>').join(''),
+head=t=>'<div class="tl"><span>'+t+'</span><span id="tm"></span></div><div class="meter"><span id="bar"></span></div>',
+turn=S.cur+1+' / '+S.items.length;
+if(S.ph==='end'){g.innerHTML='<span class="pill">PARTIDA TERMINADA</span><h2>🏆 Clasificación final</h2>'+rk()+'<div class="row" style="margin-top:16px">'+(H?'<button class="btn g" id="ag">Jugar otra vez</button>':'<span class="small">Esperando al anfitrión…</span>')+'<button class="btn gh" id="ex">Salir</button></div>';
+if(H)$('ag').onclick=()=>{S.ph='lobby';pubS()};$('ex').onclick=()=>location.reload();return}
+if(S.ph==='reveal'){const r=S.res,nm=a=>a.length?esc(a.join(', ')):'—';
+g.innerHTML='<span class="pill">RESULTADO · TURNO '+turn+'</span><h2>La mentira de '+esc(S.nm[it.k])+'</h2>'+it.st.map((t,i)=>'<div class="card'+(i===it.li?' lie':'')+'"><div class="hd">'+(i===it.li?'✗ Mentira':'✓ Verdad')+'</div><div class="at">'+esc(t)+'</div></div>').join('')+'<p class="small"><span class="ok">La descubrieron:</span> '+nm(r.right)+'<br><span class="ko">Cayeron:</span> '+nm(r.wrong)+(r.none.length?'<br>Sin respuesta: '+nm(r.none):'')+'</p><h3>Puntos</h3>'+rk()+(H?'<button class="btn g full" id="nx">'+(S.cur>=S.items.length-1?'Ver clasificación final':'Siguiente turno')+'</button>':'<p class="small">Esperando al anfitrión…</p>');
+if(H)$('nx').onclick=nextTurn;return}
+if(!me){g.innerHTML='<div class="notice">Hay una partida en marcha. Entrarás en la siguiente.</div><h3>Clasificación</h3>'+rk();return}
+if(S.ph==='write'){g.innerHTML=head('ESCRIBE TUS FRASES')+'<h2>Dos verdades y una mentira</h2><p class="m">Escribe tres frases sobre ti y marca cuál es la mentira. Cuanto más creíble, mejor.</p><div class="notice">💡 Idea: '+esc(L.tip)+'</div>'+(L.done?'<div class="notice good">✓ Frases enviadas. Esperando al resto…</div>':[0,1,2].map(i=>'<div class="card"><input id="s'+i+'" maxlength="100" placeholder="Frase '+(i+1)+'"><label class="rd"><input type="radio" name="lie" value="'+i+'"> Esta es la mentira</label></div>').join('')+'<button class="btn g full" id="sa">Enviar</button>')+'<p class="small" id="cnt"></p>';
+if(!L.done)$('sa').onclick=()=>{const s=[0,1,2].map(i=>$('s'+i).value.trim()),l=document.querySelector('input[name=lie]:checked');if(s.some(x=>!x)||!l)return alert('Escribe las tres frases y marca cuál es la mentira.');L.done=1;pub({d:{r:S.n,s,l:+l.value,ok:1}});rend()}}
+else if(it.k===K){g.innerHTML=head('TURNO '+turn)+'<h2>Es tu turno 😏</h2><p class="m">Los demás están votando cuál es tu mentira. Pon cara de póquer.</p>'+it.st.map(t=>'<div class="card"><div class="at">'+esc(t)+'</div></div>').join('')+'<p class="small" id="cnt"></p>'}
+else{g.innerHTML=head('TURNO '+turn)+'<h2>¿Cuál es la mentira de '+esc(S.nm[it.k])+'?</h2><p class="m">Toca la frase que crees que es falsa.</p>'+(L.done?'<div class="notice good">✓ Voto enviado. Esperando al resto…</div>':it.st.map((t,i)=>'<button class="card opt" data-i="'+i+'">'+esc(t)+'</button>').join(''))+'<p class="small" id="cnt"></p>';
+g.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{L.done=1;pub({d:{r:S.n,g:+b.dataset.i}});rend()})}
+upd()}
+$('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
+$('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+$('cp').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>$('cp').textContent='¡Copiado!').catch(()=>{})};
+$('st').onclick=startGame;$('lv').onclick=()=>{if(ws)ws.leave();location.reload()};
+setInterval(()=>{hostTick();upd()},1000);addEventListener('beforeunload',()=>{if(ws)ws.leave()});
+})();
+</script></body></html>

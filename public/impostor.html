@@ -232,13 +232,13 @@ function startGame(){
   if(errors.length){renderConfig(errors.join(' '));return}
   saveConfig();
   const roles=rolePool();
-  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now()};
+  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now(),names:Array(config.players).fill('')};
   screen='reveal';render();
 }
 function newGame(){
   saveConfig();
   const roles=rolePool();
-  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now()};
+  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now(),names:Array(config.players).fill('')};
   screen='reveal';render();
 }
 function roleGetsWord(role){return ['citizen','infiltrated','king','robot'].includes(role)}
@@ -333,12 +333,13 @@ function renderReveal(){
   const r=ROLES[role];
   app.innerHTML=`
     <section class="card center">
-      <div class="turn">Jugador ${n} de ${total}</div>
+      <div class="turn">${game.names?.[game.index] ? `${safe(game.names[game.index])} · ` : ''}Jugador ${n} de ${total}</div>
       <div class="progress"><div style="width:${(n/total)*100}%"></div></div>
       <div class="hero-emoji">📱</div>
       <h2>${game.phase==='reveal'?'Coge el móvil':'Listo'}</h2>
       ${game.phase==='reveal'?`
-        <p class="muted">Jugador ${n}, coge el móvil y pulsa el botón cuando estés preparado.</p>
+        <p class="muted">${game.names?.[game.index] ? `${safe(game.names[game.index])}, coge el móvil y pulsa el botón cuando estés preparado.` : `Jugador ${n}, escribe tu nombre y pulsa el botón cuando estés preparado.`}</p>
+        <input id="playerName" type="text" maxlength="20" placeholder="Tu nombre" value="${safe(game.names?.[game.index] || '')}" autocomplete="off">
         <button class="btn" id="show">👀 Ver mi personaje</button>`:''}
     </section>
     ${game.phase==='shown'?`
@@ -355,7 +356,14 @@ function renderReveal(){
       <button class="btn" id="hide">🙈 Ocultar y pasar</button>
     </section>`:''}
   `;
-  if($('show'))$('show').onclick=()=>{game.phase='shown';render()};
+  if($('show'))$('show').onclick=()=>{
+    const input=$('playerName');
+    const name=input ? input.value.trim() : '';
+    if(!name){ if(input){input.focus();input.style.borderColor='#ff5577';} return; }
+    game.names[game.index]=name;
+    game.phase='shown';
+    render();
+  };
   if($('hide'))$('hide').onclick=nextReveal;
 }
 function nextReveal(){

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>El Impostor · CuántoMeConoces</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#090d18;--panel:#121a2b;--panel2:#172238;--line:#2b3956;
+  --text:#f5f7ff;--muted:#aab6cf;--primary:#8b7cff;--primary2:#637dff;
+  --cyan:#43d9c5;--gold:#ffd166;--danger:#ff6f86;--good:#4cdb9b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg)}
+body{
+  color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:
+    radial-gradient(ellipse at 8% 0%,#2a2350 0,transparent 42%),
+    radial-gradient(ellipse at 100% 15%,#103f4a 0,transparent 35%),var(--bg);
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.app{width:min(760px,100%);margin:auto;padding:18px 14px 50px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{font-weight:900;text-decoration:none;color:var(--text);letter-spacing:-.03em}
+.brand span{color:var(--cyan)}
+.back{color:var(--muted);text-decoration:none;font-size:14px}
+.card{
+  background:linear-gradient(145deg,rgba(24,35,57,.97),rgba(15,23,40,.98));
+  border:1px solid var(--line);border-radius:22px;padding:18px;margin:12px 0;
+  box-shadow:0 14px 40px #0004;
+}
+.center{text-align:center}
+h1{font-size:clamp(42px,10vw,68px);line-height:.95;margin:4px 0 10px;letter-spacing:-.06em;
+  background:linear-gradient(100deg,#fff,#b9afff 48%,#67ead9);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:25px;line-height:1.1;margin:0 0 8px}
+h3{font-size:16px;margin:0 0 8px}
+p{margin:7px 0}.muted{color:var(--muted)}.small{font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;color:var(--muted);font-size:13px;margin:10px 0 5px}
+input,select{
+  width:100%;border:1px solid var(--line);background:#0b1426;color:var(--text);
+  border-radius:12px;padding:12px;outline:none
+}
+input:focus,select:focus{border-color:var(--primary)}
+.btn{
+  width:100%;border:0;border-radius:14px;padding:13px 15px;
+  background:linear-gradient(100deg,var(--primary),var(--primary2));color:#fff;font-weight:850;
+  min-height:48px
+}
+.btn.secondary{background:#293753;border:1px solid var(--line)}
+.btn.good{background:linear-gradient(100deg,#149a68,#28c99b)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.danger{background:#472334;border:1px solid #7b3a50}
+.row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+.stack{display:grid;gap:10px}
+.notice{min-height:20px;color:var(--gold);font-size:13px}
+.error{color:#ffb0bb}
+.success{color:#9ff1cd}
+.hidden{display:none!important}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);
+  border-radius:99px;color:var(--muted);font-size:12px
+}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.role-option{
+  position:relative;border:1px solid var(--line);background:#0f192c;color:var(--text);
+  border-radius:15px;padding:12px;text-align:left;transition:.18s ease
+}
+.role-option:hover{border-color:#4d5f84}
+.role-option.on{border-color:var(--cyan);background:#102d2b}
+.role-option input{position:absolute;opacity:0;pointer-events:none}
+.role-icon{font-size:27px;display:block;margin-bottom:3px}
+.role-name{font-weight:800}.role-desc{font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.role-check{position:absolute;right:10px;top:10px;color:var(--cyan);font-weight:900}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.cat{
+  border:1px solid var(--line);background:#0f192c;color:var(--text);border-radius:12px;
+  padding:9px 7px;font-size:12px;min-height:43px
+}
+.cat.on{background:var(--primary);border-color:var(--primary);font-weight:800}
+.config-summary{
+  border:1px dashed #536381;border-radius:13px;padding:11px 12px;background:#0b1426;
+  color:var(--muted);font-size:12px
+}
+.hero-emoji{font-size:64px;line-height:1;margin:5px 0 12px}
+.secret-word{
+  font-size:clamp(34px,9vw,58px);font-weight:950;letter-spacing:-.04em;color:var(--gold);
+  overflow-wrap:anywhere;margin:12px 0 18px
+}
+.role-card{
+  border:1px solid var(--line);border-radius:20px;padding:22px 16px;background:#0c1528;
+  margin:14px 0
+}
+.role-title{font-size:clamp(27px,7vw,42px);font-weight:950;letter-spacing:-.04em}
+.role-team{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:5px}
+.info-box{
+  text-align:left;border-radius:15px;padding:13px 14px;background:#121f35;border:1px solid var(--line);
+  margin-top:14px
+}
+.info-box strong{display:block;margin-bottom:3px}
+.turn{
+  font-weight:900;color:var(--cyan);font-size:13px;text-transform:uppercase;letter-spacing:.06em
+}
+.progress{height:6px;background:#0a1222;border-radius:99px;overflow:hidden;margin:9px 0 16px}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));transition:width .25s}
+.tap-note{color:var(--muted);font-size:12px}
+.result-role{
+  display:flex;align-items:center;gap:12px;padding:11px;border:1px solid var(--line);
+  border-radius:14px;background:#0f192c;margin:7px 0;text-align:left
+}
+.result-role .emoji{font-size:28px}
+.footer{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:560px){
+  .grid2,.role-grid{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
+  .app{padding-top:12px}
+}
+@media(min-width:700px){.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}button{transition:.16s ease}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="brand" href="/">Cuánto<span>MeConoces</span></a>
+    <a class="back" href="/">← Juegos</a>
+  </header>
+  <main id="app"></main>
+  <div class="footer">El Impostor · un móvil · sin salas · sin conexión</div>
+</div>
+
+<script>
+(()=>{'use strict';
+
+const $=id=>document.getElementById(id);
+const app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CONFIG_KEY='cmc_impostor_config_v1';
+const LAST_WORD_KEY='cmc_impostor_last_words_v1';
+
+const ROLES={
+  citizen:{name:'Ciudadano',emoji:'🧑',team:'Ciudadanos',desc:'Conoce la palabra y debe dar pistas sin revelarla.'},
+  impostor:{name:'Impostor',emoji:'🥷',team:'Impostores',desc:'No conoce la palabra. Debe disimular y sobrevivir a la votación.'},
+  white:{name:'Mister White',emoji:'👻',team:'Independiente',desc:'No conoce la palabra. Improvisa usando las pistas de los demás.'},
+  infiltrated:{name:'Infiltrado',emoji:'🕵️',team:'Impostores',desc:'Conoce la palabra, pero juega para ayudar a los impostores.'},
+  joker:{name:'Bromista',emoji:'🤡',team:'Independiente',desc:'No conoce la palabra. Quiere que los demás lo eliminen.'},
+  king:{name:'Rey',emoji:'👑',team:'Ciudadanos',desc:'Conoce la palabra y dispone de un voto doble de un solo uso.'},
+  robot:{name:'Robot',emoji:'🤖',team:'Ciudadanos',desc:'Conoce la palabra y, al dar pista, debe decir exactamente dos palabras.'}
+};
+
+const CATEGORIES={
+  all:{label:'🌈 Todas',words:[]},
+  animals:{label:'🐾 Animales',words:`perro,gato,león,tigre,elefante,jirafa,mono,oso,panda,zorro,lobo,conejo,caballo,vaca,oveja,cerdo,gallina,águila,búho,pingüino,delfín,ballena,tiburón,pulpo,cangrejo,mariposa,abeja,araña,hormiga,serpiente,cocodrilo,tortuga,rana,flamenco,cisne,pez,camaleón,koala,canguro,rinoceronte,hipopótamo,cebra,gorila,pantera,ardilla,erizo,caracol,mosquito,libélula`.split(',')},
+  food:{label:'🍕 Comida',words:`pizza,hamburguesa,paella,tortilla,espaguetis,sushi,ramen,taco,burrito,kebab,lasaña,ensalada,sopa,arroz,pollo,queso,pan,patata,huevo,tomate,manzana,plátano,fresa,sandía,piña,naranja,limón,chocolate,helado,tarta,galleta,donut,croissant,palomitas,caramelo,miel,café,leche,zumo,queso,pasta,aceituna,aguacate,melón,melocotón,cereza,uvas,zanahoria,brócoli`.split(',')},
+  movies:{label:'🎬 Películas y series',words:`Titanic,Avatar,Matrix,Gladiator,Rocky,Shrek,Toy Story,Jurassic Park,Star Wars,Harry Potter,Indiana Jones,El Rey León,Aladdín,Up,Frozen,Coco,Buscando a Nemo,Los Increíbles,Spider-Man,Batman,Superman,Iron Man,Avengers,Deadpool,Terminator,Alien,Regreso al Futuro,Forrest Gump,El Padrino,Psicosis,It,Stranger Things,La Casa de Papel,Friends,The Office,Los Simpson,The Walking Dead,Wednesday,The Last of Us,Breaking Bad,Game of Thrones,The Mandalorian,Black Mirror,Peaky Blinders,Merlina,Élite,La que se avecina,Aquí no hay quien viva`.split(',')},
+  objects:{label:'🎒 Objetos',words:`móvil,ordenador,televisión,cámara,libro,cuaderno,lápiz,mochila,llave,candado,reloj,espejo,paraguas,maleta,regalo,caja,globo,silla,mesa,sofá,cama,puerta,ventana,escalera,linterna,bombilla,imán,tijeras,martillo,cepillo,peine,guitarra,piano,tambor,micrófono,auriculares,televisor,radio,frigorífico,aspiradora,escoba,cuchara,tenedor,cuchillo,vaso,taza,plato,balón,cometa,dado,cartas,brújula,telescopio`.split(',')},
+  places:{label:'📍 Lugares',words:`playa,montaña,parque,escuela,hospital,restaurante,cine,teatro,estadio,aeropuerto,estación,hotel,banco,supermercado,biblioteca,museo,castillo,palacio,iglesia,puente,plaza,mercado,circo,zoológico,parque de atracciones,isla,desierto,bosque,granja,gruta,volcán,ciudad,pueblo,carretera,puerto,faro,universidad,gimnasio,piscina,oficina,comisaría,parque de bomberos,estación de tren,metro,gasolinera,acuario,cementerio,ayuntamiento`.split(',')},
+  characters:{label:'🦸 Personajes',words:`Harry Potter,Superman,Batman,Spider-Man,Hulk,Iron Man,Wonder Woman,Shrek,Simba,Mickey Mouse,Donald Duck,Peter Pan,Alicia,Robin Hood,Aladdín,Genio,Ana de Frozen,Elsa,Woody,Buzz Lightyear,Nemo,Dory,Mario,Luigi,Pac-Man,Link,Pikachu,Sonic,Tom, Jerry,Scooby-Doo,Wednesday,Jack Sparrow,Indiana Jones,James Bond,Rocky Balboa,Darth Vader,Yoda,Gandalf,El Principito,Don Quijote,Sancho Panza,Caperucita Roja,Pinocho,Peter Griffin,Homer Simpson,Mr. Bean`.split(',')},
+  sports:{label:'⚽ Deportes',words:`fútbol,baloncesto,tenis,pádel,voleibol,rugby,béisbol,boxeo,kárate,judo,esgrima,golf,ciclismo,natación,surf,esquí,snowboard,atletismo,gimnasia,escalada,patinaje,hockey,balonmano,waterpolo,maratón,paracaidismo,equitación,remo,vela,bádminton,ping pong,dardos,billar,bolos,formula 1,motociclismo,triathlon,salto de altura,lanzamiento de peso`.split(',')},
+  nature:{label:'🌿 Naturaleza',words:`árbol,flor,rosa,tulipán,girasol,cactus,seta,hoja,río,lago,mar,océano,playa,montaña,volcán,desierto,bosque,isla,nube,lluvia,tormenta,nieve,arcoíris,viento,fuego,hielo,sol,luna,estrella,planeta,galaxia,cometa,trueno,relámpago,ola,cascada,glaciar,selva,cueva,pradera,acantilado,amanecer,atardecer,niebla,huracán,terremoto,tsunami`.split(',')}
+};
+CATEGORIES.all.words=Object.values(CATEGORIES).filter(x=>x!==CATEGORIES.all).flatMap(x=>x.words);
+
+const DEFAULT_CONFIG={
+  players:6,impostors:1,white:true,infiltrated:false,joker:false,king:false,robot:false,category:'all'
+};
+
+let config=loadConfig();
+let game=null;
+let screen='config';
+
+function loadConfig(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||'null');
+    return {...DEFAULT_CONFIG,...(saved||{})};
+  }catch(_){return {...DEFAULT_CONFIG}}
+}
+function saveConfig(){try{localStorage.setItem(CONFIG_KEY,JSON.stringify(config))}catch(_){}}
+function rand(n){return Math.floor(Math.random()*n)}
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+function pickWord(){
+  const cat=CATEGORIES[config.category]||CATEGORIES.all;
+  let pool=cat.words.slice();
+  if(!pool.length)pool=CATEGORIES.all.words.slice();
+  let last=null;
+  try{last=JSON.parse(localStorage.getItem(LAST_WORD_KEY)||'{}')[config.category]}catch(_){}
+  if(pool.length>1 && last)pool=pool.filter(w=>w!==last);
+  const word=pool[rand(pool.length)];
+  try{
+    const all=JSON.parse(localStorage.getItem(LAST_WORD_KEY)||'{}');
+    all[config.category]=word;localStorage.setItem(LAST_WORD_KEY,JSON.stringify(all));
+  }catch(_){}
+  return word;
+}
+
+function specialCount(){
+  return Number(config.white)+Number(config.joker)+Number(config.king)+Number(config.robot);
+}
+function totalRoles(){
+  // El infiltrado ocupa una plaza del número total de impostores.
+  return config.players - config.impostors - specialCount();
+}
+function validateConfig(){
+  const errors=[];
+  const p=Number(config.players), imp=Number(config.impostors);
+  if(p<3||p>20)errors.push('El número de jugadores debe estar entre 3 y 20.');
+  if(![1,2,3].includes(imp))errors.push('El número de impostores debe ser 1, 2 o 3.');
+  if(config.infiltrated && imp<1)errors.push('El infiltrado necesita al menos una plaza de impostor.');
+  if(specialCount()+imp>p-1)errors.push('Con esta configuración no queda ningún ciudadano. Reduce roles o aumenta jugadores.');
+  if(totalRoles()<1)errors.push('Debe quedar al menos un ciudadano.');
+  return errors;
+}
+function rolePool(){
+  const roles=[];
+  for(let i=0;i<config.impostors;i++)roles.push(config.infiltrated && i===0?'infiltrated':'impostor');
+  if(config.white)roles.push('white');
+  if(config.joker)roles.push('joker');
+  if(config.king)roles.push('king');
+  if(config.robot)roles.push('robot');
+  while(roles.length<config.players)roles.push('citizen');
+  return shuffle(roles);
+}
+function startGame(){
+  const errors=validateConfig();
+  if(errors.length){renderConfig(errors.join(' '));return}
+  saveConfig();
+  const roles=rolePool();
+  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now()};
+  screen='reveal';render();
+}
+function newGame(){
+  saveConfig();
+  const roles=rolePool();
+  game={word:pickWord(),roles,index:0,phase:'reveal',startedAt:Date.now()};
+  screen='reveal';render();
+}
+function roleGetsWord(role){return ['citizen','infiltrated','king','robot'].includes(role)}
+function roleInstructions(role){
+  switch(role){
+    case 'citizen':return 'Conoces la palabra. Cuando llegue tu turno, da una pista relacionada sin decirla directamente.';
+    case 'impostor':return 'No conoces la palabra. Escucha las pistas, disimula y trata de no ser descubierto.';
+    case 'white':return 'No conoces la palabra. Escucha con atención, improvisa usando las pistas y, si te eliminan, tendrás una oportunidad para adivinarla.';
+    case 'infiltrated':return 'Conoces la palabra, pero juegas para el equipo de los impostores. Ayúdales a pasar desapercibidos sin que parezca que eres ciudadano.';
+    case 'joker':return 'No conoces la palabra. Tu objetivo es que los demás te eliminen. Si lo consigues, ganas individualmente.';
+    case 'king':return 'Conoces la palabra y eres ciudadano. Tienes un voto doble que puedes anunciar y usar una sola vez durante la partida.';
+    case 'robot':return 'Conoces la palabra y eres ciudadano. Cuando te toque dar una pista, debes decir exactamente DOS palabras.';
+  }
+}
+function teamClass(role){
+  return role==='impostor'||role==='infiltrated'?'Impostores':
+         role==='white'||role==='joker'?'Independiente':'Ciudadanos';
+}
+
+function renderConfig(error=''){
+  screen='config';game=null;
+  app.innerHTML=`
+  <section class="card center">
+    <div class="hero-emoji">🕵️</div>
+    <h1>EL IMPOSTOR</h1>
+    <p class="muted">Un móvil. Una palabra secreta. Y alguien que no debería saberla.</p>
+  </section>
+
+  <section class="card">
+    <h2>⚙️ Configura la partida</h2>
+    <div class="grid2">
+      <div><label for="players">Jugadores</label>
+        <select id="players">${Array.from({length:18},(_,i)=>i+3).map(n=>`<option value="${n}" ${n===Number(config.players)?'selected':''}>${n} jugadores</option>`).join('')}</select>
+      </div>
+      <div><label for="impostors">Impostores</label>
+        <select id="impostors">${[1,2,3].map(n=>`<option value="${n}" ${n===Number(config.impostors)?'selected':''}>${n} ${n===1?'impostor':'impostores'}</option>`).join('')}</select>
+      </div>
+    </div>
+
+    <label>Roles especiales <span class="small">(desactivados por defecto salvo Mister White)</span></label>
+    <div class="role-grid">
+      ${['white','infiltrated','joker','king','robot'].map(role=>`
+        <button type="button" class="role-option ${config[role]?'on':''}" data-role="${role}">
+          <input type="checkbox" ${config[role]?'checked':''}>
+          <span class="role-icon">${ROLES[role].emoji}</span>
+          <span class="role-name">${ROLES[role].name}</span>
+          <span class="role-desc">${role==='infiltrated'?'Ocupa una plaza de impostor.':ROLES[role].desc}</span>
+          <span class="role-check">${config[role]?'✓':''}</span>
+        </button>`).join('')}
+    </div>
+
+    <label>Categoría de palabras</label>
+    <div class="cat-grid">
+      ${Object.entries(CATEGORIES).map(([key,c])=>`<button type="button" class="cat ${config.category===key?'on':''}" data-cat="${key}">${c.label}</button>`).join('')}
+    </div>
+
+    <div class="config-summary" id="summary"></div>
+    <p class="notice ${error?'error':''}" id="error">${safe(error)}</p>
+    <button class="btn" id="start">🎲 Repartir personajes</button>
+  </section>
+
+  <section class="card">
+    <h3>¿Cómo funciona?</h3>
+    <p class="muted small">El móvil se pasa de persona en persona. Cada jugador solo verá su propio personaje y, si le corresponde, la palabra secreta. Después pulsa «Ocultar y pasar» antes de entregar el móvil.</p>
+    <p class="muted small">La votación se hace fuera de la aplicación. La app solo reparte los personajes y explica las habilidades especiales.</p>
+  </section>`;
+  $('players').onchange=e=>{config.players=Number(e.target.value);updateSummary()};
+  $('impostors').onchange=e=>{config.impostors=Number(e.target.value);updateSummary()};
+  document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{
+    const r=b.dataset.role;config[r]=!config[r];b.classList.toggle('on',config[r]);b.querySelector('.role-check').textContent=config[r]?'✓':'';updateSummary();
+  });
+  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{
+    config.category=b.dataset.cat;document.querySelectorAll('[data-cat]').forEach(x=>x.classList.toggle('on',x===b));
+  });
+  $('start').onclick=startGame;
+  updateSummary();
+}
+function updateSummary(){
+  const errors=validateConfig();
+  const citizens=totalRoles();
+  $('summary').innerHTML=`👥 <b>${config.players}</b> jugadores · 🥷 <b>${config.impostors}</b> plaza(s) de impostor · 🧑 <b>${Math.max(0,citizens)}</b> ciudadano(s)<br>
+  ${config.infiltrated?'🕵️ El Infiltrado ocupa 1 plaza de impostor. · ':''}
+  ${specialCount()?'Roles especiales: '+['white','infiltrated','joker','king','robot'].filter(r=>config[r]).map(r=>ROLES[r].emoji+' '+ROLES[r].name).join(' · '):'Sin roles especiales'}`;
+  $('summary').style.borderColor=errors.length?'#7b3a50':'#536381';
+  $('error').textContent=errors.join(' ');
+  $('start').disabled=errors.length>0;
+}
+
+function renderReveal(){
+  const total=game.roles.length, n=game.index+1;
+  const role=game.roles[game.index];
+  const r=ROLES[role];
+  app.innerHTML=`
+    <section class="card center">
+      <div class="turn">Jugador ${n} de ${total}</div>
+      <div class="progress"><div style="width:${(n/total)*100}%"></div></div>
+      <div class="hero-emoji">📱</div>
+      <h2>${game.phase==='reveal'?'Coge el móvil':'Listo'}</h2>
+      ${game.phase==='reveal'?`
+        <p class="muted">Jugador ${n}, coge el móvil y pulsa el botón cuando estés preparado.</p>
+        <button class="btn" id="show">👀 Ver mi personaje</button>`:''}
+    </section>
+    ${game.phase==='shown'?`
+    <section class="card center">
+      <div class="role-card">
+        <div class="hero-emoji">${r.emoji}</div>
+        <div class="role-title">${r.name}</div>
+        <div class="role-team">${teamClass(role)}</div>
+        ${roleGetsWord(role)?`<div class="small muted" style="margin-top:16px">🤫 TU PALABRA SECRETA</div><div class="secret-word">${safe(game.word)}</div>`:
+          `<div class="small muted" style="margin-top:18px">🤫 NO RECIBES LA PALABRA</div>`}
+        <div class="info-box"><strong>Tu misión</strong>${safe(roleInstructions(role))}</div>
+      </div>
+      <p class="tap-note">Asegúrate de que nadie más mire la pantalla.</p>
+      <button class="btn" id="hide">🙈 Ocultar y pasar</button>
+    </section>`:''}
+  `;
+  if($('show'))$('show').onclick=()=>{game.phase='shown';render()};
+  if($('hide'))$('hide').onclick=nextReveal;
+}
+function nextReveal(){
+  game.index++;
+  if(game.index>=game.roles.length){game.phase='finished';screen='finished';render();}
+  else{game.phase='reveal';render();}
+}
+function renderFinished(){
+  app.innerHTML=`
+  <section class="card center">
+    <div class="hero-emoji">🎭</div>
+    <h1>¡Que empiece la partida!</h1>
+    <p class="muted">Todos los personajes están repartidos. Guardad los móviles y empezad a dar pistas.</p>
+  </section>
+  <section class="card">
+    <h3>📋 Recordatorio</h3>
+    <p class="muted small">La votación se hace entre vosotros. El <b>Rey</b> puede anunciar su voto doble una sola vez. Si elimináis a <b>Mister White</b>, puede intentar adivinar la palabra. El <b>Bromista</b> gana si consigue que lo eliminéis.</p>
+  </section>
+  <div class="stack">
+    <button class="btn" id="again">🔄 Repetir partida</button>
+    <button class="btn secondary" id="config">⚙️ Cambiar configuración</button>
+  </div>`;
+  $('again').onclick=newGame;
+  $('config').onclick=()=>renderConfig();
+}
+function render(){
+  if(screen==='config')renderConfig();
+  else if(screen==='reveal')renderReveal();
+  else renderFinished();
+}
+render();
+
+})();
+</script>
+</body>
+</html>

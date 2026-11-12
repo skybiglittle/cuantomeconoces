@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Fábula · Juego de cartas e imaginación</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--b:#43d9c5;--gold:#ffd166;--good:#48d597}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(960px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:var(--b)}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(36px,8vw,58px);line-height:1;margin:0;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b8adff 48%,#64e8d7);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:19px;padding:17px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:13px;margin:9px 0 4px}
+input,select{width:100%;border:1px solid var(--line);background:#0d1629;color:var(--text);border-radius:11px;padding:12px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:12px 15px;background:linear-gradient(100deg,var(--a),#638cff);color:#fff;font-weight:800}.btn.secondary{background:#293753;border:1px solid var(--line)}.btn.good{background:linear-gradient(100deg,#149b69,#27c99b)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px}.player.me{border-color:var(--b);color:var(--b)}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}.status{padding:11px 13px;border:1px solid #258d69;border-radius:12px;background:#0e1f1d;color:#a2f0ce;margin:10px 0;font-weight:700}.status.no{border-color:#9a7730;background:#1f1a0e;color:#ffe09a}
+.clue{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--gold);margin:10px 0;overflow-wrap:anywhere}
+.cardrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px;margin-top:8px}
+.slot{display:flex;flex-direction:column;gap:5px;text-align:center;font-size:12px}.slot b{font-size:13px}
+.art{position:relative;aspect-ratio:2/3;border-radius:12px;overflow:hidden;border:3px solid #0007;box-shadow:0 6px 16px #0006;cursor:pointer;transition:transform .15s,outline-color .15s;outline:4px solid transparent}
+.art svg,.art img{position:absolute;inset:0;width:100%;height:100%}.art img{object-fit:cover}.art svg text{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.art:hover{transform:translateY(-3px)}.art.view{cursor:default}.art.view:hover{transform:none}.art.sel{outline-color:var(--gold);transform:translateY(-8px)}.art.dis{opacity:.4;cursor:not-allowed}.art.dis:hover{transform:none}.art.story{outline-color:var(--good)}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#101a2e;margin:5px 0}.sc strong{color:var(--gold)}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:600px){.settings{grid-template-columns:1fr}.cardrow{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Fá<span>bula</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Fábula · Salas en directo · de 3 a 12 jugadores<br>Ilustraciones de dominio público vía Wikimedia Commons: Gustave Doré, Arthur Rackham, Odilon Redon, Edmund Dulac, John Bauer, Theodor Kittelsen, Warwick Goble, H. J. Ford e Ivan Bilibin.</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+app.addEventListener('error',e=>{if(e.target&&e.target.tagName==='IMG')e.target.remove()},true);
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_fab_session_v1',CID='cmc_fab_cid_v1',KEY='cmc_fab_key_v1';
+const HAND=6,MAXP=12,MINP=3;
+
+/* =====================================================================
+   🖼️  IMÁGENES DE LAS CARTAS  —  PLANTILLA PARA PONER LAS TUYAS
+   =====================================================================
+   Cada carta del mazo es una imagen. Si una carta no tiene imagen (o no carga),
+   se muestra una ilustración generada por código, así nunca queda un hueco.
+
+   ▶ CÓMO AÑADIR UNA IMAGEN PERSONALIZADA
+     1) Sube tu imagen a tu web (por ejemplo a la carpeta /cartas/) o usa una URL pública.
+        Formato vertical 2:3 (ej. 600×900 px). JPG, PNG o WEBP. Menos de 300 KB cada una.
+     2) Pega su dirección dentro de CUSTOM_IMAGES, una por línea y entre comillas:
+
+          const CUSTOM_IMAGES=[
+            'https://tudominio.com/cartas/carta-01.jpg',   // URL completa
+            'cartas/carta-02.png',                          // ruta relativa a este HTML
+            commons('Nombre_del_archivo_en_Commons.jpg'),   // cualquier archivo de Wikimedia Commons
+          ];
+
+     3) Guarda y recarga. Tus imágenes pasan a ser las primeras cartas del mazo.
+
+   ▶ AJUSTES
+     • USE_PUBLIC_DOMAIN_IMAGES = false  → quita las ilustraciones de dominio público de abajo.
+     • USE_GENERATED_CARDS = false       → el mazo serán SOLO tus imágenes (necesitas 40 o más).
+   ▶ IMPORTANTE: todos los jugadores deben cargar la misma versión de este archivo.
+   ===================================================================== */
+const commons=n=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(n)+'?width=420';
+const CUSTOM_IMAGES=[
+
+ 'cartas/lamina01.jpg',
+ 'cartas/lamina02.jpg'
+
+];
+const USE_PUBLIC_DOMAIN_IMAGES=true;
+const USE_GENERATED_CARDS=false; //USO CARTAS GENERADAS O NO. AQUI PUEDO CAMBIAR. CONFIGURACION DANI.
+// Ilustraciones de dominio público (Wikimedia Commons): Doré, Rackham, Redon, Dulac, Bauer, Kittelsen, Goble, Ford y Bilibin.
+const PD_FILES=[
+ 'Gustave_dore_cendrillon4.JPG','Paul_Gustave_Dore_Raven1.jpg','Perrault1.jpg','Les_Lapins.jpg','Lechatbotte3.jpg','Lechatbotte4.jpg','Poucet1.JPG','Poucet5.JPG',
+ 'Rackham_Alice.jpg','Alice-Rackham-131.jpg','Alice_in_Wonderland_by_Arthur_Rackham_-_01_-_Alice_(frontispiece).jpg','Alice_in_Wonderland_by_Arthur_Rackham_-_02_-_The_Pool_of_Tears.jpg','Alice_in_Wonderland_by_Arthur_Rackham_-_03_-_But_who_has_won?.jpg','Alice_in_Wonderland_by_Arthur_Rackham_-_08_-_A_Mad_Tea-Party.jpg','Alice_in_Wonderland_by_Arthur_Rackham_-_10_-_Off_with_her_head!.jpg','Alice_in_Wonderland_by_Arthur_Rackham_-_12_-_Turn_them_over.jpg',"Alice_in_Wonderland_by_Arthur_Rackham_-_13_-_That's_very_curious.jpg",
+ 'Odilon_Redon_-_The_Cyclops,_c._1914.jpg','Odilon_Redon_-_Closed_eyes_-_Google_Art_Project.jpg','Redon_-_With_Closed_Eyes,_ca._1895-1905.jpg',"Redon_-_Pégase_et_l'hydre,_c._1907.jpg",'Redon_-_Le_centaure_et_le_dragon,_c._1908.jpg',
+ 'Illustration_by_Edmund_Dulac_from_One_Thousand_and_One_Nights_05.jpg','Illustration_by_Edmund_Dulac_from_One_Thousand_and_One_Nights_09.jpg','Illustration_by_Edmund_Dulac_from_One_Thousand_and_One_Nights_11.jpg','Illustration_by_Edmund_Dulac_from_One_Thousand_and_One_Nights_15.jpg','Illustration_by_Edmund_Dulac_from_One_Thousand_and_One_Nights_16.jpg',
+ 'John_Bauer_-_The_Princess_and_the_Trolls_-_Google_Art_Project.jpg','John_Bauer_-_Princess_Tuvstarr_gazing_down_into_the_dark_waters_of_the_forest_tarn._-_Google_Art_Project.jpg','Ännu_sitter_Tuvstarr_kvar_och_ser_ner_i_vattnet.jpg','Mitt_på_golvet_stod_en_öppen_kista_och_sutto_två_förskräckliga_troll.jpg','John_Bauer_1915.jpg','John_Bauer_-_Troll_på_lur_(Troll_hiding_behind_cliffs).jpg',
+ 'Theodor_Kittelsen_-_Nøkken_som_hvit_hest.jpg','The_Star_Lovers,_by_Warwick_Goble.jpg','Goble-Book_of_Fairy_Poetry034Kelpie_of_Corrievreckan.jpg','HJFord-giant-enters.JPG',
+ 'Firebird.jpg','Vasilisa.jpg','Vasilisa_the_Beautiful_(Bilibin)_-_cover.jpg','Bilitower.jpg','Ivanbilibin.jpg','Solovej.jpg','Biliwar.jpg','Russian_Wonder_Tales_081.jpg','Dobrynya_Nikitich_rescues_Zabava_from_the_Gorynych,_1941.jpg','Baba_Yaga.jpg'
+];
+const ART=
+  USE_PUBLIC_DOMAIN_IMAGES
+  ? PD_FILES.map(commons)
+  : [];
+const SHEET_COLS = 4;
+const SHEET_ROWS = 2;
+
+function buildSheetCards(){
+
+  const cards=[];
+
+  CUSTOM_IMAGES.forEach((url,sheet)=>{
+
+    for(let row=0;row<SHEET_ROWS;row++){
+
+      for(let col=0;col<SHEET_COLS;col++){
+
+        cards.push({
+          type:'sheet',
+          url,
+          sheet,
+          row,
+          col
+        });
+
+      }
+
+    }
+
+  });
+
+  return cards;
+}
+
+const SHEET_CARDS=buildSheetCards();
+
+const CARD_POOL=[];
+
+CARD_POOL.push(...SHEET_CARDS);
+
+const MIN_DECK_SIZE = 84;
+
+if(USE_GENERATED_CARDS){
+
+    const faltan =
+        Math.max(
+            0,
+            MIN_DECK_SIZE - CARD_POOL.length
+        );
+
+    for(let i=0;i<faltan;i++){
+
+        CARD_POOL.push({
+            type:'generated',
+            id:i
+        });
+
+    }
+
+}
+
+const DECK=CARD_POOL.length;
+const rand=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+
+// ---------- Cartas generadas por código (84 ilustraciones surrealistas deterministas) ----------
+const EM=['🌙','☀️','⭐','🌈','☁️','🌊','🏰','🚪','🗝️','🪜','🎈','🕰️','📖','🦢','🦉','🦋','🐙','🐘','🐢','🦊','🐋','🌳','🍄','🌹','🔮','🕯️','🎭','🎪','🎡','🚂','⛵','🚀','🏺','🎻','🎹','👑','🧩','🪞','🧵','🪁','🌋','🏔️','🌉','🛖','🌻','🍎','🐝','🐍','🦄','🐉','🧚','🧙','🤖','👻','🎁','💎','🧭','🔭','⚓','🪐','☄️','🌪️','❄️','🔥','💧','🍂','🌾','🐚','🪶','🕊️','🦅','🐺','🦌','🐇','🦔','🐌','🕷️','🎩','🔔','🛶','🏮','🎠','🧸','🪆','🪄','🌵','🐠','🦀','🐧','🦜','🍇','🥀','🧲','📮','🔑','🕸️'];
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function renderGeneratedCard(i,cls='',attrs=''){
+ const r=rng(((i+1)*2654435761)>>>0);
+ const h=Math.floor(r()*360),h2=(h+50+Math.floor(r()*120))%360,h3=(h2+50+Math.floor(r()*100))%360,ang=Math.floor(r()*180);
+ const bg='linear-gradient('+ang+'deg,hsl('+h+' 75% 58%),hsl('+h2+' 65% 42%) 58%,hsl('+h3+' 55% 24%))';
+ let g='';
+ for(let n=0;n<14;n++)g+='<circle cx="'+((r()*200)|0)+'" cy="'+((r()*150)|0)+'" r="'+(0.6+r()*1.4).toFixed(1)+'" fill="#fff" opacity="'+(0.35+r()*0.5).toFixed(2)+'"/>';
+ g+='<circle cx="'+((40+r()*120)|0)+'" cy="'+((40+r()*70)|0)+'" r="'+((18+r()*22)|0)+'" fill="hsl('+((h+180)%360)+' 90% 82%)" opacity=".85"/>';
+ for(let n=0;n<3;n++){const y=165+n*38+r()*18;g+='<path d="M0 '+(y|0)+' Q'+((40+r()*50)|0)+' '+((y-28-r()*34)|0)+' 100 '+((y-r()*18)|0)+' T200 '+((y-8+r()*26)|0)+' V300 H0Z" fill="hsl('+((h3+n*28)%360)+' '+((35+r()*30)|0)+'% '+(20+n*9)+'%)" opacity=".92"/>'}
+ const main=EM[(r()*EM.length)|0],s1=EM[(r()*EM.length)|0],s2=EM[(r()*EM.length)|0];
+ g+='<text x="'+((70+r()*60)|0)+'" y="'+((130+r()*40)|0)+'" font-size="'+((62+r()*28)|0)+'" text-anchor="middle" transform="rotate('+((r()*30-15)|0)+' 100 150)">'+main+'</text>';
+ g+='<text x="'+((30+r()*40)|0)+'" y="'+((220+r()*50)|0)+'" font-size="'+((26+r()*16)|0)+'" text-anchor="middle">'+s1+'</text>';
+ g+='<text x="'+((140+r()*40)|0)+'" y="'+((200+r()*60)|0)+'" font-size="'+((24+r()*16)|0)+'" text-anchor="middle">'+s2+'</text>';
+ return'<div class="art '+cls+'" style="background:'+bg+'" '+attrs+'><svg viewBox="0 0 200 300" aria-hidden="true">'+g+'</svg>'+(ART[i]?'<img src="'+safe(ART[i])+'" alt="" loading="lazy" decoding="async" draggable="false" referrerpolicy="no-referrer">':'')+'</div>'}
+      function renderSheetCard(card,cls='',attrs=''){
+
+return `
+  <div class="art ${cls}" ${attrs}>
+   <div style="
+     position:relative;
+     width:100%;
+     height:100%;
+     overflow:hidden;
+   ">
+
+    <img
+      src="${card.url}"
+      loading="lazy"
+      draggable="false"
+      style="
+        position:absolute;
+        width:${SHEET_COLS*100}%;
+        height:${SHEET_ROWS*100}%;
+
+        left:${-(card.col*100)}%;
+        top:${-(card.row*100)}%;
+
+        object-fit:cover;
+        pointer-events:none;
+        user-select:none;
+      "
+    >
+
+   </div>
+  </div>
+`;
+}
+
+function cardHTML(cardIndex,cls='',attrs=''){
+
+ const card=CARD_POOL[cardIndex];
+
+ if(!card)return '';
+
+ if(card.type==='sheet'){
+   return renderSheetCard(card,cls,attrs);
+ }
+
+ return renderGeneratedCard(card.id,cls,attrs);
+}
+// ---------- Estado local y red (mismo sistema de salas que Concept) ----------
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ own=saved?.own||{acted:''},socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',missing=0,sel=null,selKey='',myPres={};
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state,own}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+// La presencia se acumula en local: un publish nuevo no borra lo anterior
+function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-fabula-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena.':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};own={acted:''};state={v:0,phase:'lobby',target:30};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};own={acted:''};state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión ----------
+function startGame(){const ps=playerList().sort((a,b)=>(b.p.c_host?1:0)-(a.p.c_host?1:0)).slice(0,MAXP);if(ps.length<MINP)return;
+ const order=shuffle(ps.map(p=>p.key)),names={},scores={},hands={};ps.forEach(p=>{names[p.key]=p.name;scores[p.key]=0;hands[p.key]=[]});
+ Object.assign(state,{
+ order,
+ names,
+ scores,
+ hands,
+ deck:shuffle(CARD_POOL.map((_,i)=>i)),
+ round:0,
+ story:'',
+ clue:'',
+ plays:{},
+ votes:{},
+ table:[],
+ result:null
+});nextRound()}
+function nextRound(){
+ const need=state.order.reduce((a,k)=>a+Math.max(0,HAND-state.hands[k].length),0),top=Math.max(...Object.values(state.scores));
+ if(state.round>0&&(top>=state.target||state.deck.length<need)){state.phase='finished';return commit()}
+ state.order.forEach(k=>{while(state.hands[k].length<HAND&&state.deck.length)state.hands[k].push(state.deck.pop())});
+ state.round++;state.story=state.order[(state.round-1)%state.order.length];state.phase='clue';state.clue='';state.plays={};state.votes={};state.table=[];state.result=null;missing=0;commit()}
+const ownerOf=c=>Object.keys(state.plays).find(k=>state.plays[k]===c);
+function discardPlayed(){Object.keys(state.plays).forEach(k=>{state.hands[k]=(state.hands[k]||[]).filter(c=>c!==state.plays[k])})}
+function skipRound(note){discardPlayed();state.result={skipped:true,note,gained:{},table:[]};state.phase='result';commit()}
+function startVote(){const cards=Object.values(state.plays);if(cards.length<2)return;state.table=shuffle(cards.slice());state.phase='vote';commit()}
+function scoreRound(){const s=state.story,sc=state.plays[s],voters=Object.keys(state.votes),gained={};state.order.forEach(k=>gained[k]=0);
+ const found=voters.filter(k=>state.votes[k]===sc);let msg;
+ if(!voters.length){msg='Nadie ha votado esta ronda.'}
+ else if(found.length===0){voters.forEach(k=>gained[k]+=2);msg='Nadie encontró la carta del narrador: él no puntúa y los demás ganan 2.'}
+ else if(found.length===voters.length){voters.forEach(k=>gained[k]+=2);msg='Todos encontraron la carta del narrador: él no puntúa y los demás ganan 2.'}
+ else{gained[s]+=3;found.forEach(k=>gained[k]+=3);msg='¡Pista perfecta! El narrador y quienes la acertaron ganan 3.'}
+ const bonus={};voters.forEach(k=>{const c=state.votes[k];if(c===sc)return;const o=ownerOf(c);if(o&&o!==s&&o!==k)bonus[o]=Math.min(3,(bonus[o]||0)+1)});
+ Object.entries(bonus).forEach(([k,b])=>gained[k]+=b);
+ state.order.forEach(k=>state.scores[k]+=gained[k]);
+ state.result={sCard:sc,gained,msg,found:found.length,voters:voters.length,table:state.table.map(c=>({card:c,owner:ownerOf(c),voters:voters.filter(k=>state.votes[k]===c)}))};
+ discardPlayed();state.phase='result';commit()}
+function force(){if(!isHost||!state)return;const ph=state.phase;
+ if(ph==='clue')return skipRound('El anfitrión ha saltado la ronda.');
+ if(ph==='pick')return Object.keys(state.plays).length>=2?startVote():skipRound('No hubo cartas suficientes.');
+ if(ph==='vote')return scoreRound()}
+function hostStep(){if(!isHost||!state||!state.order||state.phase==='lobby'||state.phase==='finished'||state.phase==='result')return;
+ const pl={};playerList().forEach(p=>pl[p.key]=p.p);const st=state.story,S=pl[st];let ch=false;
+ if(state.phase==='clue'){
+  const c=S&&S.c_clue;
+  if(c&&c.r===state.round&&c.text&&(state.hands[st]||[]).includes(c.card)){state.clue=String(c.text).slice(0,80);state.plays[st]=c.card;state.phase='pick';missing=0;return commit()}
+  if(!S){missing=missing||Date.now();if(Date.now()-missing>8000)skipRound('El narrador se ha desconectado.')}else missing=0;return}
+ if(state.phase==='pick'){
+  for(const k of state.order){if(k===st||state.plays[k]!=null||!pl[k])continue;const c=pl[k].c_play;if(c&&c.r===state.round&&(state.hands[k]||[]).includes(c.card)){state.plays[k]=c.card;ch=true}}
+  const req=state.order.filter(k=>k!==st&&pl[k]);
+  if(req.length&&req.every(k=>state.plays[k]!=null))return startVote();
+  if(ch)commit();return}
+ if(state.phase==='vote'){
+  for(const k of Object.keys(state.plays)){if(k===st||state.votes[k]!=null||!pl[k])continue;const v=pl[k].c_vote;if(v&&v.r===state.round&&state.table.includes(v.card)&&ownerOf(v.card)!==k){state.votes[k]=v.card;ch=true}}
+  const req=Object.keys(state.plays).filter(k=>k!==st&&pl[k]);
+  if(req.length&&req.every(k=>state.votes[k]!=null))return scoreRound();
+  if(ch)commit()}}
+
+// ---------- Acciones del jugador ----------
+const phaseKey=()=>state.round+':'+state.phase;
+function act(){own.acted=phaseKey();sel=null;persist();render()}
+function sendClue(){const t=($('cluein')?.value||'').trim().slice(0,80),m=$('amsg');if(sel==null)return m.textContent='Primero toca una carta de tu mano.';if(!t)return m.textContent='Escribe una pista.';publish({c_clue:{r:state.round,card:sel,text:t}});act()}
+function sendPlay(){if(sel==null)return $('amsg').textContent='Primero toca una carta de tu mano.';publish({c_play:{r:state.round,card:sel}});act()}
+function sendVote(){if(sel==null)return $('amsg').textContent='Primero toca la carta que crees del narrador.';publish({c_vote:{r:state.round,card:sel}});act()}
+
+// ---------- Vistas ----------
+function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>FÁBULA</h1><p class="muted">Un juego de cartas, imaginación e intuición. Cuenta una historia con una sola pista… ¡y que te entiendan solo a medias! 🌙</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Cada jugador tiene 6 cartas. Por turnos, el <b>narrador</b> elige una de las suyas y dice una pista (una palabra, una frase, un sonido…). Los demás eligen de su mano la carta que mejor encaje con la pista. Se mezclan todas y todos <b>votan</b> cuál creen que era la del narrador (no vale votar la propia).<br><br>• Si <b>todos o ninguno</b> aciertan: el narrador 0 y los demás +2.<br>• Si <b>algunos</b> aciertan: narrador +3 y quien acierte +3.<br>• Cada voto que reciba tu carta (si no es la del narrador) te da +1, hasta 3 por ronda.<br>Gana quien llegue primero a la puntuación objetivo.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes</h3><div class="settings"><div><label for="tgt">Puntos para ganar</label><select id="tgt"><option value="15">15 (partida corta)</option><option value="30" selected>30 (clásica)</option><option value="40">40 (larga)</option></select></div></div><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar partida</button></section>':'<section class="card center"><p class="muted">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
+ +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;
+  if($('start'))$('start').onclick=()=>{state.target=Number($('tgt').value);startGame()}});
+ const ps=playerList();$('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.c_host?' · anfitrión':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<MINP?' · hacen falta al menos '+MINP:'')+(ps.length>MAXP?' · máximo '+MAXP+' jugadores':'')+'</p>';
+ const s=$('start');if(s)s.disabled=ps.length<MINP}
+function renderGame(){const ph=state.phase,inOrder=state.order.includes(myKey),story=state.story===myKey;
+ if(selKey!==phaseKey()){selKey=phaseKey();sel=null}
+ const acted=own.acted===phaseKey();let actions='';
+ if(inOrder&&!acted){
+  if(ph==='clue'&&story)actions='<h3>Tu pista</h3><p class="small muted">1) Toca una carta de tu mano · 2) Escribe una pista ni demasiado obvia ni demasiado oscura.</p><input id="cluein" maxlength="80" placeholder="Escribe tu pista…" autocomplete="off"><button class="btn" id="sendclue" style="width:100%;margin-top:8px">Enviar pista</button>';
+  else if(ph==='pick'&&!story)actions='<button class="btn" id="playbtn" style="width:100%">Jugar la carta seleccionada</button>';
+  else if(ph==='vote'&&!story&&state.plays[myKey]!=null)actions='<button class="btn" id="votebtn" style="width:100%">Votar la carta seleccionada</button>'}
+ const host=isHost?(ph==='result'?'<button class="btn" id="next" style="width:100%;margin-top:8px">Siguiente ronda</button>':(['clue','pick','vote'].includes(ph)?'<button class="btn secondary" id="force" style="width:100%;margin-top:8px">Avanzar sin esperar</button>':'')):(ph==='result'?'<p class="small muted">Esperando al anfitrión…</p>':'');
+ mount('g|'+phaseKey()+'|'+story+'|'+inOrder+'|'+acted,
+ '<section class="card center"><div id="tags"></div><div class="clue hidden" id="clueshow"></div><p class="small muted" id="status"></p></section><section class="card" id="tablecard"><div id="table"></div></section>'
+ +(actions?'<section class="card">'+actions+'<p class="notice" id="amsg"></p></section>':'')
+ +(inOrder?'<section class="card"><h3>Tu mano</h3><div class="cardrow" id="hand"></div></section>':'')
+ +'<section class="card"><h3>Marcador</h3><div id="scores"></div>'+host+'</section>',
+ ()=>{$('hand')&&($('hand').onclick=e=>{const b=e.target.closest('[data-c]');if(!b||b.classList.contains('view'))return;sel=Number(b.dataset.c);updateGame()});
+  $('table').onclick=e=>{const b=e.target.closest('[data-v]');if(!b||b.classList.contains('dis')||b.classList.contains('view'))return;sel=Number(b.dataset.v);updateGame()};
+  $('sendclue')&&($('sendclue').onclick=sendClue);$('cluein')&&$('cluein').addEventListener('keydown',e=>{if(e.key==='Enter')sendClue()});
+  $('playbtn')&&($('playbtn').onclick=sendPlay);$('votebtn')&&($('votebtn').onclick=sendVote);
+  $('force')&&($('force').onclick=force);$('next')&&($('next').onclick=nextRound)});
+ updateGame()}
+function updateGame(){if(!state||!state.order||state.phase==='lobby'||state.phase==='finished')return;
+ const ph=state.phase,inOrder=state.order.includes(myKey),story=state.story===myKey,acted=own.acted===phaseKey(),narr=pname(state.story),others=state.order.length-1;
+ $('tags').innerHTML='<span class="tag">RONDA '+state.round+'</span><span class="tag">🎙️ '+safe(narr)+'</span><span class="tag">🎯 '+state.target+' pts</span>';
+ const cs=$('clueshow');if(state.clue){cs.classList.remove('hidden');cs.textContent='“'+state.clue+'”'}else cs.classList.add('hidden');
+ const nPlay=Math.max(0,Object.keys(state.plays).length-(state.plays[state.story]!=null?1:0)),nVote=Object.keys(state.votes).length;
+ let st='';
+ if(!inOrder)st='Eres espectador en esta partida.';
+ else if(ph==='clue')st=story?'Elige una carta de tu mano y escribe una pista.':narr+' está pensando una pista…';
+ else if(ph==='pick')st=story?'Los demás están eligiendo carta… ('+nPlay+'/'+others+')':acted?'Carta enviada ✔ Esperando al resto… ('+nPlay+'/'+others+')':'Elige la carta de tu mano que mejor encaje con la pista.';
+ else if(ph==='vote')st=story?'Están votando… ('+nVote+'/'+others+')':acted?'Voto enviado ✔ Esperando al resto… ('+nVote+'/'+others+')':'¿Cuál es la carta de '+narr+'? No puedes votar la tuya.';
+ $('status').textContent=st;
+ let tb='';
+ if(ph==='clue')tb='<p class="muted small">Todavía no hay cartas en la mesa.</p>';
+ else if(ph==='pick')tb='<p class="muted small">'+(nPlay+1)+' de '+state.order.length+' cartas en la mesa (boca abajo).</p>';
+ else if(ph==='vote'){const canV=inOrder&&!story&&!acted&&state.plays[myKey]!=null;
+  tb='<div class="cardrow">'+state.table.map((c,i)=>{const mine=state.plays[myKey]===c,cls=mine?'dis':(canV?(sel===c?'sel':''):'view');return'<div class="slot">'+cardHTML(c,cls,'data-v="'+c+'"')+'<b>'+(i+1)+(mine?' · tu carta':'')+'</b></div>'}).join('')+'</div>'}
+ else if(ph==='result'){const R=state.result;
+  if(!R||R.skipped)tb='<div class="status no">'+safe(R?R.note:'Ronda saltada.')+'</div>';
+  else tb='<div class="status'+(R.found===0||R.found===R.voters?' no':'')+'">'+safe(R.msg)+'</div><div class="cardrow">'+R.table.map(t=>'<div class="slot">'+cardHTML(t.card,'view'+(t.card===R.sCard?' story':''),'')+'<b>'+safe(pname(t.owner))+(t.card===R.sCard?' · 🎙️ narrador':'')+'</b><span class="small muted">'+(t.voters.length?'Votos: '+t.voters.map(k=>safe(pname(k))).join(', '):'sin votos')+'</span></div>').join('')+'</div><div style="margin-top:8px">'+state.order.filter(k=>(R.gained[k]||0)>0).map(k=>'<span class="tag">'+safe(pname(k))+' +'+R.gained[k]+'</span>').join('')+'</div>'}
+ setHTML($('table'),tb);
+ const hd=$('hand');if(hd){const can=!acted&&((ph==='clue'&&story)||(ph==='pick'&&!story));
+  setHTML(hd,(state.hands[myKey]||[]).map(c=>cardHTML(c,can?(sel===c?'sel':''):'view','data-c="'+c+'"')).join('')||'<p class="muted small">Sin cartas.</p>')}
+ setHTML($('scores'),state.order.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]).map(([k,s])=>'<div class="sc"><span>'+safe(pname(k))+(k===state.story?' · 🎙️':'')+(k===myKey?' (tú)':'')+'</span><strong>'+s+' pts</strong></div>').join(''))}
+function renderFinished(){const r=state.order.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]),top=r[0][1],win=r.filter(x=>x[1]===top).map(x=>pname(x[0])).join(' y ');
+ mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:80px">🏆</div><h1>'+safe(win)+(r.filter(x=>x[1]===top).length>1?' ganan':' gana')+'</h1></section><section class="card">'+r.map(([k,s],i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||i+1)+' '+safe(pname(k))+'</span><strong>'+s+' pts</strong></div>').join('')+'</section>'+(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+setInterval(()=>{if(roomCode&&state)hostStep()},700);
+if(saved?.room&&saved?.name){connect();render()}else renderHome();
+})();
+</script></body></html>

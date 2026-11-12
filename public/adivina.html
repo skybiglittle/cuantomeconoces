@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>ADIVINA PREGUNTAS SI O NO</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#29234d,transparent 42%),radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:max(22px,env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(34px,8vw,56px);line-height:1.03;margin:12px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b6aaff 50%,#64e9d8);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}h3{font-size:16px;margin:18px 0 6px}.m,.sub{color:var(--m)}.sub{margin:0 0 18px}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:20px;margin:14px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.gn{background:linear-gradient(100deg,#159b67,#20b982)}.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}
+.pls{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.pl{background:#0f172a;border:1px solid var(--l);padding:6px 11px;border-radius:99px;font-size:13px}.pl.me{border-color:var(--b);color:var(--b)}.pl.th{border-color:var(--y);color:var(--y)}
+.code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}.small{font-size:13px;color:var(--m)}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}.notice.warn{background:#332719;border-color:#74542a;color:#ffe0a3}
+.ap{border-radius:22px;padding:26px 14px;text-align:center;min-height:210px;display:flex;flex-direction:column;justify-content:center;border:2px solid var(--l);background:#101a2e;transition:background .2s,border-color .2s}
+.ap.g{background:#12603f;border-color:var(--g)}.ap.r{background:#7a1f33;border-color:var(--r)}.ap.y{background:#6b5412;border-color:var(--y)}
+.at{font-size:clamp(52px,18vw,108px);font-weight:950;letter-spacing:-.03em;line-height:1}.aw{font-size:20px;color:var(--m);font-weight:700}.qn{margin-top:10px;font-size:13px;opacity:.85;font-weight:700}
+.pop{animation:pop .35s}@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+.ab .btn{font-size:20px;padding:18px 8px}.ab .y{background:linear-gradient(100deg,#c49a1a,#ffd166);color:#2a1f00}.ab .r{background:linear-gradient(100deg,#c01f40,#ff5a6e)}
+.nt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:9px 12px;background:#101a2e;border:1px solid var(--l);border-radius:12px;margin:7px 0;overflow-wrap:anywhere}.nt b{color:var(--b)}
+.x{background:transparent;border:0;color:var(--r);font-size:18px;cursor:pointer;padding:0 4px}
+</style></head><body><main>
+<header><span class="tag">🕵️ MULTIJUGADOR · SALAS PRIVADAS</span><h1>¿Quién soy?</h1><p class="sub">Uno piensa en un personaje. Los demás preguntan en voz alta y solo se responde sí, no o no lo sé.</p></header>
+<section id="home" class="panel"><h2>Entra en partida</h2><p class="m">Crea una sala y comparte el código, o únete a la de otra persona.</p>
+<label for="pn">Tu nombre</label><input id="pn" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="cb">Crear sala</button><button class="btn s" id="sj">Unirme a una sala</button></div>
+<div id="jb" class="hidden"><label for="rc">Código de sala</label><input id="rc" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn full" id="jn">Entrar en la sala</button></div>
+<p id="hm" class="notice hidden" aria-live="polite"></p></section>
+<section id="lobby" class="panel hidden">
+<div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
+<h3>Jugadores conectados</h3><div id="lp" class="pls"></div>
+<div id="fsb" class="hidden"><label for="fs">Quién piensa primero</label><select id="fs"></select></div>
+<div class="row" style="margin-top:12px"><button class="btn gn" id="st">Empezar</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
+<section id="game" class="panel hidden"></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const AN={si:['SÍ','g'],no:['NO','r'],ns:['NO LO SÉ','y']};
+let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={ac:0,nc:0},gk='',lastAid=-1,sig='',chosen='';const seen={};
+const uid=()=>Math.random().toString(36).slice(2,10),msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),on=k=>peers.some(p=>p.k===k),nameOf=k=>{const p=peers.find(q=>q.k===k);return p?p.n:'(desconectado)'};
+const fresh=()=>({ph:'lobby',v:0,r:0,th:'',ans:null,aid:0,q:0,notes:[],nid:0});
+const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now();pub({h:1,s:S});rend()},pubD=()=>pub({d:{ac:L.ac,a:L.a,nc:L.nc,nt:L.nt}});
+const seed=()=>roster().forEach(p=>{const d=p.d||{};seen[p.k+'a']=d.ac;seen[p.k+'n']=d.nc});
+function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
+ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
+const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'adv-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
+else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};
+sock.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))}};
+open();setTimeout(()=>{if(!done){done=1;closed=1;rej('timeout')}},15000)})}
+function onPeers(){
+const hs=peers.filter(p=>p.h&&p.s).sort((a,b)=>(b.s.v-a.s.v)||(a.k<b.k?-1:1));
+if(H&&hs.length&&hs[0].k!==K&&hs[0].s.v>=S.v){H=false;pub({h:0,s:null})}
+if(!H){const hp=hs[0];
+if(hp){if(!S||hp.s.v>S.v)S=hp.s}
+else if(ready&&roster()[0]&&roster()[0].k===K){H=true;S=S||fresh();seed();pubS()}}
+rend();if(H)proc()}
+async function start(host){N=($('pn').value.trim()||'Jugador').slice(0,18);K=uid();H=host;S=host?fresh():null;ready=0;
+if(host)code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+else{code=$('rc').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(code))return msg('Escribe un código de cinco caracteres.')}
+try{await connect(code);P={k:K,n:N,t:Date.now(),d:{}};ready=1;if(host)pubS();else pub({})}catch(e){H=false;msg(e==='room_full'?'La sala está llena.':host?'No se pudo crear la sala. Inténtalo de nuevo.':'No se pudo entrar. Comprueba el código.')}}
+function startGame(){if(!H)return;const ps=roster().slice(0,10);if(ps.length<2)return;
+S.th=chosen&&on(chosen)?chosen:ps[Math.random()*ps.length|0].k;chosen='';S.r++;S.ans=null;S.aid++;S.q=0;S.notes=[];S.ph='play';seed();pubS()}
+function nextRound(){if(!H)return;const ps=roster();let k=chosen;if(!k||!on(k)){const i=ps.findIndex(p=>p.k===S.th);k=ps[(i+1)%ps.length].k}
+chosen='';S.th=k;S.r++;S.ans=null;S.aid++;S.q=0;S.notes=[];seed();pubS()}
+function proc(){if(!H||!S||S.ph!=='play')return;let ch=0;
+for(const p of roster()){const d=p.d||{};
+if(d.ac&&seen[p.k+'a']!==d.ac){seen[p.k+'a']=d.ac;if(p.k===S.th&&AN[d.a]){S.ans=d.a;S.aid++;S.q++;ch=1}}
+if(d.nc&&seen[p.k+'n']!==d.nc){seen[p.k+'n']=d.nc;const t=String(d.nt||'').trim().slice(0,120);if(t){S.nid++;S.notes.unshift({id:S.nid,n:p.n,t});S.notes=S.notes.slice(0,60);ch=1}}}
+if(ch)pubS()}
+function opts(sel,first){const ps=roster(),s=ps.map(p=>p.k).join();if(sel.dataset.s===s&&sel.dataset.f===first)return;sel.dataset.s=s;sel.dataset.f=first;
+sel.innerHTML='<option value="">'+first+'</option>'+ps.map(p=>'<option value="'+esc(p.k)+'">'+esc(p.n)+'</option>').join('');sel.value=chosen}
+function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k;$('cl').textContent=code;
+$('lp').innerHTML=ps.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('');
+$('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';
+$('fsb').classList.toggle('hidden',!H);if(H)opts($('fs'),'Al azar');
+$('st').classList.toggle('hidden',!H);$('st').disabled=ps.length<2||ps.length>10;
+$('lm').textContent=ps.length>10?'Máximo 10 jugadores.':ps.length<2?'Hacen falta al menos 2 jugadores.':H?'Ya podéis empezar.':'El anfitrión empezará cuando estéis listos.'}
+function build(){lastAid=-1;sig='';$('game').innerHTML='<div id="ban" class="notice"></div><div id="ap" class="ap n"></div><div id="ab" class="row ab hidden" style="margin-top:12px"><button class="btn gn" data-a="si">SÍ</button><button class="btn r" data-a="no">NO</button><button class="btn y" data-a="ns">NO LO SÉ</button></div>'+
+'<h3>📝 Notas compartidas</h3><div class="row"><input id="ni" maxlength="120" placeholder="Algo que hayáis averiguado…" autocomplete="off" style="flex:3"><button class="btn s" id="ns" style="flex:1">Enviar</button></div><div id="nl"></div>'+
+'<div id="hc" class="hidden"><h3>Anfitrión</h3><label for="nx">Piensa a continuación</label><select id="nx"></select><button class="btn gn full" id="nb">Siguiente personaje ➜</button></div>';
+document.querySelectorAll('#ab .btn').forEach(b=>b.onclick=()=>{L.ac++;L.a=b.dataset.a;pubD()});
+const send=()=>{const t=$('ni').value.trim();if(!t)return;L.nc++;L.nt=t;pubD();$('ni').value='';$('ni').focus()};
+$('ns').onclick=send;$('ni').onkeydown=e=>{if(e.key==='Enter')send()};
+$('nl').onclick=e=>{const b=e.target.closest('[data-id]');if(H&&b){S.notes=S.notes.filter(n=>n.id!==+b.dataset.id);pubS()}};
+$('nx').onchange=e=>chosen=e.target.value;$('nb').onclick=nextRound}
+function fill(){const me=K===S.th,a=S.ans;
+$('ban').className='notice'+(on(S.th)?'':' warn');
+$('ban').innerHTML=!on(S.th)?'⚠️ La persona que piensa se ha desconectado.'+(H?' Pulsa «Siguiente personaje».':''):me?'🤫 <b>Piensas tú.</b> Elige un personaje en tu cabeza y responde a las preguntas con los botones.':'🧠 Piensa <b>'+esc(nameOf(S.th))+'</b>. Hacedle preguntas en voz alta.';
+$('ab').classList.toggle('hidden',!me);
+if(S.aid!==lastAid){lastAid=S.aid;$('ap').className='ap '+(a?AN[a][1]:'n');$('ap').innerHTML=a?'<div class="at pop">'+AN[a][0]+'</div><div class="qn">Respuesta nº '+S.q+'</div>':'<div class="aw">Esperando la primera respuesta…</div>'}
+$('nl').innerHTML=S.notes.length?S.notes.map(n=>'<div class="nt"><span><b>'+esc(n.n)+':</b> '+esc(n.t)+'</span>'+(H?'<button class="x" data-id="'+n.id+'" aria-label="Eliminar nota">✕</button>':'')+'</div>').join(''):'<p class="small">Aún no hay notas.</p>';
+$('hc').classList.toggle('hidden',!H);if(H)opts($('nx'),'Automático (el siguiente)')}
+function rend(){if(!code)return;if(!S||S.ph==='lobby'){show('lobby');gk='';rLobby();return}
+show('game');const k='p'+S.r;if(k!==gk){gk=k;build()}fill()}
+$('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
+$('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+$('cp').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>$('cp').textContent='¡Copiado!').catch(()=>{})};
+$('fs').onchange=e=>chosen=e.target.value;$('st').onclick=startGame;$('lv').onclick=()=>{if(ws)ws.leave();location.reload()};
+addEventListener('beforeunload',()=>{if(ws)ws.leave()});
+})();
+</script></body></html>

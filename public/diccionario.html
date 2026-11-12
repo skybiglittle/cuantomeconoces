@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Busca cuál es · Juego del diccionario</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff758f}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#3a2a1d,transparent 42%),radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:max(22px,env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8vw,54px);line-height:1.03;margin:12px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffd166 55%,#ff9f6b);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:22px;margin:0 0 8px}h3{font-size:17px;margin:16px 0 6px}.m,.sub{color:var(--m)}.sub{margin:0 0 18px}
+.tag,.pill{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}.pill{background:#3a2a1d;color:#ffd9a3;border:0}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:20px;margin:14px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+input,textarea,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}input:focus,textarea:focus,select:focus{border-color:var(--a)}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}
+.pls{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.pl{background:#0f172a;border:1px solid var(--l);padding:6px 11px;border-radius:99px;font-size:13px}.pl.me{border-color:var(--b);color:var(--b)}
+.code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}.small{font-size:13px;color:var(--m)}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}.notice.good{background:#102b25;border-color:#226448;color:#a8f0ca}
+.word{font-size:clamp(34px,10vw,56px);font-weight:950;text-align:center;margin:10px 0 4px;letter-spacing:-.02em;color:var(--y)}
+.card{background:#101a2e;border:1px solid var(--l);border-radius:15px;padding:14px;margin:10px 0;overflow-wrap:anywhere}.card.real{border-color:var(--g);background:#102b25}.hd{font-size:12px;font-weight:800;text-transform:uppercase;color:var(--b)}.card.real .hd{color:var(--g)}
+.opt{display:block;width:100%;text-align:left;color:var(--t);font:inherit;font-size:17px;cursor:pointer}.opt:hover:not(:disabled){border-color:var(--a)}.opt:disabled{opacity:.5;cursor:not-allowed}
+.meter{height:9px;background:#303b55;border-radius:99px;overflow:hidden;margin:8px 0 14px}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--a));transition:width 1s linear}
+.tl{display:flex;justify-content:space-between;font-size:12px;color:var(--m);font-weight:700}.sc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--l)}.sc:last-child{border:0}
+</style></head><body><main>
+<header><span class="tag">📖 MULTIJUGADOR · SALAS PRIVADAS</span><h1>Busca cuál es</h1><p class="sub">Sale una palabra rarísima. Inventad definiciones creíbles y descubrid cuál es la verdadera.</p></header>
+<section id="home" class="panel"><h2>Entra en partida</h2><p class="m">Crea una sala y comparte el código, o únete a la de otra persona.</p>
+<label for="pn">Tu nombre</label><input id="pn" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="cb">Crear sala</button><button class="btn s" id="sj">Unirme a una sala</button></div>
+<div id="jb" class="hidden"><label for="rc">Código de sala</label><input id="rc" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn full" id="jn">Entrar en la sala</button></div>
+<p id="hm" class="notice hidden" aria-live="polite"></p></section>
+<section id="lobby" class="panel hidden">
+<div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
+<h3>Jugadores conectados</h3><div id="lp" class="pls"></div>
+<label for="rounds">Rondas</label><select id="rounds"><option value="3">3 rondas</option><option value="5" selected>5 rondas</option><option value="8">8 rondas</option></select>
+<div class="notice">Cada ronda sale una palabra. Todos escriben una definición falsa y se mezclan con la real. Votáis cuál es la verdadera: +2 si acertáis, +1 cada vez que alguien vote por vuestra definición inventada.</div>
+<div class="row"><button class="btn g" id="st">Empezar partida</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
+<section id="game" class="panel hidden"></section>
+</main>
+<script>
+(()=>{'use strict';
+const WORDS=[['alcaraván','Ave caradriforme de cabeza redondeada, patas largas y amarillas, pico relativamente corto y grandes ojos amarillos'],
+['anfractuosidad','Cavidad, depresión o surco sinuoso e irregular, como los que hay en las rocas o en la superficie del cerebro'],
+['jaculatoria','Oración breve y fervorosa'],['ucronía','Reconstrucción imaginaria de la historia tal como podría haber sido y no fue'],
+['cornamusa','Instrumento musical de viento, parecido a la gaita'],['berbiquí','Herramienta con manivela y una barrena que se usa para taladrar'],
+['cenotafio','Monumento funerario en el que no está el cuerpo del difunto'],['pleamar','Fin de la creciente del mar; marea alta'],
+['sotobosque','Vegetación formada por matas y arbustos que crece bajo los árboles de un bosque'],['fumarola','Emisión de gases y vapores que sale de un volcán o de una grieta del terreno'],
+['ataraxia','Serenidad e imperturbabilidad del ánimo'],['mamotreto','Libro o legajo muy abultado y mal ordenado; también, edificio grande y feo'],
+['fementido','Falto de fe y de palabra; falso o engañoso'],['cejijunto','Que tiene las cejas muy juntas, o que muestra un gesto ceñudo'],
+['tarabilla','Persona que habla mucho, deprisa y sin orden'],['espetera','Tabla con ganchos de la que se cuelgan utensilios de cocina'],
+['galimatías','Lenguaje oscuro y confuso por desorden de las ideas'],['zahúrda','Pocilga; vivienda sucia y miserable'],
+['cigarral','En Toledo, casa de recreo con huerta y arbolado en las afueras de la ciudad'],['gañán','Mozo de labranza; hombre fuerte y rudo'],
+['almohaza','Instrumento de hierro con dientes para limpiar el pelo de las caballerías'],['abstruso','Difícil de comprender'],
+['desaguisado','Agravio, fechoría o destrozo'],['bisoño','Nuevo e inexperto en un oficio o actividad'],['zaragüelles','Calzones anchos y con pliegues, propios de algunos trajes regionales'],
+['cantimplora','Recipiente para llevar agua u otro líquido, que se usa en excursiones'],['pábilo','Mecha de una vela o de un candil'],['escabechina','Destrozo o estrago grande; abundancia de suspensos en un examen'],
+['gabarra','Embarcación pequeña y plana para cargar y descargar mercancías en los puertos'],['alféizar','Parte del muro que forma el hueco de una ventana y sobresale hacia dentro'],
+['peripatético','Seguidor de la filosofía de Aristóteles; en lenguaje coloquial, ridículo en ideas o modales'],['efluvio','Emisión de partículas sutiles; olor o exhalación que se desprende de un cuerpo'],
+['ablución','Acción de purificarse lavándose con agua; lavatorio'],['perorata','Discurso largo, aburrido y molesto'],['sabandija','Bicho, especialmente reptil o insecto, pequeño y molesto o repugnante']];
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),shuf=a=>{a=a.slice();for(let i=a.length;--i>0;){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const nm=t=>{t=String(t).trim().replace(/[.\s]+$/,'');return t.charAt(0).toUpperCase()+t.slice(1)};
+let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={},lastKey='',offs=0;
+const uid=()=>Math.random().toString(36).slice(2,10),now=()=>Date.now()+offs,msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),dat=k=>{const p=peers.find(q=>q.k===k);return(p&&p.d)||{}},on=k=>peers.some(p=>p.k===k);
+const dd=p=>{const d=dat(p.k);return d.r===S.n?d:{}};
+const fresh=()=>({ph:'lobby',n:0,r:0,v:0,max:5,sc:{},nm:{},pl:[],dk:[],w:0,opts:[]});
+const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now();pub({h:1,s:S});rend()};
+function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
+ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
+const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'dic-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
+else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};
+sock.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))}};
+open();setTimeout(()=>{if(!done){done=1;closed=1;rej('timeout')}},15000)})}
+function onPeers(){
+const hs=peers.filter(p=>p.h&&p.s).sort((a,b)=>(b.s.v-a.s.v)||(a.k<b.k?-1:1));
+if(H&&hs.length&&hs[0].k!==K&&hs[0].s.v>=S.v){H=false;pub({h:0,s:null})}
+if(!H){const hp=hs[0];
+if(hp){if(!S||hp.s.v>S.v){S=hp.s;offs=S.t-Date.now()}}
+else if(ready&&roster()[0]&&roster()[0].k===K){H=true;S=S||fresh();pubS()}}
+rend();if(H)hostTick()}
+async function start(host){N=($('pn').value.trim()||'Jugador').slice(0,18);K=uid();H=host;S=host?fresh():null;ready=0;
+if(host)code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+else{code=$('rc').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(code))return msg('Escribe un código de cinco caracteres.')}
+try{await connect(code);P={k:K,n:N,t:Date.now(),d:{}};ready=1;if(host)pubS();else pub({})}catch(e){H=false;msg(e==='room_full'?'La sala está llena.':host?'No se pudo crear la sala. Inténtalo de nuevo.':'No se pudo entrar. Comprueba el código.')}}
+function startGame(){if(!H)return;const ps=roster().slice(0,8);if(ps.length<3)return;S.sc={};S.r=0;S.dk=shuf(WORDS.map((_,i)=>i));ps.forEach(p=>{S.nm[p.k]=p.n;S.sc[p.k]=0});newRound(ps)}
+function newRound(ps){ps=ps||roster().slice(0,8);S.pl=ps.map(p=>({k:p.k,n:p.n}));ps.forEach(p=>{S.nm[p.k]=p.n;S.sc[p.k]=S.sc[p.k]||0});S.n++;S.r++;S.w=S.dk[(S.r-1)%S.dk.length];S.opts=[];S.res=null;S.ph='write';S.dl=Date.now()+75000;pubS()}
+function hostTick(){if(!H||!S||(S.ph!=='write'&&S.ph!=='vote'))return;const late=Date.now()>S.dl,act=S.pl.filter(p=>on(p.k));
+if(S.ph==='write'){const okp=p=>{const x=dd(p);return x.ok&&String(x.t||'').trim()};
+if((act.length&&act.every(okp))||late){const o=S.pl.filter(okp).map(p=>({o:p.k,t:nm(String(dd(p).t).slice(0,160))}));o.push({o:'',t:nm(WORDS[S.w][1])});S.opts=shuf(o);S.ph='vote';S.dl=Date.now()+45000;pubS()}}
+else if((act.length&&act.every(p=>typeof dd(p).v==='number'))||late){const pts={},vt={};S.pl.forEach(p=>pts[p.k]=0);S.opts.forEach((_,i)=>vt[i]=[]);
+S.pl.forEach(p=>{const v=dd(p).v;if(typeof v!=='number'||!S.opts[v])return;const op=S.opts[v];if(op.o===p.k)return;vt[v].push(p.n);if(op.o==='')pts[p.k]+=2;else pts[op.o]=(pts[op.o]||0)+1});
+S.pl.forEach(p=>S.sc[p.k]=(S.sc[p.k]||0)+(pts[p.k]||0));S.res={pts,vt};S.ph='reveal';S.dl=0;pubS()}}
+function upd(){if(!S||!S.dl||(S.ph!=='write'&&S.ph!=='vote'))return;const w=S.ph==='write',s=Math.max(0,Math.ceil((S.dl-now())/1000)),t=$('tm'),b=$('bar'),c=$('cnt');
+if(t)t.textContent=s+' s';if(b)b.style.width=s/(w?75:45)*100+'%';
+if(c){const a=S.pl.filter(p=>on(p.k));c.textContent='Listos: '+a.filter(p=>w?dd(p).ok:typeof dd(p).v==='number').length+' de '+a.length}}
+function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k;$('cl').textContent=code;
+$('lp').innerHTML=ps.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('');
+$('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';
+$('st').classList.toggle('hidden',!H);$('st').disabled=ps.length<3||ps.length>8;$('rounds').disabled=!H;if(S)$('rounds').value=S.max;
+$('lm').textContent=ps.length<3?'Hacen falta al menos 3 jugadores.':ps.length>8?'Máximo 8 jugadores por partida.':H?'Ya podéis empezar.':'El anfitrión empezará cuando estéis listos.'}
+function rend(){if(!code)return;if(!S||S.ph==='lobby'){show('lobby');lastKey='';rLobby();return}
+show('game');const me=S.pl.some(p=>p.k===K);
+if(S.n!==L.n){L={n:S.n};if(me)pub({d:{r:S.n}})}
+const key=S.ph+S.n+(L.done?1:0)+(me?1:0);if(key===lastKey){upd();return}lastKey=key;
+const g=$('game'),rk=()=>Object.keys(S.sc).sort((a,b)=>S.sc[b]-S.sc[a]).map((k,i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+esc(S.nm[k]||'Jugador')+(k===K?' (tú)':'')+'</span><strong>'+S.sc[k]+' pts</strong></div>').join(''),
+head=t=>'<div class="tl"><span>'+t+'</span><span id="tm"></span></div><div class="meter"><span id="bar"></span></div>',
+rn='RONDA '+S.r+' / '+S.max,wd=WORDS[S.w]?'<div class="word">'+esc(WORDS[S.w][0])+'</div>':'';
+if(S.ph==='end'){g.innerHTML='<span class="pill">PARTIDA TERMINADA</span><h2>🏆 Clasificación final</h2>'+rk()+'<div class="row" style="margin-top:16px">'+(H?'<button class="btn g" id="ag">Jugar otra vez</button>':'<span class="small">Esperando al anfitrión…</span>')+'<button class="btn gh" id="ex">Salir</button></div>';
+if(H)$('ag').onclick=()=>{S.ph='lobby';pubS()};$('ex').onclick=()=>location.reload();return}
+if(S.ph==='reveal'){const r=S.res;g.innerHTML='<span class="pill">'+rn+' · RESULTADO</span>'+wd+'<h3>La definición verdadera era…</h3>'+S.opts.map((o,i)=>{const real=o.o==='',v=r.vt[i]||[];return'<div class="card'+(real?' real':'')+'"><div class="hd">'+(real?'✓ Definición real (+2 a quien la eligió)':'Inventada por '+esc(S.nm[o.o]||'?')+(r.pts[o.o]?' · +'+r.pts[o.o]:''))+'</div><div style="margin:6px 0">'+esc(o.t)+'</div><div class="small">'+(v.length?'Votaron: '+esc(v.join(', ')):'Nadie la votó')+'</div></div>'}).join('')+'<h3>Clasificación</h3>'+rk()+(H?'<button class="btn g full" id="nx">'+(S.r>=S.max?'Ver clasificación final':'Siguiente palabra')+'</button>':'<p class="small">Esperando al anfitrión…</p>');
+if(H)$('nx').onclick=()=>{if(S.r>=S.max){S.ph='end';pubS()}else newRound()};return}
+if(!S.pl.some(p=>p.k===K)){g.innerHTML='<div class="notice">Hay una partida en marcha. Entrarás en la siguiente.</div><h3>Clasificación</h3>'+rk();return}
+if(S.ph==='write'){g.innerHTML=head(rn+' · ESCRIBE')+wd+'<p class="m" style="text-align:center">Inventa una definición que parezca de diccionario. Si la palabra te suena, no hagas trampas: ¡engaña a los demás!</p>'+(L.done?'<div class="notice good">✓ Definición enviada. Esperando al resto…</div>':'<textarea id="ti" maxlength="160" rows="3" placeholder="Escribe tu definición…"></textarea><button class="btn g full" id="sa">Enviar definición</button>')+'<p class="small" id="cnt"></p>';
+if(!L.done)$('sa').onclick=()=>{const t=$('ti').value.trim();if(!t){$('ti').focus();return}L.done=1;pub({d:{r:S.n,t,ok:1}});rend()}}
+else{g.innerHTML=head(rn+' · VOTA')+wd+'<p class="m" style="text-align:center">¿Cuál es la definición verdadera? No puedes votar la tuya.</p>'+(L.done?'<div class="notice good">✓ Voto enviado. Esperando al resto…</div>':S.opts.map((o,i)=>'<button class="card opt" data-i="'+i+'"'+(o.o===K?' disabled':'')+'>'+esc(o.t)+(o.o===K?' <span class="small">(tuya)</span>':'')+'</button>').join(''))+'<p class="small" id="cnt"></p>';
+g.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{L.done=1;pub({d:{r:S.n,v:+b.dataset.i}});rend()})}
+upd()}
+$('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
+$('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+$('cp').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>$('cp').textContent='¡Copiado!').catch(()=>{})};
+$('st').onclick=startGame;$('rounds').onchange=()=>{if(H){S.max=+$('rounds').value;pubS()}};$('lv').onclick=()=>{if(ws)ws.leave();location.reload()};
+setInterval(()=>{hostTick();upd()},1000);addEventListener('beforeunload',()=>{if(ws)ws.leave()});
+})();
+</script></body></html>

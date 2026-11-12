@@ -495,7 +495,9 @@ MODS.push(
 'que está buscando constantemente reconocimiento',
 'que actúa como si estuviera en una misión secreta'
 );
-$('ft').textContent=(SIT.length+PLACES.length*EVENTS.length)+' situaciones · '+(BASES.length*(MODS.length+1))+' personajes posibles';
+$('ft').textContent=
+(SIT.length+PLACES.length*EVENTS.length)+' situaciones · '+
+(BASES.length*(MODS.length+1)*(VOICES.length+1))+' combinaciones de personajes';
 let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={},lastKey='',offs=0;
 const uid=()=>Math.random().toString(36).slice(2,10),now=()=>Date.now()+offs,msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
 const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),dat=k=>{const p=peers.find(q=>q.k===k);return(p&&p.d)||{}},on=k=>peers.some(p=>p.k===k);
@@ -525,7 +527,14 @@ function startRound(){if(!H)return;const ps=roster().slice(0,8);if(ps.length<3)r
 S.r++;S.n++;S.pl=ps.map(p=>({k:p.k,n:p.n}));ps.forEach(p=>{S.nm[p.k]=p.n;S.sc[p.k]=S.sc[p.k]||0});
 let q;for(let i=0;i<30;i++){q=Math.random()<.5?pick(SIT):gen();if(!S.uq.includes(q))break}S.uq.push(q);S.q=q;
 let pool=BASES.filter(b=>!S.up.includes(b));if(pool.length<8){S.up=[];pool=BASES}pool=shuf(pool);S.as={};
-ps.forEach((p,i)=>{S.up.push(pool[i]);S.as[p.k]=pool[i]+(Math.random()<.4?' '+pick(MODS):'')});
+ps.forEach((p,i)=>{
+  const personalidad=pool[i];
+  const modificador=Math.random()<.4?' '+pick(MODS):'';
+  const formaHablar=Math.random()<.65?' '+pick(VOICES):'';
+  S.up.push(personalidad);
+  S.as[p.k]=personalidad+modificador+formaHablar;
+});
+                      
 S.ph='answer';S.dl=Date.now()+90000;S.resp=null;S.res=null;pubS()}
 function hostTick(){if(!H||!S||(S.ph!=='answer'&&S.ph!=='vote'))return;
 const act=S.pl.filter(p=>on(p.k)),late=Date.now()>S.dl,d=p=>{const x=dat(p.k);return x.r===S.n?x:{}};

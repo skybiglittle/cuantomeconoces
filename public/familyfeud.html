@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Duelo de Familias · Las respuestas más populares</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--gold:#ffd166;--good:#48d597;--bad:#ff6c7f;--tA:#38bdf8;--tB:#f472b6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(720px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:#6ee7d4}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(34px,8vw,54px);line-height:1;margin:0 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffd166 50%,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:18px;padding:17px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:10px 0 5px;text-transform:uppercase}
+input,select{width:100%;border:1.5px solid var(--line);background:#0d1629;color:var(--text);border-radius:12px;padding:13px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px 15px;background:linear-gradient(100deg,var(--a),#638cff);color:#fff;font-weight:800}.btn.secondary{background:#293753;border:1px solid var(--line)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn.good{background:linear-gradient(100deg,#149b69,#27c99b)}.btn.bad{background:linear-gradient(100deg,#c2334b,#ff6c7f)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px;background:#0d1629}.player.me{border-color:#6ee7d4;color:#6ee7d4}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:10px}.team{border:2px solid var(--line);border-radius:14px;padding:10px;min-height:110px}.team.A{border-color:var(--tA)}.team.B{border-color:var(--tB)}.team h3.A{color:var(--tA)}.team h3.B{color:var(--tB)}
+.score{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center}.score .s{border-radius:14px;padding:8px;border:2px solid var(--line)}.score .s.A{border-color:var(--tA)}.score .s.B{border-color:var(--tB)}.score .s.on{background:rgba(255,209,102,.12);box-shadow:0 0 0 3px rgba(255,209,102,.25)}.score b{display:block;font-size:28px}
+.bank{font-size:13px;color:var(--gold);font-weight:800}
+.q{font-size:clamp(20px,4.6vw,28px);font-weight:900;text-align:center;margin:12px 0}
+.board{display:grid;gap:7px;margin:10px 0}.slot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-radius:11px;background:linear-gradient(180deg,#1d4ed8,#1e3a8a);border:2px solid #60a5fa;font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:.02em;min-height:50px}.slot .n{width:30px;height:30px;border-radius:50%;background:#0b1020;display:grid;place-items:center;font-size:15px;flex:none}.slot.rev{background:linear-gradient(180deg,#f59e0b,#b45309);border-color:#fde68a;animation:flip .5s}.slot.miss{background:#1e293b;border-color:var(--line);color:var(--muted)}.slot .pt{background:#0b1020;border-radius:8px;padding:2px 10px}
+@keyframes flip{from{transform:rotateX(90deg)}to{transform:none}}
+.strikes{font-size:30px;text-align:center;letter-spacing:6px;min-height:40px}
+.msg{padding:11px 13px;border:1px solid #258d69;border-radius:12px;background:#0e1f1d;color:#a2f0ce;margin:10px 0;font-weight:700;text-align:center}.msg.no{border-color:#9a4a55;background:#231017;color:#ffb3bf}.msg.info{border-color:var(--line);background:#101a2e;color:var(--text)}
+.buzz{width:100%;padding:26px;font-size:26px;border-radius:18px;border:0;background:radial-gradient(circle,#ff6c7f,#c2334b);color:#fff;font-weight:950;box-shadow:0 8px 24px #c2334b66}
+.ref{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ref button{font-size:12px;padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:#101a2e;color:var(--text)}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:520px){.slot{font-size:15px;padding:10px}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Duelo de <span>Familias</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Duelo de Familias · Salas en directo · dos equipos</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_duelo_session_v1',CID='cmc_duelo_cid_v1',KEY='cmc_duelo_key_v1';
+const rand=n=>Math.floor(Math.random()*n);
+const TCOL={A:'Equipo A',B:'Equipo B'},oth=t=>t==='A'?'B':'A';
+
+// ---------- Banco de preguntas: [pregunta, [respuestas de más a menos popular; "|" separa sinónimos]] ----------
+const PTS={4:[40,28,20,12],5:[38,26,17,11,8],6:[36,24,16,11,8,5]};
+const QUESTIONS=[
+['Algo que llevas a la playa',['toalla','crema solar|protector solar|protector|bronceador','sombrilla|parasol','gafas de sol|gafas','chanclas|chancletas','bañador|bikini|traje de baño']],
+['Un ingrediente de la pizza',['queso|mozzarella','tomate|salsa de tomate','jamón|york','champiñones|champiñon|setas','piña','pepperoni|salami|chorizo']],
+['Una excusa típica para llegar tarde',['tráfico|atasco','me quedé dormido|dormido|despertador|dormir','el autobús|bus|transporte','el metro|metro','coche|avería|problemas con el coche','enfermo|malo']],
+['Algo que se hace en un cumpleaños',['soplar las velas|velas|soplar','tarta|pastel','regalos|regalo','cantar|cumpleaños feliz','fiesta|bailar','globos']],
+['Un animal de granja',['vaca','cerdo|puerco|cochino','gallina|pollo','oveja','caballo','cabra']],
+['Una fruta de verano',['sandía','melón','melocotón|durazno','fresa|fresas','cereza|cerezas','albaricoque|nectarina']],
+['Algo que hay en un baño',['ducha|regadera','inodoro|váter|wc|taza','lavabo|lavamanos|pila','espejo','toalla|toallas','papel higiénico']],
+['Una asignatura del colegio',['matemáticas|mates','lengua|lenguaje','inglés','historia','educación física|gimnasia|gimnasia','ciencias|naturales|biología']],
+['Algo que te despierta por la mañana',['despertador|alarma','el móvil|móvil','el sol|luz|sol','mascota|perro|gato','ruido|tráfico|obras','hijos|niños|bebé']],
+['Un deporte olímpico',['natación','atletismo|correr','gimnasia','fútbol','tenis','baloncesto|basket']],
+['Un superhéroe',['superman','spiderman|hombre araña|spider-man','batman','hulk','iron man|ironman','capitán américa|capitan america']],
+['Una película de Disney',['el rey león|rey león','la bella y la bestia|bella y bestia','frozen','aladdin|aladín','la sirenita|sirenita','blancanieves']],
+['Un instrumento musical',['guitarra','piano','batería','violín','flauta','trompeta']],
+['Algo que encuentras en un hotel',['cama','recepción|recepcionista','piscina','desayuno|buffet','minibar|nevera','toallas|toalla']],
+['Lo primero que haces al despertarte',['ir al baño|baño|pis|mear','mirar el móvil|móvil','desayunar|desayuno|café','lavarte la cara|lavarse la cara|ducharte|ducha','apagar el despertador|despertador','estirarte|estirar|bostezar']],
+['Una marca de coches',['mercedes','bmw','audi','seat','toyota','ford']],
+['Un postre típico',['flan','helado','tarta|pastel','arroz con leche','natillas','tiramisú|tiramisu']],
+['Algo que se pierde constantemente',['llaves|las llaves','móvil|el móvil|teléfono','calcetines|calcetín','gafas','cartera|monedero','mando|mando de la tele|control remoto']],
+['Un sabor de helado',['chocolate','vainilla','fresa','limón','stracciatella|straciatella','pistacho']],
+['Un trabajo con uniforme',['policía','bombero','médico|doctor|enfermero','piloto','camarero','militar|soldado']],
+['Algo que llevas en el bolso',['móvil|teléfono','cartera|monedero','llaves','pañuelos|kleenex','maquillaje|pintalabios|labial','cargador']],
+['Un lugar donde hay que guardar silencio',['biblioteca','iglesia|templo','hospital','cine|teatro','museo','examen|clase|colegio']],
+['Un medio de transporte',['coche','avión','tren','autobús|bus','bicicleta|bici','metro']],
+['Una bebida que pides en un bar',['cerveza|caña','vino','refresco|coca-cola|coca cola|cocacola','café','agua','gin tonic|copa|cubata']],
+['Algo de color rojo',['tomate','fresa','sangre','rosa|rosas','manzana','ferrari|coche']],
+['Un animal que da miedo',['serpiente|culebra','araña|arañas','tiburón','león','cocodrilo','murciélago']],
+['Algo que se rompe fácilmente',['cristal|vidrio','huevo|huevos','vaso|copa','corazón','móvil|pantalla','promesa|promesas']],
+['Algo que da vergüenza',['bailar','hablar en público|exposición|hablar delante','tropezar|caerse|caída','llorar','cantar','olvidar un nombre|nombre']],
+['Un personaje de dibujos animados',['mickey mouse|mickey','bob esponja','homer simpson|homer|los simpson','bugs bunny','peppa pig|peppa','tom y jerry|tom']],
+['Algo que hay en una cocina',['nevera|frigorífico|refrigerador','horno','microondas','fregadero|pila','cuchillo|cuchillos','sartén']],
+['Una red social',['instagram|insta','tiktok','facebook|face','twitter|x','youtube','linkedin']],
+['Un regalo típico de boda',['dinero|sobre|efectivo','viaje|luna de miel','vajilla|cubertería|menaje','electrodoméstico|electrodomésticos|batidora|cafetera','flores|ramo']],
+['Algo que hacen los niños en el parque',['columpio|columpiarse|balancearse','tobogán|resbaladilla','jugar a la pelota|pelota|fútbol','correr','arenero|arena|cubo','escondite|jugar al escondite']],
+['Un lugar para una primera cita',['restaurante|cenar|cena','cine','cafetería|café','parque|paseo','bar|copa','playa']],
+['Un regalo típico de Navidad',['juguete|juguetes|muñeca|lego','colonia|perfume','ropa|jersey|calcetines','libro','videojuego|consola|play','móvil|tablet|ordenador|tecnología']],
+['Algo que se pega',['chicle','pegamento|cola|loctite','celo|cinta adhesiva|cinta','pegatina|sticker|etiqueta','sello|sellos','canción|canción pegadiza']],
+['Algo que hace tu madre',['cocinar|comida|cocina','regañar|reñir|gritar|regañar','limpiar|ordenar|recoger','preocuparse|preocupa','llamarte|llamar|llamadas','abrazarte|abrazar|besos|besar']],
+['Algo que se enciende',['luz|bombilla|lámpara','tele|televisión|televisor','vela|velas','fuego|hoguera|chimenea','ordenador|pc','cigarro|cigarrillo|tabaco|pitillo']],
+['Una profesión muy bien pagada',['médico|doctor|cirujano','abogado','futbolista|jugador','ingeniero','piloto','banquero|bancario|empresario']],
+['Un destino de vacaciones',['playa|la playa','mallorca|baleares|ibiza','parís|paris','canarias|tenerife','italia|roma','cancún|cancun|méxico|caribe|punta cana']]
+];
+const ansOf=()=>{const a=QUESTIONS[state.qi][1];return a.map((s,i)=>{const syn=s.split('|');return{syn,text:syn[0],pts:PTS[a.length][i]}})};
+
+// ---------- Comparación de respuestas ----------
+const norm=s=>String(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const ARTRE=/^(el|la|los|las|un|una|unos|unas|de|del|mi|tu|su) /;
+function canon(s){let t=norm(s);while(ARTRE.test(t))t=t.replace(ARTRE,'');return t.split(' ').map(w=>w.length>3?w.replace(/s$/,''):w).join(' ')}
+function lev(a,b){const m=[];for(let i=0;i<=a.length;i++)m[i]=[i];for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function findRank(text){const t=canon(text);if(!t)return -1;const A=ansOf();
+ for(let i=0;i<A.length;i++){if(state.rev[i])continue;
+  for(const s of A[i].syn){const c=canon(s);if(!c)continue;if(c===t||(t.length>=5&&c.length>=5&&lev(c,t)<=1)||(c.length>=4&&(' '+t+' ').includes(' '+c+' ')))return i}}
+ return -1}
+
+// ---------- Estado local y red ----------
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',myPres={};
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-duelo-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena.':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};state={v:0,phase:'lobby',rounds:6,teams:{},names:{}};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión ----------
+const connSet=()=>new Set(playerList().map(p=>p.key));
+function members(t){const c=connSet(),all=Object.keys(state.teams).filter(k=>state.teams[k]===t),m=all.filter(k=>c.has(k));return m.length?m:all}
+function nextMember(t){const m=members(t);state.ptr[t]=(state.ptr[t]||0)+1;return m[state.ptr[t]%m.length]}
+const repOf=t=>{const m=members(t);return m[(state.round-1)%m.length]};
+function startGame(){const cnt={A:0,B:0};const c=connSet();Object.keys(state.teams).forEach(k=>{if(c.has(k))cnt[state.teams[k]]++});if(!cnt.A||!cnt.B)return;
+ Object.assign(state,{score:{A:0,B:0},round:0,used:[],ptr:{A:0,B:1},seq:0});nextRound()}
+function nextRound(){if(!isHost)return;if(state.round>=state.rounds){state.phase='finished';return commit()}
+ state.round++;let av=QUESTIONS.map((_,i)=>i).filter(i=>!state.used.includes(i));if(!av.length){state.used=[];av=QUESTIONS.map((_,i)=>i)}
+ state.qi=av[rand(av.length)];state.used.push(state.qi);state.rev=QUESTIONS[state.qi][1].map(()=>false);state.bank=0;state.strikes=0;state.ctrl=null;state.winT=null;
+ state.reps={A:repOf('A'),B:repOf('B')};state.fo={stage:'buzz',first:null,fr:-1};state.answerer=null;state.last=null;state.phase='faceoff';state.seq++;commit()}
+function endRound(t){const mult=state.round>=state.rounds?2:1;state.score[t]+=state.bank*mult;state.winT=t;state.mult=mult;state.phase='result';state.answerer=null;commit()}
+function takeControl(t){state.ctrl=t;state.phase='play';state.strikes=0;
+ if(state.rev.every(Boolean))return endRound(t);state.answerer=nextMember(t);state.seq++;commit()}
+function resolve(rank,text){const ph=state.phase,A=ansOf();state.last={k:state.answerer,txt:text||'(árbitro)',ok:rank>=0};
+ if(rank>=0){state.rev[rank]=true;state.bank+=A[rank].pts}
+ if(ph==='faceoff'){const fo=state.fo,t=state.teams[state.answerer];
+  if(fo.stage==='first'){if(rank===0)return takeControl(t);fo.fr=rank;fo.stage='second';state.answerer=state.reps[oth(t)];state.seq++;return commit()}
+  const r1=fo.fr,r2=rank,t1=state.teams[fo.first];
+  if(r1>=0&&(r2<0||r1<r2))return takeControl(t1);
+  if(r2>=0&&(r1<0||r2<r1))return takeControl(t);
+  state.fo={stage:'buzz',first:null,fr:-1};state.answerer=null;state.seq++;return commit()}
+ if(ph==='play'){
+  if(rank>=0){if(state.rev.every(Boolean))return endRound(state.ctrl);state.answerer=nextMember(state.ctrl);state.seq++;return commit()}
+  state.strikes++;if(state.strikes>=3){state.phase='steal';state.answerer=nextMember(oth(state.ctrl));state.seq++;return commit()}
+  state.answerer=nextMember(state.ctrl);state.seq++;return commit()}
+ if(ph==='steal')return endRound(rank>=0?oth(state.ctrl):state.ctrl)}
+function forceBuz(t){if(!isHost||state.phase!=='faceoff'||state.fo.stage!=='buzz')return;state.fo.first=state.reps[t];state.fo.stage='first';state.answerer=state.reps[t];state.seq++;commit()}
+function grant(i){if(!isHost||!state.answerer||state.rev[i])return;resolve(i,'(árbitro)')}
+function miss(){if(!isHost||!state.answerer)return;resolve(-1,'(árbitro)')}
+function hostStep(){if(!isHost||!state)return;const pls=playerList(),pl={};pls.forEach(p=>pl[p.key]=p.p);let ch=false;
+ if(state.phase==='lobby'){const cnt={A:0,B:0};Object.keys(state.teams).forEach(k=>{if(!pl[k]){delete state.teams[k];ch=true}else cnt[state.teams[k]]++});
+  for(const p of pls){const want=p.p.c_team,cur=state.teams[p.key];
+   if((want==='A'||want==='B')&&cur!==want){if(cur)cnt[cur]--;state.teams[p.key]=want;cnt[want]++;ch=true}
+   else if(!cur){const t=cnt.A<=cnt.B?'A':'B';state.teams[p.key]=t;cnt[t]++;ch=true}
+   if(state.names[p.key]!==p.name){state.names[p.key]=p.name;ch=true}}
+  if(ch)commit();return}
+ if(state.phase==='finished')return;
+ for(const p of pls){if(!state.teams[p.key]){const cnt={A:0,B:0};Object.values(state.teams).forEach(t=>cnt[t]++);state.teams[p.key]=cnt.A<=cnt.B?'A':'B';state.names[p.key]=p.name;ch=true}}
+ if(state.phase==='faceoff'&&state.fo.stage==='buzz'){
+  for(const t of ['A','B']){const k=state.reps[t],c=pl[k]&&pl[k].c_act;if(c&&c.s===state.seq&&c.type==='buz'){state.fo.first=k;state.fo.stage='first';state.answerer=k;state.seq++;return commit()}}}
+ else if(state.answerer&&['faceoff','play','steal'].includes(state.phase)){
+  const c=pl[state.answerer]&&pl[state.answerer].c_act;
+  if(c&&c.s===state.seq&&c.type==='ans'&&c.text){const txt=String(c.text).slice(0,60);return resolve(findRank(txt),txt)}}
+ if(ch)commit()}
+
+// ---------- Acciones del jugador ----------
+function sendAns(){const el=$('ans'),t=(el?.value||'').trim();if(!t)return;publish({c_act:{s:state.seq,type:'ans',text:t.slice(0,60)}});el.value='';el.disabled=true;$('sbtn').disabled=true}
+function sendBuz(){publish({c_act:{s:state.seq,type:'buz'}});const b=$('buzz');if(b)b.disabled=true}
+function setTeam(t){publish({c_team:t});if(isHost){state.teams[myKey]=t;commit()}}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>DUELO DE FAMILIAS</h1><p class="muted">Las respuestas más populares de la encuesta… ¿sabrás adivinar lo que piensa la gente? 🎙️</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Dos equipos. En cada ronda hay una pregunta con respuestas ocultas, ordenadas de más a menos populares.<br><br>1) <b>Duelo:</b> un representante de cada equipo pulsa el botón y responde. Gana el control quien dé la respuesta más popular.<br>2) <b>Turno:</b> el equipo con el control responde por turnos y cada acierto suma al banco. Con <b>3 fallos</b> pierde el control.<br>3) <b>Robo:</b> el otro equipo tiene una sola respuesta: si acierta, se lleva todo el banco.<br>La última ronda vale <b>doble</b>. El anfitrión actúa de árbitro y puede dar por buena una respuesta.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){
+ mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button></section><section class="card"><h3>Equipos</h3><div class="teams" id="teams"></div><div class="row" style="margin-top:10px"><button class="btn secondary" data-t="A">Unirme al equipo A</button><button class="btn secondary" data-t="B">Unirme al equipo B</button></div></section>'
+ +(isHost?'<section class="card"><label for="rounds">Rondas</label><select id="rounds"><option value="4">4 (corta)</option><option value="6">6</option><option value="8">8 (larga)</option></select><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar partida</button><p class="notice" id="smsg"></p></section>':'<section class="card center"><p class="muted">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
+ +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;
+  app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>setTeam(b.dataset.t));
+  if(isHost){$('rounds').onchange=()=>{state.rounds=Number($('rounds').value);commit()};$('start').onclick=()=>{startGame();if(state.phase==='lobby')$('smsg').textContent='Hace falta al menos 1 jugador en cada equipo.'}}});
+ const col=t=>'<div class="team '+t+'"><h3 class="'+t+'">'+TCOL[t]+'</h3>'+Object.keys(state.teams).filter(k=>state.teams[k]===t).map(k=>'<span class="player '+(k===myKey?'me':'')+'">'+safe(pname(k))+'</span>').join('')+'</div>';
+ setHTML($('teams'),col('A')+col('B'));
+ if(isHost){const el=$('rounds');if(el&&document.activeElement!==el)el.value=String(state.rounds)}}
+function boardHtml(){const A=ansOf(),all=state.phase==='result'||state.phase==='finished';
+ return A.map((a,i)=>state.rev[i]?'<div class="slot rev"><span class="n">'+(i+1)+'</span><span>'+safe(a.text)+'</span><span class="pt">'+a.pts+'</span></div>':(all?'<div class="slot miss"><span class="n">'+(i+1)+'</span><span>'+safe(a.text)+'</span><span class="pt">'+a.pts+'</span></div>':'<div class="slot"><span class="n">'+(i+1)+'</span><span>· · · · ·</span><span class="pt">?</span></div>')).join('')}
+function infoHtml(){let m='',cls='info';const ph=state.phase,A=state.answerer,rp=state.reps||{};
+ if(ph==='faceoff'){m=state.fo.stage==='buzz'?'🔔 ¡DUELO! Pulsan '+safe(pname(rp.A))+' (A) y '+safe(pname(rp.B))+' (B). ¡El más rápido responde!':'🎤 Responde '+safe(pname(A))+' ('+state.teams[A]+')'}
+ else if(ph==='play')m='🎤 Controla el equipo '+state.ctrl+' · responde '+safe(pname(A));
+ else if(ph==='steal')m='🕵️ ¡ROBO! '+safe(pname(A))+' ('+oth(state.ctrl)+') tiene UNA respuesta para llevarse el banco';
+ else if(ph==='result'){cls='';m='🏆 El equipo '+state.winT+' se lleva '+state.bank*(state.mult||1)+' puntos'+(state.mult>1?' (ronda doble)':'')}
+ let last='';if(state.last&&ph!=='result')last='<div class="msg '+(state.last.ok?'':'no')+'">'+safe(pname(state.last.k))+': «'+safe(state.last.txt)+'» '+(state.last.ok?'✔':'✖')+'</div>';
+ return'<div class="msg '+cls+'">'+m+'</div>'+last}
+function refHtml(){if(!isHost||!['faceoff','play','steal'].includes(state.phase))return'';
+ if(state.phase==='faceoff'&&state.fo.stage==='buzz')return'<div class="small muted">Árbitro:</div><div class="ref"><button data-fb="A">🔔 Pulsa A</button><button data-fb="B">🔔 Pulsa B</button></div>';
+ const A=ansOf();return'<div class="small muted">Árbitro: toca para dar por buena una respuesta, o márcala como fallo</div><div class="ref">'+A.map((a,i)=>state.rev[i]?'':'<button data-g="'+i+'">✔ '+safe(a.text)+'</button>').join('')+'<button data-miss="1">✖ Fallo</button></div>'}
+function renderGame(){const ph=state.phase,me=state.answerer===myKey,
+  canBuzz=ph==='faceoff'&&state.fo.stage==='buzz'&&(state.reps.A===myKey||state.reps.B===myKey);
+ mount('g|'+state.round+'|'+ph+'|'+state.seq+'|'+me+'|'+canBuzz,
+ '<section class="card"><div class="score" id="score"></div><div class="small center bank" id="bank" style="margin-top:6px"></div><div class="q" id="q"></div><div class="board" id="board"></div><div class="strikes" id="strikes"></div><div id="info"></div>'
+ +(me&&ph!=='result'?'<div class="row" style="margin-top:8px"><input id="ans" maxlength="60" autocomplete="off" placeholder="Tu respuesta…" style="flex:3"><button class="btn" id="sbtn">Responder</button></div>':'')
+ +(canBuzz?'<button class="buzz" id="buzz" style="margin-top:10px">🔔 ¡PULSAR!</button>':'')
+ +'<div id="ref"></div>'
+ +(ph==='result'?(isHost?'<button class="btn" id="next" style="width:100%;margin-top:12px">'+(state.round>=state.rounds?'Ver resultado final 🏆':'Siguiente ronda')+'</button>':'<p class="small muted center" style="margin-top:10px">Esperando al anfitrión…</p>'):'')+'</section>',
+ ()=>{$('sbtn')&&($('sbtn').onclick=sendAns,$('ans').addEventListener('keydown',e=>{if(e.key==='Enter')sendAns()}),$('ans').focus());$('buzz')&&($('buzz').onclick=sendBuz);$('next')&&($('next').onclick=nextRound);
+  $('ref').onclick=e=>{const g=e.target.closest('[data-g]');if(g)return grant(Number(g.dataset.g));if(e.target.closest('[data-miss]'))return miss();const f=e.target.closest('[data-fb]');if(f)forceBuz(f.dataset.fb)}});
+ const cls=t=>'s '+t+(state.ctrl===t&&ph!=='result'?' on':'');
+ setHTML($('score'),'<div class="'+cls('A')+'"><small>Equipo A</small><b>'+state.score.A+'</b></div><div class="small muted">Ronda '+state.round+'/'+state.rounds+(state.round>=state.rounds?'<br>×2':'')+'</div><div class="'+cls('B')+'"><small>Equipo B</small><b>'+state.score.B+'</b></div>');
+ setHTML($('bank'),'💰 Banco: '+state.bank);setHTML($('q'),safe(QUESTIONS[state.qi][0]));
+ setHTML($('board'),boardHtml());setHTML($('strikes'),'<span style="color:var(--bad)">'+'✖'.repeat(state.strikes)+'</span><span style="color:#2c3a55">'+'✖'.repeat(3-state.strikes)+'</span>');
+ setHTML($('info'),infoHtml());setHTML($('ref'),refHtml())}
+function renderFinished(){const a=state.score.A,b=state.score.B,w=a===b?'¡Empate!':(a>b?'Gana el equipo A':'Gana el equipo B');
+ mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:78px">🏆</div><h1>'+w+'</h1><div class="score" style="margin-top:12px"><div class="s A"><small>Equipo A</small><b>'+a+'</b></div><div></div><div class="s B"><small>Equipo B</small><b>'+b+'</b></div></div></section>'+(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+setInterval(()=>{if(roomCode&&state)hostStep()},600);
+if(saved?.room&&saved?.name){connect();render()}else renderHome();
+})();
+</script></body></html>

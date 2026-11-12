@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0f172a">
+<title>Unánime · Sintonía de grupo</title>
+<style>
+:root{color-scheme:dark;--bg:#0f172a;--card:#1e293b;--line:#334155;--text:#f8fafc;--muted:#94a3b8;--ac:#6366f1;--glow:rgba(99,102,241,.35);--same:#10b981;--diff:#f59e0b;--danger:#ef4444;--gold:#fcd34d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#2a2358 0,transparent 45%),radial-gradient(ellipse at 100% 20%,#0f3b47 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(620px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:#6ee7d4}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(34px,8vw,52px);line-height:1;margin:0 0 6px;letter-spacing:-.05em;background:linear-gradient(135deg,#a855f7,#6366f1 50%,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(30,41,59,.98),rgba(20,29,46,.98));border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 10px 30px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:10px 0 5px;text-transform:uppercase;letter-spacing:.04em}
+input,select{width:100%;border:1.5px solid var(--line);background:#0f172a;color:var(--text);border-radius:12px;padding:13px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--glow)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px 15px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:800;box-shadow:0 4px 12px var(--glow);transition:transform .15s,filter .15s}.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}.btn.secondary{background:#293753;border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);box-shadow:none}.btn.good{background:linear-gradient(135deg,#059669,#10b981)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px;background:#0f172a}.player.me{border-color:#6ee7d4;color:#6ee7d4}.player.ok{border-color:var(--same);color:var(--same)}
+.badge{display:inline-block;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.badge.same{background:rgba(16,185,129,.15);color:var(--same);border:1px solid var(--same)}.badge.diff{background:rgba(245,158,11,.15);color:var(--diff);border:1px solid var(--diff)}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mode{padding:11px 6px;border-radius:12px;border:1.5px solid var(--line);background:#0f172a;color:var(--muted);text-align:center}.mode b{display:block;font-size:13px}.mode small{display:block;font-size:10px;font-weight:400;margin-top:2px}.mode.on{border-color:var(--ac);background:rgba(99,102,241,.14);color:#fff}
+.settings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.timer{height:7px;background:var(--line);border-radius:7px;overflow:hidden;margin:12px 0}.timer>div{height:100%;background:linear-gradient(90deg,#6366f1,#38bdf8);width:100%;transition:width .25s linear}.tleft{font-weight:900;font-size:18px}.tleft.low{color:var(--danger)}
+.cat{font-size:clamp(21px,5vw,28px);font-weight:900;text-align:center;margin:14px 0 4px}
+.myans{font-size:26px;font-weight:900;color:#a5b4fc;text-align:center;text-transform:uppercase;overflow-wrap:anywhere;margin:6px 0}
+.grp{background:#0f172a;border:1px solid var(--line);border-left:5px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;animation:pop .45s both}.grp.win{border-left-color:var(--same)}.grp.rebel{border-left-color:var(--diff)}.grp.void{opacity:.6;border-left-color:var(--danger)}
+.grp .h{display:flex;justify-content:space-between;align-items:center;gap:8px}.grp .w{font-size:19px;font-weight:900;text-transform:uppercase;color:#c7d2fe;overflow-wrap:anywhere}.grp .p{font-weight:900;background:rgba(255,255,255,.09);padding:3px 10px;border-radius:8px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;background:#1e293b;border:1px solid var(--line);border-radius:99px;padding:3px 9px;margin:6px 4px 0 0}.chip button{border:0;background:none;color:var(--danger);padding:0 0 0 2px;font-size:13px}
+.mini{border:1px solid var(--line);background:#1e293b;color:var(--text);border-radius:8px;padding:3px 9px;font-size:12px;margin-top:8px}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.sc{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;background:#0f172a;border:1px solid var(--line);margin:6px 0}.sc strong{color:#a5b4fc}.sc em{font-style:normal;color:var(--same);font-size:12px;margin-left:6px}
+.award{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#0f172a;border:1px solid var(--line);margin:6px 0}.award span{font-size:26px}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:560px){.settings{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Un<span>ánime</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Unánime · Salas en directo · de 2 a 20 jugadores</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_una_session_v1',CID='cmc_una_cid_v1',KEY='cmc_una_key_v1';
+const MAXP=20,MINP=2;
+const rand=n=>Math.floor(Math.random()*n);
+
+// ---------- Banco de categorías por temas ----------
+const THEMES=[
+['🍕 Comida y bebida',['Un ingrediente de la pizza','Un sabor de helado','Algo que se compra en una panadería','Una fruta tropical','Una bebida que pides en un bar','Algo que se come en el desayuno','Una tapa típica española','Un postre que nunca falla','Algo que se echa a la ensalada','Una verdura que no soporta mucha gente','Una salsa','Un tipo de pasta','Algo que llevas a un picnic','Un plato que cocinaría tu abuela','Un dulce de Navidad','Una fruta de verano','Algo que se come con las manos','Un cóctel o combinado']],
+['🏠 Vida diaria',['Un objeto que hay en el salón','Algo que siempre llevas en el bolso o bolsillo','Una excusa típica para llegar tarde','Una cosa que se pierde constantemente','Algo que hay en un baño','Una tarea doméstica que da pereza','Un regalo típico de cumpleaños','Una aplicación de móvil que usas a diario','Algo que encuentras en un cajón de la cocina','Lo primero que haces al despertarte','Algo que se rompe con facilidad','Algo que llevas al gimnasio','Algo que hay en una mochila escolar','Algo que haces antes de dormir','Una manía que tiene mucha gente','Un electrodoméstico','Algo que cuelga de una pared','Algo que se enchufa']],
+['🎬 Cine, series y música',['Una película de Disney o Pixar','Un villano famoso del cine','Un instrumento musical','Un superhéroe','Una serie que todo el mundo ha visto','Una canción que todo el mundo se sabe','Un cantante o grupo español','Un personaje de dibujos animados','Una película de miedo','Un actor o actriz famoso','Algo que se come en el cine','Un género musical','Una película navideña','Un programa de televisión clásico','Una saga de películas','Un cuento clásico','Un videojuego famoso','Un personaje de cuento']],
+['🐾 Animales y naturaleza',['Un animal doméstico o de granja','Un animal que da miedo','Un animal de la selva','Un animal marino','Un insecto','Un ave','Una flor','Un árbol','Un fenómeno meteorológico','Algo que ves en el campo','Un animal que querrías como mascota','Un animal rápido','Un animal en peligro de extinción','Un animal nocturno','Algo que hay en un bosque','Un animal que vuela']],
+['✈️ Viajes y lugares',['Algo que llevas a la playa','Algo que encuentras en un hotel','Un medio de transporte urbano','Una ciudad europea','Un país de Latinoamérica','Un monumento famoso','Algo que metes en la maleta sí o sí','Un lugar donde hay que hacer cola','Un sitio donde hay que guardar silencio','Algo que ves en un aeropuerto','Un destino de luna de miel','Una ciudad española','Algo que hay en un parque','Un lugar para una primera cita','Un souvenir típico','Un tipo de alojamiento']],
+['⚽ Deporte y ocio',['Un deporte olímpico','Una marca de ropa deportiva','Un jugador de fútbol','Un juego de mesa','Un hobby que te gustaría tener','Una actividad de domingo','Algo que haces en vacaciones','Un juego de cartas','Un deporte que se juega con pelota','Un deporte de invierno','Algo que se hace en una fiesta','Un juego de patio de colegio','Un plan de sábado por la noche','Una red social','Un equipo de fútbol español']],
+['🤪 Humor y locuras',['Algo que nunca dirías en una entrevista de trabajo','Una mentira piadosa típica','Algo que da vergüenza que te pillen haciendo','Algo que siempre dice tu madre o tu padre','Un superpoder que querrías tener','Algo que huele mal','Algo que da miedo','Una palabra que suena graciosa','Un mal consejo','Algo que haces cuando estás aburrido','Un motivo para llamar a un amigo a las 3 de la mañana','Algo que no puede faltar en un cumpleaños','Un nombre de perro','Algo rojo','Algo redondo','Algo que se pega']],
+['📚 Colegio y trabajo',['Una asignatura del colegio','Algo que hay en un aula','Una profesión','Algo que hay en una oficina','Una excusa para no hacer los deberes','Algo que se usa para escribir','Algo típico de una reunión de trabajo','Un oficio de toda la vida','Algo que llevas a una entrevista de trabajo','Algo que hay en un hospital','Una herramienta','Algo que hay en una obra','Una carrera universitaria','Algo que se aprende en la autoescuela']]
+];
+const MODE_TXT={same:'🤝 Mismo',diff:'🦄 Diferente',mix:'🎲 Mixto'};
+const HINT={same:'👉 Escribe lo que creas que responderá LA MAYORÍA del grupo.',diff:'👉 Escribe algo válido pero ÚNICO, que nadie más vaya a poner.'};
+
+// ---------- Comparación de respuestas ----------
+const norm=s=>String(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const ARTRE=/^(el|la|los|las|un|una|unos|unas|de|del|mi|tu|su) /;
+function canon(s){let t=norm(s);while(ARTRE.test(t))t=t.replace(ARTRE,'');return t.split(' ').map(w=>w.length>3?w.replace(/s$/,''):w).join(' ')}
+function lev(a,b){const m=[];for(let i=0;i<=a.length;i++)m[i]=[i];for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function mostCommon(arr){const c={};arr.forEach(t=>{const k=t.trim().toLocaleLowerCase('es');c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]}
+
+// ---------- Estado local y red ----------
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ own=saved?.own||{n:0,ans:null,editing:false,pn:0,prop:null},socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',
+ offset=0,hostAns={},seenP=new Set(),mergeSel=null,myPres=own.ans?{c_ans:own.ans}:{};
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state,own}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;state.hostNow=Date.now();publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-unanime-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena.':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;offset=(inc.hostNow||Date.now())-Date.now();persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+const freshOwn=()=>({n:0,ans:null,editing:false,pn:0,prop:null});
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};own=freshOwn();hostAns={};offset=0;state={v:0,phase:'lobby',mode:'same',rounds:8,secs:30,theme:'all',custom:[]};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};own=freshOwn();state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};own=freshOwn();sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión ----------
+const pool=()=>{const th=state.theme,base=th==='all'?THEMES.flatMap(t=>t[1]):(THEMES[Number(th)]?THEMES[Number(th)][1]:[]);return base.concat(state.custom||[])};
+function startGame(){const ps=playerList().sort((a,b)=>(b.p.c_host?1:0)-(a.p.c_host?1:0)).slice(0,MAXP);if(ps.length<MINP)return;
+ const order=ps.map(p=>p.key),names={},scores={},stats={};ps.forEach(p=>{names[p.key]=p.name;scores[p.key]=0;stats[p.key]={m:0,u:0}});
+ Object.assign(state,{order,names,scores,stats,round:0,used:[],cat:'',rmode:'same',answers:{},groups:[],gain:{},subs:{},merges:[],voided:[],absent:[]});nextRound()}
+function nextRound(){if(!isHost)return;
+ if(state.round>=state.rounds){state.phase='finished';return commit()}
+ state.round++;const all=pool();let av=all.filter(c=>!state.used.includes(c));if(!av.length){state.used=[];av=all}
+ state.cat=av[rand(av.length)];state.used.push(state.cat);
+ state.rmode=state.mode==='mix'?(Math.random()<.5?'same':'diff'):state.mode;
+ state.base={scores:{...state.scores},stats:JSON.parse(JSON.stringify(state.stats))};
+ state.subs={};state.answers={};state.groups=[];state.gain={};state.merges=[];state.voided=[];state.absent=[];hostAns={};mergeSel=null;
+ state.phase='write';state.endsAt=Date.now()+state.secs*1000;commit()}
+function recompute(){
+ const ks=state.order,ans=state.answers,vd=new Set(state.voided||[]);
+ const items=ks.filter(k=>ans[k]&&!vd.has(k)).map(k=>({k,t:ans[k],c:canon(ans[k])})),parent={};
+ items.forEach(i=>parent[i.k]=i.k);const find=x=>parent[x]===x?x:(parent[x]=find(parent[x])),uni=(a,b)=>{if(parent[a]!=null&&parent[b]!=null)parent[find(a)]=find(b)};
+ for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){const a=items[i].c,b=items[j].c;if(a&&b&&(a===b||(a.length>=5&&b.length>=5&&lev(a,b)<=1)))uni(items[i].k,items[j].k)}
+ (state.merges||[]).forEach(([a,b])=>uni(a,b));
+ const map={};items.forEach(i=>{(map[find(i.k)]=map[find(i.k)]||[]).push(i)});
+ const groups=Object.values(map).map(arr=>({keys:arr.map(i=>i.k),label:mostCommon(arr.map(i=>i.t))}));
+ const maxK=Math.max(0,...groups.map(g=>g.keys.length)),tops=groups.filter(g=>g.keys.length===maxK).length;
+ groups.forEach(g=>{const n=g.keys.length;if(state.rmode==='same'){g.top=n>=2&&n===maxK&&tops===1;g.pts=n>=2?n+(g.top?1:0):0}else{g.pts=n===1?3:0}});
+ groups.sort((a,b)=>b.keys.length-a.keys.length||a.label.localeCompare(b.label));
+ ks.forEach(k=>{if(vd.has(k)&&ans[k])groups.push({keys:[k],label:ans[k],pts:0,void:true})});
+ const none=ks.filter(k=>!ans[k]&&!(state.absent||[]).includes(k));if(none.length)groups.push({keys:none,label:'Sin respuesta',pts:0,none:true});
+ const gain={};ks.forEach(k=>gain[k]=0);const st=JSON.parse(JSON.stringify(state.base.stats));
+ groups.forEach(g=>{if(g.void||g.none)return;g.keys.forEach(k=>{gain[k]=g.pts;if(state.rmode==='same'&&g.keys.length>=2)st[k].m++;if(state.rmode==='diff'&&g.keys.length===1)st[k].u++})});
+ state.groups=groups;state.gain=gain;state.stats=st;ks.forEach(k=>state.scores[k]=(state.base.scores[k]||0)+gain[k])}
+function reveal(){state.answers={};state.order.forEach(k=>{if(hostAns[k])state.answers[k]=hostAns[k].text});
+ const here=new Set(playerList().map(p=>p.key));state.absent=state.order.filter(k=>!here.has(k)&&!state.answers[k]);
+ state.merges=[];state.voided=[];state.phase='reveal';recompute();commit()}
+function toggleVoid(k){if(!isHost||state.phase!=='reveal')return;const i=state.voided.indexOf(k);if(i>=0)state.voided.splice(i,1);else state.voided.push(k);recompute();commit()}
+function mergeClick(k){if(!isHost||state.phase!=='reveal')return;
+ if(mergeSel==null){mergeSel=k;return updateReveal()}
+ const g=state.groups.find(g=>g.keys.includes(mergeSel));
+ if(g&&g.keys.includes(k)){mergeSel=null;return updateReveal()}
+ state.merges.push([mergeSel,k]);mergeSel=null;recompute();commit()}
+function hostStep(){if(!isHost||!state)return;
+ const pls=playerList(),pl={};pls.forEach(p=>pl[p.key]=p.p);let ch=false;
+ for(const p of pls){const pr=p.p.c_prop;if(!pr||seenP.has(p.key+':'+pr.n))continue;seenP.add(p.key+':'+pr.n);
+  const w=String(pr.w||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,70);
+  if(w.length>=6&&state.custom.length<40&&!state.custom.some(x=>norm(x)===norm(w))){state.custom.push(w);ch=true}}
+ if(state.phase==='lobby'||state.phase==='finished'){if(ch)commit();return}
+ for(const p of pls){if(!state.order.includes(p.key)&&state.order.length<MAXP){state.order.push(p.key);state.names[p.key]=p.name;state.scores[p.key]=0;state.stats[p.key]={m:0,u:0};state.base.scores[p.key]=0;state.base.stats[p.key]={m:0,u:0};ch=true}}
+ if(state.phase==='write'){
+  const here=state.order.filter(k=>pl[k]);
+  for(const k of here){const c=pl[k].c_ans;if(c&&c.r===state.round&&c.text&&((hostAns[k]&&hostAns[k].n)||0)<c.n){hostAns[k]={n:c.n,text:String(c.text).slice(0,40)};if(!state.subs[k]){state.subs[k]=true;ch=true}}}
+  if((here.length&&here.every(k=>hostAns[k]))||Date.now()>=state.endsAt)return reveal();
+  if(ch)commit();return}
+ if(ch)commit()}
+
+// ---------- Acciones del jugador ----------
+function sendAns(){const t=($('ans')?.value||'').trim().slice(0,40);if(!t)return $('amsg').textContent='Escribe una respuesta.';
+ own.n=(own.n||0)+1;own.ans={r:state.round,n:own.n,text:t};own.editing=false;persist();publish({c_ans:own.ans});render()}
+function sendProp(){const el=$('prop'),w=(el?.value||'').trim();if(w.length<6)return $('pmsg').textContent='Escribe una categoría (mínimo 6 letras).';
+ if(isHost){if(!state.custom.some(x=>norm(x)===norm(w))&&state.custom.length<40){state.custom.push(w.slice(0,70));commit()}}else{own.pn++;own.prop={n:own.pn,w};persist();publish({c_prop:own.prop})}
+ el.value='';$('pmsg').textContent='¡Propuesta enviada!'}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>UNÁNIME</h1><p class="muted">¿Estáis en la misma onda? Responded a la misma categoría… y descubrid si pensáis igual o muy distinto. 🧠</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Cada ronda aparece una categoría y todos escribís una respuesta a la vez, con tiempo limitado. Después se revelan y se agrupan las que coinciden (sin importar tildes, mayúsculas ni plurales).<br><br><b>🤝 Mismo:</b> ganas tantos puntos como personas coincidan contigo (tú incluido), +1 si tu grupo es la mayoría.<br><b>🦄 Diferente:</b> si tu respuesta es única, +3; si alguien más puso lo mismo, 0.<br><b>🎲 Mixto:</b> el modo cambia al azar cada ronda.<br><br>El anfitrión hace de árbitro: puede unir respuestas equivalentes o anular las que no valgan.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){
+ mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes de partida</h3><label>Modo de juego</label><div class="modes" id="modes"><button class="mode" data-m="same"><b>🤝 Mismo</b><small>Coincide con el grupo</small></button><button class="mode" data-m="diff"><b>🦄 Diferente</b><small>Sé único</small></button><button class="mode" data-m="mix"><b>🎲 Mixto</b><small>Cambia cada ronda</small></button></div><div class="settings"><div><label for="rounds">Rondas</label><select id="rounds"><option>5</option><option>8</option><option>10</option><option>12</option></select></div><div><label for="secs">Tiempo</label><select id="secs"><option value="20">20 s</option><option value="30">30 s</option><option value="45">45 s</option><option value="60">60 s</option></select></div><div><label for="theme">Temática</label><select id="theme"><option value="all">Todas</option>'+THEMES.map((t,i)=>'<option value="'+i+'">'+safe(t[0])+'</option>').join('')+'</select></div></div><button class="btn" id="start" style="width:100%;margin-top:16px">Empezar partida</button></section>':'<section class="card"><h3>Ajustes de partida</h3><div id="sum" class="muted small"></div><p class="muted small" style="margin-top:10px">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
+ +'<section class="card"><h3>Propón categorías</h3><p class="muted small">Se añaden al repertorio de esta sala y pueden salir en cualquier ronda.</p><div class="row"><input id="prop" maxlength="70" placeholder="Ej. Algo que hay en una cocina" style="flex:3"><button class="btn secondary" id="sp">Añadir</button></div><p class="small notice" id="pmsg"></p><div class="small muted" id="cl"></div></section><button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;$('sp').onclick=sendProp;$('prop').addEventListener('keydown',e=>{if(e.key==='Enter')sendProp()});
+  if(isHost){$('modes').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;state.mode=b.dataset.m;commit()};
+   $('rounds').onchange=()=>{state.rounds=Number($('rounds').value);commit()};$('secs').onchange=()=>{state.secs=Number($('secs').value);commit()};$('theme').onchange=()=>{state.theme=$('theme').value;commit()};
+   $('start').onclick=startGame}});
+ const ps=playerList();
+ $('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.c_host?' · anfitrión':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<MINP?' · hacen falta al menos '+MINP:'')+'</p>';
+ const thName=state.theme==='all'?'Todas':(THEMES[Number(state.theme)]||['?'])[0];
+ if(isHost){$('modes').querySelectorAll('.mode').forEach(b=>b.classList.toggle('on',b.dataset.m===state.mode));
+  [['rounds',state.rounds],['secs',state.secs],['theme',state.theme]].forEach(([id,v])=>{const el=$(id);if(el&&document.activeElement!==el)el.value=String(v)});$('start').disabled=ps.length<MINP}
+ else $('sum').innerHTML='<span class="tag">'+MODE_TXT[state.mode]+'</span><span class="tag">'+state.rounds+' rondas</span><span class="tag">'+state.secs+' s</span><span class="tag">'+safe(thName)+'</span>';
+ const cw=state.custom||[];$('cl').textContent=cw.length?cw.length+' propuestas: '+cw.slice(-4).join(' · '):'Todavía no hay propuestas.'}
+function leftSecs(){return Math.max(0,Math.ceil((state.endsAt-(Date.now()+offset))/1000))}
+function renderWrite(){const inO=state.order.includes(myKey);
+ if(own.ans&&own.ans.r!==state.round)own.editing=false;
+ const done=!!own.ans&&own.ans.r===state.round&&!own.editing;
+ mount('w|'+state.round+'|'+done+'|'+inO+'|'+own.editing,
+ '<section class="card"><div class="row"><span class="badge '+state.rmode+'">'+MODE_TXT[state.rmode]+'</span><span class="tag" style="flex:none">Ronda '+state.round+' / '+state.rounds+'</span><span class="tleft" id="tleft" style="flex:none;text-align:right"></span></div><div class="timer"><div id="tfill"></div></div>'
+ +'<div class="small muted center" style="font-weight:700;text-transform:uppercase">Categoría</div><div class="cat">'+safe(state.cat)+'</div><p class="small muted center">'+HINT[state.rmode]+'</p>'
+ +(!inO?'<p class="notice center">Te has unido con la ronda empezada: jugarás desde la siguiente.</p>'
+  :done?'<div class="small muted center" style="margin-top:12px">Tu respuesta</div><div class="myans">'+safe(own.ans.text)+'</div><button class="btn secondary" id="edit" style="width:100%">Cambiar respuesta</button>'
+  :'<div style="margin-top:12px"><input id="ans" maxlength="40" autocomplete="off" placeholder="Escribe tu respuesta…" value="'+safe(own.ans&&own.ans.r===state.round?own.ans.text:'')+'"><button class="btn" id="send" style="width:100%;margin-top:10px">Enviar respuesta</button><p class="notice" id="amsg"></p></div>')
+ +'</section><section class="card"><h3>Estado del grupo</h3><div id="status"></div></section>',
+ ()=>{$('send')&&($('send').onclick=sendAns);$('ans')&&($('ans').addEventListener('keydown',e=>{if(e.key==='Enter')sendAns()}),$('ans').focus());$('edit')&&($('edit').onclick=()=>{own.editing=true;render()})});
+ setHTML($('status'),state.order.map(k=>'<span class="player '+(state.subs[k]?'ok':'')+'">'+(state.subs[k]?'✓':'⏳')+' '+safe(pname(k))+'</span>').join(''));
+ tick()}
+function tick(){if(!state||state.phase!=='write')return;const l=leftSecs(),t=$('tleft'),f=$('tfill');if(t){t.textContent=l+' s';t.classList.toggle('low',l<=5)}if(f)f.style.width=Math.min(100,l/state.secs*100)+'%'}
+function groupsHtml(){return state.groups.map((g,i)=>{
+ const cls=g.void?'void':g.none?'':(g.pts>0?(state.rmode==='same'?'win':'rebel'):'');
+ const chips=g.keys.map(k=>'<span class="chip">'+safe(pname(k))+(isHost&&!g.none?'<button data-void="'+k+'" title="'+(g.void?'Restaurar':'Anular')+'">'+(g.void?'↩':'✖')+'</button>':'')+'</span>').join('');
+ const mg=isHost&&!g.void&&!g.none?(mergeSel==null?'<button class="mini" data-mg="'+g.keys[0]+'">⛓ Unir con otra</button>':(g.keys.includes(mergeSel)?'<button class="mini" data-mg="'+g.keys[0]+'">Cancelar</button>':'<button class="mini" data-mg="'+g.keys[0]+'">⛓ Unir aquí</button>')):'';
+ return'<div class="grp '+cls+'" style="animation-delay:'+(i*.12)+'s"><div class="h"><span class="w">'+safe(g.label)+(g.top?' 👑':'')+(g.void?' · anulada':'')+'</span><span class="p">'+(g.void||g.none?'—':'+'+g.pts)+'</span></div><div>'+chips+'</div>'+mg+'</div>'}).join('')}
+function rankHtml(){return state.order.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]).map(([k,s],i)=>'<div class="sc"><span><b class="muted">'+(i+1)+'.</b> '+safe(pname(k))+(k===myKey?' (tú)':'')+'</span><span><strong>'+s+' pts</strong>'+(state.gain[k]?'<em>+'+state.gain[k]+'</em>':'')+'</span></div>').join('')}
+function renderReveal(){
+ mount('r|'+state.round,'<section class="card"><div class="row"><span class="badge '+state.rmode+'">'+MODE_TXT[state.rmode]+'</span><span class="tag" style="flex:none">Resultados · Ronda '+state.round+' / '+state.rounds+'</span></div><div class="cat">'+safe(state.cat)+'</div><div id="groups"></div>'
+ +(isHost?'<p class="small muted">Como anfitrión puedes <b>unir</b> respuestas equivalentes (⛓) o <b>anular</b> una que no valga (✖).</p>':'')+'</section><section class="card"><h3>Clasificación</h3><div id="rank"></div>'
+ +(isHost?'<button class="btn" id="next" style="width:100%;margin-top:12px">'+(state.round>=state.rounds?'Ver resultado final 🏆':'Siguiente ronda')+'</button>':'<p class="small muted center" style="margin-top:10px">Esperando al anfitrión…</p>')+'</section>',
+ ()=>{$('next')&&($('next').onclick=nextRound);
+  $('groups').onclick=e=>{const v=e.target.closest('[data-void]');if(v)return toggleVoid(v.dataset.void);const m=e.target.closest('[data-mg]');if(m)mergeClick(m.dataset.mg)}});
+ updateReveal()}
+function updateReveal(){setHTML($('groups'),groupsHtml());setHTML($('rank'),rankHtml())}
+function renderFinished(){
+ const r=state.order.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]),top=r[0][1],win=r.filter(x=>x[1]===top).map(x=>pname(x[0])).join(' y ');
+ const best=f=>{let b=null;state.order.forEach(k=>{const v=(state.stats[k]||{})[f]||0;if(v>0&&(!b||v>b[1]))b=[k,v]});return b},m=best('m'),u=best('u');
+ mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:78px">🏆</div><h1>'+safe(win)+(r.filter(x=>x[1]===top).length>1?' ganan':' gana')+'</h1></section><section class="card">'+r.map(([k,s],i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+safe(pname(k))+'</span><strong>'+s+' pts</strong></div>').join('')+'</section>'
+ +((m||u)?'<section class="card"><h3>Premios</h3>'+(m?'<div class="award"><span>🤝</span><div><b>Mente colmena</b><div class="small muted">'+safe(pname(m[0]))+' · coincidió con el grupo en '+m[1]+' ronda'+(m[1]>1?'s':'')+'</div></div></div>':'')+(u?'<div class="award"><span>🦄</span><div><b>Espíritu libre</b><div class="small muted">'+safe(pname(u[0]))+' · fue único en '+u[1]+' ronda'+(u[1]>1?'s':'')+'</div></div></div>':'')+'</section>':'')
+ +(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';hostAns={};commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='write')renderWrite();else if(state.phase==='reveal')renderReveal();else renderFinished()}
+setInterval(()=>{if(roomCode&&state)hostStep()},500);
+setInterval(tick,250);
+if(saved?.room&&saved?.name){connect();render()}else renderHome();
+})();
+</script></body></html>

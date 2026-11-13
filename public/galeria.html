@@ -1,180 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
 <title>¿De quién es la foto?</title>
 <style>
-:root{--bg:#e6f2ef;--card:#fff;--ink:#12312e;--mut:#59736f;--ac:#ff6b4a;--hi:#ffe066;--ok:#1b9e5a;--no:#d6453d;--line:#12312e;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f2422;--card:#183633;--ink:#eaf6f3;--mut:#9fbcb7;--line:#eaf6f3}}
-:root[data-theme="dark"]{--bg:#0f2422;--card:#183633;--ink:#eaf6f3;--mut:#9fbcb7;--line:#eaf6f3}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:520px;margin:0 auto;padding:16px 16px 48px}
-h1{font:900 clamp(36px,12vw,56px)/.95 Georgia,"Times New Roman",serif;margin:6px 0 10px}
-h2{font:900 22px/1.1 Georgia,serif;margin:0 0 8px}
-p{margin:0 0 12px}.mut{color:var(--mut);font-size:15px}
-.top{display:flex;justify-content:space-between;font-size:14px;color:var(--mut);margin-bottom:8px}
-.card{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
-.btn{display:block;width:100%;margin-top:10px;padding:14px;border:3px solid var(--line);border-radius:10px;background:var(--ac);color:#fff;font:inherit;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--line)}
-.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
-.btn.g{background:var(--card);color:var(--ink)}
-.btn:disabled{opacity:.4}
-.link{background:none;border:0;color:var(--mut);text-decoration:underline;font:inherit;font-size:14px;padding:6px 0;cursor:pointer}
-input[type=text]{width:100%;padding:12px;border:3px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;margin:6px 0}
-button:focus-visible,input:focus-visible,label:focus-within{outline:3px solid var(--ac);outline-offset:2px}
-.pl{display:flex;flex-wrap:wrap;gap:8px}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border:2px solid var(--line);border-radius:99px;font-size:15px;background:var(--hi);color:#12312e;font-weight:700}
-.pill.no{background:var(--card);color:var(--mut);font-weight:400}
-.pol{background:#fff;border:3px solid var(--line);border-radius:6px;padding:10px 10px 36px;box-shadow:5px 5px 0 var(--line);transform:rotate(-1.5deg);margin:14px auto;max-width:340px;position:relative}
-.pol img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#ddd}
-.pol::before{content:"";position:absolute;left:50%;top:-12px;width:80px;height:22px;margin-left:-40px;background:#ffe06699;border:1px solid #0002;transform:rotate(3deg)}
-.pol .cap{position:absolute;left:10px;right:10px;bottom:8px;text-align:center;font:700 16px Georgia,serif;color:#12312e}
-.thumb{width:140px;aspect-ratio:1;object-fit:cover;border:3px solid var(--line);border-radius:8px;display:block;margin:8px auto}
-.opt{display:block;width:100%;text-align:left;padding:13px 14px;margin:8px 0;border:3px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
-.opt.ok{background:var(--ok);color:#fff}.opt.me{background:var(--hi);color:#12312e}
-.opt:disabled{cursor:default;opacity:.6}
-.rank{list-style:none;padding:0;margin:8px 0}.rank li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)}
-.err{color:var(--no);font-size:14px}.okc{color:var(--ok)}
-.file{display:block;text-align:center;padding:14px;border:3px dashed var(--line);border-radius:12px;cursor:pointer;font-weight:700}
-.file input{position:absolute;opacity:0;width:1px;height:1px}
-.dots i{display:inline-block;width:8px;height:8px;margin:0 3px;border-radius:50%;background:var(--ac);animation:bl 1.1s infinite}
-.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
-@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important}}
-</style>
-</head>
-<body>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--gold:#ffd166;--good:#48d597;--bad:#ff6c7f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(560px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:#6ee7d4}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(32px,8vw,48px);line-height:1;margin:0 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b8adff 48%,#64e8d7);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:18px;padding:17px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:10px 0 5px;text-transform:uppercase}
+input[type=text],select{width:100%;border:1.5px solid var(--line);background:#0d1629;color:var(--text);border-radius:12px;padding:12px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px 15px;background:linear-gradient(100deg,var(--a),#638cff);color:#fff;font-weight:800}.btn.secondary{background:#293753;border:1px solid var(--line)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px;background:#0d1629}.player.me{border-color:#6ee7d4;color:#6ee7d4}.player.ok{border-color:var(--good);color:var(--good)}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}.err{color:var(--bad);font-size:13px}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mine{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:8px}.mph{background:#101a2e;border:1px solid var(--line);border-radius:12px;padding:8px}.mph img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.mph input{margin-top:6px;padding:8px;font-size:13px}.mph button{margin-top:6px;width:100%;padding:6px;font-size:12px}
+.file{display:block;text-align:center;padding:14px;border:2px dashed var(--line);border-radius:12px;cursor:pointer;font-weight:800;margin-top:10px}.file input{position:absolute;opacity:0;width:1px;height:1px}
+.pol{background:#fff;border-radius:6px;padding:10px 10px 44px;box-shadow:6px 8px 0 #0006;transform:rotate(-1.5deg);margin:16px auto;max-width:340px;position:relative}.pol img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#ddd}.pol::before{content:"";position:absolute;left:50%;top:-12px;width:80px;height:22px;margin-left:-40px;background:#ffe06699;border:1px solid #0002;transform:rotate(3deg)}.pol .cap{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;font:700 16px Georgia,serif;color:#12312e;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bar{height:7px;background:var(--line);border-radius:7px;overflow:hidden;margin:10px 0}.bar>div{height:100%;background:linear-gradient(90deg,#6366f1,#38bdf8);width:100%;transition:width .25s linear}.tl{font-weight:900;font-size:18px;text-align:right;flex:none}.tl.low{color:var(--bad)}
+.opt{display:block;width:100%;text-align:left;padding:13px 14px;margin:8px 0;border:2px solid var(--line);border-radius:12px;background:#101a2e;color:var(--text);font-weight:700}.opt:hover:not(:disabled){border-color:var(--a)}.opt.me{border-color:var(--gold);background:rgba(255,209,102,.12)}.opt:disabled{cursor:default;opacity:.75}
+.res{padding:10px 12px;border-radius:12px;background:#101a2e;border:1px solid var(--line);margin:6px 0;display:flex;justify-content:space-between;gap:8px;font-size:14px;animation:pop .4s both}.res.ok{border-color:var(--good)}.res.no{border-color:#7a3a46}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.reacts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}.reacts button{border:1px solid var(--line);background:#101a2e;color:var(--text);border-radius:99px;padding:6px 12px;font-size:18px}.reacts button.on{border-color:var(--gold)}.reacts small{font-size:12px;margin-left:4px;color:var(--muted)}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#101a2e;margin:5px 0}.sc strong{color:var(--gold)}
+.award{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#101a2e;border:1px solid var(--line);margin:6px 0}.award span{font-size:26px}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">¿De quién es la <span>foto?</span></a><a class="back" href="/">← Juegos</a></header>
 <main id="app"></main>
+<p class="foot">Las fotos no se guardan en ningún sitio: solo las ven quienes están en la sala y desaparecen al terminar.</p></div>
 <script>
-/* Salas por WebSocket (mismo servidor que tus otros juegos). Las fotos no se guardan en ningún sitio. */
-function makeRoom(){
-  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
-  return{join:function(name){return new Promise(function(resolve,reject){
-    var ws=null,id=null,arr=[],subs=[],done=false,closed=false,retry=0,pres={},cid=Math.random().toString(36).slice(2);
-    var room={peers:function(){return arr},onPeers:function(f){subs.push(f)},
-      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
-      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
-    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
-    function open(){
-      var me=ws=new WebSocket(url);
-      ws.onopen=function(){if(ws!==me)return;retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
-      ws.onmessage=function(e){if(ws!==me)return;var m;try{m=JSON.parse(e.data)}catch(x){return}
-        if(m.t==='hello')id=m.id;
-        else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
-        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
-      ws.onclose=function(){if(closed||ws!==me)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
-    }
-    open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
-    setInterval(function(){if(!closed&&ws&&ws.readyState===1&&Object.keys(pres).length)send({t:'pres',p:pres})},20000);
-    document.addEventListener('visibilitychange',function(){if(closed||document.hidden)return;if(!ws||ws.readyState>1){retry=0;open()}else if(ws.readyState===1&&Object.keys(pres).length)send({t:'pres',p:pres})});
-  })}};
-}
-var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
-var app=document.getElementById('app'),NR=null,G=null,MSG='',lastKey='';
-function $(i){return document.getElementById(i)}
-function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
-function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
-function okImg(s){return typeof s==='string'&&s.indexOf('data:image/jpeg;base64,')===0&&s.length<35000}
-function imgs(p){return Array.isArray(p.im)?p.im.filter(okImg).slice(0,3):[]}
-function owners(){var o={};G.ro.forEach(function(x){o[x.split(':')[0]]=1});return Object.keys(o)}
-function peers(){if(!NR)return[];var m={},ord=[];NR.peers().filter(function(p){return p.presence&&p.presence.rm}).forEach(function(p){var x={me:p.isMe,p:p.presence},k=x.p.k;if(!m[k]){ord.push(k);m[k]=x}else if(x.me)m[k]=x});return ord.map(function(k){return m[k]})}
-function by(k){return peers().filter(function(x){return x.p.k===k})[0]}
-function hostP(){var x=peers().filter(function(y){return y.p.h===1})[0];return x&&x.p}
-function pub(){
-  if(!NR||!G)return;
-  var p={rm:1,n:G.name,k:G.me,im:G.ims.length?G.ims:null,v:G.vote,h:null,ph:null,r:null,ro:null,sc:null,res:null};
-  if(G.host){p.h=1;p.ph=G.ph;p.r=G.r;p.ro=G.ro;p.sc=G.sc;p.res=G.res}
-  NR.presence(p).catch(function(){});
-}
-function leave(msg){if(NR){NR.leave();NR=null}G=null;MSG=msg||'';home()}
-function start(create){
-  if(!RM){MSG='Las salas necesitan abrir este archivo desde tu servidor (http), no como archivo suelto.';home();return}
-  var name=($('nm').value||'').trim().slice(0,16)||(create?'Anfitrión':'Jugador'),code=create?newCode():($('cd').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  if(!code){MSG='Escribe el código de la sala.';home();return}
-  G={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',r:0,ro:[],sc:{},res:null,vote:null,ims:[],busy:false,perr:''};
-  MSG='';lastKey='';render();
-  RM.join('cmt-foto-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
-}
-/* ----- Foto: se reduce en el móvil antes de enviarla ----- */
-function shrink(file,cb){
-  G.busy=true;G.perr='';render();
-  var fr=new FileReader();
-  fr.onload=function(){var img=new Image();
-    img.onload=function(){
-      var s=240/Math.max(img.width,img.height,240),w=Math.round(img.width*Math.min(s,1)),h=Math.round(img.height*Math.min(s,1)),c=document.createElement('canvas');
-      c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-      var q=.65,d=c.toDataURL('image/jpeg',q);while(d.length>28000&&q>.25){q-=.1;d=c.toDataURL('image/jpeg',q)}
-      G.busy=false;if(!okImg(d)){G.perr='La foto es demasiado pesada. Prueba con otra.';render();if(cb)cb();return}
-      if(G.ims.length<3)G.ims.push(d);pub();render();if(cb)cb()};
-    img.onerror=function(){G.busy=false;G.perr='No se pudo leer esa imagen.';render();if(cb)cb()};img.src=fr.result};
-  fr.onerror=function(){G.busy=false;G.perr='No se pudo abrir el archivo.';render();if(cb)cb()};fr.readAsDataURL(file);
-}
-/* ----- Partida (lleva el anfitrión) ----- */
-function begin(){
-  var ro=[],ow={};peers().forEach(function(x){imgs(x.p).forEach(function(_,i){ro.push(x.p.k+':'+i);ow[x.p.k]=1})});
-  var ks=Object.keys(ow);if(ks.length<2)return;
-  G.ro=sh(ro);G.sc={};ks.forEach(function(k){G.sc[k]=0});G.r=0;G.res=null;G.vote=null;G.ph='play';pub();sync();
-}
-function resolve(){
-  if(!G.host||G.res||G.ph!=='play')return;
-  var o=G.ro[G.r].split(':')[0],ok=0,tot=0;
-  peers().forEach(function(x){if(x.p.k===o||owners().indexOf(x.p.k)<0||!x.p.v||x.p.v.r!==G.r)return;tot++;if(x.p.v.k===o){ok++;G.sc[x.p.k]=(G.sc[x.p.k]||0)+1}else G.sc[o]=(G.sc[o]||0)+1});
-  G.res={r:G.r,o:o,ok:ok,t:tot};pub();sync();
-}
-function nextR(){if(G.r+1>=G.ro.length){G.ph='end'}else{G.r++}G.res=null;G.vote=null;pub();sync()}
-function vote(k){if(!G||G.ph!=='play'||G.res||(G.vote&&G.vote.r===G.r)||G.ro[G.r].split(':')[0]===G.me)return;G.vote={r:G.r,k:k};pub();sync()}
-function sync(){
-  if(!G||!NR)return;
-  if(!G.host){var h=hostP();if(h){G.ph=h.ph||'lobby';G.ro=h.ro||[];G.sc=h.sc||{};G.res=h.res||null;if(h.r!==G.r){G.r=h.r||0;G.vote=null}}}
-  else if(G.ph==='play'&&!G.res){
-    var o=G.ro[G.r].split(':')[0],vs=peers().filter(function(x){return x.p.k!==o&&owners().indexOf(x.p.k)>-1});
-    if(vs.length&&vs.every(function(x){return x.p.v&&x.p.v.r===G.r}))resolve();
-  }
-  render();
-}
-/* ----- Pantallas ----- */
-function home(){
-  app.innerHTML='<h1>¿De quién es la foto?</h1><p>Cada jugador sube hasta 3 fotos que quiera. Después van saliendo una a una y hay que adivinar quién la subió.</p><div class="card"><input type="text" id="nm" maxlength="16" placeholder="Tu nombre"><button class="btn" id="cr">Crear sala</button><p class="mut" style="text-align:center;margin:12px 0 0">o únete a una</p><input type="text" id="cd" maxlength="8" placeholder="Código de sala" autocapitalize="none"><button class="btn g" id="jn">Unirme</button>'+(MSG?'<p class="err">'+esc(MSG)+'</p>':'')+'</div><p class="mut">Las fotos no se guardan en ningún sitio: solo las ven quienes están en la sala y desaparecen al terminar.</p>';
-  $('cr').onclick=function(){start(true)};$('jn').onclick=function(){start(false)};
-}
-function rank(){return '<ul class="rank">'+peers().filter(function(x){return owners().indexOf(x.p.k)>-1}).sort(function(a,b){return (G.sc[b.p.k]||0)-(G.sc[a.p.k]||0)}).map(function(x,i){return '<li><span>'+(i+1)+'. '+esc(x.p.n)+(x.me?' (tú)':'')+'</span><b>'+(G.sc[x.p.k]||0)+'</b></li>'}).join('')+'</ul>'}
-function render(){
-  if(!G)return;
-  var ps=peers(),top='<div class="top"><span>Sala '+esc(G.code.toUpperCase())+(G.ph==='play'?' · Foto '+(G.r+1)+' de '+G.ro.length:'')+'</span><button class="link" id="lv">Salir</button></div>',h='';
-  if(G.ph==='lobby'){
-    var n=ps.filter(function(x){return imgs(x.p).length}).length,np=0;ps.forEach(function(x){np+=imgs(x.p).length});
-    h=top+'<h1>Sube tu foto</h1><div class="card"><div class="mut">Código de sala</div><h2 style="font-size:36px;letter-spacing:.12em">'+esc(G.code.toUpperCase())+'</h2><div class="pl">'+ps.map(function(x){return '<span class="pill'+(imgs(x.p).length?'':' no')+'">'+(imgs(x.p).length?'📷 '+imgs(x.p).length+' ':'⏳ ')+esc(x.p.n)+(x.p.h===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('')+'</div></div>'
-    +'<div class="card"><h2>Tus fotos ('+G.ims.length+'/3)</h2>'+(G.ims.length?'<div class="pl">'+G.ims.map(function(d,i){return '<span><img class="thumb" style="width:96px;margin:0" alt="Tu foto '+(i+1)+'" src="'+d+'"><button class="link" data-rm="'+i+'">Quitar</button></span>'}).join('')+'</div>':'<p class="mut">Elige las que quieras (hasta 3): un recuerdo, un paisaje, una mascota… Los demás tendrán que adivinar de quién son.</p>')+(G.ims.length<3?'<label class="file" tabindex="0">'+(G.busy?'Preparando…':'📷 Añadir foto')+'<input type="file" accept="image/*" multiple id="fl"></label>':'')+(G.perr?'<p class="err">'+esc(G.perr)+'</p>':'')+'</div>'
-    +(G.host?'<button class="btn" id="st"'+(n<2?' disabled':'')+'>Empezar ('+np+' fotos de '+n+' jugadores, mínimo 2 jugadores)</button>':'<p class="mut" style="text-align:center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>');
-  }else if(G.ph==='end'){
-    h=top+'<h1>Fin</h1><div class="card"><h2>Marcador</h2>'+rank()+'<p class="mut">+1 por cada foto que aciertas, y +1 por cada jugador que no acierta la tuya.</p></div>';
-  }else{
-    var oo=G.ro[G.r],o=oo.split(':')[0],ix=+oo.split(':')[1],ow=by(o),mine=o===G.me,voted=G.vote&&G.vote.r===G.r;
-    h=top+'<div class="pol">'+(ow&&imgs(ow.p)[ix]?'<img alt="Foto misteriosa" src="'+imgs(ow.p)[ix]+'">':'<div style="aspect-ratio:1"></div>')+'<div class="cap">'+(G.res?'Era de '+esc(ow?ow.p.n:'?'):'¿De quién es?')+'</div></div>';
-    if(G.res){
-      var ok=ps.filter(function(x){return x.p.k!==o&&x.p.v&&x.p.v.r===G.r&&x.p.v.k===o}).map(function(x){return esc(x.p.n)});
-      h+='<p style="text-align:center"><b>'+(G.res.ok?G.res.ok+' de '+G.res.t+' acertaron':'Nadie la ha adivinado')+'</b>'+(ok.length?'<br><span class="mut">'+ok.join(', ')+'</span>':'')+'</p>';
-    }else if(mine)h+='<p class="mut" style="text-align:center">Es tu foto. Pon cara de póker<span class="dots"><i></i><i></i><i></i></span></p>';
-    else{
-      h+=ps.filter(function(x){return owners().indexOf(x.p.k)>-1&&x.p.k!==G.me}).map(function(x){return '<button class="opt'+(voted&&G.vote.k===x.p.k?' me':'')+'" data-k="'+esc(x.p.k)+'"'+(voted?' disabled':'')+'>'+esc(x.p.n)+'</button>'}).join('')+(voted?'<p class="mut" style="text-align:center">Voto enviado. Esperando…</p>':'');
-    }
-    if(G.host)h+=(G.res?'<button class="btn" id="nx">'+(G.r+1>=G.ro.length?'Ver resultado final':'Siguiente foto')+'</button>':'<button class="btn g" id="rs">Cerrar votación ya</button>');
-    h+='<div class="card"><h2>Marcador</h2>'+rank()+'</div>';
-  }
-  if(h===lastKey)return;lastKey=h;app.innerHTML=h;bind();
-}
-function bind(){
-  var b=function(id,f){var e=$(id);if(e)e.onclick=f};
-  b('lv',function(){if(confirm('¿Salir de la sala?'))leave()});b('st',begin);b('nx',nextR);b('rs',resolve);
-  var f=$('fl');if(f)f.onchange=function(){var a=[].slice.call(f.files).slice(0,3-G.ims.length);(function nx(){var x=a.shift();if(x)shrink(x,nx)})()};
-  [].forEach.call(document.querySelectorAll('[data-rm]'),function(e){e.onclick=function(){G.ims.splice(+e.getAttribute('data-rm'),1);pub();render()}});
-  [].forEach.call(document.querySelectorAll('[data-k]'),function(e){e.onclick=function(){vote(e.getAttribute('data-k'))}});
-}
-home();
-</script>
-</body>
-</html>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_foto_session_v1',CID='cmc_foto_cid_v1',KEY='cmc_foto_key_v1';
+const MAXP=12,MINP=2,MAXIMG=22000,EMOJIS=['😂','😮','❤️','🔥','💀'];
+const rand=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const okImg=s=>typeof s==='string'&&s.indexOf('data:image/jpeg;base64,')===0&&s.length<MAXIMG;
+const sigOf=a=>a.map(x=>x.d.length+':'+x.d.slice(-12)).join(',');
+const imsOf=p=>Array.isArray(p.c_im)?p.c_im.filter(x=>x&&okImg(x.d)).slice(0,3).map(x=>({d:x.d,c:String(x.c||'').slice(0,40)})):[];
+
+// ---------- Estado local y red (mismo sistema de salas que los otros juegos) ----------
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ own=saved?.own||{ims:[],voted:-1,re:null},cache=saved?.cache||{},
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',offset=0,hostVotes={},busy=false,perr='',reN=Date.now(),myPres=own.ims.length?{c_im:own.ims}:{};
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>{try{sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state,own:{ims:own.ims,voted:own.voted,re:own.re},cache}))}catch(e){}};
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;state.hostNow=Date.now();publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-foto-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena.':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;offset=(inc.hostNow||Date.now())-Date.now();persist()}}
+   playerList().forEach(p=>{const im=imsOf(p.p);if(im.length)cache[p.key]=im});
+   slim();hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+// Cuando empieza la partida y ya tengo todas las fotos en memoria, quito las mías de la presencia para que cada voto pese poco
+function slim(){if(!state||state.phase==='lobby'||!myPres.c_im||!state.part)return;if(state.part.every(k=>cache[k]&&sigOf(cache[k])===state.sg[k])){publish({c_im:null});persist()}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+const freshOwn=()=>({ims:[],voted:-1,re:null});
+function createRoom(){name=($('name')?.value.trim()||'Anfitrión').slice(0,16);roomCode=code5();isHost=true;myPres={};own=freshOwn();cache={};offset=0;state={v:0,phase:'lobby',per:2,secs:20,names:{}};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};own=freshOwn();cache={};state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};own=freshOwn();cache={};sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Foto: se reduce en el móvil antes de enviarla ----------
+function shrink(file,done){busy=true;perr='';drawMine();
+ const fr=new FileReader();
+ fr.onload=()=>{const img=new Image();
+  img.onload=()=>{const s=Math.min(1,220/Math.max(img.width,img.height)),w=Math.round(img.width*s),h=Math.round(img.height*s),c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+   let q=.7,d=c.toDataURL('image/jpeg',q);while(d.length>15000&&q>.3){q-=.1;d=c.toDataURL('image/jpeg',q)}
+   busy=false;if(!okImg(d))perr='Esa foto es demasiado pesada. Prueba con otra.';else addImg(d,'');done&&done()};
+  img.onerror=()=>{busy=false;perr='No se pudo leer esa imagen.';drawMine();done&&done()};img.src=fr.result};
+ fr.onerror=()=>{busy=false;perr='No se pudo abrir el archivo.';drawMine();done&&done()};fr.readAsDataURL(file)}
+function addImg(d,c){if(own.ims.length>=(state?.per||2))return;own.ims.push({d,c});pubIms();drawMine()}
+function pubIms(){cache[myKey]=own.ims.slice();publish({c_im:own.ims.length?own.ims:null});persist()}
+/*TESTHOOK*/
+
+// ---------- Lógica del anfitrión ----------
+const adj=o=>o.some((x,i)=>i&&x.split(':')[0]===o[i-1].split(':')[0]);
+function startGame(){const part=[],cnt={},sg={},order=[];
+ playerList().forEach(p=>{const ims=p.key===myKey?own.ims.slice():imsOf(p.p);if(ims.length){cache[p.key]=ims;part.push(p.key);cnt[p.key]=ims.length;sg[p.key]=sigOf(ims);for(let i=0;i<ims.length;i++)order.push(p.key+':'+i)}});
+ if(part.length<MINP)return;let o=shuffle(order.slice());for(let t=0;t<40&&adj(o);t++)o=shuffle(order.slice());
+ const names={},scores={},stats={};playerList().forEach(p=>names[p.key]=p.name);part.forEach(k=>{scores[k]=0;stats[k]={ok:0,fooled:0,hits:0}});
+ Object.assign(state,{part,cnt,sg,order:o,r:0,names,scores,stats});startRound(0)}
+function startRound(r){state.r=r;state.phase='play';state.startedAt=Date.now();state.endsAt=state.startedAt+state.secs*1000;state.voted={};state.res=null;hostVotes={};commit()}
+const owner=()=>state.order[state.r].split(':')[0];
+function resolve(){if(!isHost||state.phase!=='play')return;const o=owner(),gains={},votes={},fast=[];state.part.forEach(k=>gains[k]=0);
+ Object.keys(hostVotes).forEach(v=>{const {k,t}=hostVotes[v];votes[v]=k;
+  if(k===o){gains[v]+=1;state.stats[v].ok++;state.stats[o].hits++;if(t<=state.secs*400){gains[v]+=1;fast.push(v)}}else{gains[o]+=1;state.stats[o].fooled++}});
+ state.part.forEach(k=>state.scores[k]+=gains[k]);state.res={o,votes,gains,fast};state.phase='result';commit()}
+function nextRound(){if(!isHost)return;if(state.r+1>=state.order.length){state.phase='finished';return commit()}startRound(state.r+1)}
+function hostStep(){if(!isHost||!state)return;const pls=playerList(),pl={};pls.forEach(p=>pl[p.key]=p.p);
+ if(state.phase==='lobby'){let ch=false;pls.forEach(p=>{if(state.names[p.key]!==p.name){state.names[p.key]=p.name;ch=true}});if(ch)commit();return}
+ if(state.phase!=='play')return;const o=owner();let ch=false;
+ for(const k of state.part){if(k===o||hostVotes[k]||!pl[k])continue;const v=pl[k].c_vote;if(v&&v.r===state.r&&v.k!==k&&state.part.includes(v.k)){hostVotes[k]={k:v.k,t:Date.now()-state.startedAt};state.voted[k]=true;ch=true}}
+ const req=state.part.filter(k=>k!==o&&pl[k]);
+ if((req.length&&req.every(k=>hostVotes[k]))||Date.now()>=state.endsAt)return resolve();
+ if(ch)commit()}
+
+// ---------- Acciones ----------
+function sendVote(k){if(own.voted===state.r||owner()===myKey||!state.part.includes(myKey))return;own.voted=state.r;publish({c_vote:{r:state.r,k}});persist();updateGame()}
+function sendReact(e){own.re={r:state.r,e};reN++;publish({c_re:{r:state.r,e,n:reN}});updateGame()}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>¿DE QUIÉN ES LA FOTO?</h1><p class="muted">Cada jugador sube hasta 3 fotos y una pista. Después salen una a una… ¡y hay que adivinar quién la subió! 📸</p></section><section class="card"><label for="name">Tu nombre</label><input type="text" id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input type="text" id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">1) Sube tus fotos (y, si quieres, una <b>pista</b> para cada una).<br>2) Cada foto sale en pantalla con un tiempo limitado: ¡vota quién crees que la subió!<br>3) <b>+1</b> por acertar y <b>+1 extra</b> si votas rápido. Tú ganas <b>+1</b> por cada jugador que NO acierte la tuya.<br>4) Al revelar puedes reaccionar con emojis. Al final hay premios. 🏆</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function mineHtml(){const per=state?.per||2;
+ return(own.ims.length?'<div class="mine">'+own.ims.map((x,i)=>'<div class="mph"><img alt="Tu foto '+(i+1)+'" src="'+x.d+'"><input type="text" data-cap="'+i+'" maxlength="40" placeholder="Pista (opcional)" value="'+safe(x.c)+'"><button class="btn ghost" data-rm="'+i+'">Quitar</button></div>').join('')+'</div>':'<p class="muted small">Elige las fotos que quieras (un recuerdo, un paisaje, tu mascota…). Los demás tendrán que adivinar de quién son.</p>')
+ +(own.ims.length<per?'<label class="file">'+(busy?'Preparando…':'📷 Añadir foto ('+own.ims.length+'/'+per+')')+'<input type="file" accept="image/*" multiple id="fl"></label>':'<p class="small muted center" style="margin-top:8px">Has llegado al máximo de '+per+' fotos.</p>')+(perr?'<p class="err">'+safe(perr)+'</p>':'')}
+function drawMine(){const el=$('mine');if(!el)return;if(el.contains(document.activeElement)&&document.activeElement.tagName==='INPUT'&&document.activeElement.type==='text'&&!busy&&!perr)return;el.innerHTML=mineHtml();bindMine()}
+function bindMine(){const f=$('fl');if(f)f.onchange=()=>{const a=[...f.files].slice(0,(state?.per||2)-own.ims.length);(function nx(){const x=a.shift();if(x)shrink(x,nx)})()};
+ app.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{own.ims.splice(Number(b.dataset.rm),1);pubIms();drawMine()});
+ app.querySelectorAll('[data-cap]').forEach(i=>i.onchange=()=>{const x=own.ims[Number(i.dataset.cap)];if(x){x.c=i.value.trim().slice(0,40);pubIms()}})}
+function renderLobby(){
+ mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +'<section class="card"><h3>Tus fotos</h3><div id="mine"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes</h3><div class="settings"><div><label for="per">Fotos por jugador</label><select id="per"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div><div><label for="secs">Tiempo por foto</label><select id="secs"><option value="15">15 s</option><option value="20">20 s</option><option value="30">30 s</option><option value="45">45 s</option></select></div></div><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar</button><p class="small muted center" id="sinfo" style="margin-top:8px"></p></section>':'<section class="card center"><p class="muted">El anfitrión empezará cuando todos hayáis subido vuestras fotos…</p></section>')
+ +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;
+  if(own.ims.length)pubIms();drawMine();
+  if(isHost){$('per').onchange=()=>{state.per=Number($('per').value);commit()};$('secs').onchange=()=>{state.secs=Number($('secs').value);commit()};$('start').onclick=startGame}});
+ const lobN=p=>p.key===myKey?own.ims.length:imsOf(p.p).length,ps=playerList(),withPh=ps.filter(p=>lobN(p));let np=0;withPh.forEach(p=>np+=lobN(p));
+ setHTML($('pl'),ps.map(p=>{const n=lobN(p);return'<span class="player '+(n?'ok':'')+(p.key===myKey?' me':'')+'">'+(n?'📷 '+n+' ':'⏳ ')+safe(p.name)+(p.p.c_host?' 👑':'')+(p.key===myKey?' · tú':'')+'</span>'}).join(''));
+ if(isHost){[['per',state.per||2],['secs',state.secs||20]].forEach(([id,v])=>{const el=$(id);if(el&&document.activeElement!==el)el.value=String(v)});
+  $('start').disabled=withPh.length<MINP;setHTML($('sinfo'),np+' fotos de '+withPh.length+' jugadores'+(withPh.length<MINP?' · hacen falta al menos '+MINP+' jugadores con fotos':''))}}
+const leftS=()=>Math.max(0,Math.ceil((state.endsAt-(Date.now()+offset))/1000));
+function tick(){if(!state||state.phase!=='play')return;const l=leftS(),t=$('tl'),f=$('tf');if(t){t.textContent=l+' s';t.classList.toggle('low',l<=5)}if(f)f.style.width=Math.min(100,l/state.secs*100)+'%'}
+function scoreHtml(){return state.part.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]).map(([k,s])=>'<div class="sc"><span>'+safe(pname(k))+(k===myKey?' (tú)':'')+'</span><strong>'+s+(state.res&&state.res.gains[k]?' <small style="color:var(--good)">+'+state.res.gains[k]+'</small>':'')+'</strong></div>').join('')}
+function bodyHtml(){const o=owner(),ph=state.phase,isP=state.part.includes(myKey),mine=o===myKey,voted=own.voted===state.r;
+ if(ph==='play'){
+  const nv=Object.keys(state.voted||{}).length,need=state.part.length-1;
+  if(!isP)return'<p class="muted center">Eres espectador: no has subido fotos.</p>';
+  if(mine)return'<p class="muted center">📸 Es TU foto. Pon cara de póker… ('+nv+'/'+need+' votos)</p>';
+  return state.part.filter(k=>k!==myKey).map(k=>'<button class="opt'+(voted&&own.pick===k?' me':'')+'" data-v="'+k+'" '+(voted?'disabled':'')+'>'+safe(pname(k))+'</button>').join('')+'<p class="small muted center">'+(voted?'Voto enviado ✔ ':'')+nv+'/'+need+' han votado</p>'}
+ const R=state.res,ok=Object.keys(R.votes).filter(v=>R.votes[v]===o),cnt={};
+ playerList().forEach(p=>{const r=p.p.c_re;if(r&&r.r===state.r)cnt[r.e]=(cnt[r.e]||0)+1});
+ const rows=state.part.filter(k=>k!==o).map((k,i)=>{const v=R.votes[k];return'<div class="res '+(v===o?'ok':'no')+'" style="animation-delay:'+(i*.12)+'s"><span>'+safe(pname(k))+'</span><span>'+(v?(v===o?'✔ acertó'+(R.fast.includes(k)?' ⚡':''):'✖ votó a '+safe(pname(v))):'— no votó')+'</span></div>'}).join('');
+ return'<p class="center" style="font-size:18px"><b>'+(ok.length?ok.length+' de '+Math.max(1,state.part.length-1)+' acertaron':'¡Nadie la adivinó! 🕵️')+'</b></p>'+rows
+  +'<div class="reacts">'+EMOJIS.map(e=>'<button data-e="'+e+'" class="'+(own.re&&own.re.r===state.r&&own.re.e===e?'on':'')+'">'+e+(cnt[e]?'<small>'+cnt[e]+'</small>':'')+'</button>').join('')+'</div>'}
+function updateGame(){if(!state||!state.order)return;const o=owner(),idx=Number(state.order[state.r].split(':')[1]),img=(cache[o]||[])[idx],ph=state.phase,im=state.part.includes(myKey);
+ const cap=img&&img.c?img.c:'';
+ setHTML($('pol'),'<div class="pol">'+(img?'<img alt="Foto misteriosa" src="'+img.d+'">':'<div style="aspect-ratio:1;display:grid;place-items:center;color:#888">Cargando foto…</div>')+'<div class="cap">'+(ph==='result'?'Era de '+safe(pname(o)):(cap?'💡 '+safe(cap):'¿De quién es?'))+'</div></div>');
+ setHTML($('body'),bodyHtml());setHTML($('sc'),scoreHtml());
+ setHTML($('hc'),isHost?(ph==='play'?'<button class="btn secondary" id="close" style="width:100%;margin-top:8px">Cerrar votación ya</button>':'<button class="btn" id="next" style="width:100%;margin-top:8px">'+(state.r+1>=state.order.length?'Ver resultado final 🏆':'Siguiente foto')+'</button>'):'');
+ const t=$('tl');if(t)t.classList.toggle('hidden',ph!=='play');const b=$('barw');if(b)b.classList.toggle('hidden',ph!=='play');tick()}
+function renderGame(){const sig='g|'+state.phase+'|'+state.r;
+ mount(sig,'<section class="card"><div class="row"><span class="tag" style="flex:none">Foto '+(state.r+1)+' / '+state.order.length+'</span><span class="tl" id="tl"></span></div><div class="bar" id="barw"><div id="tf"></div></div><div id="pol"></div><div id="body"></div><div id="hc"></div></section><section class="card"><h3>Marcador</h3><div id="sc"></div></section>',
+ ()=>{$('body').onclick=e=>{const v=e.target.closest('[data-v]');if(v){own.pick=v.dataset.v;return sendVote(v.dataset.v)}const r=e.target.closest('[data-e]');if(r)sendReact(r.dataset.e)};
+  $('hc').onclick=e=>{if(e.target.closest('#close'))resolve();if(e.target.closest('#next'))nextRound()}});
+ updateGame()}
+function renderFinished(){const r=state.part.map(k=>[k,state.scores[k]||0]).sort((a,b)=>b[1]-a[1]),top=r[0][1],win=r.filter(x=>x[1]===top).map(x=>pname(x[0])).join(' y ');
+ const best=f=>{let b=null;state.part.forEach(k=>{const v=state.stats[k][f]||0;if(v>0&&(!b||v>b[1]))b=[k,v]});return b},d=best('ok'),f=best('fooled'),h=best('hits');
+ const aw=(e,t,b,s)=>b?'<div class="award"><span>'+e+'</span><div><b>'+t+'</b><div class="small muted">'+safe(pname(b[0]))+' · '+s.replace('#',b[1])+'</div></div></div>':'';
+ mount('fin','<section class="card center"><div class="tag">FIN DE LA PARTIDA</div><div style="font-size:78px">🏆</div><h1>'+safe(win)+(r.filter(x=>x[1]===top).length>1?' ganan':' gana')+'</h1></section><section class="card">'+r.map(([k,s],i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+safe(pname(k))+'</span><strong>'+s+' pts</strong></div>').join('')+'</section>'
+ +((d||f||h)?'<section class="card"><h3>Premios</h3>'+aw('🕵️','Detective',d,'acertó # fotos')+aw('🎭','Cara de póker',f,'engañó a # votos')+aw('📖','Libro abierto',h,'# veces la reconocieron')+'</section>':'')
+ +(isHost?'<button class="btn" id="again" style="width:100%">Jugar otra vez</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+setInterval(()=>{if(roomCode&&state)hostStep()},500);
+setInterval(tick,250);
+if(saved?.room&&saved?.name){connect();render()}else renderHome();
+})();
+</script></body></html>

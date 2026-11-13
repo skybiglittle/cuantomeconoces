@@ -23,8 +23,9 @@ button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.chip{padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:#101a2e;color:var(--text);font-weight:700}.chip.on{border-color:var(--gold);background:rgba(255,209,102,.14)}
 .msg{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#101a2e;margin:10px 0;text-align:center;font-weight:700}.msg.fall{border-color:var(--bad);background:#2a1119;color:#ffc2cc;animation:shake .5s}
 @keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.ref{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.ref .btn{padding:8px 11px;font-size:13px}.settings3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
-@media(max-width:520px){.duelo{grid-template-columns:1fr;}.vs{display:none}}
+@media(max-width:520px){.duelo{grid-template-columns:1fr;}.vs{display:none}.settings3{grid-template-columns:1fr}}
 </style></head>
 <body><div class="wrap">
 <header class="top"><a class="brand" href="/">Ahora <span>caigo</span></a><a class="back" href="/">← Juegos</a></header>
@@ -35,107 +36,99 @@ button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px
 const $=id=>document.getElementById(id),app=$('app');
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STORE='cmc_caigo_session_v1',CID='cmc_caigo_cid_v1',KEY='cmc_caigo_key_v1';
-const MAXP=11,MINP=2,CLOCK=20000,PASSES=2,STEP=10000,PENALTY=3000;
+const MAXP=11,MINP=2,PASSES=2,STEP=10000,PENALTY=3000;
 const rand=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 const norm=s=>String(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 const canon=s=>norm(s).replace(/ /g,'');
 function lev(a,b){const m=[];for(let i=0;i<=a.length;i++)m[i]=[i];for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
-const isMatch=(guess,ans)=>{const g=canon(guess);return !!g&&ans.split('|').some(a=>{const c=canon(a);return g===c||(c.length>=6&&lev(g,c)<=1)})};
+const canonA=s=>norm(s).replace(/^((el|la|los|las|un|una|unos|unas) )+/,'').replace(/ /g,'');
+const isMatch=(guess,ans)=>{const g=canonA(guess);return !!g&&ans.split('|').some(a=>{const c=canonA(a);return g===c||(c.length>=6&&lev(g,c)<=1)})};
 const disp=ch=>ch.toLowerCase()==='ñ'?'Ñ':ch.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
-function mkReveal(main){const ch=[...main],rv=ch.map((c,i)=>c!==' '&&(i===0||ch[i-1]===' '));const hid=shuffle(ch.map((c,i)=>(!rv[i]&&c!==' ')?i:-1).filter(i=>i>=0));hid.slice(0,Math.round(hid.length*.3)).forEach(i=>rv[i]=true);return rv}
+function mkReveal(main){const ch=[...main],rv=ch.map((c,i)=>c!==' '&&(i===0||ch[i-1]===' '));const hid=shuffle(ch.map((c,i)=>(!rv[i]&&c!==' ')?i:-1).filter(i=>i>=0));hid.slice(0,Math.round(hid.length*((typeof state!=='undefined'&&state&&state.hints)||.3))).forEach(i=>rv[i]=true);return rv}
 const mainAns=q=>CATS[q.c][1][q.i][1].split('|')[0];
 
 // ---------- Preguntas: [pregunta,[correcta,fallo1,fallo2]] ----------
-const CATS_RAW=
-
- [
+const CATS_RAW=[
 ['🌍 Geografía',[
 ['¿Qué país tiene más husos horarios si se cuentan sus territorios de ultramar?',['Francia']],
-['¿Cuál es la capital de Mongolia?',['Ulán Bator']],
-['¿Qué estrecho separa Asia de América del Norte?',['Bering']],
-['¿En qué país se encuentra la región histórica de Transilvania?',['Rumanía']],
+['¿Cuál es la capital de Mongolia?',['Ulán Bator|Ulan Bator|Ulaanbaatar']],
+['¿Qué estrecho separa Asia de América del Norte?',['Bering|Estrecho de Bering']],
+['¿En qué país se encuentra la región histórica de Transilvania?',['Rumanía|Rumania']],
 ['¿Qué río atraviesa Viena, Bratislava, Budapest y Belgrado?',['Danubio']],
-['¿Cuál es el lago más profundo del mundo?',['Baikal']],
-['¿Qué país tiene como capital a Addis Abeba?',['Etiopía']],
-['¿Cuál es la capital de Bután?',['Timbu']]
+['¿Cuál es el lago más profundo del mundo?',['Baikal|Baical']],
+['¿Qué país tiene como capital a Addis Abeba?',['Etiopía|Etiopia']],
+['¿Cuál es la capital de Bután?',['Timbu|Thimphu']]
 ]],
-
 ['📜 Historia',[
-['¿Qué tratado puso fin oficialmente a la Primera Guerra Mundial con Alemania?',['Versalles']],
-['¿Qué dinastía gobernaba China cuando se construyó gran parte de la Ciudad Prohibida?',['Ming']],
-['¿Quién fue el último zar de Rusia?',['Nicolás II']],
-['¿Qué pueblo fundó la ciudad de Cartago?',['Fenicios']],
+['¿Qué tratado puso fin oficialmente a la Primera Guerra Mundial con Alemania?',['Versalles|Tratado de Versalles']],
+['¿Qué dinastía gobernaba China cuando se construyó gran parte de la Ciudad Prohibida?',['Ming|Dinastía Ming']],
+['¿Quién fue el último zar de Rusia?',['Nicolás II|Nicolás Segundo|Nicolas Romanov']],
+['¿Qué pueblo fundó la ciudad de Cartago?',['Fenicios|Fenicia']],
 ['¿En qué año cayó Constantinopla ante los otomanos?',['1453']],
-['¿Qué rey inglés firmó la Carta Magna en 1215?',['Juan Sin Tierra']],
-['¿Qué antigua civilización desarrolló una de las primeras formas de escritura conocida?',['Sumerios']],
-['¿Qué batalla supuso la derrota definitiva de Napoleón Bonaparte?',['Waterloo']]
+['¿Qué rey inglés firmó la Carta Magna en 1215?',['Juan Sin Tierra|Juan I']],
+['¿Qué antigua civilización desarrolló una de las primeras formas de escritura conocida?',['Sumerios|Sumeria']],
+['¿Qué batalla supuso la derrota definitiva de Napoleón Bonaparte?',['Waterloo|Batalla de Waterloo']]
 ]],
-
 ['🔬 Ciencia',[
-['¿Cuál es el elemento químico cuyo símbolo es W?',['Wolframio']],
-['¿Qué partícula subatómica tiene carga eléctrica negativa?',['Electrón']],
+['¿Cuál es el elemento químico cuyo símbolo es W?',['Wolframio|Tungsteno']],
+['¿Qué partícula subatómica tiene carga eléctrica negativa?',['Electrón|Electrones']],
 ['¿Cuál es el órgano más grande del cuerpo humano?',['Piel']],
-['¿Qué tipo de enlace mantiene unidos los átomos dentro de una molécula de agua?',['Covalente']],
+['¿Qué tipo de enlace mantiene unidos los átomos dentro de una molécula de agua?',['Covalente|Enlace covalente']],
 ['¿Qué planeta del sistema solar gira más rápidamente sobre su eje?',['Júpiter']],
-['¿Cuál es la unidad básica de la herencia genética?',['Gen']],
-['¿Qué científico formuló las tres leyes del movimiento?',['Newton']],
+['¿Cuál es la unidad básica de la herencia genética?',['Gen|Genes']],
+['¿Qué científico formuló las tres leyes del movimiento?',['Newton|Isaac Newton']],
 ['¿Cómo se denomina el paso directo de un sólido a gas?',['Sublimación']]
 ]],
-
 ['🎬 Cine y series',[
-['¿Qué director dirigió «Pulp Fiction»?',['Tarantino']],
-['¿Cómo se llama el hotel de «El resplandor»?',['Overlook']],
-['¿Qué actor interpretó a Hannibal Lecter en «El silencio de los corderos»?',['Anthony Hopkins']],
+['¿Qué director dirigió «Pulp Fiction»?',['Tarantino|Quentin Tarantino']],
+['¿Cómo se llama el hotel de «El resplandor»?',['Overlook|Hotel Overlook']],
+['¿Qué actor interpretó a Hannibal Lecter en «El silencio de los corderos»?',['Anthony Hopkins|Hopkins']],
 ['¿Qué película ganó el Óscar a mejor película en 1994?',['Forrest Gump']],
-['¿Quién dirigió «Psicosis»?',['Hitchcock']],
-['¿Cómo se llama el protagonista de «Breaking Bad»?',['Walter White']],
-['¿Qué actriz interpretó a Hermione Granger?',['Emma Watson']],
-['¿Qué película de Christopher Nolan está relacionada con el mundo de los sueños?',['Origen']]
+['¿Quién dirigió «Psicosis»?',['Hitchcock|Alfred Hitchcock']],
+['¿Cómo se llama el protagonista de «Breaking Bad»?',['Walter White|Walt|Heisenberg']],
+['¿Qué actriz interpretó a Hermione Granger?',['Emma Watson|Watson']],
+['¿Qué película de Christopher Nolan está relacionada con el mundo de los sueños?',['Origen|Inception']]
 ]],
-
 ['🎵 Música',[
-['¿Qué compositor escribió la Novena Sinfonía?',['Beethoven']],
+['¿Qué compositor escribió la Novena Sinfonía?',['Beethoven|Ludwig van Beethoven']],
 ['¿Qué grupo publicó el álbum «The Dark Side of the Moon»?',['Pink Floyd']],
-['¿Qué cantante fue conocido como «El Rey del Rock and Roll»?',['Elvis Presley']],
-['¿Qué compositor perdió progresivamente la capacidad de oír?',['Beethoven']],
+['¿Qué cantante fue conocido como «El Rey del Rock and Roll»?',['Elvis Presley|Elvis']],
+['¿Qué compositor perdió progresivamente la capacidad de oír?',['Beethoven|Ludwig van Beethoven']],
 ['¿Qué grupo británico lanzó «Bohemian Rhapsody»?',['Queen']],
 ['¿Qué instrumento musical tiene normalmente 47 cuerdas y varios pedales?',['Arpa']],
-['¿Quién compuso «Las cuatro estaciones»?',['Vivaldi']],
-['¿Qué cantante española popularizó «La gata bajo la lluvia»?',['Rocío Dúrcal']]
+['¿Quién compuso «Las cuatro estaciones»?',['Vivaldi|Antonio Vivaldi']],
+['¿Qué cantante española popularizó «La gata bajo la lluvia»?',['Rocío Dúrcal|Dúrcal']]
 ]],
-
 ['⚽ Deportes',[
 ['¿Qué país ganó el primer Mundial de fútbol en 1930?',['Uruguay']],
 ['¿En qué deporte se disputa el torneo de Wimbledon?',['Tenis']],
-['¿Qué piloto ganó siete campeonatos mundiales de Fórmula 1?',['Michael Schumacher']],
-['¿Cuántos anillos aparecen en la bandera olímpica?',['Cinco']],
+['¿Qué piloto ganó siete campeonatos mundiales de Fórmula 1?',['Michael Schumacher|Schumacher|Lewis Hamilton|Hamilton']],
+['¿Cuántos anillos aparecen en la bandera olímpica?',['Cinco|5']],
 ['¿En qué país se celebraron los primeros Juegos Olímpicos de la era moderna?',['Grecia']],
-['¿Qué ciclista ganó siete Tours de Francia consecutivos antes de ser desposeído de sus títulos?',['Lance Armstrong']],
+['¿Qué ciclista ganó siete Tours de Francia consecutivos antes de ser desposeído de sus títulos?',['Lance Armstrong|Armstrong']],
 ['¿Qué selección ganó inesperadamente la Eurocopa de 2004?',['Grecia']],
 ['¿En qué deporte se utiliza el término «birdie»?',['Golf']]
 ]],
-
 ['🐾 Naturaleza',[
 ['¿Qué mamífero australiano pone huevos y tiene un pico parecido al de un pato?',['Ornitorrinco']],
 ['¿Qué animal marino posee tres corazones?',['Pulpo']],
 ['¿Cómo se llama el proceso por el que las plantas liberan vapor de agua principalmente a través de sus hojas?',['Transpiración']],
-['¿Qué árbol produce las bellotas?',['Roble']],
-['¿Qué grupo de animales incluye a las ranas y los sapos?',['Anfibios']],
+['¿Qué árbol produce las bellotas?',['Roble|Encina|Alcornoque']],
+['¿Qué grupo de animales incluye a las ranas y los sapos?',['Anfibios|Anfibio']],
 ['¿Qué animal es conocido por construir presas en los ríos?',['Castor']],
-['¿Qué ave no puede volar y es característica de la Antártida?',['Pingüino']],
+['¿Qué ave no puede volar y es característica de la Antártida?',['Pingüino|Pinguino']],
 ['¿Qué mamífero es conocido por tener una trompa larga?',['Elefante']]
 ]],
-
 ['🎨 Cultura general',[
-['¿Quién escribió «La metamorfosis»?',['Kafka']],
-['¿Qué arquitecto diseñó la Casa Batlló?',['Gaudí']],
-['¿En qué museo se encuentra «La noche estrellada» de Van Gogh?',['MoMA']],
-['¿Quién escribió «Crimen y castigo»?',['Dostoievski']],
+['¿Quién escribió «La metamorfosis»?',['Kafka|Franz Kafka']],
+['¿Qué arquitecto diseñó la Casa Batlló?',['Gaudí|Antoni Gaudí']],
+['¿En qué museo se encuentra «La noche estrellada» de Van Gogh?',['MoMA|Museo de Arte Moderno']],
+['¿Quién escribió «Crimen y castigo»?',['Dostoievski|Dostoyevski']],
 ['¿Qué filósofo fue maestro de Alejandro Magno?',['Aristóteles']],
-['¿Qué escritor creó al detective Sherlock Holmes?',['Arthur Conan Doyle']],
-['¿Qué obra comienza con «En un lugar de la Mancha»?',['Don Quijote']],
-['¿Qué pintor español es autor de «La persistencia de la memoria»?',['Dalí']]
+['¿Qué escritor creó al detective Sherlock Holmes?',['Arthur Conan Doyle|Conan Doyle']],
+['¿Qué obra comienza con «En un lugar de la Mancha»?',['Don Quijote|El Quijote|Quijote|Don Quijote de la Mancha']],
+['¿Qué pintor español es autor de «La persistencia de la memoria»?',['Dalí|Salvador Dalí']]
 ]]
 ];
 const CATS=CATS_RAW.map(([n,qs])=>[n,qs.map(([c,a])=>[c,a[0]])]);
@@ -146,6 +139,7 @@ let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.h
  myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
  socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',myPres={},offset=0,selOpp=null,absentSince=0,selSeq=-1;
 sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+let hintSeen={},hn=Date.now();
 const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state}));
 const P=x=>x.p||{};
 const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
@@ -163,7 +157,7 @@ function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
    hostStep();render()}};
  socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
 const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
-function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};offset=0;state={v:0,phase:'lobby'};persist();connect();render()}
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};offset=0;state={v:0,phase:'lobby',rounds:3,secs:30,hints:.3};persist();connect();render()}
 function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};state=null;persist();connect();render()}
 function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};sessionStorage.removeItem(STORE);renderHome()}
 
@@ -172,49 +166,64 @@ const other=(d,k)=>k===d.a?d.b:d.a;
 const left=k=>{const d=state.duel;if(!d)return 0;let l=d.clock[k];if(state.phase==='duel'&&k===state.turnKey)l-=Date.now()+offset-state.turnAt;return Math.max(0,l)};
 function startGame(){const ps=playerList().sort((a,b)=>(b.p.c_host?1:0)-(a.p.c_host?1:0)).slice(0,MAXP);if(ps.length<MINP)return;
  const order=ps.map(p=>p.key),names={};ps.forEach(p=>names[p.key]=p.name);
- Object.assign(state,{order,names,alive:order.slice(),out:[],central:order[rand(order.length)],pot:0,used:{},seq:0,duel:null,fall:null,q:null});startPick()}
+ const totals={};order.forEach(k=>totals[k]=0);Object.assign(state,{order,names,alive:order.slice(),out:[],central:order[rand(order.length)],pot:0,used:{},seq:0,duel:null,fall:null,q:null,round:1,totals,rw:null,hintReq:null});startPick()}
 function startPick(){state.cats=shuffle(CATS.map((_,i)=>i)).slice(0,2);state.pickUntil=Date.now()+30000;state.phase='pick';state.seq++;commit()}
 function nextQuestion(){const c=state.duel.cat,qs=CATS[c][1];state.used[c]=state.used[c]||[];let av=qs.map((_,i)=>i).filter(i=>!state.used[c].includes(i));if(!av.length){state.used[c]=[];av=qs.map((_,i)=>i)}
  const i=av[rand(av.length)];state.used[c].push(i);state.q={c,i,rv:mkReveal(qs[i][1].split('|')[0])}}
-function startDuel(opp,cat){const a=state.central;state.duel={a,b:opp,cat,clock:{[a]:CLOCK,[opp]:CLOCK},passes:{[a]:0,[opp]:0}};state.turnKey=opp;state.last=null;nextQuestion();state.turnAt=Date.now();state.phase='duel';state.seq++;absentSince=0;commit()}
+function startDuel(opp,cat){const a=state.central,CK=(state.secs||30)*1000;state.hintReq=null;state.duel={a,b:opp,cat,clock:{[a]:CK,[opp]:CK},passes:{[a]:0,[opp]:0}};state.turnKey=opp;state.last=null;nextQuestion();state.turnAt=Date.now();state.phase='duel';state.seq++;absentSince=0;commit()}
 function charge(){const d=state.duel;d.clock[state.turnKey]-=Date.now()-state.turnAt}
 function endDuel(loser,why){why=why+' · era «'+mainAns(state.q)+'»';const d=state.duel,winner=other(d,loser);state.alive=state.alive.filter(k=>k!==loser);state.out.push(loser);state.pot+=STEP;state.central=winner;state.fall={loser,why};state.phase='fall';state.until=Date.now()+4500;state.seq++;commit()}
 function hostStep(){if(!isHost||!state||!state.alive)return;const pls=playerList(),pl={};pls.forEach(p=>pl[p.key]=p.p);
  if(state.phase==='pick'){const c=pl[state.central]&&pl[state.central].c_act;
   if(c&&c.s===state.seq&&c.type==='duel'&&state.alive.includes(c.opp)&&c.opp!==state.central&&state.cats.includes(c.cat))return startDuel(c.opp,c.cat);
   if(Date.now()>state.pickUntil){const opps=state.alive.filter(k=>k!==state.central);return startDuel(opps[rand(opps.length)],state.cats[0])}return}
- if(state.phase==='duel'){const cur=state.turnKey,d=state.duel,c=pl[cur]&&pl[cur].c_act;
+ if(state.phase==='duel'){const cur=state.turnKey,d=state.duel,c=pl[cur]&&pl[cur].c_act,hr=pl[cur]&&pl[cur].c_hint;
+  if(hr&&hr.n>(hintSeen[cur]||0)){hintSeen[cur]=hr.n;state.hintReq=cur;state.hintSeq=state.seq;return commit()}
   if(c&&c.s===state.seq){
    if(c.type==='ans'&&typeof c.text==='string'&&c.text.trim()){const txt=c.text.trim().slice(0,40);charge();if(d.clock[cur]<=0)return endDuel(cur,'se le acabó el tiempo');
     if(isMatch(txt,CATS[state.q.c][1][state.q.i][1])){state.last={k:cur,txt,ok:true};state.turnKey=other(d,cur);nextQuestion();state.turnAt=Date.now();state.seq++;return commit()}
     d.clock[cur]-=PENALTY;if(d.clock[cur]<=0)return endDuel(cur,'se quedó sin tiempo tras fallar');
-    const hid=state.q.rv.map((v,k)=>!v&&[...mainAns(state.q)][k]!==' '?k:-1).filter(k=>k>=0);if(hid.length>1)state.q.rv[hid[rand(hid.length)]]=true;
     state.last={k:cur,txt,ok:false};state.turnAt=Date.now();state.seq++;return commit()}
    if(c.type==='pass'&&cur===state.central&&d.passes[cur]<PASSES){charge();if(d.clock[cur]<=0)return endDuel(cur,'se le acabó el tiempo');d.passes[cur]++;state.last={k:cur,pass:true};state.turnKey=other(d,cur);state.turnAt=Date.now();state.seq++;return commit()}}
   if(left(cur)<=0)return endDuel(cur,'se le acabó el tiempo');
   if(!pl[cur]){absentSince=absentSince||Date.now();if(Date.now()-absentSince>10000)return endDuel(cur,'se desconectó')}else absentSince=0;return}
- if(state.phase==='fall'&&Date.now()>=state.until){if(state.alive.length<=1){state.phase='finished';return commit()}startPick()}}
+ if(state.phase==='fall'&&Date.now()>=state.until)return afterFall();
+ if(state.phase==='roundend'&&Date.now()>=state.until)return newRound()}
+
+function afterFall(){if(state.alive.length<=1){const w=state.alive[0];state.totals[w]=(state.totals[w]||0)+state.pot;state.rw={w,pot:state.pot};
+  if(state.round>=state.rounds){state.phase='finished';return commit()}state.phase='roundend';state.until=Date.now()+7000;state.seq++;return commit()}startPick()}
+function newRound(){state.round++;state.alive=state.order.slice();state.out=[];state.pot=0;state.central=state.order[rand(state.order.length)];state.duel=null;state.fall=null;startPick()}
+function revealOne(){const m=[...mainAns(state.q)],hid=state.q.rv.map((v,k)=>!v&&m[k]!==' '?k:-1).filter(k=>k>=0);if(hid.length<2)return false;state.q.rv[hid[rand(hid.length)]]=true;return true}
+function grantHint(){if(!isHost||state.phase!=='duel')return;const cur=state.turnKey,d=state.duel;charge();if(!revealOne()){state.turnAt=Date.now();return commit()}
+ d.clock[cur]-=PENALTY;if(d.clock[cur]<=0)return endDuel(cur,'se quedó sin tiempo al pedir una letra');state.turnAt=Date.now();state.hintReq=null;state.last={k:cur,hint:true};commit()}
+function acceptAns(){if(!isHost||state.phase!=='duel')return;const cur=state.turnKey,d=state.duel;charge();if(d.clock[cur]<=0)return endDuel(cur,'se le acabó el tiempo');
+ state.last={k:cur,txt:'validada por el anfitrión',ok:true};state.turnKey=other(d,cur);nextQuestion();state.turnAt=Date.now();state.hintReq=null;state.seq++;commit()}
+function skipQ(){if(!isHost||state.phase!=='duel')return;state.turnAt=Date.now();nextQuestion();state.hintReq=null;state.last=null;state.seq++;commit()}
 
 // ---------- Acciones del jugador ----------
-function sendDuel(cat){const m=$('amsg');if(!selOpp)return m&&(m.textContent='Primero toca a tu rival.');publish({c_act:{s:state.seq,type:'duel',opp:selOpp,cat}})}
+function sendDuel(cat){const m=$('amsg'),opps=state.alive.filter(k=>k!==state.central),opp=selOpp||(opps.length===1?opps[0]:null);if(!opp)return m&&(m.textContent='Primero toca a tu rival.');publish({c_act:{s:state.seq,type:'duel',opp,cat}})}
 function sendAns(){const el=$('ans'),t=(el?.value||'').trim();if(!t)return;publish({c_act:{s:state.seq,type:'ans',text:t.slice(0,40)}});el.value='';el.disabled=true;$('sbtn')&&($('sbtn').disabled=true)}
 function sendPass(){publish({c_act:{s:state.seq,type:'pass'}})}
+function sendHint(){hn++;publish({c_hint:{n:hn}})}
 
 // ---------- Vistas ----------
 function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
 function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
-function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>AHORA CAIGO</h1><p class="muted">Un concursante central contra todos. Gana los duelos de preguntas o caerás por la trampilla. 🕳️</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Hay un <b>concursante central</b> (⭐) y hasta 10 rivales, todos en la sala. El central elige a un rival y una de dos categorías: ¡empieza el <b>duelo</b>!<br><br>• Cada duelista tiene <b>20 segundos</b>. El reloj solo corre en su turno.<br>• En tu turno aparece una definición y la respuesta en <b>huecos con letras</b>: escríbela completa. Si aciertas, el turno pasa a tu rival, que responde otra pregunta.<br>• Si fallas pierdes 3 segundos, se destapa otra letra y puedes volver a intentarlo.<br>• Si se acaba tu tiempo… <b>¡caes por la trampilla!</b> 🕳️ Empieza respondiendo el rival. El central tiene <b>2 comodines</b> para pasarle la pregunta.<br>• El ganador es el nuevo central. Cada caída suma 10.000 € al <b>bote</b>.<br>• El último en pie se lo lleva todo.</p></section>';
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>AHORA CAIGO</h1><p class="muted">Un concursante central contra todos. Gana los duelos de preguntas o caerás por la trampilla. 🕳️</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Hay un <b>concursante central</b> (⭐) y hasta 10 rivales, todos en la sala. El central elige a un rival y una de dos categorías: ¡empieza el <b>duelo</b>!<br><br>• Cada duelista tiene <b>20 segundos</b>. El reloj solo corre en su turno.<br>• En tu turno aparece una definición y la respuesta en <b>huecos con letras</b>: escríbela completa. Si aciertas, el turno pasa a tu rival, que responde otra pregunta.<br>• Si fallas pierdes 3 segundos y puedes volver a intentarlo. Si necesitas una letra, <b>pídesela al anfitrión</b>: él decide si la concede, y te cuesta 3 segundos.<br>• Si se acaba tu tiempo… <b>¡caes por la trampilla!</b> 🕳️ Empieza respondiendo el rival. El central tiene <b>2 comodines</b> para pasarle la pregunta.<br>• El ganador es el nuevo central. Cada caída suma 10.000 € al <b>bote</b> de la ronda.<br>• El último en pie gana la ronda y se lleva el bote. La partida tiene varias rondas y gana quien más dinero acumule.</p></section>';
  $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
 function renderLobby(){
  mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
- +(isHost?'<section class="card"><button class="btn" id="start" style="width:100%">Empezar partida</button><p class="small muted center" style="margin-top:8px">Se necesitan entre '+MINP+' y '+MAXP+' jugadores. Quien se conecte después, verá la partida como espectador.</p></section>':'<section class="card center"><p class="muted">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
+ +(isHost?'<section class="card"><h3>Ajustes de partida</h3><div class="settings3"><div><label for="rounds">Rondas</label><select id="rounds"><option value="1">1</option><option value="3">3</option><option value="5">5</option></select></div><div><label for="secs">Reloj por duelista</label><select id="secs"><option value="20">20 s</option><option value="30">30 s</option><option value="45">45 s</option><option value="60">60 s</option></select></div><div><label for="hints">Letras iniciales</label><select id="hints"><option value="0.15">Pocas</option><option value="0.3">Normales</option><option value="0.5">Muchas</option></select></div></div><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar partida</button><p class="small muted center" style="margin-top:8px">Se necesitan entre '+MINP+' y '+MAXP+' jugadores. Quien se conecte después, verá la partida como espectador.</p></section>':'<section class="card center"><div id="sum"></div><p class="muted" style="margin-top:8px">El anfitrión iniciará la partida cuando estéis listos…</p></section>')
  +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
- ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;$('start')&&($('start').onclick=startGame)});
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;$('start')&&($('start').onclick=startGame);
+  if($('rounds')){$('rounds').onchange=()=>{state.rounds=Number($('rounds').value);commit()};$('secs').onchange=()=>{state.secs=Number($('secs').value);commit()};$('hints').onchange=()=>{state.hints=Number($('hints').value);commit()}}});
  const ps=playerList();$('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.c_host?' · anfitrión':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<MINP?' · hacen falta al menos '+MINP:'')+'</p>';
- const s=$('start');if(s)s.disabled=ps.length<MINP}
+ const s=$('start');if(s)s.disabled=ps.length<MINP;
+ if($('rounds'))[['rounds',state.rounds||3],['secs',state.secs||30],['hints',state.hints||.3]].forEach(([id,v])=>{const el=$(id);if(el&&document.activeElement!==el)el.value=String(v)});
+ setHTML($('sum'),'<span class="tag">'+(state.rounds||3)+' rondas</span><span class="tag">⏱ '+(state.secs||30)+' s</span><span class="tag">letras iniciales: '+({0.15:'pocas',0.3:'normales',0.5:'muchas'}[state.hints||.3])+'</span>')}
 function playersHtml(){return state.order.map(k=>{const out=state.out.includes(k),d=state.duel;
  const cls=out?'out':(k===state.central?'cen':(d&&state.phase==='duel'&&(k===d.a||k===d.b)?'duel':''));
- return'<span class="player '+cls+(k===myKey?' me':'')+'">'+(out?'🕳️ ':(k===state.central?'⭐ ':''))+safe(pname(k))+(k===myKey?' · tú':'')+'</span>'}).join('')}
+ return'<span class="player '+cls+(k===myKey?' me':'')+'">'+(out?'🕳️ ':(k===state.central?'⭐ ':''))+safe(pname(k))+(k===myKey?' · tú':'')+(state.rounds>1?' · '+(state.totals[k]||0).toLocaleString('es-ES')+' €':'')+'</span>'}).join('')}
 function qboxHtml(){const ph=state.phase;
  if(ph==='pick'){const c=state.central===myKey;
   if(!c)return'<div class="msg">⭐ '+safe(pname(state.central))+' está eligiendo rival y categoría…</div>';
@@ -222,32 +231,41 @@ function qboxHtml(){const ph=state.phase;
   return'<h3>Elige a tu rival</h3><div class="chips">'+opps.map(k=>'<button class="chip '+(selOpp===k?'on':'')+'" data-o="'+k+'">'+safe(pname(k))+'</button>').join('')+'</div><h3>Y la categoría del duelo</h3><div class="chips">'+state.cats.map(i=>'<button class="chip" data-c="'+i+'">'+safe(CATS[i][0])+'</button>').join('')+'</div><p class="notice" id="amsg"></p>'}
  if(ph==='duel'){const d=state.duel,q=CATS[state.q.c][1][state.q.i],chars=[...q[1].split('|')[0]],mine=state.turnKey===myKey,rv=state.q.rv;
   const word='<div class="word">'+chars.map((ch,k)=>ch===' '?'<span class="gap"></span>':'<span class="box'+(rv[k]?' on':'')+'">'+(rv[k]?safe(disp(ch)):'')+'</span>').join('')+'</div>';
-  const last=state.last?'<div class="msg">'+safe(pname(state.last.k))+': '+(state.last.pass?'usa un comodín y pasa la pregunta ⤴':'«'+safe(state.last.txt)+'» '+(state.last.ok?'✔':'✖ (−3 s y se destapa una letra)'))+'</div>':'';
-  return'<div class="small muted center">'+safe(CATS[d.cat][0])+' · turno de <b>'+safe(pname(state.turnKey))+'</b></div><div class="q">'+safe(q[0])+'</div>'+word+last
-   +(mine?'<div class="row" style="margin-top:8px"><input id="ans" maxlength="40" autocomplete="off" placeholder="Completa la respuesta…" style="flex:3"><button class="btn" id="sbtn">Responder</button></div>'+(myKey===state.central&&d.passes[myKey]<PASSES?'<button class="btn ghost" id="pass" style="width:100%;margin-top:8px">Comodín: pasar la pregunta al rival ('+(PASSES-d.passes[myKey])+' restantes)</button>':''):'')}
+  const last=state.last?'<div class="msg">'+safe(pname(state.last.k))+': '+(state.last.hint?'🔤 el anfitrión concede una letra (−3 s)':state.last.pass?'usa un comodín y pasa la pregunta ⤴':'«'+safe(state.last.txt)+'» '+(state.last.ok?'✔':'✖ (−3 s)'))+'</div>':'';
+  const hreq=(state.hintReq&&state.hintSeq===state.seq)?'<div class="msg">🙋 '+safe(pname(state.hintReq))+' pide una letra (−3 s). Decide el anfitrión.</div>':'';
+  return'<div class="small muted center">'+safe(CATS[d.cat][0])+' · turno de <b>'+safe(pname(state.turnKey))+'</b></div><div class="q">'+safe(q[0])+'</div>'+word+last+hreq}
  if(ph==='fall'){const f=state.fall;return'<div class="msg fall">💥 ¡'+safe(pname(f.loser))+' cae por la trampilla!<br><span class="small">'+safe(f.why)+'</span></div>'}
  return''}
+function inputHtml(){if(state.phase!=='duel'||state.turnKey!==myKey)return'';const d=state.duel;
+ return'<div class="row" style="margin-top:8px"><input id="ans" maxlength="40" autocomplete="off" placeholder="Completa la respuesta…" style="flex:3"><button class="btn" id="sbtn">Responder</button></div><button class="btn ghost" id="hreq" style="width:100%;margin-top:8px">🙋 Pedir una letra al anfitrión (−3 s)</button>'
+  +(myKey===state.central&&d.passes[myKey]<PASSES?'<button class="btn ghost" id="pass" style="width:100%;margin-top:8px">Comodín: pasar la pregunta al rival ('+(PASSES-d.passes[myKey])+' restantes)</button>':'')}
+function hostCtlHtml(){if(!isHost||state.phase!=='duel')return'';const m=[...mainAns(state.q)],hid=state.q.rv.filter((v,k)=>!v&&m[k]!==' ').length,req=state.hintReq&&state.hintSeq===state.seq;
+ return'<div class="small muted" style="margin-top:14px">🎛️ Controles del anfitrión</div><div class="ref"><button class="btn secondary" data-h="hint" '+(hid>1?'':'disabled')+'>🔤 Dar letra (−3 s a '+safe(pname(state.turnKey))+')'+(req?' 🙋':'')+'</button><button class="btn secondary" data-h="ok">✔ Dar por buena</button><button class="btn secondary" data-h="skip">⏭ Cambiar pregunta</button></div>'}
 function renderGame(){const ph=state.phase,sig='g|'+ph+'|'+state.seq+'|'+(state.central===myKey);
- mount(sig,'<section class="card"><div class="pot" id="pot"></div><div class="small muted center">BOTE ACUMULADO</div><div class="duelo" id="duelo"></div><div id="qbox"></div></section><section class="card"><h3>Concursantes</h3><div id="players"></div></section>',
+ mount(sig,'<section class="card"><div class="pot" id="pot"></div><div class="small muted center" id="potl"></div><div class="duelo" id="duelo"></div><div id="qbox"></div><div id="inp">'+inputHtml()+'</div><div id="hostctl"></div></section><section class="card"><h3>Concursantes</h3><div id="players"></div></section>',
  ()=>{selOpp=null;
   $('qbox').onclick=e=>{const o=e.target.closest('[data-o]');if(o){selOpp=o.dataset.o;return updateGame()}const c=e.target.closest('[data-c]');if(c)return sendDuel(Number(c.dataset.c));
    if(e.target.closest('#sbtn'))return sendAns();if(e.target.closest('#pass'))sendPass()};
-  $('qbox').onkeydown=e=>{if(e.key==='Enter'&&e.target.id==='ans')sendAns()}});
+  $('inp').onclick=e=>{if(e.target.closest('#sbtn'))return sendAns();if(e.target.closest('#pass'))return sendPass();if(e.target.closest('#hreq')){sendHint();const b=$('hreq');b.disabled=true;b.textContent='🙋 Letra pedida… espera al anfitrión'}};
+  $('inp').onkeydown=e=>{if(e.key==='Enter'&&e.target.id==='ans')sendAns()};
+  $('hostctl').onclick=e=>{const b=e.target.closest('[data-h]');if(!b||b.disabled)return;({hint:grantHint,ok:acceptAns,skip:skipQ})[b.dataset.h]()}});
  updateGame();const inp=$('ans');if(inp)inp.focus()}
 function updateGame(){if(!state||!state.alive)return;const d=state.duel,ph=state.phase;
- setHTML($('pot'),(state.pot).toLocaleString('es-ES')+' €');
+ setHTML($('pot'),(state.pot).toLocaleString('es-ES')+' €');setHTML($('potl'),'RONDA '+state.round+' / '+state.rounds+' · BOTE DE LA RONDA');setHTML($('hostctl'),hostCtlHtml());
  setHTML($('duelo'),d&&(ph==='duel'||ph==='fall')?['a','b'].map((x,idx)=>{const k=d[x];return(idx?'<div class="vs">VS</div>':'')+'<div class="duelist '+(ph==='duel'&&state.turnKey===k?'on':'')+'"><div class="n">'+(k===state.central&&ph!=='fall'?'⭐ ':'')+safe(pname(k))+'</div><div class="c" id="clk'+x+'">'+(left(k)/1000).toFixed(1)+' s</div></div>'}).join(''):'');
  setHTML($('qbox'),qboxHtml());setHTML($('players'),playersHtml());tick()}
 function tick(){if(!state||state.phase!=='duel'||!state.duel)return;['a','b'].forEach(x=>{const el=$('clk'+x);if(el){const l=left(state.duel[x]);el.textContent=(l/1000).toFixed(1)+' s';el.classList.toggle('low',l<5000)}})}
-function renderFinished(){const w=state.alive[0];
- mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:78px">🏆</div><h1>'+safe(pname(w))+' gana</h1><div class="pot" style="margin-top:8px">'+state.pot.toLocaleString('es-ES')+' €</div><p class="muted">¡Se lleva todo el bote!</p></section>'
- +'<section class="card"><h3>Orden de caída</h3>'+state.out.map((k,i)=>'<div class="player">'+(i+1)+'. 🕳️ '+safe(pname(k))+'</div>').join('')+'</section>'
+function rankHtml(){return state.order.map(k=>[k,state.totals[k]||0]).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>'<div class="player">'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+safe(pname(k))+' · '+v.toLocaleString('es-ES')+' €</div>').join('')}
+function renderRoundEnd(){const r=state.rw;mount('re|'+state.round,'<section class="card center"><div class="tag">RONDA '+state.round+' / '+state.rounds+'</div><div style="font-size:64px">🏆</div><h1>'+safe(pname(r.w))+' gana la ronda</h1><div class="pot">+'+r.pot.toLocaleString('es-ES')+' €</div></section><section class="card"><h3>Clasificación</h3>'+rankHtml()+'</section><p class="muted small center">La siguiente ronda empieza en unos segundos…</p>')}
+function renderFinished(){const r=state.order.map(k=>[k,state.totals[k]||0]).sort((a,b)=>b[1]-a[1]),top=r[0][1],w=r.filter(x=>x[1]===top).map(x=>pname(x[0])).join(' y ');
+ mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:78px">🏆</div><h1>'+safe(w)+(r.filter(x=>x[1]===top).length>1?' ganan':' gana')+'</h1><div class="pot" style="margin-top:8px">'+top.toLocaleString('es-ES')+' €</div></section>'
+ +'<section class="card"><h3>Clasificación final</h3>'+rankHtml()+'</section>'
  +(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
  ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
 function render(){if(!roomCode)return renderHome();
  if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
  if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
- if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else if(state.phase==='roundend')renderRoundEnd();else renderGame()}
 setInterval(()=>{if(roomCode&&state)hostStep()},400);
 setInterval(tick,100);
 if(saved?.room&&saved?.name){connect();render()}else renderHome();

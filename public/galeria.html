@@ -59,15 +59,17 @@ function makeRoom(){
       leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
     function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
     function open(){
-      ws=new WebSocket(url);
-      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
-      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+      var me=ws=new WebSocket(url);
+      ws.onopen=function(){if(ws!==me)return;retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){if(ws!==me)return;var m;try{m=JSON.parse(e.data)}catch(x){return}
         if(m.t==='hello')id=m.id;
         else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
         else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
-      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+      ws.onclose=function(){if(closed||ws!==me)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
     }
     open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+    setInterval(function(){if(!closed&&ws&&ws.readyState===1&&Object.keys(pres).length)send({t:'pres',p:pres})},20000);
+    document.addEventListener('visibilitychange',function(){if(closed||document.hidden)return;if(!ws||ws.readyState>1){retry=0;open()}else if(ws.readyState===1&&Object.keys(pres).length)send({t:'pres',p:pres})});
   })}};
 }
 var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
@@ -79,7 +81,7 @@ function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;
 function okImg(s){return typeof s==='string'&&s.indexOf('data:image/jpeg;base64,')===0&&s.length<35000}
 function imgs(p){return Array.isArray(p.im)?p.im.filter(okImg).slice(0,3):[]}
 function owners(){var o={};G.ro.forEach(function(x){o[x.split(':')[0]]=1});return Object.keys(o)}
-function peers(){return NR?NR.peers().filter(function(p){return p.presence&&p.presence.rm}).map(function(p){return{me:p.isMe,p:p.presence}}):[]}
+function peers(){if(!NR)return[];var m={},ord=[];NR.peers().filter(function(p){return p.presence&&p.presence.rm}).forEach(function(p){var x={me:p.isMe,p:p.presence},k=x.p.k;if(!m[k]){ord.push(k);m[k]=x}else if(x.me)m[k]=x});return ord.map(function(k){return m[k]})}
 function by(k){return peers().filter(function(x){return x.p.k===k})[0]}
 function hostP(){var x=peers().filter(function(y){return y.p.h===1})[0];return x&&x.p}
 function pub(){
@@ -114,7 +116,7 @@ function shrink(file,cb){
 /* ----- Partida (lleva el anfitrión) ----- */
 function begin(){
   var ro=[],ow={};peers().forEach(function(x){imgs(x.p).forEach(function(_,i){ro.push(x.p.k+':'+i);ow[x.p.k]=1})});
-  var ks=Object.keys(ow);if(ks.length<3)return;
+  var ks=Object.keys(ow);if(ks.length<2)return;
   G.ro=sh(ro);G.sc={};ks.forEach(function(k){G.sc[k]=0});G.r=0;G.res=null;G.vote=null;G.ph='play';pub();sync();
 }
 function resolve(){
@@ -147,7 +149,7 @@ function render(){
     var n=ps.filter(function(x){return imgs(x.p).length}).length,np=0;ps.forEach(function(x){np+=imgs(x.p).length});
     h=top+'<h1>Sube tu foto</h1><div class="card"><div class="mut">Código de sala</div><h2 style="font-size:36px;letter-spacing:.12em">'+esc(G.code.toUpperCase())+'</h2><div class="pl">'+ps.map(function(x){return '<span class="pill'+(imgs(x.p).length?'':' no')+'">'+(imgs(x.p).length?'📷 '+imgs(x.p).length+' ':'⏳ ')+esc(x.p.n)+(x.p.h===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('')+'</div></div>'
     +'<div class="card"><h2>Tus fotos ('+G.ims.length+'/3)</h2>'+(G.ims.length?'<div class="pl">'+G.ims.map(function(d,i){return '<span><img class="thumb" style="width:96px;margin:0" alt="Tu foto '+(i+1)+'" src="'+d+'"><button class="link" data-rm="'+i+'">Quitar</button></span>'}).join('')+'</div>':'<p class="mut">Elige las que quieras (hasta 3): un recuerdo, un paisaje, una mascota… Los demás tendrán que adivinar de quién son.</p>')+(G.ims.length<3?'<label class="file" tabindex="0">'+(G.busy?'Preparando…':'📷 Añadir foto')+'<input type="file" accept="image/*" multiple id="fl"></label>':'')+(G.perr?'<p class="err">'+esc(G.perr)+'</p>':'')+'</div>'
-    +(G.host?'<button class="btn" id="st"'+(n<2?' disabled':'')+'>Empezar ('+np+' fotos de '+n+' jugadores, mínimo 3 jugadores)</button>':'<p class="mut" style="text-align:center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>');
+    +(G.host?'<button class="btn" id="st"'+(n<2?' disabled':'')+'>Empezar ('+np+' fotos de '+n+' jugadores, mínimo 2 jugadores)</button>':'<p class="mut" style="text-align:center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>');
   }else if(G.ph==='end'){
     h=top+'<h1>Fin</h1><div class="card"><h2>Marcador</h2>'+rank()+'<p class="mut">+1 por cada foto que aciertas, y +1 por cada jugador que no acierta la tuya.</p></div>';
   }else{

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chistes</title>
+<style>
+:root{--bg:#fbf1dc;--card:#fffdf7;--ink:#2a1320;--mut:#7a6070;--line:#2a1320;--ac:#e5384d;--hi:#ffb81c;--soft:#f1e3c4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1420;--card:#2b1d30;--ink:#fbeedd;--mut:#b79cae;--line:#fbeedd;--soft:#3a2a40}}
+:root[data-theme="dark"]{--bg:#1d1420;--card:#2b1d30;--ink:#fbeedd;--mut:#b79cae;--line:#fbeedd;--soft:#3a2a40}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px 16px 48px}
+h1{font:900 clamp(40px,13vw,62px)/.92 "Arial Black",Impact,sans-serif;margin:6px 0 4px;letter-spacing:-.02em}
+h1 span{color:var(--ac)}
+h2{font:900 18px/1.1 "Arial Black",Impact,sans-serif;margin:0 0 8px}
+p{margin:0 0 12px}.mut{color:var(--mut);font-size:15px}
+.stage{background:var(--card);border:3px solid var(--line);border-radius:18px;padding:26px 20px 20px;margin:16px 0;box-shadow:6px 6px 0 var(--line);position:relative;min-height:190px}
+.stage::before{content:"“";position:absolute;left:12px;top:-6px;font:900 90px/1 Georgia,serif;color:var(--hi);-webkit-text-stroke:3px var(--line)}
+.cat{display:inline-block;padding:3px 12px;border:2px solid var(--line);border-radius:99px;font-size:12px;font-weight:800;background:var(--hi);color:#2a1320;margin:0 0 12px 54px}
+.j{font:700 22px/1.35 Georgia,"Times New Roman",serif;margin:0;white-space:pre-line}
+.dl{font:700 22px/1.35 Georgia,serif;color:var(--ac);margin:14px 0 0;white-space:pre-line}
+.row{display:flex;gap:8px;margin-top:16px}
+.btn{display:block;width:100%;padding:14px;border:3px solid var(--line);border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--line)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.g{background:var(--card);color:var(--ink)}.btn.h{background:var(--hi);color:#2a1320}
+.btn:disabled{opacity:.45}
+.row .btn{padding:11px 8px;font-size:15px;box-shadow:0 3px 0 var(--line)}
+.box{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+summary{cursor:pointer;font:900 16px "Arial Black",sans-serif}
+.lbl{font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:14px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:7px 12px;border:2px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.chips button.on{background:var(--hi);color:#2a1320}
+select,input[type=search]{width:100%;padding:11px;border:3px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+.tg{display:flex;align-items:center;gap:10px;margin-top:10px;font-weight:600}
+.tg input{width:22px;height:22px;accent-color:var(--ac)}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.fav{padding:10px 0;border-bottom:1px dashed var(--line);font-size:15px;white-space:pre-line}
+.fav:last-child{border:0}.fav button{background:none;border:0;color:var(--ac);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;display:block;padding:4px 0 0}
+.msg{color:var(--mut);text-align:center;padding:30px 6px}
+.err{color:var(--ac);font-weight:700;text-align:center;padding:24px 6px}
+.src{font-size:12px;color:var(--mut);text-align:center;margin-top:20px}.src a{color:inherit}
+.note{font-size:13px;color:var(--mut);margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>CHIS<span>TES</span></h1>
+  <p class="mut">Chistes de todo tipo, a un toque. Cambia el idioma o los filtros cuando quieras.</p>
+
+  <div class="stage" id="stage"><div class="msg">Pulsa el botón y suelta el primer chiste.</div></div>
+  <div class="row" id="acts" style="display:none"></div>
+  <button class="btn" id="go" style="margin-top:14px">😂 Contar un chiste</button>
+
+  <details class="box" id="opt">
+    <summary>Ajustes y filtros</summary>
+    <div class="lbl">Idioma</div>
+    <select id="lang"><option value="es">Español</option><option value="en">English</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="cs">Čeština</option></select>
+    <div class="lbl">Categorías (ninguna = todas)</div>
+    <div class="chips" id="cats"></div>
+    <div class="lbl">Formato</div>
+    <div class="chips" id="types"></div>
+    <div class="lbl">Contiene la palabra</div>
+    <input type="search" id="q" placeholder="Ej: gato, café, bug…" autocomplete="off">
+    <label class="tg"><input type="checkbox" id="safe" checked> Modo seguro (sin contenido sensible)</label>
+    <div id="fl" style="display:none"><div class="lbl">Evitar estos temas</div><div class="chips" id="flags"></div></div>
+    <p class="note">En español hay menos chistes que en inglés. Si no sale ninguno con tus filtros, prueba a quitar alguno o a cambiar de idioma.</p>
+  </details>
+
+  <details class="box" id="favs"><summary id="fs">⭐ Guardados (0)</summary><div id="fl2"></div></details>
+  <div class="src">Chistes de <a href="https://sv443.net/jokeapi/v2/" target="_blank" rel="noopener">JokeAPI</a></div>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)};
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+var CATS=[['Programming','Programación'],['Misc','Variados'],['Pun','Juegos de palabras'],['Dark','Humor negro'],['Spooky','Miedo'],['Christmas','Navidad']];
+var TYPES=[['','Cualquiera'],['single','De una frase'],['twopart','Pregunta y remate']];
+var FLAGS=[['nsfw','Adultos'],['religious','Religión'],['political','Política'],['racist','Racismo'],['sexist','Sexismo'],['explicit','Explícito']];
+var S={lang:'es',cats:[],type:'',safe:true,flags:{nsfw:1,religious:1,political:1,racist:1,sexist:1,explicit:1}};
+var cur=null,favs=[],busy=false;
+try{favs=JSON.parse(localStorage.getItem('chistes-fav'))||[];var sv=JSON.parse(localStorage.getItem('chistes-set'));if(sv&&sv.lang)S=Object.assign(S,sv)}catch(e){}
+function saveSet(){try{localStorage.setItem('chistes-set',JSON.stringify(S))}catch(e){}}
+function saveFav(){try{localStorage.setItem('chistes-fav',JSON.stringify(favs))}catch(e){}}
+function chips(id,list,isOn,click){
+  $(id).innerHTML=list.map(function(x){return '<button data-v="'+x[0]+'" class="'+(isOn(x[0])?'on':'')+'">'+x[1]+'</button>'}).join('');
+  $(id).onclick=function(e){var b=e.target.closest('[data-v]');if(!b)return;click(b.getAttribute('data-v'));chips(id,list,isOn,click);saveSet()};
+}
+function drawOpts(){
+  $('lang').value=S.lang;$('safe').checked=S.safe;$('fl').style.display=S.safe?'none':'block';
+  chips('cats',CATS,function(v){return S.cats.indexOf(v)>-1},function(v){var i=S.cats.indexOf(v);i>-1?S.cats.splice(i,1):S.cats.push(v)});
+  chips('types',TYPES,function(v){return S.type===v},function(v){S.type=v});
+  chips('flags',FLAGS,function(v){return S.flags[v]},function(v){S.flags[v]=S.flags[v]?0:1});
+}
+$('lang').onchange=function(){S.lang=$('lang').value;saveSet()};
+$('safe').onchange=function(){S.safe=$('safe').checked;$('fl').style.display=S.safe?'none':'block';saveSet()};
+/* ----- JokeAPI v2: gratis y sin clave ----- */
+function url(){
+  var u='https://v2.jokeapi.dev/joke/'+(S.cats.length?S.cats.join(','):'Any')+'?lang='+S.lang;
+  if(S.type)u+='&type='+S.type;
+  if(S.safe)u+='&safe-mode';
+  else{var f=Object.keys(S.flags).filter(function(k){return S.flags[k]});if(f.length)u+='&blacklistFlags='+f.join(',')}
+  var q=$('q').value.trim();if(q)u+='&contains='+encodeURIComponent(q);
+  return u;
+}
+function get(){
+  if(busy)return;busy=true;$('go').disabled=true;$('acts').style.display='none';
+  $('stage').innerHTML='<div class="msg">Pensando un chiste…</div>';
+  fetch(url()).then(function(r){if(r.status===429)throw'rate';return r.json()}).then(function(j){
+    if(j.error){$('stage').innerHTML='<div class="err">'+(j.code===106?'No hay chistes con esos filtros. Prueba a quitar alguno, buscar otra palabra o cambiar de idioma.':esc(j.message||'La API devolvió un error.'))+'</div>';cur=null;return}
+    cur=j;paint();
+  }).catch(function(e){$('stage').innerHTML='<div class="err">'+(e==='rate'?'Demasiadas peticiones. Espera un minuto y vuelve a intentarlo.':'No se pudo conectar con JokeAPI. Comprueba tu conexión.')+'</div>';cur=null})
+  .then(function(){busy=false;$('go').disabled=false;$('go').textContent='😂 Otro chiste'});
+}
+function text(j){return j.type==='twopart'?j.setup+'\n'+j.delivery:j.joke}
+function paint(rev){
+  var j=cur,cn=(CATS.filter(function(c){return c[0]===j.category})[0]||[0,j.category])[1],two=j.type==='twopart';
+  $('stage').innerHTML='<span class="cat">'+esc(cn)+'</span><p class="j">'+esc(two?j.setup:j.joke)+'</p>'+(two?(rev?'<p class="dl">'+esc(j.delivery)+'</p>':'<button class="btn h" id="rv" style="margin-top:16px">👀 Ver el remate</button>'):'');
+  var rb=$('rv');if(rb)rb.onclick=function(){paint(true);acts(true)};
+  acts(!two||rev);
+}
+function acts(show){
+  var a=$('acts');if(!show||!cur){a.style.display='none';return}
+  var isFav=favs.some(function(f){return f.id===cur.id});
+  a.style.display='flex';
+  a.innerHTML='<button class="btn g" id="bf">'+(isFav?'⭐ Guardado':'☆ Guardar')+'</button><button class="btn g" id="bc">📋 Copiar</button>'+(navigator.share?'<button class="btn g" id="bs">📤 Compartir</button>':'');
+  $('bf').onclick=function(){var i=favs.findIndex(function(f){return f.id===cur.id});if(i>-1)favs.splice(i,1);else favs.unshift({id:cur.id,t:text(cur)});saveFav();drawFavs();acts(true)};
+  $('bc').onclick=function(){copy(text(cur),$('bc'))};
+  if($('bs'))$('bs').onclick=function(){navigator.share({text:text(cur)}).catch(function(){})};
+}
+function copy(t,b){
+  var done=function(){b.textContent='✓ Copiado';setTimeout(function(){b.textContent='📋 Copiar'},1500)};
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(done,function(){b.textContent='No se pudo'});else b.textContent='No se pudo';
+}
+function drawFavs(){
+  $('fs').textContent='⭐ Guardados ('+favs.length+')';
+  $('fl2').innerHTML=favs.length?favs.map(function(f,i){return '<div class="fav">'+esc(f.t)+'<button data-i="'+i+'">Quitar</button></div>'}).join(''):'<p class="mut" style="margin:10px 0 0">Aún no has guardado ninguno.</p>';
+  $('fl2').onclick=function(e){var b=e.target.closest('[data-i]');if(!b)return;favs.splice(+b.getAttribute('data-i'),1);saveFav();drawFavs();if(cur)acts(cur.type!=='twopart'||!$('rv'))};
+}
+$('go').onclick=get;
+drawOpts();drawFavs();
+</script>
+</body>
+</html>

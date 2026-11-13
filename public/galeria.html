@@ -95,7 +95,7 @@ function start(create){
   if(!code){MSG='Escribe el código de la sala.';home();return}
   G={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',r:0,ro:[],sc:{},res:null,vote:null,ims:[],busy:false,perr:''};
   MSG='';lastKey='';render();
-  RM.join('foto-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
+  RM.join('cmt-foto-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
 }
 /* ----- Foto: se reduce en el móvil antes de enviarla ----- */
 function shrink(file,cb){

@@ -109,7 +109,7 @@ const randomBtn = document.getElementById('randomBtn');
 // DICCIONARIO/español.txt
 async function cargarDiccionario() {
   try {
-    const response = await fetch('DICCIONARIO/español.txt', { cache: 'no-store' });
+    const response = await fetch('diccionario/español.txt', { cache: 'no-store' });
 
     if (!response.ok) {
       throw new Error('No se encontró el archivo');

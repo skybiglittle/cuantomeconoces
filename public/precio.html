@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>El precio justo</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--glow:#3a2f12;--c1:#1c2238;--c2:#111a2d;--in:#0d1628;--bd:#3b4a69;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#ffd166;--g:#39d98a;--r:#ff5d73;--b2:#263451;--b2b:#405174;--bt:#2a1f00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root{color-scheme:light;--bg:#f6f3ec;--glow:#ffe7a8;--c1:#fff;--c2:#faf7f0;--in:#fff;--bd:#c9c3b3;--l:#ddd7c8;--t:#1b2233;--m:#566077;--a:#a85f00;--g:#0f8a4e;--r:#d11f3a;--b2:#ece7da;--b2b:#cfc8b6}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -10%,var(--glow),transparent 52%),var(--bg);color:var(--t);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:520px;margin:auto;padding:16px 16px 24px}
+h1{font-size:clamp(30px,9vw,46px);line-height:1.05;margin:6px 0 8px;text-align:center}h2{margin:0 0 6px}.m{color:var(--m)}.c{text-align:center}.small{font-size:13px}
+.card{background:linear-gradient(145deg,var(--c1),var(--c2));border:1px solid var(--l);border-radius:20px;padding:18px;margin:12px 0}
+label{display:block;font-size:13px;color:var(--m);font-weight:700;margin:12px 0 5px}
+input,select{width:100%;padding:13px 14px;border:1px solid var(--bd);border-radius:12px;background:var(--in);color:var(--t);font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+.btn{border:0;border-radius:15px;padding:15px 18px;background:linear-gradient(135deg,#ffd166,#ff9f43);color:var(--bt);font:inherit;font-weight:900;cursor:pointer;width:100%;margin-top:12px}.btn.s{background:var(--b2);color:var(--t);border:1px solid var(--b2b)}
+.prod{font-size:96px;line-height:1.1}.name{font-size:24px;font-weight:900;margin:4px 0}.who{font-size:20px;font-weight:900;color:var(--a)}
+#bi{font-size:32px;text-align:center;font-weight:900}.ln{display:flex;justify-content:space-between;gap:10px;padding:9px 4px;border-bottom:1px solid var(--l)}.ln:last-child{border:0}.win{color:var(--g);font-weight:800}.over{color:var(--r)}
+.hint{color:var(--a);font-weight:700;margin:6px 0}.tag{display:inline-block;padding:2px 10px;border-radius:99px;border:1px solid var(--a);color:var(--a);font-size:12px;font-weight:800}
+</style></head><body><main id="app"></main>
+<script>
+(()=>{'use strict';
+const app=document.getElementById('app'),$=i=>document.getElementById(i),rnd=n=>Math.random()*n|0,shuf=a=>{a=a.slice();for(let i=a.length;--i>0;){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+// [emoji, producto, precio orientativo en € (España, 2026), nivel 1=fácil 2=medio 3=difícil]
+const P=[
+['🍞','Una barra de pan normal',0.75,1],['☕','Un café con leche en un bar',1.9,1],['🥛','Un litro de leche entera de marca blanca',1.15,1],['🥚','Una docena de huevos camperos',3.4,1],['🍌','Un kilo de plátano de Canarias',2.4,1],['🍝','Un paquete de espaguetis Gallo de 500 g',1.55,1],['🍫','Una tableta de chocolate con leche Milka de 100 g',1.95,1],['🥤','Una lata de Coca-Cola de 33 cl en el súper',0.95,1],['🍺','Una caña de cerveza en un bar',2.4,1],['⛽','Un litro de gasolina 95',1.5,1],['🍕','Una pizza congelada Dr. Oetker Ristorante Mozzarella',3.6,1],['🍽️','Un menú del día',15,1],['🎬','Una entrada de cine',9,1],['🧻','Un pack de 12 rollos de papel higiénico Scottex',6.9,1],
+['🍔','Un menú Big Mac mediano en McDonald’s',9.9,2],['☕','Una caja de 10 cápsulas Nespresso Original',5.5,2],['💇','Un corte de pelo en una peluquería',18,2],['🏋️','Un mes de gimnasio low cost',30,2],['📺','Un mes de Netflix, plan Estándar',13.99,2],['📦','Un mes de Amazon Prime',4.99,2],['📚','Una novela novedad en tapa blanda',21,2],['👕','Una camiseta básica de Zara',13,2],['👟','Unas Nike Air Force 1 ’07',120,2],['👖','Unos vaqueros Levi’s 501 Original',110,2],['🎧','Unos Apple AirPods 4',149,2],['🚄','Un billete de AVE Madrid–Barcelona',75,2],['🏨','Una noche en un hotel de 3 estrellas en Madrid',110,2],['🎒','Una mochila Eastpak Padded Pak’r',75,2],
+['📱','Un iPhone 17 de 256 GB',969,3],['🎮','Una Nintendo Switch 2',469.99,3],['🎧','Unos Apple AirPods Pro 3',249,3],['💨','Un Dyson Airwrap',599,3],['🕶️','Unas gafas Ray-Ban Wayfarer Classic',165,3],['⌚','Un reloj Casio G-Shock GA-2100',110,3],['🎢','Una entrada de un día a PortAventura',65,3],['🏓','Una pala de pádel Bullpadel Vertex 04',280,3],['📺','Una tele Samsung de 55 pulgadas 4K Crystal UHD',450,3],['🧺','Una lavadora Bosch Serie 4 de 8 kg',550,3],['🚲','Una bici de montaña Decathlon Rockrider ST 120',300,3],['🥾','Unas botas Timberland 6-Inch Premium',230,3],['🚗','Un Dacia Sandero nuevo (precio desde)',12000,3]];
+const D={1:{t:'Fácil',tol:.08},2:{t:'Medio',tol:.05},3:{t:'Difícil',tol:.04}};
+let cfg={n:3,r:8,d:2,over:1,last2:1,hint:0},G=null,names=[];
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('pjusto2')||'{}'))}catch(e){}
+const fmt=n=>n.toLocaleString('es-ES',{minimumFractionDigits:Math.abs(n%1)>.001?2:0,maximumFractionDigits:2})+' €';
+const nice=v=>v<10?Math.round(v*10)/10:v<100?Math.round(v):v<1000?Math.round(v/5)*5:Math.round(v/50)*50;
+const nm=i=>(names[i]||'').trim()||'Jugador '+(i+1),view=h=>{app.innerHTML=h};
+const newGame=()=>{G={sc:Array(cfg.n).fill(0),deck:shuf(P.filter(p=>p[3]===cfg.d)),r:0};round()};
+function home(){const o=(a,v)=>a.map(([k,t])=>'<option value="'+k+'"'+(k==v?' selected':'')+'>'+t+'</option>').join(''),yn=[[1,'Sí'],[0,'No']];
+ const inputs=()=>{$('nl').innerHTML=Array.from({length:+$('n').value},(_,i)=>'<input class="nn" maxlength="14" placeholder="Jugador '+(i+1)+'" value="'+esc(names[i]||'')+'" style="margin-top:6px">').join('')};
+ view('<h1>💶 El precio justo</h1><p class="m c">Un móvil, varios jugadores. Cada uno puja en secreto por un producto: gana quien más se acerca sin pasarse.</p><div class="card"><label for="n">Jugadores</label><select id="n">'+o([2,3,4,5,6,7,8].map(x=>[x,x]),cfg.n)+'</select><div id="nl"></div>'+
+ '<label for="d">Dificultad</label><select id="d">'+o([[1,'Fácil · productos del día a día'],[2,'Medio · marcas y compras habituales'],[3,'Difícil · tecnología y caprichos']],cfg.d)+'</select>'+
+ '<label for="r">Rondas</label><select id="r">'+o([[5,'5'],[8,'8'],[10,'10']],cfg.r)+'</select><label for="over">Regla «sin pasarse»</label><select id="over">'+o(yn,cfg.over)+'</select><label for="last2">La última ronda vale doble</label><select id="last2">'+o(yn,cfg.last2)+'</select><label for="hint">Pista: mostrar un rango en el que está el precio</label><select id="hint">'+o([[0,'No'],[1,'Sí']],cfg.hint)+'</select></div>'+
+ '<div class="card small m"><b>Puntos:</b> gana la ronda quien más se acerca sin pasarse (si todos se pasan, gana el que menos). +1 por ganar y +2 extra si clavas el precio (margen: ±8 % en fácil, ±5 % en medio, ±4 % en difícil). Precios orientativos para España en 2026; pueden variar según tienda y oferta.</div><button class="btn" id="go">¡Empezar!</button>');
+ inputs();$('n').onchange=()=>{names=[...document.querySelectorAll('.nn')].map(x=>x.value);inputs()};
+ $('d').onchange=()=>{$('hint').value=$('d').value==1?1:0};
+ $('go').onclick=()=>{names=[...document.querySelectorAll('.nn')].map(x=>x.value);['n','r','d','over','last2','hint'].forEach(k=>cfg[k]=+$(k).value);try{localStorage.setItem('pjusto2',JSON.stringify(cfg))}catch(e){}newGame()}}
+function round(){G.r++;G.p=G.deck[G.r-1];G.b=[];pass(0)}
+const prod=show=>'<div class="card c"><div class="prod">'+G.p[0]+'</div><div class="name">'+esc(G.p[1])+'</div><div class="small m">Ronda '+G.r+' / '+cfg.r+' · <span class="tag">'+D[cfg.d].t+'</span>'+(cfg.last2&&G.r===cfg.r?' · ¡vale doble!':'')+'</div>'+(cfg.hint&&show?'<div class="hint">Pista: está entre '+fmt(G.lo)+' y '+fmt(G.hi)+'</div>':'')+'</div>';
+function pass(i){if(i>=cfg.n)return reveal();if(i===0&&cfg.hint){const p=G.p[2],lo=p*(.55+rnd(20)/100),hi=lo+p*.9;G.lo=nice(lo);G.hi=Math.max(nice(hi),G.lo+(p<10?.1:1))}
+ view('<div class="card c"><h2>Pasa el móvil a</h2><div class="who">'+esc(nm(i))+'</div><p class="m small">Que no mire nadie más.</p><button class="btn" id="ok">Soy '+esc(nm(i))+': ver producto</button></div>');
+ $('ok').onclick=()=>bid(i)}
+function bid(i){view(prod(1)+'<div class="card c"><div class="who">'+esc(nm(i))+'</div><label for="bi">¿Cuánto cuesta? (en euros)</label><input id="bi" inputmode="decimal" autocomplete="off" placeholder="0"><p class="small over" id="er"></p><button class="btn" id="ok">Confirmar puja</button></div>');
+ const bi=$('bi');bi.focus();const go=()=>{const v=parseFloat(bi.value.replace(',','.'));if(isNaN(v)||v<0){$('er').textContent='Escribe un número.';return}G.b.push({i,v});pass(i+1)};$('ok').onclick=go;bi.onkeydown=e=>{if(e.key==='Enter')go()}}
+function reveal(){const pr=G.p[2],tol=D[cfg.d].tol,mult=cfg.last2&&G.r===cfg.r?2:1,b=G.b.map(x=>({...x,d:x.v-pr,ex:Math.abs(x.v-pr)<=pr*tol+.005})),ok=b.filter(x=>x.d<=.005||x.ex);let win;
+ if(cfg.over){win=ok.length?ok.filter(x=>x.v===Math.max(...ok.map(y=>y.v))):b.filter(x=>x.d===Math.min(...b.map(y=>y.d)))}else win=b.filter(x=>Math.abs(x.d)===Math.min(...b.map(y=>Math.abs(y.d))));
+ win.forEach(x=>{G.sc[x.i]+=(1+(x.ex?2:0))*mult});
+ const rows=b.slice().sort((a,c)=>Math.abs(a.d)-Math.abs(c.d)).map(x=>{const w=win.includes(x);return'<div class="ln"><span class="'+(w?'win':'')+'">'+(w?'🏆 ':'')+esc(nm(x.i))+'</span><span class="'+(cfg.over&&x.d>.005&&!x.ex?'over':'')+'">'+fmt(x.v)+(x.ex?' ¡justo!':x.d>0?' · +'+fmt(x.d):' · −'+fmt(-x.d))+'</span></div>'}).join('');
+ const last=G.r>=cfg.r;
+ view('<div class="card c"><div class="prod">'+G.p[0]+'</div><div class="name">'+esc(G.p[1])+'</div><h2>Precio real: <span class="win">'+fmt(pr)+'</span></h2></div><div class="card">'+rows+'</div><div class="card"><b>Marcador</b>'+G.sc.map((s,i)=>[i,s]).sort((a,c)=>c[1]-a[1]).map(([i,s])=>'<div class="ln"><span>'+esc(nm(i))+'</span><b>'+s+' pts</b></div>').join('')+'</div><button class="btn" id="nx">'+(last?'Ver ganador':'Siguiente producto')+'</button>');
+ $('nx').onclick=()=>last?end():round()}
+function end(){const top=Math.max(...G.sc),w=G.sc.map((s,i)=>s===top?nm(i):null).filter(Boolean);
+ view('<div class="card c"><div style="font-size:80px">🏆</div><h1>'+esc(w.join(' y '))+(w.length>1?' ganan':' gana')+'</h1>'+G.sc.map((s,i)=>[i,s]).sort((a,c)=>c[1]-a[1]).map(([i,s])=>'<div class="ln"><span>'+esc(nm(i))+'</span><b>'+s+' pts</b></div>').join('')+'<button class="btn" id="a1">Otra partida</button><button class="btn s" id="a2">Ajustes</button></div>');
+ $('a1').onclick=newGame;$('a2').onclick=home}
+home();
+})();
+</script></body></html>

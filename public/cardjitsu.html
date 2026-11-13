@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Card-Jitsu · Duelos de cartas</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--gold:#ffd166;--good:#48d597;--bad:#ff6c7f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(640px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:#6ee7d4}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(34px,8vw,52px);line-height:1;margin:0 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffb4a2 40%,#7dd3fc);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:10px 0 5px;text-transform:uppercase}
+input,select{width:100%;border:1.5px solid var(--line);background:#0d1629;color:var(--text);border-radius:12px;padding:13px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px 15px;background:linear-gradient(100deg,var(--a),#638cff);color:#fff;font-weight:800}.btn.secondary{background:#293753;border:1px solid var(--line)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px;background:#0d1629}.player.me{border-color:#6ee7d4;color:#6ee7d4}.player.duel{border-color:var(--gold);color:var(--gold)}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch}.vs>b{align-self:center;color:var(--muted);font-weight:950}
+.duelist{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center;min-width:0}.duelist.me{border-color:#6ee7d4}.duelist.ok{box-shadow:0 0 0 3px rgba(72,213,151,.35)}.duelist .n{font-weight:850;overflow-wrap:anywhere}.duelist .b{font-size:12px;color:var(--muted)}
+.dojo{margin-top:6px;font-size:13px;text-align:left}.dojo div{display:flex;align-items:center;gap:4px;min-height:20px}.dot{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid #fff6}
+.cj{position:relative;width:74px;aspect-ratio:3/4;border-radius:12px;border:4px solid #fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:5px 2px 3px;font-weight:900;color:#fff;user-select:none;box-shadow:0 5px 12px #0007}.cj .ci{font-size:22px;line-height:1}.cj .cn{font-size:30px;line-height:1;text-shadow:0 2px 4px #0008}.cj .cb{width:80%;height:9px;border-radius:5px;border:1px solid #fff8}
+.cj.big{width:104px}.cj.big .ci{font-size:30px}.cj.big .cn{font-size:44px}
+.hand{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}.hand .cj{cursor:pointer;transition:transform .15s}.hand .cj:hover{transform:translateY(-4px)}.hand .cj.sel{transform:translateY(-12px);box-shadow:0 0 0 4px var(--gold),0 8px 16px #0008}.hand.off .cj{cursor:default;opacity:.6}.hand.off .cj:hover{transform:none}
+.arena{display:flex;justify-content:center;align-items:center;gap:18px;margin:12px 0;min-height:150px}.arena .cj{animation:flip .55s both}.arena .win{box-shadow:0 0 0 5px var(--good),0 0 24px var(--good)}.arena .lose{opacity:.45;filter:grayscale(.6)}
+@keyframes flip{from{transform:rotateY(90deg) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.res{text-align:center;font-weight:900;font-size:18px;margin:6px 0}.res.big{color:var(--gold);font-size:22px}
+.bar{height:7px;background:var(--line);border-radius:7px;overflow:hidden;margin:8px 0}.bar>div{height:100%;background:linear-gradient(90deg,#fb923c,#38bdf8);width:100%;transition:width .25s linear}.tl{font-weight:900;font-size:18px}.tl.low{color:var(--bad)}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#101a2e;margin:5px 0}.sc strong{color:var(--gold)}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:480px){.cj{width:62px}.cj .cn{font-size:26px}.cj.big{width:88px}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Card-<span>Jitsu</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Card-Jitsu · Salas en directo · de 2 a 12 jugadores · juego de fans, no oficial</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_cj_session_v1',CID='cmc_cj_cid_v1',KEY='cmc_cj_key_v1';
+const MAXP=12,MINP=2;
+const rand=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const EL={f:{n:'Fuego',i:'🔥',bg:'linear-gradient(160deg,#7f1d1d,#ea580c)'},w:{n:'Agua',i:'💧',bg:'linear-gradient(160deg,#1e3a8a,#3b82f6)'},s:{n:'Nieve',i:'❄️',bg:'linear-gradient(160deg,#0e7490,#67e8f9)'}};
+const COL=['#ef4444','#3b82f6','#22c55e','#eab308','#f97316','#a855f7'];
+const BELTS=['⚪ Cinturón blanco','🟡 Cinturón amarillo','🟠 Cinturón naranja','🟢 Cinturón verde','🔵 Cinturón azul','🔴 Cinturón rojo','🟣 Cinturón morado','🟤 Cinturón marrón','⚫ Cinturón negro'];
+const belt=w=>BELTS[Math.min(w||0,BELTS.length-1)];
+const rc=()=>({e:'fws'[rand(3)],n:2+rand(11),c:rand(6),id:Math.random().toString(36).slice(2,8)});
+const validCard=c=>c&&'fws'.includes(c.e)&&Number.isInteger(c.n)&&c.n>=2&&c.n<=12&&Number.isInteger(c.c)&&c.c>=0&&c.c<6;
+const beats=(a,b)=>(a==='f'&&b==='s')||(a==='s'&&b==='w')||(a==='w'&&b==='f');
+function cmp(a,b){if(a.e===b.e)return a.n>b.n?'A':a.n<b.n?'B':null;return beats(a.e,b.e)?'A':'B'}
+// Gana el duelo quien reúna 3 cartas del mismo elemento de colores distintos, o una de cada elemento con colores distintos
+function won(d){for(const e of 'fws')if(new Set(d[e]).size>=3)return true;
+ for(const c1 of new Set(d.f))for(const c2 of new Set(d.w))for(const c3 of new Set(d.s))if(c1!==c2&&c2!==c3&&c1!==c3)return true;return false}
+const cardHtml=(c,cls='',attrs='')=>'<div class="cj '+cls+'" style="background:'+EL[c.e].bg+';border-color:'+COL[c.c]+'" '+attrs+'><span class="ci">'+EL[c.e].i+'</span><span class="cn">'+c.n+'</span><span class="cb" style="background:'+COL[c.c]+'"></span></div>';
+const dojoHtml=d=>'<div class="dojo">'+'fws'.split('').map(e=>'<div>'+EL[e].i+' '+d[e].map(c=>'<i class="dot" style="background:'+COL[c]+'"></i>').join('')+'</div>').join('')+'</div>';
+
+// ---------- Estado local y red ----------
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ own=saved?.own||{mid:-1,hand:[],pick:null,sel:null},
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',myPres=own.pick?{c_pick:own.pick.msg}:{},offset=0,hostPicks={},absent={A:0,B:0};
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state,own}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;state.hostNow=Date.now();publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-cardjitsu-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena.':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;offset=(inc.hostNow||Date.now())-Date.now();persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+const freshOwn=()=>({mid:-1,hand:[],pick:null,sel:null});
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};own=freshOwn();offset=0;state={v:0,phase:'lobby',target:3,secs:20};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};own=freshOwn();state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};own=freshOwn();sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión ----------
+const oth=s=>s==='A'?'B':'A';
+const conn=()=>new Set(playerList().map(p=>p.key));
+function startGame(){const ps=playerList().sort((a,b)=>(b.p.c_host?1:0)-(a.p.c_host?1:0)).slice(0,MAXP);if(ps.length<MINP)return;
+ const order=shuffle(ps.map(p=>p.key)),names={},wins={};ps.forEach(p=>{names[p.key]=p.name;wins[p.key]=0});
+ Object.assign(state,{names,wins,q:order.slice(2),mid:0,champ:null});startMatch(order[0],order[1])}
+function startMatch(a,b){state.A=a;state.B=b;state.mid++;state.rd=1;state.dojo={A:{f:[],w:[],s:[]},B:{f:[],w:[],s:[]}};state.picked={A:false,B:false};state.rev=null;state.over=false;state.mw=null;state.note='';
+ hostPicks={};absent={A:0,B:0};state.phase='match';state.endsAt=Date.now()+state.secs*1000;commit()}
+function resolveRound(){const a=hostPicks.A,b=hostPicks.B;let w=null;
+ if(a&&b)w=cmp(a,b);else if(a)w='A';else if(b)w='B';
+ if(w){const c=w==='A'?a:b;state.dojo[w][c.e].push(c.c)}
+ state.rev={a:a||null,b:b||null,w};state.over=!!(w&&won(state.dojo[w]));if(state.over)state.mw=w;
+ state.phase='reveal';state.until=Date.now()+(state.over?4500:3300);commit()}
+function forfeit(side){state.mw=oth(side);state.over=true;state.rev=null;state.note=pname(state[side])+' se ha desconectado';state.phase='reveal';state.until=Date.now()+3000;commit()}
+function endMatch(){const w=state[state.mw],l=state[oth(state.mw)];state.wins[w]=(state.wins[w]||0)+1;
+ if(state.wins[w]>=state.target){state.champ=w;state.phase='finished';return commit()}
+ state.q.push(l);nextChallenger(w)}
+function nextChallenger(w){const c=conn(),i=state.q.findIndex(k=>c.has(k));
+ if(i<0){state.A=w;state.B=null;state.phase='waiting';return commit()}
+ const [ch]=state.q.splice(i,1);startMatch(w,ch)}
+function hostStep(){if(!isHost||!state||state.phase==='lobby'||state.phase==='finished')return;
+ const pls=playerList(),pl={};pls.forEach(p=>pl[p.key]=p.p);let ch=false;
+ for(const p of pls){if(!state.names[p.key]){state.names[p.key]=p.name;state.wins[p.key]=0;state.q.push(p.key);ch=true}else if(state.names[p.key]!==p.name){state.names[p.key]=p.name;ch=true}}
+ if(state.phase==='waiting'){const c=conn(),i=state.q.findIndex(k=>c.has(k));if(i>=0&&pl[state.A]){const [x]=state.q.splice(i,1);return startMatch(state.A,x)}if(ch)commit();return}
+ if(state.phase==='match'){
+  for(const s of ['A','B']){const k=state[s];if(hostPicks[s])continue;const c=pl[k]&&pl[k].c_pick;if(c&&c.m===state.mid&&c.rd===state.rd&&validCard(c.card)){hostPicks[s]=c.card;state.picked[s]=true;ch=true}}
+  if((hostPicks.A&&hostPicks.B)||Date.now()>state.endsAt+3000)return resolveRound();
+  for(const s of ['A','B']){if(!pl[state[s]]){absent[s]=absent[s]||Date.now();if(Date.now()-absent[s]>10000)return forfeit(s)}else absent[s]=0}
+  if(ch)commit();return}
+ if(state.phase==='reveal'&&Date.now()>=state.until){
+  if(state.over)return endMatch();
+  state.rd++;hostPicks={};state.picked={A:false,B:false};state.phase='match';state.endsAt=Date.now()+state.secs*1000;return commit()}
+ if(ch)commit()}
+
+// ---------- Acciones del jugador ----------
+const mySide=()=>!state||!state.A?null:(state.A===myKey?'A':(state.B===myKey?'B':null));
+const hasPicked=()=>own.pick&&state&&own.pick.mid===state.mid&&own.pick.rd===state.rd;
+function syncHand(){const s=mySide();if(!s||!state.mid)return;if(own.mid!==state.mid){own.mid=state.mid;own.hand=Array.from({length:5},rc);own.sel=null;own.pick=null;persist()}}
+function sendPick(card){if(!state||state.phase!=='match'||hasPicked()||!mySide())return;const msg={m:state.mid,rd:state.rd,card:{e:card.e,n:card.n,c:card.c}};
+ own.pick={mid:state.mid,rd:state.rd,msg};own.hand=own.hand.filter(x=>x.id!==card.id);own.hand.push(rc());own.sel=null;persist();publish({c_pick:msg});updateGame()}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>CARD-JITSU</h1><p class="muted">Duelos de cartas de Fuego, Agua y Nieve. ¡Sube de cinturón ganando duelos! 🥋</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Dos jugadores se enfrentan; el resto espera su turno y mira. Cada uno tiene 5 cartas con un elemento, un número y un color.<br><br>• Los dos eligen una carta a la vez. <b>🔥 Fuego vence a ❄️ Nieve</b>, <b>❄️ Nieve vence a 💧 Agua</b> y <b>💧 Agua vence a 🔥 Fuego</b>. Si es el mismo elemento, gana el <b>número más alto</b>; si empatan, nadie se lleva nada.<br>• Quien gana la ronda guarda esa carta en su dojo.<br>• <b>Gana el duelo</b> quien reúna 3 cartas del mismo elemento <i>de colores distintos</i>, o una de cada elemento <i>de colores distintos</i>.<br>• Modo <b>rey de la pista</b>: el ganador se queda y el perdedor pasa al final de la cola. ¡Cada victoria sube tu cinturón! El primero en llegar a las victorias elegidas gana la partida.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){
+ mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes</h3><div class="settings"><div><label for="target">Victorias para ganar</label><select id="target"><option value="2">2 (corta)</option><option value="3">3</option><option value="5">5 (larga)</option></select></div><div><label for="secs">Tiempo por ronda</label><select id="secs"><option value="15">15 s</option><option value="20">20 s</option><option value="30">30 s</option></select></div></div><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar</button></section>':'<section class="card center"><div id="sum" class="small muted"></div><p class="muted" style="margin-top:8px">El anfitrión empezará cuando estéis listos…</p></section>')
+ +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;
+  if(isHost){$('target').onchange=()=>{state.target=Number($('target').value);commit()};$('secs').onchange=()=>{state.secs=Number($('secs').value);commit()};$('start').onclick=startGame}});
+ const ps=playerList();$('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.c_host?' 👑':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<MINP?' · hacen falta al menos '+MINP:'')+'</p>';
+ if(isHost){[['target',state.target||3],['secs',state.secs||20]].forEach(([id,v])=>{const el=$(id);if(el&&document.activeElement!==el)el.value=String(v)});$('start').disabled=ps.length<MINP}
+ else $('sum').innerHTML='<span class="tag">🏆 '+(state.target||3)+' victorias</span><span class="tag">⏱ '+(state.secs||20)+' s por ronda</span>'}
+const leftS=()=>Math.max(0,Math.ceil((state.endsAt-(Date.now()+offset))/1000));
+function tick(){if(!state||state.phase!=='match')return;const l=leftS(),t=$('tl'),f=$('tf');if(t){t.textContent=l+' s';t.classList.toggle('low',l<=5)}if(f)f.style.width=Math.min(100,l/state.secs*100)+'%';
+ if(l<=0&&mySide()&&!hasPicked()&&own.hand.length)sendPick(own.hand[rand(own.hand.length)])}
+function duelistHtml(s){const k=state[s],me=k===myKey;
+ return'<div class="duelist '+(me?'me ':'')+(state.phase==='match'&&state.picked[s]?'ok':'')+'"><div class="n">'+safe(pname(k))+(me?' (tú)':'')+'</div><div class="b">'+belt(state.wins[k])+'</div>'+dojoHtml(state.dojo[s])+'<div class="small muted" style="margin-top:4px">'+(state.phase==='match'?(state.picked[s]?'✔ ha elegido':'pensando…'):'')+'</div></div>'}
+function arenaHtml(){
+ if(state.phase==='match')return'<div class="res muted">Ronda '+state.rd+' · elige tu carta</div>';
+ if(state.phase==='reveal'){const r=state.rev;if(!r)return'<div class="res big">'+safe(state.note||'')+'</div>';
+  const why=r.a&&r.b?(r.a.e===r.b.e?(r.w?'Mismo elemento: gana el número más alto':'¡Empate! Nadie se lleva la carta'):EL[r.w==='A'?r.a.e:r.b.e].i+' '+EL[r.w==='A'?r.a.e:r.b.e].n+' vence a '+EL[r.w==='A'?r.b.e:r.a.e].i+' '+EL[r.w==='A'?r.b.e:r.a.e].n):'Un jugador no eligió a tiempo';
+  const side=(c,s)=>c?cardHtml(c,'big '+(r.w===s?'win':(r.w?'lose':'')),''):'<div class="cj big" style="background:#1e293b;border-color:#475569"><span></span><span class="cn">?</span><span></span></div>';
+  return'<div class="arena">'+side(r.a,'A')+'<b class="muted">VS</b>'+side(r.b,'B')+'</div><div class="res">'+safe(why)+'</div>'+(state.over?'<div class="res big">🥋 ¡'+safe(pname(state[state.mw]))+' gana el duelo!</div>':'')}
+ return''}
+function handHtml(){const s=mySide();if(!s||state.phase==='lobby')return'';
+ const can=state.phase==='match'&&!hasPicked();
+ return'<h3>Tu mano</h3><div class="hand '+(can?'':'off')+'">'+own.hand.map(c=>cardHtml(c,own.sel===c.id?'sel':'','data-c="'+c.id+'"')).join('')+'</div>'+(can?'<button class="btn" id="play" style="width:100%" '+(own.sel?'':'disabled')+'>¡Jugar carta!</button>':'<p class="small muted center">'+(state.phase==='match'?'Carta enviada ✔ esperando al rival…':'Prepárate para la siguiente ronda…')+'</p>')}
+function queueHtml(){const q=state.q||[];return(q.length?q.map((k,i)=>'<span class="player '+(k===myKey?'me':'')+'">'+(i+1)+'. '+safe(pname(k))+' · '+belt(state.wins[k]).split(' ')[0]+' '+(state.wins[k]||0)+'</span>').join(''):'<span class="small muted">Nadie esperando</span>')}
+function updateGame(){if(!state||!state.A)return;syncHand();
+ setHTML($('hdr'),'<span class="tag">Duelo '+state.mid+'</span><span class="tag">🏆 Meta: '+state.target+' victorias</span>'+(state.phase==='match'?'<span class="tl" id="tl" style="float:right"></span>':''));
+ if(state.B){setHTML($('vs'),duelistHtml('A')+'<b>VS</b>'+duelistHtml('B'))}else setHTML($('vs'),'<div class="res muted" style="grid-column:1/-1">⏳ Esperando a que se conecte un rival…</div>');
+ setHTML($('arena'),arenaHtml());setHTML($('hand'),handHtml());setHTML($('queue'),queueHtml());
+ setHTML($('rank'),Object.keys(state.names).sort((a,b)=>(state.wins[b]||0)-(state.wins[a]||0)).map(k=>'<div class="sc"><span>'+safe(pname(k))+(k===myKey?' (tú)':'')+' <span class="small muted">'+belt(state.wins[k])+'</span></span><strong>'+(state.wins[k]||0)+' 🏆</strong></div>').join(''));
+ const bar=$('barw');if(bar)bar.classList.toggle('hidden',state.phase!=='match');tick()}
+function renderGame(){mount('g',
+ '<section class="card"><div id="hdr"></div><div class="bar" id="barw"><div id="tf"></div></div><div class="vs" id="vs"></div><div id="arena"></div><div id="hand"></div></section><section class="card"><h3>En cola</h3><div id="queue"></div></section><section class="card"><h3>Clasificación</h3><div id="rank"></div></section>',
+ ()=>{$('hand').onclick=e=>{const c=e.target.closest('[data-c]');if(c&&state.phase==='match'&&!hasPicked()){own.sel=c.dataset.c;updateGame();return}if(e.target.closest('#play')){const card=own.hand.find(x=>x.id===own.sel);if(card)sendPick(card)}}});
+ updateGame()}
+function renderFinished(){const ws=Object.keys(state.names).sort((a,b)=>(state.wins[b]||0)-(state.wins[a]||0));
+ mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:78px">🥋</div><h1>'+safe(pname(state.champ))+' gana</h1><p class="muted">'+belt(state.wins[state.champ])+'</p></section><section class="card">'+ws.map((k,i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+safe(pname(k))+' <span class="small muted">'+belt(state.wins[k])+'</span></span><strong>'+(state.wins[k]||0)+' 🏆</strong></div>').join('')+'</section>'
+ +(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+setInterval(()=>{if(roomCode&&state)hostStep()},500);
+setInterval(tick,250);
+if(saved?.room&&saved?.name){connect();render()}else renderHome();
+})();
+</script></body></html>

@@ -1,0 +1,158 @@
+//APARECE ALGO Y TU TIENES QUE INVENTARTE PARA QUE SIRVE
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¿Para qué sirve?</title>
+<style>
+:root{--bg:#f1ede4;--card:#fffdf8;--ink:#14282c;--mut:#5b6d70;--ac:#ff5d3a;--hi:#ffd23f;--line:#14282c;--ok:#1b9e5a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e2226;--card:#173238;--ink:#f2efe6;--mut:#9db5b8;--line:#f2efe6}}
+:root[data-theme="dark"]{--bg:#0e2226;--card:#173238;--ink:#f2efe6;--mut:#9db5b8;--line:#f2efe6}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px 16px 40px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(34px,10vw,50px);line-height:1;margin:6px 0 10px;letter-spacing:-.01em}
+h2{font-family:Georgia,serif;font-size:26px;line-height:1.1;margin:0 0 8px}
+p{margin:0 0 12px}
+.mut{color:var(--mut);font-size:15px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;font-size:14px;color:var(--mut);margin-bottom:10px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+.btn{display:block;width:100%;margin-top:10px;padding:14px;border:2px solid var(--line);border-radius:10px;background:var(--ac);color:#fff;font:inherit;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--line)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.g{background:var(--card);color:var(--ink)}
+.btn:disabled{opacity:.4}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;font:inherit;font-size:14px;padding:6px 0;cursor:pointer}
+input,textarea{width:100%;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;margin:6px 0}
+textarea{height:120px;resize:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.seg{display:flex;gap:8px;margin:6px 0}
+.seg button{flex:1;padding:10px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.seg button.on{background:var(--hi);color:#14282c}
+.photo{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 8px 10px;box-shadow:5px 5px 0 var(--line);transform:rotate(-1deg)}
+.photo img{display:block;width:100%;max-height:300px;object-fit:contain;background:#e9e9e9;border-radius:6px}
+.photo .cap{font-size:11px;color:#555;margin:6px 2px 0}
+.photo .cap a{color:#555}
+.q{font-family:Georgia,serif;font-size:24px;text-align:center;margin:14px 0 4px}
+.who{display:inline-block;background:var(--hi);color:#14282c;font-weight:800;padding:4px 14px;border-radius:99px;border:2px solid var(--line);margin-bottom:8px}
+.ans{padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:var(--card);margin:8px 0;width:100%;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.ans b{display:inline-block;width:26px;color:var(--ac)}
+.ans:disabled{opacity:.4;cursor:default}
+.rank{list-style:none;padding:0;margin:8px 0}
+.rank li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)}
+.rank b{font-size:18px}
+.pts{font-family:Georgia,serif;font-size:44px;text-align:center;line-height:1}
+.dots i{display:inline-block;width:8px;height:8px;margin:0 3px;border-radius:50%;background:var(--ac);animation:bl 1.1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.err{color:#c9372c;font-size:14px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var TOPICS=['unusual inventions','strange gadgets','antique objects collection','vintage household objects','obsolete technology','strange mechanical devices','unusual tools','curious kitchen utensils','old scientific instruments','unusual locks and keys','weird everyday objects','vintage toys collection','old medical instruments','antique telephones','unusual lamps','strange furniture','vintage office equipment','curiosities museum objects'];
+var BAD=/(nude|nudity|erotic|sexual|weapon|firearm|gun|blood|corpse|gore|violent|murder|injury|death|skull|human remains)/i;
+var app=document.getElementById('app');
+var G=null;
+function $(i){return document.getElementById(i)}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function clean(s){return String(s||'').replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim().slice(0,160)}
+
+/* ---------- Wikimedia ---------- */
+async function fetchObject(){
+  var topic=TOPICS[Math.floor(Math.random()*TOPICS.length)];
+  var q=new URLSearchParams({action:'query',format:'json',generator:'search',gsrnamespace:'6',gsrlimit:'30',gsrsort:'user_random',gsrsearch:'filetype:bitmap '+topic,prop:'imageinfo',iiprop:'url|mime|extmetadata',iiurlwidth:'900',iiextmetadatafilter:'LicenseShortName|Artist|Credit|ImageDescription|ObjectName',origin:'*'});
+  var r=await fetch('https://commons.wikimedia.org/w/api.php?'+q);
+  if(!r.ok)throw new Error('No se pudo consultar Wikimedia.');
+  var d=await r.json(),pages=Object.keys((d.query&&d.query.pages)||{}).map(function(k){return d.query.pages[k]});
+  var seen=G.seen,c=pages.map(function(p){var ii=(p.imageinfo||[])[0]||{},ex=ii.extmetadata||{};
+    return{title:(p.title||'').replace(/^File:/,'').replace(/\.[a-z]+$/i,''),url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:ii.thumbmime||ii.mime||'',lic:clean(ex.LicenseShortName&&ex.LicenseShortName.value),by:clean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value)),desc:clean((ex.ImageDescription&&ex.ImageDescription.value)||(ex.ObjectName&&ex.ObjectName.value))}})
+   .filter(function(x){return x.url&&x.page&&x.lic&&/^image\/(jpeg|png|webp)$/i.test(x.mime)&&!BAD.test(x.title+' '+x.desc)&&seen.indexOf(x.title)<0});
+  if(!c.length)throw new Error('No ha salido ningún objeto adecuado.');
+  var o=c[Math.floor(Math.random()*c.length)];G.seen.push(o.title);return o;
+}
+
+/* ---------- Partida ---------- */
+function setup(msg){
+  app.innerHTML='<h1>¿Para qué sirve?</h1><p>Sale la foto de un objeto raro. Cada jugador, en secreto, inventa para qué sirve. Después se vota la mejor invención. Todo desde el mismo móvil.</p>'
+  +'<div class="card"><b>Jugadores (3 a 8)</b>'+[0,1,2,3,4,5,6,7].map(function(i){return '<input class="pn" maxlength="14" placeholder="Jugador '+(i+1)+(i<3?'':' (opcional)')+'">'}).join('')
+  +'<b>Rondas</b><div class="seg" id="rs">'+[3,5,8].map(function(n){return '<button data-r="'+n+'"'+(n===5?' class="on"':'')+'>'+n+'</button>'}).join('')+'</div>'
+  +(msg?'<p class="err">'+esc(msg)+'</p>':'')+'<button class="btn" id="go">Empezar</button></div>';
+  var rounds=5;
+  $('rs').onclick=function(e){var b=e.target.closest('[data-r]');if(!b)return;rounds=+b.getAttribute('data-r');[].forEach.call($('rs').children,function(x){x.classList.toggle('on',x===b)})};
+  $('go').onclick=function(){
+    var n=[].map.call(document.querySelectorAll('.pn'),function(i){return i.value.trim()}).filter(Boolean);
+    if(n.length<3)return setup('Hacen falta al menos 3 jugadores con nombre.');
+    G={names:n,sc:n.map(function(){return 0}),rounds:rounds,r:-1,seen:[]};nextRound();
+  };
+}
+function top(){return '<div class="top"><span>Ronda '+(G.r+1)+' de '+G.rounds+'</span><button class="link" id="quit">Salir</button></div>'}
+function bindQuit(){var q=$('quit');if(q)q.onclick=function(){if(confirm('¿Salir de la partida?'))setup()}}
+function photo(reveal){
+  var o=G.obj;
+  return '<div class="photo"><img src="'+esc(o.url)+'" alt="Objeto misterioso" referrerpolicy="no-referrer" onerror="this.alt=\'No se pudo cargar la foto\'"><div class="cap">'+(reveal?'Su nombre real: <b>'+esc(o.title)+'</b> · ':'')+'<a href="'+esc(o.page)+'" target="_blank" rel="noopener">Wikimedia Commons</a> · '+esc(o.by||'Autor no indicado')+' · '+esc(o.lic)+'</div></div>';
+}
+function nextRound(){
+  G.r++;
+  if(G.r>=G.rounds)return finish();
+  G.ans=[];G.votes=[];G.turn=0;
+  app.innerHTML=top()+'<div class="card" style="text-align:center"><h2>Buscando un objeto…</h2><span class="dots"><i></i><i></i><i></i></span></div>';bindQuit();
+  load();
+}
+function load(){
+  fetchObject().then(function(o){G.obj=o;G.start=G.r%G.names.length;G.ord=G.names.map(function(_,i){return(G.start+i)%G.names.length});intro()}).catch(function(e){
+    app.innerHTML=top()+'<div class="card"><h2>No se pudo cargar</h2><p class="err">'+esc(e.message||'Error de conexión')+'</p><button class="btn" id="rt">Reintentar</button></div>';bindQuit();$('rt').onclick=function(){load()};
+  });
+}
+function intro(){
+  var p=G.ord[G.turn];
+  app.innerHTML=top()+'<div class="card" style="text-align:center"><div class="kick mut">Turno para escribir</div><div class="who">'+esc(G.names[p])+'</div><h2>Pásale el móvil</h2><p class="mut">Que nadie más mire. Verás un objeto raro y tendrás que inventar para qué sirve.</p><button class="btn" id="ok">Soy '+esc(G.names[p])+', ver objeto</button></div>';bindQuit();
+  $('ok').onclick=write;
+}
+function write(){
+  var p=G.ord[G.turn];
+  app.innerHTML=top()+'<span class="who">'+esc(G.names[p])+'</span>'+photo(false)+'<p class="q">¿Para qué sirve esto?</p><textarea id="tx" maxlength="160" placeholder="Invéntate su uso con convicción…"></textarea><p class="err" id="er"></p><button class="btn" id="send">Guardar respuesta</button><button class="link" id="sk">Cambiar objeto (solo si es ilegible)</button>';bindQuit();
+  $('send').onclick=function(){var v=$('tx').value.trim();if(v.length<4){$('er').textContent='Escribe al menos 4 letras.';return}
+    G.ans.push({p:p,t:v});G.turn++;if(G.turn>=G.names.length){G.shuf=sh(G.ans);G.vt=0;G.vorder=G.ord.slice();voteIntro()}else intro()};
+  $('sk').onclick=function(){if(G.turn===0&&confirm('¿Buscar otro objeto?'))nextRound(G.r--,0)};
+}
+function voteIntro(){
+  var p=G.vorder[G.vt];
+  app.innerHTML=top()+'<div class="card" style="text-align:center"><div class="mut">Hora de votar</div><div class="who">'+esc(G.names[p])+'</div><h2>Pásale el móvil</h2><p class="mut">Vota la invención que más te convenza. No puedes votar la tuya.</p><button class="btn" id="ok">Soy '+esc(G.names[p])+', votar</button></div>';bindQuit();
+  $('ok').onclick=vote;
+}
+function vote(){
+  var p=G.vorder[G.vt];
+  app.innerHTML=top()+'<span class="who">'+esc(G.names[p])+'</span>'+photo(false)+'<p class="q">¿Cuál es la mejor invención?</p>'+G.shuf.map(function(a,i){return '<button class="ans" data-i="'+i+'"'+(a.p===p?' disabled':'')+'><b>'+'ABCDEFGH'[i]+'</b>'+esc(a.t)+(a.p===p?' (tuya)':'')+'</button>'}).join('');bindQuit();
+  app.onclick=function(e){var b=e.target.closest('[data-i]');if(!b||b.disabled)return;app.onclick=null;
+    G.votes.push({v:p,to:G.shuf[+b.getAttribute('data-i')].p});G.vt++;if(G.vt>=G.names.length)result();else voteIntro()};
+}
+function result(){
+  var cnt=G.names.map(function(){return 0}),pts=G.names.map(function(){return 0});
+  G.votes.forEach(function(v){cnt[v.to]++;pts[v.to]+=2});
+  var mx=Math.max.apply(null,cnt);if(mx>0)cnt.forEach(function(c,i){if(c===mx)pts[i]+=1});
+  pts.forEach(function(x,i){G.sc[i]+=x});
+  var rows=G.shuf.slice().sort(function(a,b){return cnt[b.p]-cnt[a.p]}).map(function(a,i){return '<div class="card"><div class="mut" style="font-size:13px">'+(i===0&&mx>0?'🏆 La más votada · ':'')+cnt[a.p]+' voto'+(cnt[a.p]===1?'':'s')+' · +'+pts[a.p]+' pts</div><p class="q" style="text-align:left;font-size:20px;margin:6px 0">«'+esc(a.t)+'»</p><span class="who" style="margin:0">'+esc(G.names[a.p])+'</span></div>'}).join('');
+  app.innerHTML=top()+photo(true)+'<p class="mut" style="margin-top:14px">Ahora ya sabéis qué es de verdad. Estas eran vuestras invenciones:</p>'+rows
+  +'<div class="card"><b>Marcador</b>'+rank()+'</div><button class="btn" id="nx">'+(G.r+1>=G.rounds?'Ver resultado final':'Siguiente ronda')+'</button>';bindQuit();
+  $('nx').onclick=nextRound;
+}
+function rank(){
+  return '<ul class="rank">'+G.names.map(function(n,i){return{n:n,s:G.sc[i]}}).sort(function(a,b){return b.s-a.s}).map(function(x,i){return '<li><span>'+(i+1)+'. '+esc(x.n)+'</span><b>'+x.s+'</b></li>'}).join('')+'</ul>';
+}
+function finish(){
+  var best=Math.max.apply(null,G.sc),w=G.names.filter(function(_,i){return G.sc[i]===best});
+  app.innerHTML='<h1>Fin de la partida</h1><div class="card" style="text-align:center"><div class="mut">'+(w.length>1?'Empate entre':'Mejor inventor')+'</div><div class="pts">'+esc(w.join(' y '))+'</div></div><div class="card"><b>Clasificación</b>'+rank()+'</div><button class="btn" id="ag">Jugar otra vez con los mismos</button><button class="btn g" id="nw">Cambiar jugadores</button>';
+  $('ag').onclick=function(){G.sc=G.names.map(function(){return 0});G.r=-1;nextRound()};
+  $('nw').onclick=function(){setup()};
+}
+setup();
+</script>
+</body>
+</html>

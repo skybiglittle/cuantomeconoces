@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101923">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>GeoReto — ¿Dónde estás?</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{color-scheme:dark;--bg:#101923;--panel:#182532;--panel2:#202f3d;--ink:#f2f6f8;--mut:#a6b6c2;--line:#334653;--accent:#80e0c0;--gold:#ffd166;--bad:#ff8c82}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b3340 0,#101923 55%);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+main{max-width:1100px;margin:auto;padding:20px 16px 36px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.brand{font-weight:900;letter-spacing:.02em;font-size:clamp(24px,4vw,36px)}.brand span{color:var(--accent)}.tag{color:var(--mut);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(270px,.82fr) minmax(0,1.6fr);gap:14px}.panel{background:linear-gradient(160deg,#1b2a37,#15212c);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 30px #0003}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);font-weight:800}.roundline{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0 14px}.roundline strong{font-size:14px}.score{font-size:14px;color:var(--gold);font-weight:800}.clue{font-size:clamp(19px,2.2vw,25px);line-height:1.25;font-weight:750;margin:10px 0 14px}.sub{color:var(--mut);font-size:14px}.mapwrap{position:relative;min-width:0}.maptop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}.maptop b{font-size:14px}.maptop span{font-size:12px;color:var(--mut)}#map{height:560px;width:100%;border-radius:16px;border:1px solid var(--line);background:#dbe4e8;z-index:1}.actions{display:flex;gap:9px;margin-top:12px}.btn{border:0;border-radius:11px;padding:12px 16px;font:inherit;font-weight:800;cursor:pointer}.btn.primary{background:var(--accent);color:#10231f;flex:1}.btn.secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}.btn:disabled{opacity:.4;cursor:not-allowed}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.stat{background:#101b25;border:1px solid var(--line);border-radius:12px;padding:10px}.stat small{display:block;color:var(--mut);font-size:11px}.stat b{font-size:18px}.result{margin-top:14px;padding:13px;border-radius:12px;background:#102b2a;border:1px solid #28665a;display:none}.result.show{display:block}.result h3{margin:0 0 4px;font-size:18px}.result p{margin:4px 0;color:#d0e6df;font-size:14px}.hint{margin-top:12px;padding:12px;border-radius:12px;background:#25313b;color:#c4d1d9;font-size:13px}.progress{height:6px;background:#2a3945;border-radius:8px;overflow:hidden;margin-top:12px}.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}.overlay{position:fixed;inset:0;background:#081019df;display:flex;align-items:center;justify-content:center;padding:18px;z-index:1000}.modal{width:min(520px,100%);background:#182532;border:1px solid #405766;border-radius:22px;padding:26px;box-shadow:0 24px 80px #0008}.modal h1{margin:0 0 8px;font-size:32px}.modal p{color:var(--mut)}.choices{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.choice{background:#223442;border:1px solid #405766;color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer}.choice.active{background:#254b46;border-color:var(--accent);color:var(--accent)}.leaflet-container{font:inherit}.leaflet-control-attribution{font-size:10px!important}.leaflet-popup-content-wrapper{border-radius:10px}.target-dot{background:#ff655d;border:3px solid white;border-radius:50%;box-shadow:0 2px 10px #0008}.guess-dot{background:#2789ff;border:3px solid white;border-radius:50%;box-shadow:0 2px 10px #0008}
+@media(max-width:760px){main{padding:12px 10px 24px}.layout{grid-template-columns:1fr}.panel{padding:15px}#map{height:48vh;min-height:330px}.head{align-items:flex-start;flex-direction:column;gap:2px}.stats{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<main>
+  <header class="head"><div><div class="brand">GEO<span>RETO</span> 🌍</div><div class="tag">Explora el mundo. Calcula dónde estás. Suma puntos.</div></div><div class="tag">Un juego de geografía</div></header>
+  <div class="layout">
+    <section class="panel">
+      <div class="eyebrow">Tu desafío</div>
+      <div class="roundline"><strong id="round">Ronda 1 / 5</strong><span class="score">★ <span id="score">0</span> puntos</span></div>
+      <div class="clue" id="clue">Pulsa «Empezar» para viajar.</div>
+      <div class="sub" id="instruction">Lee la pista y marca en el mapa el lugar que crees que es.</div>
+      <div class="hint" id="hint">💡 Consejo: puedes acercar, alejar y arrastrar el mapa. Haz clic para colocar tu apuesta.</div>
+      <div class="actions"><button class="btn primary" id="submit" disabled>Confirmar ubicación</button><button class="btn secondary" id="clear" disabled>Quitar</button></div>
+      <div class="result" id="result"><h3 id="resultTitle"></h3><p id="resultText"></p><p id="resultPoints"></p><button class="btn primary" id="next" style="width:100%;margin-top:8px">Siguiente ronda</button></div>
+      <div class="stats"><div class="stat"><small>Distancia</small><b id="distance">—</b></div><div class="stat"><small>Puntos ronda</small><b id="roundPoints">—</b></div><div class="stat"><small>Mejor ronda</small><b id="best">0</b></div></div>
+      <div class="progress"><i id="progress"></i></div>
+      <p class="sub" style="margin:12px 0 0;font-size:12px">Las ubicaciones de esta versión son una selección de lugares conocidos. No se necesita cuenta ni clave API. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">Comunicar un error del mapa</a>.</p>
+    </section>
+    <section class="mapwrap">
+      <div class="maptop"><b>🗺️ Tu mapa de respuestas</b><span id="mapStatus">Haz clic para colocar tu marcador</span></div>
+      <div id="map" aria-label="Mapa interactivo"></div>
+    </section>
+  </div>
+</main>
+<div class="overlay" id="startOverlay"><div class="modal">
+  <div class="eyebrow">Desafío geográfico</div><h1>¿Dónde está?</h1>
+  <p>Lee una pista, busca el lugar en el mapa y coloca tu marcador. Cuanto más cerca estés, más puntos ganarás. Cada partida mezcla las ubicaciones.</p>
+  <b>¿Cuántas rondas quieres jugar?</b><div class="choices" id="roundChoices"><button class="choice active" data-rounds="5">5 rondas</button><button class="choice" data-rounds="10">10 rondas</button><button class="choice" data-rounds="15">15 rondas</button></div>
+  <button class="btn primary" id="start" style="width:100%">Empezar partida</button>
+  <p style="font-size:12px;margin-bottom:0">Nota: OpenStreetMap ofrece cartografía, no imágenes de Street View. Este juego utiliza pistas geográficas y cálculo de distancia.</p>
+</div></div>
+<div class="overlay" id="endOverlay" style="display:none"><div class="modal"><div class="eyebrow">Partida terminada</div><h1>¡Buen viaje! 🌎</h1><p id="finalScore"></p><p id="finalMessage"></p><button class="btn primary" id="again" style="width:100%">Jugar otra vez</button></div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+(function(){
+'use strict';
+const LOCATIONS=[
+ {name:'Torre Eiffel, París',country:'Francia',lat:48.8584,lon:2.2945,clue:'Busca la capital europea famosa por su torre de hierro construida para una exposición universal de finales del siglo XIX.'},
+ {name:'Coliseo, Roma',country:'Italia',lat:41.8902,lon:12.4922,clue:'Estás buscando una ciudad cuya historia está ligada a gladiadores, emperadores y uno de los anfiteatros más famosos del mundo.'},
+ {name:'Sagrada Familia, Barcelona',country:'España',lat:41.4036,lon:2.1744,clue:'Localiza la ciudad mediterránea donde Gaudí dejó una basílica monumental que sigue en construcción.'},
+ {name:'Estatua de la Libertad, Nueva York',country:'Estados Unidos',lat:40.6892,lon:-74.0445,clue:'Al otro lado del Atlántico, encuentra la gran ciudad cuyo perfil urbano reconoces por sus rascacielos y que recibió a millones de inmigrantes.'},
+ {name:'Cristo Redentor, Río de Janeiro',country:'Brasil',lat:-22.9519,lon:-43.2105,clue:'Busca una ciudad sudamericana entre montañas verdes, playas famosas y una enorme estatua con los brazos abiertos.'},
+ {name:'Pirámides de Guiza',country:'Egipto',lat:29.9792,lon:31.1342,clue:'Viaja al noreste de África, a las afueras de una gran capital junto al Nilo, donde se levantan antiguas pirámides.'},
+ {name:'Taj Mahal, Agra',country:'India',lat:27.1751,lon:78.0421,clue:'Encuentra el mausoleo de mármol blanco construido por un emperador mogol en memoria de su esposa.'},
+ {name:'Ópera de Sídney',country:'Australia',lat:-33.8568,lon:151.2153,clue:'Busca una ciudad costera del hemisferio sur conocida por un edificio de arquitectura blanca que recuerda a velas.'},
+ {name:'Monte Fuji',country:'Japón',lat:35.3606,lon:138.7274,clue:'Localiza el volcán más alto de un país insular de Asia oriental, reconocible por su forma casi perfectamente cónica.'},
+ {name:'Big Ben, Londres',country:'Reino Unido',lat:51.5007,lon:-0.1246,clue:'Encuentra la capital atravesada por el Támesis, famosa por sus autobuses rojos y una torre del reloj junto al Parlamento.'},
+ {name:'Machu Picchu',country:'Perú',lat:-13.1631,lon:-72.5450,clue:'En los Andes sudamericanos, busca una antigua ciudadela inca situada entre montañas y nubes.'},
+ {name:'Burj Khalifa, Dubái',country:'Emiratos Árabes Unidos',lat:25.1972,lon:55.2744,clue:'Busca una ciudad del golfo Pérsico que alberga el rascacielos más alto del mundo.'},
+ {name:'Acrópolis, Atenas',country:'Grecia',lat:37.9715,lon:23.7257,clue:'Encuentra la capital europea donde nació buena parte de la filosofía clásica y se alza el Partenón.'},
+ {name:'Chichén Itzá',country:'México',lat:20.6843,lon:-88.5678,clue:'Viaja a la península de Yucatán para encontrar una antigua ciudad maya con una pirámide escalonada.'},
+ {name:'Cataratas del Niágara',country:'Canadá / Estados Unidos',lat:43.0828,lon:-79.0742,clue:'Busca unas cataratas enormes en la frontera entre dos países de América del Norte.'},
+ {name:'Monte Kilimanjaro',country:'Tanzania',lat:-3.0674,lon:37.3556,clue:'Encuentra la montaña más alta de África, un macizo volcánico que se eleva cerca del ecuador.'},
+ {name:'Petra',country:'Jordania',lat:30.3285,lon:35.4444,clue:'En Oriente Próximo, localiza una antigua ciudad nabatea famosa por sus edificios tallados directamente en roca rojiza.'},
+ {name:'Puerta de Brandeburgo, Berlín',country:'Alemania',lat:52.5163,lon:13.3777,clue:'Busca una capital europea que estuvo dividida por un muro durante décadas y hoy es símbolo de reunificación.'},
+ {name:'Templo de Angkor Wat',country:'Camboya',lat:13.4125,lon:103.8670,clue:'En el sudeste asiático, encuentra un enorme complejo de templos que aparece en la bandera de su país.'},
+ {name:'Moáis de Rano Raraku, Isla de Pascua',country:'Chile',lat:-27.1212,lon:-109.2880,clue:'Busca una isla remota del Pacífico famosa por sus gigantescas estatuas de piedra con forma de cabeza y torso.'},
+ {name:'Catedral de San Basilio, Moscú',country:'Rusia',lat:55.7525,lon:37.6231,clue:'Localiza una capital situada al oeste de Rusia, famosa por una plaza roja y una catedral de cúpulas coloridas.'},
+ {name:'Cabo de Buena Esperanza',country:'Sudáfrica',lat:-34.3568,lon:18.4740,clue:'Viaja al extremo suroeste de África, a una zona costera conocida por sus acantilados y fauna marina.'},
+ {name:'Monte Saint-Michel',country:'Francia',lat:48.6361,lon:-1.5115,clue:'Busca una pequeña isla mareal del noroeste de Francia coronada por una abadía medieval.'},
+ {name:'Petronas Towers, Kuala Lumpur',country:'Malasia',lat:3.1579,lon:101.7116,clue:'Encuentra la capital de un país del sudeste asiático conocida por dos torres gemelas unidas por una pasarela.'}
+];
+let map,guessMarker=null,targetMarker=null,line=null,rounds=5,deck=[],roundIndex=0,total=0,best=0,guess=null,answered=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function initMap(){map=L.map('map',{worldCopyJump:true,minZoom:2}).setView([25,0],2);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,referrerPolicy:'strict-origin-when-cross-origin',updateWhenIdle:true,updateWhenZooming:false,updateInterval:500,keepBuffer:1,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'}).addTo(map);map.on('click',e=>{if(answered)return;guess=e.latlng;if(guessMarker)map.removeLayer(guessMarker);guessMarker=L.marker(guess,{icon:L.divIcon({className:'',html:'<div class="guess-dot" style="width:20px;height:20px"></div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map);$('submit').disabled=false;$('mapStatus').textContent='Ubicación marcada · puedes moverla haciendo otro clic';$('clear').disabled=false;});}
+function startGame(){rounds=Number(document.querySelector('.choice.active').dataset.rounds);deck=shuffle(LOCATIONS.slice()).slice(0,rounds);roundIndex=0;total=0;best=0;$('score').textContent='0';$('best').textContent='0';$('endOverlay').style.display='none';$('startOverlay').style.display='none';nextRound(true);setTimeout(()=>map.invalidateSize(),100)}
+function nextRound(first){if(!first&&roundIndex+1>=rounds){finish();return}if(!first)roundIndex++;guess=null;answered=false;clearMap();let loc=deck[roundIndex];$('round').textContent=`Ronda ${roundIndex+1} / ${rounds}`;$('clue').textContent=loc.clue;$('instruction').textContent='Marca en el mapa el punto donde crees que se encuentra.';$('hint').textContent='💡 Puedes acercar el mapa con la rueda o los controles. No hay límite de tiempo.';$('distance').textContent='—';$('roundPoints').textContent='—';$('result').classList.remove('show');$('submit').disabled=true;$('clear').disabled=true;$('mapStatus').textContent='Haz clic para colocar tu marcador';$('progress').style.width=(roundIndex/rounds*100)+'%';map.setView([20,0],2)}
+function clearMap(){[guessMarker,targetMarker,line].forEach(x=>{if(x)map.removeLayer(x)});guessMarker=targetMarker=line=null}
+function distanceKm(a,b){const R=6371,rad=x=>x*Math.PI/180,dLat=rad(b.lat-a.lat),dLon=rad(b.lng-a.lng),x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function scoreFor(km){return Math.round(5000*Math.exp(-km/1800))}
+function submitGuess(){if(!guess||answered)return;answered=true;const loc=deck[roundIndex],target=L.latLng(loc.lat,loc.lon),km=distanceKm(guess,target),pts=scoreFor(km);total+=pts;best=Math.max(best,pts);$('score').textContent=total.toLocaleString('es-ES');$('best').textContent=best.toLocaleString('es-ES');$('distance').textContent=km<1?Math.round(km*1000)+' m':Math.round(km).toLocaleString('es-ES')+' km';$('roundPoints').textContent=pts.toLocaleString('es-ES');targetMarker=L.marker(target,{icon:L.divIcon({className:'',html:'<div class="target-dot" style="width:22px;height:22px"></div>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(map);line=L.polyline([guess,target],{color:'#ffb454',weight:3,dashArray:'8 8'}).addTo(map);map.fitBounds(L.latLngBounds([guess,target]).pad(.25),{maxZoom:6});$('resultTitle').textContent=pts>=4000?'¡Increíble precisión!':pts>=2500?'¡Buen trabajo!':pts>=700?'Te has acercado':'¡A seguir explorando!';$('resultText').innerHTML=`El lugar era <b>${esc(loc.name)}</b>, en <b>${esc(loc.country)}</b>.`;$('resultPoints').textContent=`Has conseguido ${pts.toLocaleString('es-ES')} de 5.000 puntos.`;$('result').classList.add('show');$('submit').disabled=true;$('clear').disabled=true;$('mapStatus').textContent='Resultado revelado';$('progress').style.width=((roundIndex+1)/rounds*100)+'%';$('next').textContent=roundIndex+1>=rounds?'Ver resultado final':'Siguiente ronda'}
+function finish(){$('endOverlay').style.display='flex';$('finalScore').textContent=`Has conseguido ${total.toLocaleString('es-ES')} puntos de ${rounds*5000} posibles.`;let avg=total/rounds;$('finalMessage').textContent=avg>=4000?'¡Eres un auténtico explorador!':avg>=2500?'Tienes muy buen sentido de la orientación.':avg>=1200?'Buen comienzo: cada ronda te acerca más.':'¡La próxima vuelta al mundo saldrá mejor!';}
+$('roundChoices').addEventListener('click',e=>{let b=e.target.closest('[data-rounds]');if(!b)return;document.querySelectorAll('.choice').forEach(x=>x.classList.remove('active'));b.classList.add('active')});$('start').onclick=startGame;$('again').onclick=()=>{$('endOverlay').style.display='none';$('startOverlay').style.display='flex'};$('submit').onclick=submitGuess;$('clear').onclick=()=>{if(answered)return;if(guessMarker)map.removeLayer(guessMarker);guessMarker=null;guess=null;$('submit').disabled=true;$('clear').disabled=true;$('mapStatus').textContent='Haz clic para colocar tu marcador'};$('next').onclick=()=>nextRound(false);
+if(typeof L==='undefined'){$('map').innerHTML='<div style="padding:24px;color:#17232c">No se ha podido cargar Leaflet. Comprueba tu conexión a Internet y recarga la página.</div>';$('start').disabled=true}else initMap();
+})();
+</script>
+</body>
+</html>

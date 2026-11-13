@@ -76,13 +76,15 @@ function $(i){return document.getElementById(i)}
 function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
-function okImg(s){return typeof s==='string'&&s.indexOf('data:image/jpeg;base64,')===0&&s.length<70000}
+function okImg(s){return typeof s==='string'&&s.indexOf('data:image/jpeg;base64,')===0&&s.length<35000}
+function imgs(p){return Array.isArray(p.im)?p.im.filter(okImg).slice(0,3):[]}
+function owners(){var o={};G.ro.forEach(function(x){o[x.split(':')[0]]=1});return Object.keys(o)}
 function peers(){return NR?NR.peers().filter(function(p){return p.presence&&p.presence.rm}).map(function(p){return{me:p.isMe,p:p.presence}}):[]}
 function by(k){return peers().filter(function(x){return x.p.k===k})[0]}
 function hostP(){var x=peers().filter(function(y){return y.p.h===1})[0];return x&&x.p}
 function pub(){
   if(!NR||!G)return;
-  var p={rm:1,n:G.name,k:G.me,im:G.im||null,v:G.vote,h:null,ph:null,r:null,ro:null,sc:null,res:null};
+  var p={rm:1,n:G.name,k:G.me,im:G.ims.length?G.ims:null,v:G.vote,h:null,ph:null,r:null,ro:null,sc:null,res:null};
   if(G.host){p.h=1;p.ph=G.ph;p.r=G.r;p.ro=G.ro;p.sc=G.sc;p.res=G.res}
   NR.presence(p).catch(function(){});
 }
@@ -91,71 +93,72 @@ function start(create){
   if(!RM){MSG='Las salas necesitan abrir este archivo desde tu servidor (http), no como archivo suelto.';home();return}
   var name=($('nm').value||'').trim().slice(0,16)||(create?'Anfitrión':'Jugador'),code=create?newCode():($('cd').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   if(!code){MSG='Escribe el código de la sala.';home();return}
-  G={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',r:0,ro:[],sc:{},res:null,vote:null,im:null,busy:false,perr:''};
+  G={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',r:0,ro:[],sc:{},res:null,vote:null,ims:[],busy:false,perr:''};
   MSG='';lastKey='';render();
   RM.join('foto-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
 }
 /* ----- Foto: se reduce en el móvil antes de enviarla ----- */
-function shrink(file){
+function shrink(file,cb){
   G.busy=true;G.perr='';render();
   var fr=new FileReader();
   fr.onload=function(){var img=new Image();
     img.onload=function(){
-      var s=280/Math.max(img.width,img.height,280),w=Math.round(img.width*Math.min(s,1)),h=Math.round(img.height*Math.min(s,1)),c=document.createElement('canvas');
+      var s=240/Math.max(img.width,img.height,240),w=Math.round(img.width*Math.min(s,1)),h=Math.round(img.height*Math.min(s,1)),c=document.createElement('canvas');
       c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-      var q=.65,d=c.toDataURL('image/jpeg',q);while(d.length>50000&&q>.25){q-=.1;d=c.toDataURL('image/jpeg',q)}
-      G.busy=false;if(!okImg(d)){G.perr='La foto es demasiado pesada. Prueba con otra.';render();return}
-      G.im=d;pub();render()};
-    img.onerror=function(){G.busy=false;G.perr='No se pudo leer esa imagen.';render()};img.src=fr.result};
-  fr.onerror=function(){G.busy=false;G.perr='No se pudo abrir el archivo.';render()};fr.readAsDataURL(file);
+      var q=.65,d=c.toDataURL('image/jpeg',q);while(d.length>28000&&q>.25){q-=.1;d=c.toDataURL('image/jpeg',q)}
+      G.busy=false;if(!okImg(d)){G.perr='La foto es demasiado pesada. Prueba con otra.';render();if(cb)cb();return}
+      if(G.ims.length<3)G.ims.push(d);pub();render();if(cb)cb()};
+    img.onerror=function(){G.busy=false;G.perr='No se pudo leer esa imagen.';render();if(cb)cb()};img.src=fr.result};
+  fr.onerror=function(){G.busy=false;G.perr='No se pudo abrir el archivo.';render();if(cb)cb()};fr.readAsDataURL(file);
 }
 /* ----- Partida (lleva el anfitrión) ----- */
 function begin(){
-  var ro=peers().filter(function(x){return okImg(x.p.im)}).map(function(x){return x.p.k});if(ro.length<3)return;
-  G.ro=sh(ro);G.sc={};ro.forEach(function(k){G.sc[k]=0});G.r=0;G.res=null;G.vote=null;G.ph='play';pub();sync();
+  var ro=[],ow={};peers().forEach(function(x){imgs(x.p).forEach(function(_,i){ro.push(x.p.k+':'+i);ow[x.p.k]=1})});
+  var ks=Object.keys(ow);if(ks.length<3)return;
+  G.ro=sh(ro);G.sc={};ks.forEach(function(k){G.sc[k]=0});G.r=0;G.res=null;G.vote=null;G.ph='play';pub();sync();
 }
 function resolve(){
   if(!G.host||G.res||G.ph!=='play')return;
-  var o=G.ro[G.r],ok=0,tot=0;
-  peers().forEach(function(x){if(x.p.k===o||G.ro.indexOf(x.p.k)<0||!x.p.v||x.p.v.r!==G.r)return;tot++;if(x.p.v.k===o){ok++;G.sc[x.p.k]=(G.sc[x.p.k]||0)+1}else G.sc[o]=(G.sc[o]||0)+1});
+  var o=G.ro[G.r].split(':')[0],ok=0,tot=0;
+  peers().forEach(function(x){if(x.p.k===o||owners().indexOf(x.p.k)<0||!x.p.v||x.p.v.r!==G.r)return;tot++;if(x.p.v.k===o){ok++;G.sc[x.p.k]=(G.sc[x.p.k]||0)+1}else G.sc[o]=(G.sc[o]||0)+1});
   G.res={r:G.r,o:o,ok:ok,t:tot};pub();sync();
 }
 function nextR(){if(G.r+1>=G.ro.length){G.ph='end'}else{G.r++}G.res=null;G.vote=null;pub();sync()}
-function vote(k){if(!G||G.ph!=='play'||G.res||(G.vote&&G.vote.r===G.r)||G.ro[G.r]===G.me)return;G.vote={r:G.r,k:k};pub();sync()}
+function vote(k){if(!G||G.ph!=='play'||G.res||(G.vote&&G.vote.r===G.r)||G.ro[G.r].split(':')[0]===G.me)return;G.vote={r:G.r,k:k};pub();sync()}
 function sync(){
   if(!G||!NR)return;
   if(!G.host){var h=hostP();if(h){G.ph=h.ph||'lobby';G.ro=h.ro||[];G.sc=h.sc||{};G.res=h.res||null;if(h.r!==G.r){G.r=h.r||0;G.vote=null}}}
   else if(G.ph==='play'&&!G.res){
-    var o=G.ro[G.r],vs=peers().filter(function(x){return x.p.k!==o&&G.ro.indexOf(x.p.k)>-1});
+    var o=G.ro[G.r].split(':')[0],vs=peers().filter(function(x){return x.p.k!==o&&owners().indexOf(x.p.k)>-1});
     if(vs.length&&vs.every(function(x){return x.p.v&&x.p.v.r===G.r}))resolve();
   }
   render();
 }
 /* ----- Pantallas ----- */
 function home(){
-  app.innerHTML='<h1>¿De quién es la foto?</h1><p>Cada jugador sube una foto que quiera. Después van saliendo una a una y hay que adivinar quién la subió.</p><div class="card"><input type="text" id="nm" maxlength="16" placeholder="Tu nombre"><button class="btn" id="cr">Crear sala</button><p class="mut" style="text-align:center;margin:12px 0 0">o únete a una</p><input type="text" id="cd" maxlength="8" placeholder="Código de sala" autocapitalize="none"><button class="btn g" id="jn">Unirme</button>'+(MSG?'<p class="err">'+esc(MSG)+'</p>':'')+'</div><p class="mut">Las fotos no se guardan en ningún sitio: solo las ven quienes están en la sala y desaparecen al terminar.</p>';
+  app.innerHTML='<h1>¿De quién es la foto?</h1><p>Cada jugador sube hasta 3 fotos que quiera. Después van saliendo una a una y hay que adivinar quién la subió.</p><div class="card"><input type="text" id="nm" maxlength="16" placeholder="Tu nombre"><button class="btn" id="cr">Crear sala</button><p class="mut" style="text-align:center;margin:12px 0 0">o únete a una</p><input type="text" id="cd" maxlength="8" placeholder="Código de sala" autocapitalize="none"><button class="btn g" id="jn">Unirme</button>'+(MSG?'<p class="err">'+esc(MSG)+'</p>':'')+'</div><p class="mut">Las fotos no se guardan en ningún sitio: solo las ven quienes están en la sala y desaparecen al terminar.</p>';
   $('cr').onclick=function(){start(true)};$('jn').onclick=function(){start(false)};
 }
-function rank(){return '<ul class="rank">'+peers().filter(function(x){return G.ro.indexOf(x.p.k)>-1}).sort(function(a,b){return (G.sc[b.p.k]||0)-(G.sc[a.p.k]||0)}).map(function(x,i){return '<li><span>'+(i+1)+'. '+esc(x.p.n)+(x.me?' (tú)':'')+'</span><b>'+(G.sc[x.p.k]||0)+'</b></li>'}).join('')+'</ul>'}
+function rank(){return '<ul class="rank">'+peers().filter(function(x){return owners().indexOf(x.p.k)>-1}).sort(function(a,b){return (G.sc[b.p.k]||0)-(G.sc[a.p.k]||0)}).map(function(x,i){return '<li><span>'+(i+1)+'. '+esc(x.p.n)+(x.me?' (tú)':'')+'</span><b>'+(G.sc[x.p.k]||0)+'</b></li>'}).join('')+'</ul>'}
 function render(){
   if(!G)return;
   var ps=peers(),top='<div class="top"><span>Sala '+esc(G.code.toUpperCase())+(G.ph==='play'?' · Foto '+(G.r+1)+' de '+G.ro.length:'')+'</span><button class="link" id="lv">Salir</button></div>',h='';
   if(G.ph==='lobby'){
-    var n=ps.filter(function(x){return okImg(x.p.im)}).length;
-    h=top+'<h1>Sube tu foto</h1><div class="card"><div class="mut">Código de sala</div><h2 style="font-size:36px;letter-spacing:.12em">'+esc(G.code.toUpperCase())+'</h2><div class="pl">'+ps.map(function(x){return '<span class="pill'+(okImg(x.p.im)?'':' no')+'">'+(okImg(x.p.im)?'📷 ':'⏳ ')+esc(x.p.n)+(x.p.h===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('')+'</div></div>'
-    +'<div class="card"><h2>Tu foto</h2>'+(G.im?'<img class="thumb" alt="Tu foto" src="'+G.im+'">':'<p class="mut">Elige la que quieras: un recuerdo, un paisaje, una mascota… Los demás tendrán que adivinar que es tuya.</p>')+'<label class="file" tabindex="0">'+(G.busy?'Preparando la foto…':G.im?'Cambiar foto':'📷 Elegir una foto')+'<input type="file" accept="image/*" id="fl"></label>'+(G.perr?'<p class="err">'+esc(G.perr)+'</p>':'')+'</div>'
-    +(G.host?'<button class="btn" id="st"'+(n<3?' disabled':'')+'>Empezar ('+n+' foto'+(n===1?'':'s')+', mínimo 3)</button>':'<p class="mut" style="text-align:center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>');
+    var n=ps.filter(function(x){return imgs(x.p).length}).length,np=0;ps.forEach(function(x){np+=imgs(x.p).length});
+    h=top+'<h1>Sube tu foto</h1><div class="card"><div class="mut">Código de sala</div><h2 style="font-size:36px;letter-spacing:.12em">'+esc(G.code.toUpperCase())+'</h2><div class="pl">'+ps.map(function(x){return '<span class="pill'+(imgs(x.p).length?'':' no')+'">'+(imgs(x.p).length?'📷 '+imgs(x.p).length+' ':'⏳ ')+esc(x.p.n)+(x.p.h===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}).join('')+'</div></div>'
+    +'<div class="card"><h2>Tus fotos ('+G.ims.length+'/3)</h2>'+(G.ims.length?'<div class="pl">'+G.ims.map(function(d,i){return '<span><img class="thumb" style="width:96px;margin:0" alt="Tu foto '+(i+1)+'" src="'+d+'"><button class="link" data-rm="'+i+'">Quitar</button></span>'}).join('')+'</div>':'<p class="mut">Elige las que quieras (hasta 3): un recuerdo, un paisaje, una mascota… Los demás tendrán que adivinar de quién son.</p>')+(G.ims.length<3?'<label class="file" tabindex="0">'+(G.busy?'Preparando…':'📷 Añadir foto')+'<input type="file" accept="image/*" multiple id="fl"></label>':'')+(G.perr?'<p class="err">'+esc(G.perr)+'</p>':'')+'</div>'
+    +(G.host?'<button class="btn" id="st"'+(n<3?' disabled':'')+'>Empezar ('+np+' fotos de '+n+' jugadores, mínimo 3 jugadores)</button>':'<p class="mut" style="text-align:center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>');
   }else if(G.ph==='end'){
     h=top+'<h1>Fin</h1><div class="card"><h2>Marcador</h2>'+rank()+'<p class="mut">+1 por cada foto que aciertas, y +1 por cada jugador que no acierta la tuya.</p></div>';
   }else{
-    var o=G.ro[G.r],ow=by(o),mine=o===G.me,voted=G.vote&&G.vote.r===G.r;
-    h=top+'<div class="pol">'+(ow&&okImg(ow.p.im)?'<img alt="Foto misteriosa" src="'+ow.p.im+'">':'<div style="aspect-ratio:1"></div>')+'<div class="cap">'+(G.res?'Era de '+esc(ow?ow.p.n:'?'):'¿De quién es?')+'</div></div>';
+    var oo=G.ro[G.r],o=oo.split(':')[0],ix=+oo.split(':')[1],ow=by(o),mine=o===G.me,voted=G.vote&&G.vote.r===G.r;
+    h=top+'<div class="pol">'+(ow&&imgs(ow.p)[ix]?'<img alt="Foto misteriosa" src="'+imgs(ow.p)[ix]+'">':'<div style="aspect-ratio:1"></div>')+'<div class="cap">'+(G.res?'Era de '+esc(ow?ow.p.n:'?'):'¿De quién es?')+'</div></div>';
     if(G.res){
       var ok=ps.filter(function(x){return x.p.k!==o&&x.p.v&&x.p.v.r===G.r&&x.p.v.k===o}).map(function(x){return esc(x.p.n)});
       h+='<p style="text-align:center"><b>'+(G.res.ok?G.res.ok+' de '+G.res.t+' acertaron':'Nadie la ha adivinado')+'</b>'+(ok.length?'<br><span class="mut">'+ok.join(', ')+'</span>':'')+'</p>';
     }else if(mine)h+='<p class="mut" style="text-align:center">Es tu foto. Pon cara de póker<span class="dots"><i></i><i></i><i></i></span></p>';
     else{
-      h+=ps.filter(function(x){return G.ro.indexOf(x.p.k)>-1&&x.p.k!==G.me}).map(function(x){return '<button class="opt'+(voted&&G.vote.k===x.p.k?' me':'')+'" data-k="'+esc(x.p.k)+'"'+(voted?' disabled':'')+'>'+esc(x.p.n)+'</button>'}).join('')+(voted?'<p class="mut" style="text-align:center">Voto enviado. Esperando…</p>':'');
+      h+=ps.filter(function(x){return owners().indexOf(x.p.k)>-1&&x.p.k!==G.me}).map(function(x){return '<button class="opt'+(voted&&G.vote.k===x.p.k?' me':'')+'" data-k="'+esc(x.p.k)+'"'+(voted?' disabled':'')+'>'+esc(x.p.n)+'</button>'}).join('')+(voted?'<p class="mut" style="text-align:center">Voto enviado. Esperando…</p>':'');
     }
     if(G.host)h+=(G.res?'<button class="btn" id="nx">'+(G.r+1>=G.ro.length?'Ver resultado final':'Siguiente foto')+'</button>':'<button class="btn g" id="rs">Cerrar votación ya</button>');
     h+='<div class="card"><h2>Marcador</h2>'+rank()+'</div>';
@@ -165,7 +168,8 @@ function render(){
 function bind(){
   var b=function(id,f){var e=$(id);if(e)e.onclick=f};
   b('lv',function(){if(confirm('¿Salir de la sala?'))leave()});b('st',begin);b('nx',nextR);b('rs',resolve);
-  var f=$('fl');if(f)f.onchange=function(){if(f.files[0])shrink(f.files[0])};
+  var f=$('fl');if(f)f.onchange=function(){var a=[].slice.call(f.files).slice(0,3-G.ims.length);(function nx(){var x=a.shift();if(x)shrink(x,nx)})()};
+  [].forEach.call(document.querySelectorAll('[data-rm]'),function(e){e.onclick=function(){G.ims.splice(+e.getAttribute('data-rm'),1);pub();render()}});
   [].forEach.call(document.querySelectorAll('[data-k]'),function(e){e.onclick=function(){vote(e.getAttribute('data-k'))}});
 }
 home();

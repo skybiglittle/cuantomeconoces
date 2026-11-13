@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>La ruleta de la suerte</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--glow:#3a2f12;--c1:#1c2238;--c2:#111a2d;--in:#0d1628;--bd:#3b4a69;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#ffd166;--g:#39d98a;--r:#ff5d73;--b2:#263451;--b2b:#405174;--bt:#2a1f00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root{color-scheme:light;--bg:#f6f3ec;--glow:#ffe7a8;--c1:#fff;--c2:#faf7f0;--in:#fff;--bd:#c9c3b3;--l:#ddd7c8;--t:#1b2233;--m:#566077;--a:#a85f00;--g:#0f8a4e;--r:#d11f3a;--b2:#ece7da;--b2b:#cfc8b6}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -10%,var(--glow),transparent 52%),var(--bg);color:var(--t);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:520px;margin:auto;padding:12px 16px 24px}
+h1{font-size:clamp(26px,8vw,40px);line-height:1.05;margin:6px 0;text-align:center}.m{color:var(--m)}.c{text-align:center}.small{font-size:13px}
+.card{background:linear-gradient(145deg,var(--c1),var(--c2));border:1px solid var(--l);border-radius:20px;padding:16px;margin:10px 0}
+label{display:block;font-size:13px;color:var(--m);font-weight:700;margin:12px 0 5px}
+input{width:100%;padding:13px 14px;border:1px solid var(--bd);border-radius:12px;background:var(--in);color:var(--t);font:inherit;outline:none}input:focus{border-color:var(--a)}
+.btn{border:0;border-radius:15px;padding:14px 18px;background:linear-gradient(135deg,#ffd166,#ff9f43);color:var(--bt);font:inherit;font-weight:900;cursor:pointer;width:100%;margin-top:10px}.btn.s{background:var(--b2);color:var(--t);border:1px solid var(--b2b)}.btn:disabled{opacity:.45;cursor:default}
+.who{font-size:18px;font-weight:900;color:var(--a)}.over{color:var(--r)}.win{color:var(--g);font-weight:800}.hint{color:var(--a);font-weight:700;margin:6px 0}
+.code{letter-spacing:3px;color:var(--a);font-size:20px}
+#wb{text-align:center;margin:4px 0}#wb[hidden]{display:none}
+.pn{display:flex;flex-wrap:wrap;gap:8px 14px;justify-content:center;margin:8px 0}.wd{display:flex;gap:3px}
+.bx{width:25px;height:35px;border-radius:5px;background:var(--in);border:1px solid var(--bd);display:grid;place-items:center;font-weight:900;color:#111}.bx.on{background:#fff}
+.kb{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.k{width:40px;height:44px;border-radius:10px;border:1px solid var(--b2b);background:var(--b2);color:var(--t);font:inherit;font-weight:800;cursor:pointer}.k:disabled{opacity:.25}
+.pls{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}.pl{border:1px solid var(--l);border-radius:14px;padding:8px;text-align:center}.pl.cur{border-color:var(--a);box-shadow:0 0 0 2px var(--a)}
+.ln{display:flex;justify-content:space-between;gap:10px;padding:8px 4px;border-bottom:1px solid var(--l)}.ln:last-child{border:0}
+details{font-size:14px}summary{cursor:pointer;font-weight:800}details li{margin:4px 0}
+</style></head><body><main>
+<h1>🎡 La ruleta de la suerte</h1><div id="badge" class="c"></div>
+<div id="wb" hidden><svg viewBox="0 0 300 300" width="250" height="250" aria-label="Ruleta"><g id="w" style="transform-origin:150px 150px;transition:transform 3.6s cubic-bezier(.12,.7,.1,1)"></g><polygon points="138,0 162,0 150,24" fill="#ff5d73" stroke="#fff" stroke-width="2"/></svg></div>
+<div id="ui"></div></main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),rnd=n=>Math.random()*n|0,esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),fmt=n=>n.toLocaleString('es-ES')+' €';
+const W=[150,200,'Q',300,100,'PT',250,400,'C',200,500,'H',150,350,'Q',600,100,'PT',300,'X',250,1000,200,400];
+const LB={Q:'QUIEBRA',PT:'PIERDE',C:'COMODÍN',H:'½',X:'x2'},CO={Q:'#111827',PT:'#6b7280',C:'#16a34a',H:'#7c3aed',X:'#2563eb'},AC=['#f59e0b','#ef4444','#06b6d4','#d97706'];
+const PAN=[['Refrán','A caballo regalado no le mires el dentado'],['Refrán','Más vale pájaro en mano que ciento volando'],['Refrán','Al que madruga Dios le ayuda'],['Refrán','No hay mal que por bien no venga'],['Refrán','Ojos que no ven corazón que no siente'],['Refrán','En casa del herrero cuchillo de palo'],['Refrán','El que la hace la paga'],['Comida','Tortilla de patatas con cebolla'],['Comida','Paella valenciana con conejo'],['Comida','Jamón ibérico de bellota'],['Lugar','La Sagrada Familia de Barcelona'],['Lugar','La Alhambra de Granada'],['Lugar','La Plaza Mayor de Madrid'],['Película','El laberinto del fauno'],['Película','Ocho apellidos vascos'],['Libro','Don Quijote de la Mancha'],['Frase','Cada loco con su tema'],['Frase','Dar gato por liebre'],['Cosa','Un paraguas en un día de lluvia'],['Fiesta','La noche de San Juan'],['Fiesta','Las Fallas de Valencia'],['Profesión','Un fontanero de guardia'],['Deporte','Una final de la Copa del Rey'],['Frase','Estar en la gloria']];
+const CONS='BCDFGHJKLMNÑPQRSTVWXYZ',VOW='AEIOU';
+const key=c=>c.toLowerCase().replace('ñ','§').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace('§','ñ'),K=c=>key(c).toUpperCase(),isL=c=>/[a-zñ]/.test(key(c)),norm=s=>[...s].map(key).join('').replace(/[^a-zñ]/g,'');
+let room=null,R=null,S=null,H=false,LOCAL=false,code='',deck=[],rot=0,lastN=0,gone=false;const tk=Math.random().toString(36).slice(2,10),ui={name:'',code:'',vowel:0,solve:0,txt:'',err:''};
+try{ui.name=localStorage.getItem('rname')||''}catch(e){}
+// ruleta
+const P=(a,r)=>[150+r*Math.sin(a*Math.PI/180),150-r*Math.cos(a*Math.PI/180)];
+$('w').innerHTML=W.map((v,i)=>{const a=i*15,[x1,y1]=P(a,140),[x2,y2]=P(a+15,140),n=typeof v==='number';return'<path d="M150 150L'+x1+' '+y1+'A140 140 0 0 1 '+x2+' '+y2+'Z" fill="'+(n?AC[i%4]:CO[v])+'" stroke="#fff" stroke-width="1.5"/><text x="150" y="40" transform="rotate('+(a+7.5)+' 150 150)" text-anchor="middle" font-size="'+(n?15:9)+'" font-weight="800" fill="#fff">'+(n?v:LB[v])+'</text>'}).join('')+'<circle cx="150" cy="150" r="14" fill="#fff"/>';
+const spinTo=(i,n)=>{rot=2160*n-(i+.5)*15;$('w').style.transform='rotate('+rot+'deg)'};
+// estado
+const newS=()=>({v:0,ph:'lobby',players:[],rounds:4,round:0,cur:0,sub:'choose',panel:['',''],rev:[],used:[],amt:0,spin:{idx:0,n:0,on:0},msg:'',win:-1});
+const bc=()=>{S.v++;render();if(R&&H)R.emit('st',S).catch(()=>{})};
+const send=a=>{if(LOCAL)handle(a,null);else if(R)R.emit('act',a).catch(()=>{})};
+const missing=()=>[...S.panel[1]].filter(c=>isL(c)&&!S.rev.includes(K(c))).length;
+const nxt=()=>{S.cur=(S.cur+1)%S.players.length;S.sub='choose'};
+function fail(m){const p=S.players[S.cur];if(p.jk>0){p.jk--;S.msg=m+' Usa un comodín y sigue.';S.sub='choose'}else{S.msg=m+' Pasa el turno.';nxt()}bc()}
+function guess(l,amt){const p=S.players[S.cur],n=[...S.panel[1]].filter(c=>K(c)===l).length;S.used.push(l);
+ if(n){p.rm+=amt*n;S.rev.push(l);S.sub='choose';S.msg=p.name+': hay '+n+' «'+l+'»'+(amt?' (+'+fmt(amt*n)+')':'');
+  if(!missing()){p.tot+=p.rm;S.msg+=' · ¡Panel completo! '+p.name+' se lleva '+fmt(p.rm);S.win=S.cur;S.ph='round'}return bc()}
+ fail(p.name+': no hay «'+l+'».')}
+function land(idx){if(!S||S.ph!=='play')return;S.spin.on=0;const p=S.players[S.cur],v=W[idx];
+ if(typeof v==='number'){S.amt=v;S.sub='cons';S.msg=p.name+' cae en '+fmt(v)+': elige consonante'}
+ else if(v==='C'){p.jk++;S.sub='choose';S.msg='¡Comodín para '+p.name+'! Puede girar otra vez'}
+ else if(v==='PT'){if(p.jk>0){p.jk--;S.sub='choose';S.msg='Pierde turno… pero '+p.name+' usa el comodín'}else{S.msg='Pierde turno: '+p.name;nxt()}}
+ else if(v==='Q'){p.rm=0;S.msg='¡QUIEBRA! '+p.name+' pierde lo del panel';nxt()}
+ else if(v==='H'){p.rm=Math.floor(p.rm/20)*10;S.msg='½: '+p.name+' pierde la mitad';nxt()}
+ else{p.rm*=2;S.msg='x2: '+p.name+' duplica lo del panel';nxt()}
+ bc()}
+function nextRound(){S.round++;if(S.round>S.rounds){S.ph='end';return bc()}
+ if(!deck.length)deck=PAN.map((_,i)=>i).sort(()=>Math.random()-.5);
+ S.panel=PAN[deck.pop()];S.rev=[];S.used=[];S.players.forEach(p=>p.rm=0);S.cur=(S.round-1)%S.players.length;S.sub='choose';S.amt=0;S.win=-1;S.ph='play';S.spin.on=0;S.msg='Panel '+S.round+': empieza '+S.players[S.cur].name;bc()}
+function handle(a,peer){if(!S||!a||typeof a!=='object')return;const pl=S.players,own=LOCAL||(peer&&peer===S.hp),pi=LOCAL?S.cur:pl.findIndex(p=>p.peer===peer);
+ if(a.t==='join'){if(S.ph!=='lobby')return;const nm=String(a.name||'').slice(0,14).trim()||'Jugador',i=LOCAL?-1:pl.findIndex(p=>p.peer===peer);if(i>=0)pl[i].name=nm;else if(pl.length<4)pl.push({peer,tk:String(a.tk||'').slice(0,12),name:nm,tot:0,rm:0,jk:0});return bc()}
+ if(a.t==='start'&&own&&S.ph==='lobby'&&pl.length>1){deck=[];S.round=0;return nextRound()}
+ if(a.t==='next'&&own&&S.ph==='round')return nextRound();
+ if(a.t==='again'&&own&&S.ph==='end'){pl.forEach(p=>{p.tot=0;p.rm=0;p.jk=0});S.ph='lobby';return bc()}
+ if(S.ph!=='play'||pi<0||pi!==S.cur||S.spin.on)return;const p=pl[pi];
+ if(a.t==='spin'&&S.sub==='choose'){const idx=rnd(24);S.spin={idx,n:S.spin.n+1,on:1};S.msg=p.name+' gira la ruleta…';bc();setTimeout(()=>land(idx),3800);return}
+ if(a.t==='letter'&&S.sub==='cons'&&CONS.includes(a.l)&&!S.used.includes(a.l))return guess(a.l,S.amt);
+ if(a.t==='vowel'&&S.sub==='choose'&&p.rm>=50&&VOW.includes(a.l)&&!S.used.includes(a.l)){p.rm-=50;return guess(a.l,0)}
+ if(a.t==='solve'){if(norm(String(a.txt||''))===norm(S.panel[1])){p.tot+=p.rm;S.msg='🎉 ¡'+p.name+' resuelve y se lleva '+fmt(p.rm)+'!';S.rev=[...new Set([...S.panel[1]].filter(isL).map(K))];S.win=pi;S.ph='round';return bc()}fail(p.name+' falla el panel.')}}
+// red
+function wire(r){R=r;r.on('st',m=>{const d=m.data;if(!d||typeof d.v!=='number')return;if(H){if(m.sameTab&&S&&!S.hp)S.hp=m.peer;return}
+  if(S&&((S.hp&&m.peer!==S.hp)||d.v<=S.v))return;S=d;gone=false;render();if(S.ph==='lobby'&&!S.players.some(p=>p.tk===tk))r.emit('act',{t:'join',name:ui.name||'Jugador',tk}).catch(()=>{})});
+ r.on('act',m=>{if(H)handle(m.data,m.peer)});
+ r.onPeers(c=>{if(H&&S&&c.joined.length)r.emit('st',S).catch(()=>{});if(!H&&S&&S.hp&&c.peers.length&&!c.peers.some(p=>p.peer===S.hp)){gone=true;render()}})}
+setInterval(()=>{if(H&&S&&R)R.emit('st',S).catch(()=>{})},5000);
+const rname=()=>{try{localStorage.setItem('rname',ui.name)}catch(e){}return ui.name.trim()||'Jugador'};
+async function mk(){if(!room)return;ui.err='';rname();try{code=Array.from({length:4},()=>'abcdefghjkmnpqrstuvwxyz23456789'[rnd(31)]).join('');const r=await room.join('r-'+code);H=true;S=newS();wire(r);bc();r.emit('act',{t:'join',name:rname(),tk})}catch(e){ui.err='No se pudo crear la sala.';H=false;S=null;render()}}
+async function jn(){if(!room)return;ui.err='';const nm=rname();if(ui.code.length<4){ui.err='Escribe el código de 4 letras.';return render()}
+ try{code=ui.code;const r=await room.join('r-'+code);wire(r);ui.err='Buscando la sala…';render();let n=0;const t=setInterval(()=>{if(S||++n>6){clearInterval(t);if(!S){ui.err='No hay nadie en esa sala. Revisa el código.';R=null;r.leave();render()}return}r.emit('act',{t:'join',name:nm,tk}).catch(()=>{})},1500);r.emit('act',{t:'join',name:nm,tk})}catch(e){ui.err='No se pudo entrar a la sala.';render()}}
+function loc(){LOCAL=true;H=true;S=newS();render()}
+// pantallas
+const pan=all=>'<div class="pn">'+S.panel[1].split(' ').map(w=>'<div class="wd">'+[...w].map(c=>{const on=!isL(c)||all||S.rev.includes(K(c));return'<span class="bx'+(on?' on':'')+'">'+(on?esc(c.toUpperCase()):'')+'</span>'}).join('')+'</div>').join('')+'</div>';
+const kb=(set,a)=>'<div class="kb">'+[...set].map(l=>'<button class="k" data-a="'+a+'" data-l="'+l+'"'+(S.used.includes(l)?' disabled':'')+'>'+l+'</button>').join('')+'</div>';
+const plist=()=>S.players.map(p=>'<div class="ln"><span>'+esc(p.name)+(p.tk===tk?' (tú)':'')+'</span><span class="m">'+fmt(p.tot)+'</span></div>').join('');
+const RULES='<div class="card"><details><summary>📺 Reglas del programa</summary><ul><li>Cada panel esconde un refrán, un título o una frase. Se juega por turnos con una ruleta de 24 casillas.</li><li>Gira y, si cae en dinero, di una <b>consonante</b>: ganas esa cantidad por cada vez que aparezca. Si no está, pasa el turno.</li><li><b>Vocales:</b> no se giran, se compran por 50 €. Si no está, pierdes el turno.</li><li><b>Resolver:</b> en tu turno puedes intentarlo. Si aciertas, te llevas lo acumulado en el panel; si fallas, pasa el turno.</li><li><b>Quiebra:</b> pierdes lo del panel y el turno. <b>Pierde turno:</b> pasa al siguiente. <b>½</b> y <b>x2</b>: divide o duplica lo del panel y acaba el turno.</li><li><b>Comodín:</b> te guarda de un «pierde turno» o de una letra fallida (se usa solo).</li><li>Se juegan 4 paneles y gana quien más dinero acumule.</li></ul></details></div>';
+function render(){$('wb').hidden=!(S&&S.ph==='play');$('badge').innerHTML=R&&code?'Sala <b class="code">'+code.toUpperCase()+'</b>':'';
+ if(S&&(S.cur!==ui.lc||S.round!==ui.lr)){ui.vowel=ui.solve=0;ui.lc=S.cur;ui.lr=S.round}
+ if(S&&S.spin.n!==lastN){lastN=S.spin.n;spinTo(S.spin.idx,S.spin.n)}
+ let h=gone?'<div class="card over c">El anfitrión se ha desconectado. Crea o únete a otra sala.</div>':'';
+ const host=H||LOCAL;
+ if(!S){const d=room?'':' disabled';h+='<p class="m c">Hasta 4 jugadores, cada uno en su móvil, en una sala con código.</p><div class="card"><label for="nm">Tu nombre</label><input id="nm" maxlength="14" placeholder="Tu nombre" value="'+esc(ui.name)+'"><button class="btn" data-a="create"'+d+'>Crear sala</button><label for="cd">Código de sala</label><input id="cd" maxlength="4" placeholder="ABCD" style="text-transform:uppercase" value="'+esc(ui.code)+'"><button class="btn s" data-a="join"'+d+'>Unirme a la sala</button><button class="btn s" data-a="local">Jugar en este móvil (2–4)</button>'+(room?'':'<p class="small m">Las salas no están disponibles en esta vista; puedes jugar en un solo móvil.</p>')+'<p class="small over">'+esc(ui.err)+'</p></div>'+RULES}
+ else if(S.ph==='lobby'){h+='<div class="card"><h2 class="c" style="margin:0 0 6px">Sala de espera</h2>'+(LOCAL?'':'<p class="m c small">Comparte el código <b class="code">'+code.toUpperCase()+'</b> (2–4 jugadores).</p>')+'<div>'+plist()+'</div>'+(LOCAL&&S.players.length<4?'<input id="pn" maxlength="14" placeholder="Nombre del jugador" style="margin-top:10px"><button class="btn s" data-a="add">Añadir jugador</button>':'')+(host?'<button class="btn" data-a="start"'+(S.players.length<2?' disabled':'')+'>Empezar ('+S.players.length+' jugadores)</button>':'<p class="m c small">Esperando a que el anfitrión empiece…</p>')+'</div>'+RULES}
+ else if(S.ph==='end'){const top=Math.max(...S.players.map(p=>p.tot));h+='<div class="card c"><div style="font-size:70px">🏆</div><h2>'+esc(S.players.filter(p=>p.tot===top).map(p=>p.name).join(' y '))+' gana</h2>'+S.players.slice().sort((a,b)=>b.tot-a.tot).map(p=>'<div class="ln"><span>'+esc(p.name)+'</span><b>'+fmt(p.tot)+'</b></div>').join('')+(host?'<button class="btn" data-a="again">Otra partida</button>':'')+'</div>'}
+ else{const p=S.players[S.cur],me=LOCAL||p.tk===tk;let c='';
+  h+='<div class="card c"><div class="small m">Panel '+S.round+' / '+S.rounds+' · <b>'+esc(S.panel[0])+'</b></div>'+pan(S.ph==='round')+'<div class="hint">'+esc(S.msg)+'</div></div><div class="pls">'+S.players.map((q,i)=>'<div class="pl'+(i===S.cur&&S.ph==='play'?' cur':'')+'"><b>'+esc(q.name)+(q.tk===tk?' (tú)':'')+'</b><div class="small m">Total '+fmt(q.tot)+'</div><div class="who">'+fmt(q.rm)+(q.jk?' 🃏'+q.jk:'')+'</div></div>').join('')+'</div>';
+  if(S.ph==='round')c=host?'<button class="btn" data-a="next">'+(S.round>=S.rounds?'Ver resultado':'Siguiente panel')+'</button>':'<p class="m c small">Esperando al anfitrión…</p>';
+  else if(S.spin.on)c='<p class="m c">🎡 La ruleta gira…</p>';
+  else if(!me)c='<p class="m c">Turno de <b>'+esc(p.name)+'</b>…</p>';
+  else if(S.sub==='cons')c='<p class="hint c">Consonante: '+fmt(S.amt)+' por cada una</p>'+kb(CONS,'L');
+  else if(ui.solve)c='<input id="sv" value="'+esc(ui.txt)+'" placeholder="Escribe el panel completo" autocomplete="off"><button class="btn" data-a="go">Resolver</button><button class="btn s" data-a="cx">Cancelar</button>';
+  else if(ui.vowel)c='<p class="hint c">Vocal por 50 €</p>'+kb(VOW,'V')+'<button class="btn s" data-a="cx">Cancelar</button>';
+  else c='<button class="btn" data-a="spin">🎡 Girar la ruleta</button><button class="btn s" data-a="vow"'+(p.rm<50?' disabled':'')+'>Comprar vocal (50 €)</button><button class="btn s" data-a="sol">Resolver el panel</button>';
+  h+='<div class="card">'+c+'</div>'}
+ $('ui').innerHTML=h}
+$('ui').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a,l=b.dataset.l;
+ if(a==='create')mk();else if(a==='join')jn();else if(a==='local')loc();
+ else if(a==='vow'){ui.vowel=1;render()}else if(a==='sol'){ui.solve=1;render()}else if(a==='cx'){ui.vowel=ui.solve=0;render()}
+ else if(a==='spin')send({t:'spin'});else if(a==='L')send({t:'letter',l});else if(a==='V'){ui.vowel=0;send({t:'vowel',l})}
+ else if(a==='go'){ui.solve=0;const t=ui.txt;ui.txt='';send({t:'solve',txt:t})}
+ else if(a==='add'){const v=$('pn').value.trim();if(v)handle({t:'join',name:v},null)}
+ else send({t:a,name:ui.name,tk})});
+$('ui').addEventListener('input',e=>{const t=e.target;if(t.id==='nm')ui.name=t.value;else if(t.id==='cd')ui.code=t.value.toLowerCase().replace(/[^a-z0-9]/g,'');else if(t.id==='sv')ui.txt=t.value});
+$('ui').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='sv'){e.preventDefault();$('ui').querySelector('[data-a=go]').click()}});
+render();
+(async()=>{try{room=window.claude?await window.claude.use('room'):null}catch(e){room=null}if(!S&&!LOCAL)render()})();
+})();
+</script></body></html>

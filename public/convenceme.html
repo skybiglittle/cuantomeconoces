@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Convénceme</title>
+<style>
+:root{--paper:#e4f1f7;--ink:#0b1b2b;--beak:#ff6a1a;--beakink:#1a0a00;--ice:#bcd9e6;--card:#ffffff;--mut:#46647c;--ok:#1b9e5a;--no:#c9372c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0b1b2b;--ink:#e4f1f7;--ice:#1d3a54;--card:#12283d;--mut:#9db8cc;--ok:#4fd18b;--no:#ff7a6e}}
+:root[data-theme="dark"]{--paper:#0b1b2b;--ink:#e4f1f7;--ice:#1d3a54;--card:#12283d;--mut:#9db8cc;--ok:#4fd18b;--no:#ff7a6e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--paper);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:18px 16px 40px}
+.hidden{display:none!important}
+h1,.sign{font-family:Impact,"Arial Narrow Bold","Haettenschweiler",sans-serif;font-weight:900;letter-spacing:.01em}
+h1{font-size:clamp(44px,14vw,72px);line-height:.95;margin:6px 0 10px}
+.mut{color:var(--mut);font-size:15px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:15px;color:var(--mut);margin-bottom:12px}
+.top b{color:var(--ink)}
+.sign{background:var(--card);border:4px solid var(--ink);border-radius:6px;padding:22px 16px;font-size:clamp(26px,8vw,40px);line-height:1.1;text-align:center;box-shadow:6px 6px 0 var(--ink);position:relative;margin:6px 0 34px}
+.sign::after{content:"";position:absolute;left:50%;bottom:-30px;width:10px;height:26px;margin-left:-5px;background:var(--ink)}
+.btn{display:block;width:100%;margin-top:12px;padding:15px;border:3px solid var(--ink);border-radius:8px;background:var(--beak);color:var(--beakink);font:inherit;font-weight:800;font-size:19px;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.g{background:var(--card);color:var(--ink)}
+.btn:focus-visible,textarea:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+textarea{width:100%;height:150px;padding:12px;border:3px solid var(--ink);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;resize:none}
+.bar{height:14px;border:3px solid var(--ink);border-radius:8px;background:var(--card);overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;width:100%;background:var(--ink);transition:width .25s linear}
+.bar.hot i{background:var(--no)}
+.clock{font-family:Impact,sans-serif;font-size:34px;text-align:center}
+.jury{display:flex;justify-content:center;gap:10px;margin:14px 0}
+.j{width:52px;text-align:center;font-size:30px;line-height:1.1;border:3px solid var(--ink);border-radius:10px;padding:6px 0;background:var(--card)}
+.j small{display:block;font-size:12px;font-weight:700}
+.j.y small{color:var(--ok)}.j.n small{color:var(--no)}
+.pts{font-family:Impact,sans-serif;font-size:56px;text-align:center;line-height:1}
+.say{text-align:center;margin:6px 0 4px}
+.tip{background:var(--ice);border-radius:8px;padding:10px 12px;font-size:15px;margin-top:10px}
+.rank{list-style:none;padding:0;margin:14px 0}
+.rank li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:2px dashed var(--ice);font-size:15px}
+.big{font-size:22px;font-weight:800;text-align:center;margin:6px 0}
+@media (prefers-reduced-motion:no-preference){.j{animation:pop .35s both}.j:nth-child(2){animation-delay:.12s}.j:nth-child(3){animation-delay:.24s}.j:nth-child(4){animation-delay:.36s}.j:nth-child(5){animation-delay:.48s}}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<main>
+  <section id="start">
+    <h1>Convénceme</h1>
+    <p>Te toca una afirmación absurda y tienes 30 segundos para defenderla como si te fuera la vida en ello. Un jurado de cinco decide si te cree.</p>
+    <p class="mut">Cinco rondas, hasta 500 puntos. El jurado es simulado y premia los argumentos largos, variados y bien enlazados.</p>
+    <button class="btn" id="go">Empezar</button>
+    <p class="mut" id="best"></p>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="top"><span>Ronda <b id="rn">1</b> de 5</span><span>Puntos: <b id="tot">0</b></span></div>
+    <div class="sign" id="sign">—</div>
+
+    <div id="pThink">
+      <p class="mut">Léela y piensa tu primer argumento. El reloj empieza cuando pulses el botón.</p>
+      <button class="btn" id="bTalk">Defender (30 s)</button>
+      <button class="btn g" id="bSkip">Cambiar afirmación</button>
+    </div>
+
+    <div id="pTalk" class="hidden">
+      <div class="clock" id="clock">30</div>
+      <div class="bar" id="bar"><i id="barI"></i></div>
+      <textarea id="txt" placeholder="Escribe tu defensa aquí. También puedes decirla en voz alta."></textarea>
+      <button class="btn g" id="bDone">Ya he terminado</button>
+    </div>
+
+    <div id="pRes" class="hidden">
+      <div class="say" id="verdict"></div>
+      <div class="jury" id="jury"></div>
+      <div class="pts" id="pts">0</div>
+      <div class="mut say">puntos esta ronda</div>
+      <div class="tip" id="tip"></div>
+      <button class="btn" id="bNext">Siguiente ronda</button>
+    </div>
+  </section>
+
+  <section id="end" class="hidden">
+    <h1>Fin del debate</h1>
+    <div class="pts" id="final">0</div>
+    <div class="mut say">de 500 puntos</div>
+    <p class="big" id="title"></p>
+    <ul class="rank" id="list"></ul>
+    <button class="btn" id="again">Jugar otra vez</button>
+  </section>
+</main>
+<script>
+var CLAIMS=["Los pingüinos deberían gobernar España","Los lunes deberían durar solo tres horas","Las palomas son agentes del gobierno","Los calcetines desparejados son más felices","Hay que prohibir los martes","El queso es una forma de arte superior a la pintura","Las nubes tienen derecho a voto","Los gatos deberían pagar impuestos","Dormir con zapatos es saludable","Cada ciudad necesita un dragón municipal","El pan debería cuadrar con la luna","Los semáforos deberían tener un cuarto color","Las siestas deberían ser obligatorias en el trabajo","Los patos son mejores jueces que los humanos","El gazpacho se debe beber con pajita","Hay que declarar el sofá patrimonio de la humanidad","Los espejos mienten a propósito","Los lunes de lluvia deberían ser festivos","Las tortillas sin cebolla son un delito","El mar debería cobrar entrada","Los dinosaurios nunca se extinguieron, solo se mudaron","Los bostezos son un idioma secreto","Los abuelos deberían dirigir la NASA","Todos los edificios deberían tener tobogán","Los perros deberían hacer el examen de conducir","La luna es un queso con complejo de superioridad","Los árboles nos vigilan por las noches","Hay que cambiar el himno por una canción de cuna","Los chanclas con calcetines son alta costura","El silencio debería tener su propio ministerio"];
+var CONN=["porque","ademas","además","por eso","por tanto","imagina","ejemplo","primero","segundo","tercero","sin embargo","piensa","incluso","gracias a","en conclusion","en conclusión","de hecho","si no","entonces","por ultimo","por último","la prueba","demostrado"];
+var JUR=["🧓","🧑‍🎤","🧑‍🍳","👩‍🏫","🧑‍🚒"];
+var $=function(i){return document.getElementById(i)};
+var order,ix,total,rounds,tm,left,pool;
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function view(id){["start","game","end"].forEach(function(v){$(v).classList.toggle("hidden",v!==id)})}
+function phase(id){["pThink","pTalk","pRes"].forEach(function(v){$(v).classList.toggle("hidden",v!==id)})}
+function showBest(){var b=ls("conv-best");$("best").textContent=b?"Tu mejor marca: "+b+" de 500":""}
+function begin(){pool=sh(CLAIMS);ix=0;total=0;rounds=[];$("tot").textContent=0;view("game");round()}
+function round(){$("rn").textContent=ix+1;$("sign").textContent="«"+pool[ix]+"»";$("txt").value="";phase("pThink")}
+function talk(){left=30;phase("pTalk");tick();$("txt").focus();clearInterval(tm);tm=setInterval(function(){left--;tick();if(left<=0){clearInterval(tm);done()}},1000)}
+function tick(){$("clock").textContent=left;$("barI").style.width=(left/30*100)+"%";$("bar").classList.toggle("hot",left<=8)}
+function score(t){
+  var low=t.toLowerCase(),w=low.split(/[^a-záéíóúüñ]+/).filter(function(x){return x}),n=w.length;
+  if(n<3)return{p:5,tip:"Casi no has dicho nada. Prueba con al menos tres o cuatro frases."};
+  var uniq={};w.forEach(function(x){uniq[x]=1});var ur=Object.keys(uniq).length/n;
+  var len=Math.min(n,70)/70*45,var_=Math.max(0,ur-.45)/.55*20,c=0;
+  CONN.forEach(function(k){if(low.indexOf(k)>-1)c++});
+  var con=Math.min(c,5)*5,ex=Math.min((t.match(/[!?]/g)||[]).length,3)*3,num=/\d/.test(t)?6:0;
+  var p=Math.round(len+var_+con+ex+num);p=Math.max(5,Math.min(100,p));
+  var tip=n<25?"Corta. Con más argumentos el jurado se lo creería más.":c<2?"Enlaza las ideas con «porque», «además» o «por ejemplo».":ur<.6?"Repites muchas palabras. Varía el vocabulario.":"Defensa sólida. Incluso un número inventado ayuda a que suene a ciencia.";
+  return{p:p,tip:tip}
+}
+function done(){
+  clearInterval(tm);var r=score($("txt").value),y=0,votes=[];
+  JUR.forEach(function(){var v=r.p+Math.round((Math.random()-.5)*30)>=50;votes.push(v);if(v)y++});
+  total+=r.p;rounds.push({c:pool[ix],p:r.p});$("tot").textContent=total;
+  $("jury").innerHTML=votes.map(function(v,i){return'<div class="j '+(v?"y":"n")+'">'+JUR[i]+'<small>'+(v?"Sí":"No")+'</small></div>'}).join("");
+  $("verdict").innerHTML="<b>"+y+" de 5</b> jurados "+(y>=3?"te creen":"no te creen");
+  $("pts").textContent=r.p;$("tip").textContent=r.tip;
+  $("bNext").textContent=ix>=4?"Ver resultado final":"Siguiente ronda";phase("pRes")
+}
+function finish(){
+  var b=+ls("conv-best")||0;if(total>b){ls("conv-best",total)}
+  $("final").textContent=total;
+  $("title").textContent=total>=400?"Político profesional":total>=300?"Abogado del diablo":total>=200?"Tertuliano con futuro":total>=100?"Cuñado en prácticas":"Hay que practicar la labia";
+  $("list").innerHTML=rounds.map(function(r){return"<li><span>"+r.c+"</span><b>"+r.p+"</b></li>"}).join("");
+  showBest();view("end")
+}
+$("go").onclick=begin;$("again").onclick=begin;$("bTalk").onclick=talk;$("bDone").onclick=done;
+$("bSkip").onclick=function(){var j=5+Math.floor(Math.random()*(pool.length-5)),t=pool[ix];pool[ix]=pool[j];pool[j]=t;round()};
+$("bNext").onclick=function(){ix++;if(ix>=5)finish();else round()};
+showBest();
+</script>
+</body>
+</html>

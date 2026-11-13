@@ -85,6 +85,44 @@ input:focus{border-color:var(--y)}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 @keyframes pulse{to{transform:scale(1.1)}}
 .pulse{animation:pulse .5s infinite alternate}
+/* ===== Plató: estilo concurso TV ===== */
+body{background:repeating-conic-gradient(from 0deg at 50% -20%,#1b2f8f 0 7deg,#13226b 7deg 14deg),#0b1550;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0,#ffffff30,transparent 55%),radial-gradient(ellipse at 50% 120%,#000a,transparent 60%);z-index:0}
+main,header{position:relative;z-index:1}
+header{background:linear-gradient(180deg,#2a1a6e,#150c3d);border-bottom:3px solid var(--y);box-shadow:0 4px 18px #0008}
+.logo{font-family:Impact,"Arial Black",system-ui,sans-serif;font-weight:900;font-style:italic;letter-spacing:.06em;background:linear-gradient(180deg,#fff7c4 0,#ffc72c 45%,#e07a00 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #5a2d00)}
+.card{background:linear-gradient(160deg,#2b2f8a,#151a55);border:2px solid #7f8cff55;box-shadow:0 12px 34px #0007,inset 0 1px 0 #ffffff22}
+.btn{background:linear-gradient(180deg,#ffe27a,#ffb300 55%,#e08a00);box-shadow:0 4px 0 #8a5200,0 10px 20px #0006;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 1px 0 #fff6}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #8a5200}
+.btn.g{background:linear-gradient(180deg,#3a46b5,#222a7a);box-shadow:0 4px 0 #0c1240;text-shadow:none}
+.btn.ok{background:linear-gradient(180deg,#7af0b4,#1fb872);box-shadow:0 4px 0 #0b6b3f}
+.btn.bad{box-shadow:0 4px 0 #8a1a2c}
+/* categoría = placa dorada */
+.cat{background:linear-gradient(180deg,#fff0a0,#e0a100);color:#3a2100;border:2px solid #fff6;box-shadow:0 3px 0 #7a5200;font-size:13px;padding:4px 18px;font-family:Impact,"Arial Black",sans-serif;letter-spacing:.14em}
+/* panel */
+#board{background:linear-gradient(180deg,#0a52c8 0,#06307f 100%);border:6px solid transparent;border-radius:14px;background-clip:padding-box;position:relative;padding:16px 10px;gap:8px 18px;box-shadow:0 0 0 4px #e0a100,0 0 0 7px #5a3a00,0 14px 30px #000a,inset 0 0 30px #000b}
+.tl{border-radius:4px;background:linear-gradient(180deg,#ffffff,#d9dff0 90%);box-shadow:0 3px 0 #7d89b3,0 5px 6px #0007,inset 0 -2px 0 #0002;color:#0a1f5c;font-family:"Arial Black",Impact,sans-serif}
+.tl.h{background:linear-gradient(180deg,#fffbe0,#ffe27a);color:#12206a}
+@keyframes flip{0%{transform:rotateX(90deg);background:#ff4b6e}50%{transform:rotateX(-12deg);background:#ffe27a;box-shadow:0 0 18px #ffe27a}100%{transform:rotateX(0)}}
+.msg{background:linear-gradient(180deg,#0a0f33,#141a55);border:1.5px solid #e0a10066}
+/* rueda */
+#wheelBox{width:min(100%,400px)}
+#wheelSvg{filter:drop-shadow(0 14px 22px #000b)}
+#pointer{top:-10px;border-left-width:16px;border-right-width:16px;border-top:38px solid #ff3030;filter:drop-shadow(0 0 0 #fff) drop-shadow(0 3px 4px #000a)}
+#pointer::after{content:"";position:absolute;left:-6px;top:-38px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffc72c 60%,#7a5200)}
+.bulb{animation:twk .8s infinite alternate}
+@keyframes twk{from{fill:#fffbe0;opacity:1}to{fill:#ffb300;opacity:.55}}
+#wheelBox.can{outline:2px dashed #ffe27a88;outline-offset:6px}
+/* marcador: atriles de concursante */
+.sb{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.sr{grid-template-columns:auto 1fr;grid-template-areas:"av nm" "rm bk";gap:2px 8px;padding:8px 10px;border-radius:12px 12px 4px 4px;background:linear-gradient(180deg,#27308f,#121a58);border:2px solid #7f8cff55}
+.sr .av{grid-area:av}.sr .nm{grid-area:nm}.sr .rm{grid-area:rm;font-size:12px;color:#ffe27a;align-self:end}
+.sr .bk{grid-area:bk;font-size:19px;text-align:right;min-width:0;color:#fff;background:#05092a;border:1px solid #e0a10088;border-radius:6px;padding:0 8px}
+.sr.cp{border-color:var(--y);background:linear-gradient(180deg,#5b46c8,#2a2a8a);box-shadow:0 0 20px #ffc72c88,0 0 0 2px #ffc72c33}
+.key{background:linear-gradient(180deg,#3a46b5,#222a7a);box-shadow:0 3px 0 #0c1240;border-color:#7f8cff88}
+.key.sel{background:linear-gradient(180deg,#ffe27a,#ffb300)}
+.rtag{border-color:#ffc72caa;background:#ffc72c22}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -127,7 +165,7 @@ input:focus{border-color:var(--y)}
 
     <div id="wheelBox" class="hidden">
       <div id="pointer"></div>
-      <svg id="wheelSvg" viewBox="0 0 400 400"><g id="wheel"></g><circle cx="200" cy="200" r="30" fill="#182148" stroke="#ffc72c" stroke-width="5"/><text x="200" y="207" text-anchor="middle" font-size="18" font-weight="900" fill="#ffc72c">GIRA</text></svg>
+      <svg id="wheelSvg" viewBox="0 0 400 400"><defs><radialGradient id="hub" cx="40%" cy="35%"><stop offset="0" stop-color="#fff6c2"/><stop offset=".5" stop-color="#ffc72c"/><stop offset="1" stop-color="#9a6500"/></radialGradient><linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset=".5" stop-color="#e0a100"/><stop offset="1" stop-color="#8a5a00"/></linearGradient></defs><circle cx="200" cy="200" r="199" fill="#3a2200"/><g id="wheel"></g><circle cx="200" cy="200" r="190" fill="none" stroke="url(#rim)" stroke-width="20"/><g id="bulbs"></g><circle cx="200" cy="200" r="34" fill="url(#hub)" stroke="#6b4300" stroke-width="3"/><circle cx="200" cy="200" r="26" fill="none" stroke="#fff8" stroke-width="1.5"/><text x="200" y="207" text-anchor="middle" font-size="17" font-weight="900" fill="#5a2d00">GIRA</text></svg>
     </div>
 
     <div class="card center hidden" id="pnTurn">
@@ -482,12 +520,13 @@ function react(e){if(Date.now()-(S.rt||0)<450)return;S.rt=Date.now();S.rx={n:((S
     var w=WHEEL[i],col,lab;
     if(w.k==='$'){col=MCOL[i%MCOL.length];lab=String(w.v)}else{col=GAJO[w.k][1];lab=GAJO[w.k][0]}
     var a0=i*15,a1=a0+15,mid=a0+7.5;
-    h+='<path d="M200 200 L'+pt(192,a0)+' A192 192 0 0 1 '+pt(192,a1)+' Z" fill="'+col+'" stroke="#fff" stroke-width="2"/>';
+    h+='<path d="M200 200 L'+pt(180,a0)+' A180 180 0 0 1 '+pt(180,a1)+' Z" fill="'+col+'" stroke="#fff" stroke-width="2.5"/>'+'<circle cx="'+pt(176,a0).split(' ')[0]+'" cy="'+pt(176,a0).split(' ')[1]+'" r="3.2" fill="#ffe27a" stroke="#7a5200" stroke-width="1"/>';
     var fs=lab.length>8?9.5:lab.length>5?11.5:15;
-    h+='<text transform="rotate('+mid+' 200 200)" x="200" y="'+(w.k==='$'?58:64)+'" text-anchor="middle" font-size="'+fs+'" font-weight="900" fill="#fff" style="paint-order:stroke;stroke:#0006;stroke-width:2px">'+lab+'</text>';
+    h+='<text transform="rotate('+mid+' 200 200)" x="200" y="'+(w.k==='$'?52:60)+'" text-anchor="middle" font-size="'+fs+'" font-weight="900" fill="#fff" style="paint-order:stroke;stroke:#0006;stroke-width:2px">'+lab+'</text>';
   }
-  h+='<circle cx="200" cy="200" r="194" fill="none" stroke="#ffc72c" stroke-width="6"/>';
   $('wheel').innerHTML=h;
+  var bl='';for(var j=0;j<24;j++){var q=j*15+7.5,t=q*Math.PI/180;bl+='<circle class="bulb" style="animation-delay:'+(j%2?'.4s':'0s')+'" cx="'+(200+190*Math.sin(t)).toFixed(1)+'" cy="'+(200-190*Math.cos(t)).toFixed(1)+'" r="4.4" fill="#fffbe0" stroke="#7a5200" stroke-width="1"/>'}
+  $('bulbs').innerHTML=bl;
 })();
 function spinWheel(sw){
   var wrap=$('wheel');

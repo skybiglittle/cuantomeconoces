@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b1020">
+<title>La patata caliente</title>
+<style>
+:root{color-scheme:dark;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#ff9f43;--r:#ff5d73;--g:#39d98a;--y:#ffd166}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -10%,#4a2a3d,transparent 52%),#0b1020;color:var(--t);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:520px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(30px,9vw,46px);line-height:1.05;margin:6px 0 8px;text-align:center}.m{color:var(--m)}.c{text-align:center}.small{font-size:13px}
+.card{background:linear-gradient(145deg,#1c2238,#111a2d);border:1px solid var(--l);border-radius:20px;padding:18px;margin:12px 0}
+label{display:block;font-size:13px;color:var(--m);font-weight:700;margin:12px 0 5px}
+input,select{width:100%;padding:13px 14px;border:1px solid #3b4a69;border-radius:12px;background:#0d1628;color:var(--t);font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{border:0;border-radius:15px;padding:15px 18px;background:linear-gradient(135deg,#ff9f43,#ff5d73);color:#fff;font:inherit;font-weight:900;cursor:pointer;width:100%;margin-top:12px}.btn.s{background:#263451;border:1px solid #405174}
+.sb{display:flex;gap:10px}.sb>div{flex:1;background:#101a2e;border:1px solid var(--l);border-radius:14px;padding:8px 12px;text-align:center;font-size:13px}.sb b{display:block;font-size:26px}.sb .on{border-color:var(--y)}
+.pot{font-size:110px;line-height:1.1;display:inline-block;transform:scale(var(--s,1));animation:pulse var(--beat,1s) ease-in-out infinite}
+@keyframes pulse{0%,100%{filter:none}50%{filter:drop-shadow(0 0 18px #ff5d73)}}@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.q{font-size:clamp(20px,5.5vw,26px);font-weight:850;margin:8px 0 12px}.who{font-size:18px;font-weight:800;color:var(--y)}
+#ai{font-size:30px;text-align:center;font-weight:900}.fb{min-height:30px;font-size:20px;font-weight:800;margin:8px 0}.boom{font-size:100px;animation:pop .5s}.hide{display:none}
+</style></head><body><main id="app"></main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),app=$('app'),rnd=n=>Math.random()*n|0,shuf=a=>{a=a.slice();for(let i=a.length;--i>0;){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+// [pregunta, respuesta numérica]
+const Q=[['¿En qué año llegó Colón a América?',1492],['¿En qué año pisó el ser humano la Luna por primera vez?',1969],['¿En qué año cayó el Muro de Berlín?',1989],['¿En qué año empezó la Revolución Francesa?',1789],['¿En qué año ganó España el Mundial de fútbol?',2010],['¿En qué año se celebraron los Juegos Olímpicos de Barcelona?',1992],['¿En qué año se publicó la primera parte de Don Quijote?',1605],['¿En qué año murió Franco?',1975],['¿En qué año se aprobó la Constitución española?',1978],['¿En qué año llegaron los billetes y monedas de euro a España?',2002],['¿En qué año se hundió el Titanic?',1912],['¿En qué año empezó la Primera Guerra Mundial?',1914],['¿En qué año empezó la Segunda Guerra Mundial?',1939],['¿En qué año salió el primer iPhone?',2007],['¿En qué año nació Miguel de Cervantes?',1547],['¿En qué año fue la derrota de la Armada Invencible?',1588],['¿En qué año fue la batalla de Trafalgar?',1805],['¿En qué año entró España en la Comunidad Económica Europea?',1986],['¿En qué año se celebraron los Juegos Olímpicos de Pekín?',2008],['¿En qué año se estrenó la primera película de Star Wars?',1977],['¿En qué año se estrenó la película Titanic?',1997],['¿En qué año nació Pablo Picasso?',1881],['¿En qué año se fundó Google?',1998],['¿En qué año se jugó el primer Mundial de fútbol?',1930],['¿En qué año se publicó Cien años de soledad?',1967],['¿En qué año pintó Picasso el Guernica?',1937],['¿En qué año se fundó el FC Barcelona?',1899],['¿En qué año se fundó el Real Madrid?',1902],['¿Cuántos huesos tiene el cuerpo de un adulto?',206],['¿Cuántas teclas tiene un piano estándar?',88],['¿Cuántas provincias tiene España?',50],['¿Cuántos días tiene un año bisiesto?',366],['¿Cuántos dientes tiene un adulto con las muelas del juicio?',32],['¿Cuántos metros de largo mide una piscina olímpica?',50],['¿Cuántos kilómetros mide aproximadamente una maratón?',42],['¿Cuántos planetas tiene el Sistema Solar?',8],['¿Cuántas cuerdas tiene una guitarra española?',6],['¿Cuántos colores tiene el arcoíris?',7],['¿Cuántas letras tiene el abecedario español?',27],['¿Cuántas Comunidades Autónomas tiene España?',17],['¿Cuántas estrellas tiene la bandera de la Unión Europea?',12],['¿Cuántos países forman la Unión Europea?',27],['¿Cuántas casillas tiene un tablero de ajedrez?',64],['¿Cuántas fichas tiene un dominó doble seis?',28],['¿Cuántas cartas tiene la baraja española?',40]];
+let cfg={t1:'Equipo 1',t2:'Equipo 2',n:3,pts:2,fuse:1,hint:1,snd:1},G=null,tick=null,ac=null,nb=0;
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('patata')||'{}'))}catch(e){}
+const FUSE=[[15,40],[25,60],[40,90]];
+function audio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){}return ac}
+function tone(f,d,v=.06){if(!cfg.snd)return;const c=audio();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.stop(c.currentTime+d)}
+function boomSnd(){if(cfg.snd){const c=audio();if(c){const n=c.sampleRate*.7,b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=700;g.gain.value=.7;s.buffer=b;s.connect(f);f.connect(g);g.connect(c.destination);s.start()}}try{navigator.vibrate&&navigator.vibrate([200,80,300])}catch(e){}}
+const view=h=>{app.innerHTML=h};
+const T=i=>i?cfg.t2:cfg.t1;
+function home(){const o=(a,v)=>a.map(([k,t])=>'<option value="'+k+'"'+(k==v?' selected':'')+'>'+t+'</option>').join('');
+ view('<h1>🥔 La patata caliente</h1><p class="m c">Adaptación del clásico del Grand Prix. Un móvil, dos equipos. Responde con un número antes de que la patata explote en tus manos.</p><div class="card"><div class="row"><div><label for="t1">Equipo 1</label><input id="t1" maxlength="16" value="'+esc(cfg.t1)+'"></div><div><label for="t2">Equipo 2</label><input id="t2" maxlength="16" value="'+esc(cfg.t2)+'"></div></div>'+
+ '<label for="n">Concursantes por equipo</label><select id="n">'+o([[2,'2'],[3,'3'],[4,'4'],[5,'5']],cfg.n)+'</select><label for="pts">Puntos para ganar la serie</label><select id="pts">'+o([[1,'1 punto'],[2,'2 puntos'],[3,'3 puntos']],cfg.pts)+'</select><label for="fuse">Mecha de la patata</label><select id="fuse">'+o([[0,'Corta (15–40 s)'],[1,'Normal (25–60 s)'],[2,'Larga (40–90 s)']],cfg.fuse)+'</select><label for="hint">Pistas tras fallar («más alto», «más bajo»)</label><select id="hint">'+o([[1,'Sí'],[0,'No']],cfg.hint)+'</select><label for="snd">Sonido</label><select id="snd">'+o([[1,'Sí'],[0,'No']],cfg.snd)+'</select></div>'+
+ '<div class="card small m"><b>Cómo se juega:</b> el móvil es la patata. Quien lo tiene responde una pregunta con un número (si falla, se le dice si es más alto o más bajo). Al acertar, pasa el móvil al otro equipo. La mecha es secreta: si explota, el concursante que la tenga queda eliminado. El equipo que se queda sin concursantes pierde la partida y el otro suma 1 punto.</div><button class="btn" id="go">¡Empezar!</button>');
+ $('go').onclick=()=>{cfg.t1=$('t1').value.trim()||'Equipo 1';cfg.t2=$('t2').value.trim()||'Equipo 2';['n','pts','fuse','hint','snd'].forEach(k=>cfg[k]=+$(k).value);try{localStorage.setItem('patata',JSON.stringify(cfg))}catch(e){}audio();G={sc:[0,0],deck:shuf(Q),qi:0};match()}}
+function match(){G.al=[Array(cfg.n).fill(1),Array(cfg.n).fill(1)];G.ix=[0,0];G.tn=0;turn()}
+function turn(){const tm=G.tn%2,l=G.al[tm];let k=-1;for(let i=0;i<cfg.n;i++){const j=(G.ix[tm]+i)%cfg.n;if(l[j]){k=j;G.ix[tm]=j+1;break}}
+ G.h={tm,k};const q=G.deck[G.qi++%G.deck.length];G.q=q;const now=Date.now(),[a,b]=FUSE[cfg.fuse];
+ if(!G.on){G.start=now;G.end=now+(a+rnd(b-a+1))*1000}G.on=1;nb=0;
+ const al=i=>G.al[i].filter(Boolean).length;
+ view('<div class="sb">'+[0,1].map(i=>'<div class="'+(i===tm?'on':'')+'">'+esc(T(i))+'<b>'+G.sc[i]+'</b>'+'🥔'.repeat(0)+'👤'.repeat(al(i))+'</div>').join('')+'</div><div class="card c"><div class="pot" id="pot">🥔</div><div class="who">Concursante '+(k+1)+' · '+esc(T(tm))+'</div><div class="q">'+esc(q[0])+'</div><input id="ai" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Tu respuesta"><div class="fb" id="fb"></div><button class="btn" id="ok">Responder</button></div>');
+ const ai=$('ai');ai.focus();$('ok').onclick=answer;ai.onkeydown=e=>{if(e.key==='Enter')answer()}}
+function answer(){if(!G.on)return;const ai=$('ai'),g=parseInt(ai.value,10);if(isNaN(g))return;const a=G.q[1],fb=$('fb');
+ if(g===a){tone(1200,.15);G.tn++;turn();return}
+ const near=Math.abs(g-a)<=Math.max(2,a*.01);fb.textContent=cfg.hint?(g<a?'⬆️ Más alto':'⬇️ Más bajo')+(near?' 🔥 ¡Caliente!':''):'❌ No es ese';fb.style.color=near?'#ff9f43':'#ff5d73';tone(220,.12);ai.value='';ai.focus()}
+function boom(){G.on=0;boomSnd();const {tm,k}=G.h;G.al[tm][k]=0;const left=G.al[tm].filter(Boolean).length;
+ view('<div class="card c"><div class="boom">💥</div><h1>¡BOOM!</h1><p>La patata explota en las manos del concursante '+(k+1)+' de <b>'+esc(T(tm))+'</b>, que queda eliminado.</p><p class="m">Respuesta que buscaba: <b>'+G.q[1]+'</b></p><button class="btn" id="nx">'+(left?'Seguir':'Ver resultado')+'</button></div>');
+ $('nx').onclick=()=>{if(left){G.tn++;turn()}else endMatch(1-tm)}}
+function endMatch(w){G.sc[w]++;const fin=G.sc[w]>=cfg.pts;
+ view('<div class="card c"><div style="font-size:80px">'+(fin?'🏆':'🥔')+'</div><h1>'+(fin?'¡'+esc(T(w))+' gana la serie!':'Punto para '+esc(T(w)))+'</h1><div class="sb">'+[0,1].map(i=>'<div>'+esc(T(i))+'<b>'+G.sc[i]+'</b></div>').join('')+'</div>'+(fin?'<button class="btn" id="a1">Jugar otra serie</button><button class="btn s" id="a2">Ajustes</button>':'<button class="btn" id="a1">Siguiente partida</button>')+'</div>');
+ $('a1').onclick=()=>{if(fin)G.sc=[0,0];match()};if($('a2'))$('a2').onclick=home}
+clearInterval(tick);tick=setInterval(()=>{if(!G||!G.on)return;const now=Date.now();if(now>=G.end)return boom();
+ const f=(now-G.start)/(G.end-G.start),beat=f<.6?1:.25+(1-f)/.4*.75,p=$('pot');if(p){p.style.setProperty('--s',(1+f*.9).toFixed(3));p.style.setProperty('--beat',beat+'s')}
+ if(now>=nb){tone(f<.6?500:f<.85?750:1000,.06);nb=now+beat*1000}},80);
+home();
+})();
+</script></body></html>

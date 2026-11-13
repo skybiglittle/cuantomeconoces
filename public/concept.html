@@ -158,8 +158,6 @@ const CATS = [
 ].flat();
 const PICTOS=[],seenPicto=new Set();
 CATS.forEach(([,s],ci)=>{if(!s)return;s.split(',').forEach(x=>{x=x.trim();if(seenPicto.has(x))return;seenPicto.add(x);const i=x.indexOf(' ');if(i>0)PICTOS.push({e:x.slice(0,i),t:x.slice(i+1),c:ci})})});
-const CONCEPTS=`
-
 const CONCEPTS = `estar en las nubes,
 estar entre la espada y la pared,
 estar como una cabra,
@@ -1166,9 +1164,8 @@ viajar al espacio,
 flotar en gravedad cero,
 caminar sobre la luna,
 volver a la Tierra,
-  const CONCEPTS = `
+  
 
-// ❤️ EMOCIONES Y SENTIMIENTOS
 amor,
 odio,
 alegría,
@@ -1224,7 +1221,6 @@ melancolía,
 optimismo,
 pesimismo,
 
-// 🧠 MENTE Y PENSAMIENTO
 idea,
 pensamiento,
 memoria,
@@ -1277,7 +1273,6 @@ probabilidad,
 riesgo,
 oportunidad,
 
-// ⚖️ VALORES
 respeto,
 honestidad,
 sinceridad,
@@ -1318,7 +1313,6 @@ comprensión,
 sacrificio,
 determinación,
 
-// 🚦 SITUACIONES Y ESTADOS
 éxito,
 fracaso,
 victoria,
@@ -1370,7 +1364,6 @@ desafío,
 competencia,
 cooperación,
 
-// 👥 RELACIONES SOCIALES
 amistad,
 enemistad,
 pareja,
@@ -1424,7 +1417,6 @@ rumor,
 cotilleo,
 secreto,
 
-// 💼 TRABAJO Y VIDA
 trabajo,
 descanso,
 vacaciones,
@@ -1468,7 +1460,6 @@ castigo,
 oportunidad,
 experiencia,
 
-// ⏳ TIEMPO
 pasado,
 presente,
 futuro,
@@ -1517,7 +1508,6 @@ juventud,
 adultez,
 vejez,
 
-// 🗺️ ESPACIO Y POSICIÓN
 cerca,
 lejos,
 arriba,
@@ -1560,7 +1550,6 @@ mitad,
 totalidad,
 parte,
 
-// 🔢 CANTIDAD Y COMPARACIÓN
 mucho,
 poco,
 todo,
@@ -1596,7 +1585,6 @@ casi,
 exactamente,
 aproximadamente,
 
-// 🔄 CAMBIO Y TRANSFORMACIÓN
 cambio,
 transformación,
 evolución,
@@ -1633,7 +1621,6 @@ división,
 organización,
 desorganización,
 
-// 🎯 OBJETIVOS Y MOTIVACIÓN
 objetivo,
 meta,
 sueño,
@@ -1667,7 +1654,6 @@ derrota,
 superación,
 recompensa,
 
-// ⚠️ PROBLEMAS Y DIFICULTADES
 problema,
 obstáculo,
 dificultad,
@@ -1708,7 +1694,6 @@ soledad,
 inseguridad,
 incertidumbre,
 
-// 🏆 ÉXITO Y LOGROS
 éxito,
 victoria,
 triunfo,
@@ -1741,7 +1726,6 @@ talento,
 habilidad,
 experiencia,
 
-// ❌ FRACASOS Y ERRORES
 fracaso,
 derrota,
 error,
@@ -1773,7 +1757,6 @@ respuesta incorrecta,
 plan fallido,
 intento fallido,
 
-// 🗣️ COMUNICACIÓN
 palabra,
 conversación,
 diálogo,
@@ -1816,7 +1799,6 @@ insulto,
 broma,
 indirecta,
 
-// ❤️ AMOR Y RELACIONES
 amor,
 enamoramiento,
 atracción,
@@ -1853,7 +1835,6 @@ amor a primera vista,
 media naranja,
 amistad verdadera,
 
-// 🎭 PERSONALIDAD
 amabilidad,
 simpatía,
 antipatía,
@@ -1892,7 +1873,6 @@ hipocresía,
 lealtad,
 deslealtad,
 
-// 🧩 CONCEPTOS GENERALES
 causa,
 consecuencia,
 principio,
@@ -2080,7 +2060,6 @@ const norm=s=>String(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\
 const normC=s=>norm(s).replace(/^(el|la|los|las|un|una|unos|unas) /,'');
 const hash=s=>{let h=5381;for(const c of normC(s))h=((h<<5)+h+c.charCodeAt(0))|0;return(h>>>0).toString(36)};
 function lev(a,b){const m=[];for(let i=0;i<=a.length;i++)m[i]=[i];for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
-// Acierto flexible: frase casi exacta, o aparecen las palabras significativas del concepto (con erratas leves)
 const STOP=new Set(['de','del','la','el','los','las','un','una','en','a','al','con','por','para','y','o','que','se','su','sus','lo']);
 const toks=s=>norm(s).split(' ').filter(w=>w&&!STOP.has(w));
 function matches(g,ans){const a=normC(g),b=normC(ans);if(!a)return false;
@@ -2099,7 +2078,6 @@ const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCod
 const P=x=>x.p||{};
 const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
 const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
-// La presencia se acumula en local: cada envío incluye todo lo anterior, así un publish nuevo no borra tablero, estado ni respuestas
 function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
 function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({c_state:state});persist();render()}
 function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
@@ -2117,7 +2095,6 @@ function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);room
 function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};state=null;own={turn:0,ans:'',board:[],gn:0,g:null,win:null,pn:0,prop:null,ansTurn:0};persist();connect();render()}
 function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};sessionStorage.removeItem(STORE);renderHome()}
 
-// ---------- Lógica del anfitrión (turnos, puntos, propuestas) ----------
 const activePeer=()=>peers.find(x=>P(x).c_key===state?.activeKey);
 function startGame(){const ps=playerList();if(ps.length<2)return;const order=ps.map(p=>p.key).sort(()=>Math.random()-.5),names={},scores={};ps.forEach(p=>{names[p.key]=p.name;scores[p.key]=0});
  Object.assign(state,{order,names,scores,turn:0,total:order.length*state.rpp,used:[],winKey:'',note:''});nextTurn()}
@@ -2135,7 +2112,6 @@ function hostStep(){if(!isHost||!state)return;
  if(a?.c_end&&a.c_end===state.turn)return endTurn('','Se ha revelado la respuesta.');
  if(!ap){missing=missing||Date.now();if(Date.now()-missing>6000)endTurn('','El jugador del turno se ha desconectado.')}else missing=0}
 
-// ---------- Lógica del jugador que representa ----------
 function pickWord(){const pool=CONCEPTS.concat((state.customWords||[]).map(w=>w.w)),used=state.used||[];const av=pool.filter(w=>!used.includes(hash(w)));const l=av.length?av:pool;return l[rand(l.length)]}
 function performerStep(){if(!state||!state.order||!state.order.includes(myKey)||state.activeKey!==myKey)return;
  if(state.phase==='play'&&own.turn!==state.turn){own={...own,turn:state.turn,ans:pickWord(),board:[],win:null,ansTurn:0};persist();publish({c_h:{t:state.turn,h:hash(own.ans)},c_hint:{t:state.turn,n:own.ans.trim().split(/\s+/).length},c_b:[],c_bt:state.turn,c_win:null,c_end:null,c_ans:null})}
@@ -2149,14 +2125,12 @@ function board(){return own.board}
 function curBoard(){if(state?.activeKey===myKey)return own.board;const a=activePeer(),p=a&&P(a);return p&&p.c_bt===state.turn&&Array.isArray(p.c_b)?p.c_b:[]}
 function curAnswer(){if(state?.activeKey===myKey)return own.ans;const a=activePeer(),p=a&&P(a);return p?.c_ans&&p.c_ans.t===state.turn?p.c_ans.a:''}
 
-// ---------- Acciones ----------
 const isActive=()=>state?.phase==='play'&&state.activeKey===myKey;
 function addPicto(i){if(!isActive()||own.board.length>=10)return;own.board.push([i,color,1]);pushBoard();updateGame()}
 function sendGuess(){const el=$('guess'),g=el?.value.trim();if(!g||state?.phase!=='play')return;own.gn++;own.g={t:state.turn,n:own.gn,g:g.slice(0,60)};el.value='';persist();publish({c_g:own.g})}
 function sendProposal(){const el=$('prop'),w=el?.value.trim();if(!w||w.length<3)return;if(isHost){const pool=CONCEPTS.map(norm).concat(state.customWords.map(x=>norm(x.w)));if(!pool.includes(norm(w))&&state.customWords.length<100){state.customWords.push({w:w.slice(0,50),by:name});commit()}}else{own.pn++;own.prop={n:own.pn,w};persist();publish({c_prop:own.prop})}el.value='';$('pmsg').textContent='¡Propuesta enviada!'}
 function giveUp(){if(!isActive())return;publish({c_end:state.turn,c_ans:{t:state.turn,a:own.ans}});own.ansTurn=state.turn}
 
-// ---------- Vistas ----------
 function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
 function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>CONCEPT</h1><p class="muted">Piensa en imágenes. Representa una idea con pictogramas y deja que los demás la descifren. 🧩</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">En cada turno una persona recibe un concepto <b>secreto</b> (solo lo ve ella) y lo representa colocando hasta 10 pictogramas. Toca un pictograma del tablero para cambiar su <b>tamaño</b> (pequeño, mediano, grande). Los demás escriben respuestas: quien acierta suma 1 punto y el que dibujaba también. Verás una pista con el número de palabras, y quien dibuja puede marcar ✔ una respuesta correcta.</p></section>';
  $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}

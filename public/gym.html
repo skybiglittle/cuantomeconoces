@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guía de máquinas</title>
+<style>
+:root{--bg:#eceae4;--card:#fbfaf6;--ink:#1c1e20;--mut:#5d6468;--line:#1c1e20;--bad:#c9372c;--ok:#18864d;--soft:#dcd9d0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191b;--card:#222527;--ink:#f1efe8;--mut:#a3abb0;--line:#f1efe8;--bad:#ff7a6e;--ok:#4fd18b;--soft:#33373a}}
+:root[data-theme="dark"]{--bg:#17191b;--card:#222527;--ink:#f1efe8;--mut:#a3abb0;--line:#f1efe8;--bad:#ff7a6e;--ok:#4fd18b;--soft:#33373a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 48px}
+h1,h2,h3{font-family:"Arial Black",Impact,system-ui,sans-serif;line-height:1.05;margin:0}
+h1{font-size:clamp(34px,11vw,52px);margin:8px 0 8px}
+h2{font-size:clamp(28px,9vw,40px);margin:8px 0 6px}
+h3{font-size:19px;margin:22px 0 8px}
+p{margin:0 0 12px}
+.mut{color:var(--mut);font-size:15px}
+a{color:inherit}
+.back{background:none;border:0;color:var(--mut);font:inherit;font-size:15px;padding:8px 0;cursor:pointer;text-decoration:underline}
+.mc{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px;margin:12px 0;border:3px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer;box-shadow:5px 5px 0 var(--line)}
+.mc:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--line)}
+.mc svg{flex:none;width:96px;height:72px;border-radius:8px;background:var(--soft)}
+.mc b{display:block;font-family:"Arial Black",Impact,sans-serif;font-size:20px;line-height:1.1}
+.mc span{font-size:14px;color:var(--mut)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:var(--mcol)}
+.fig{background:var(--soft);border:3px solid var(--line);border-radius:14px;padding:6px;margin:12px 0}
+.fig svg{display:block;width:100%;height:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{padding:4px 12px;border-radius:99px;border:2px solid var(--line);font-size:14px;font-weight:700;background:var(--mcol);color:#14161a}
+.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+.steps li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--soft)}
+.steps li::before{counter-increment:s;content:counter(s);flex:none;width:32px;height:32px;border-radius:50%;border:3px solid var(--line);background:var(--mcol);color:#14161a;font:900 15px/26px "Arial Black",sans-serif;text-align:center}
+.steps b{display:block}
+.err{list-style:none;padding:0;margin:0}
+.err li{padding:10px 12px;margin:8px 0;border-left:6px solid var(--bad);background:var(--card);border-radius:0 10px 10px 0}
+.err b{color:var(--bad)}
+.ok{border-left-color:var(--ok)!important}.ok b{color:var(--ok)!important}
+.box{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
+.warn{font-size:14px;color:var(--mut);border-top:2px dashed var(--soft);padding-top:12px;margin-top:24px}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+/* Esquemas laterales hechos con SVG: sin fotos externas, funcionan sin conexión */
+var FIG={
+prensa:'<svg viewBox="0 0 300 200" role="img" aria-label="Esquema lateral de la prensa de piernas con las rodillas a 90 grados"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 176H286" stroke-width="4" opacity=".4"/><path d="M96 158L26 88" stroke-width="12" opacity=".35"/><path d="M80 140L38 98"/><path d="M80 140L140 90"/><path d="M140 90L190 130"/><path d="M210 105L170 155" stroke-width="12" stroke="var(--mcol)"/><path d="M96 158H130" stroke-width="12" opacity=".35"/></g><circle cx="27" cy="84" r="13" fill="currentColor"/><path d="M128 86a48 48 0 0 1 14 40" fill="none" stroke="var(--bad)" stroke-width="3" stroke-dasharray="5 4"/><text x="150" y="70" font-size="16" font-weight="800" fill="currentColor">90°</text><text x="14" y="30" font-size="13" fill="currentColor">Espalda y cadera pegadas</text><text x="14" y="194" font-size="12" fill="currentColor" opacity=".7">Plataforma</text></svg>',
+jalon:'<svg viewBox="0 0 300 200" role="img" aria-label="Esquema lateral del jalón al pecho con la barra a la altura de la clavícula"><g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 188H286" stroke-width="4" opacity=".4"/><path d="M80 150H130" stroke-width="12" opacity=".35"/><path d="M100 140L92 80"/><path d="M100 140L170 136L174 184"/><path d="M92 80L118 108L134 84"/><path d="M146 120L190 120" stroke-width="12" stroke="var(--mcol)"/><path d="M134 84V16L165 8" stroke-width="3"/><path d="M122 84H146" stroke-width="10" stroke="var(--mcol)"/></g><circle cx="90" cy="62" r="13" fill="currentColor"/><path d="M118 108L110 128" stroke="var(--bad)" stroke-width="3" stroke-dasharray="5 4"/><text x="196" y="124" font-size="13" fill="currentColor">Almohadilla</text><text x="150" y="70" font-size="13" fill="currentColor">Barra a la clavícula</text><text x="14" y="30" font-size="13" fill="currentColor">Pecho arriba</text></svg>'
+};
+var M=[
+{id:'prensa',name:'Prensa de piernas',sub:'Cuádriceps, glúteos e isquios',col:'#3a7bff',
+ muscles:['Cuádriceps','Glúteos','Isquiotibiales','Gemelos (ayudan)'],
+ ajustes:[
+  ['Regula el asiento','Siéntate y baja la plataforma hasta que las rodillas queden a unos 90°. Si tu espalda baja se despega del respaldo, el asiento está demasiado cerca.'],
+  ['Coloca los pies','En el centro de la plataforma, a la anchura de los hombros y con las puntas ligeramente hacia fuera.'],
+  ['Pega la espalda','Cabeza, espalda y glúteos apoyados en el respaldo durante todo el movimiento.'],
+  ['Agarra las asas','Solo para estabilizarte. No tires de ellas.']],
+ como:['Empuja con todo el pie, sobre todo con el talón y el centro.','Estira las piernas sin bloquear las rodillas arriba.','Baja despacio, contando 2 o 3 segundos, hasta unos 90°.','Las rodillas siguen la dirección de los pies, no se van hacia dentro.','Suelta el aire al empujar.'],
+ errores:['Bloquear las rodillas arriba: castiga la articulación. Deja una ligera flexión.','Bajar tanto que la cadera se despega y la zona lumbar se redondea.','Rodillas que se juntan al empujar: baja el peso y vigila su trayectoria.','Rebotar abajo en vez de controlar el descenso.','Poner los pies muy bajos en la plataforma: carga de más la rodilla.'],
+ serie:'3 series de 10 a 12 repeticiones con un peso con el que sobren 2 o 3 repeticiones. Descansa 60 a 90 segundos.'},
+{id:'jalon',name:'Jalón al pecho',sub:'Espalda, bíceps y hombro posterior',col:'#f2b705',
+ muscles:['Dorsal ancho','Bíceps','Romboides','Trapecio inferior'],
+ ajustes:[
+  ['Regula la almohadilla','Baja el rodillo hasta que quede firme sobre los muslos, sin estar flojo. Evita que te levantes al tirar.'],
+  ['Elige el agarre','Palmas hacia delante, un poco más ancho que los hombros. Pulgares rodeando la barra.'],
+  ['Siéntate recto','Pecho arriba, hombros bajos, ligera inclinación hacia atrás de unos 10 a 15°.'],
+  ['Empieza con los brazos estirados','Siente el estiramiento de la espalda, pero sin que los hombros suban hacia las orejas.']],
+ como:['Baja los hombros y junta las escápulas antes de tirar.','Lleva los codos hacia abajo y un poco atrás, hacia las caderas.','Baja la barra hasta la parte alta del pecho, a la altura de la clavícula.','Sube despacio, sin que los pesos choquen entre sí.','Suelta el aire al tirar.'],
+ errores:['Tirar por detrás de la nuca: fuerza el cuello y el hombro.','Balancearte con todo el cuerpo para tomar impulso: baja el peso.','Encoger los hombros hacia las orejas al tirar.','Tirar solo con los brazos: piensa en llevar los codos hacia abajo.','Dejar que los pesos tiren de ti hacia arriba sin controlarlo.'],
+ serie:'3 series de 8 a 12 repeticiones, con un peso que puedas controlar en la subida. Descansa 60 a 90 segundos.'}
+];
+var app=document.getElementById('app');
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function home(){
+  document.title='Guía de máquinas';
+  app.innerHTML='<h1>Guía de máquinas</h1><p>Elige una máquina para ver cómo regularla y cómo colocarte. Por ahora hay dos; se pueden añadir más.</p>'
+  +M.map(function(m){return '<button class="mc" style="--mcol:'+m.col+'" data-id="'+m.id+'"><span style="flex:none;color:var(--ink)">'+FIG[m.id].replace('<svg ','<svg style="width:96px;height:72px;border-radius:8px;background:var(--soft)" ')+'</span><span><b>'+esc(m.name)+'</b><span>'+esc(m.sub)+'</span></span></button>'}).join('')
+  +'<p class="warn">Esta guía es orientativa y no sustituye a un entrenador. Si notas dolor agudo, mareo o algo raro, para y pide ayuda en sala. Empieza siempre con poco peso.</p>';
+  window.scrollTo(0,0);
+}
+function detail(id){
+  var m=M.filter(function(x){return x.id===id})[0];if(!m)return home();
+  document.title=m.name+' · Guía de máquinas';
+  app.innerHTML='<button class="back" data-id="">← Todas las máquinas</button><div style="--mcol:'+m.col+'"><h2>'+esc(m.name)+'</h2><p class="mut">'+esc(m.sub)+'</p>'
+  +'<div class="fig" style="color:var(--ink)">'+FIG[m.id]+'</div><p class="mut" style="font-size:13px">Esquema lateral orientativo. La línea punteada marca el ángulo o el punto clave.</p>'
+  +'<div class="chips">'+m.muscles.map(function(x){return '<span class="chip">'+esc(x)+'</span>'}).join('')+'</div>'
+  +'<h3>Antes de empezar</h3><ol class="steps">'+m.ajustes.map(function(a){return '<li><div><b>'+esc(a[0])+'</b>'+esc(a[1])+'</div></li>'}).join('')+'</ol>'
+  +'<h3>Cómo hacerlo bien</h3><ul class="err">'+m.como.map(function(x){return '<li class="ok"><b>✓</b> '+esc(x)+'</li>'}).join('')+'</ul>'
+  +'<h3>Errores frecuentes</h3><ul class="err">'+m.errores.map(function(x){return '<li><b>✗</b> '+esc(x)+'</li>'}).join('')+'</ul>'
+  +'<div class="box"><b>Para empezar</b><br>'+esc(m.serie)+'</div>'
+  +'<p class="warn">Guía orientativa. Si dudas de tu técnica o tienes alguna lesión, pide a un entrenador de tu gimnasio que te corrija en directo.</p></div>';
+  window.scrollTo(0,0);
+}
+function route(){var h=location.hash.replace('#','');h?detail(h):home()}
+app.addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(!b)return;var id=b.getAttribute('data-id');if(id)location.hash=id;else{history.replaceState(null,'',location.pathname);home()}});
+window.addEventListener('hashchange',route);route();
+</script>
+</body>
+</html>

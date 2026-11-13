@@ -367,7 +367,7 @@ function start(create){
   if(!code){MSG='Escribe el código de la sala.';home();return}
   G={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',r:0,cur:null,sc:{},dec:{},qs:[],ap:[],used:{},rot:0,res:null,vote:null,t0:0,rr:-1,open:false};
   MSG='';lastKey='';render();
-  RM.join('ret-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
+  RM.join('cmt-ret-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
   TM=setInterval(tick,500);
 }
 function leave(msg){if(NR){NR.leave();NR=null}clearInterval(TM);G=null;MSG=msg||'';home()}

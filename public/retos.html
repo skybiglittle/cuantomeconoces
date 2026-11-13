@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retos</title>
+<style>
+:root{--bg:#f6f0ff;--card:#fff;--ink:#22143c;--mut:#6b5d84;--ac:#ff3d7f;--hi:#ffd23f;--ok:#1b9e5a;--no:#d6453d;--line:#22143c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150c2b;--card:#241743;--ink:#f6f0ff;--mut:#b3a6cc;--line:#f6f0ff}}
+:root[data-theme="dark"]{--bg:#150c2b;--card:#241743;--ink:#f6f0ff;--mut:#b3a6cc;--line:#f6f0ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px 16px 48px}
+h1{font:900 clamp(44px,15vw,72px)/.92 "Arial Black",Impact,sans-serif;margin:6px 0 10px;letter-spacing:-.02em;color:var(--ac);text-shadow:3px 3px 0 var(--line)}
+h2{font:900 24px/1.1 "Arial Black",Impact,sans-serif;margin:0 0 8px}
+p{margin:0 0 12px}.mut{color:var(--mut);font-size:15px}
+.top{display:flex;justify-content:space-between;font-size:14px;color:var(--mut);margin-bottom:8px}
+.card{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.btn{display:block;width:100%;margin-top:10px;padding:14px;border:3px solid var(--line);border-radius:10px;background:var(--ac);color:#fff;font:inherit;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--line)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.g{background:var(--card);color:var(--ink)}.btn.ok{background:var(--ok)}.btn.no{background:var(--no)}
+.btn:disabled{opacity:.4}
+.sm{display:inline-block;width:auto;margin:0 6px 0 0;padding:6px 14px;font-size:15px;box-shadow:0 3px 0 var(--line)}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;font:inherit;font-size:14px;padding:6px 0;cursor:pointer}
+input,textarea{width:100%;padding:12px;border:3px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;margin:6px 0}
+textarea{height:80px;resize:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.pl{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:4px 12px;border:2px solid var(--line);border-radius:99px;font-size:15px;background:var(--hi);color:#22143c;font-weight:700}
+.reto{background:var(--hi);color:#22143c;border:4px solid var(--line);border-radius:16px;padding:22px 16px;text-align:center;box-shadow:6px 6px 0 var(--line);transform:rotate(-1deg);margin:14px 0}
+.reto .by{font-size:13px;font-weight:700;opacity:.7}
+.reto p{font:900 clamp(24px,7vw,34px)/1.12 "Arial Black",Impact,sans-serif;margin:8px 0}
+.who{display:inline-block;background:var(--ac);color:#fff;padding:4px 14px;border-radius:99px;border:3px solid var(--line);font-weight:800}
+.tm{font:900 40px/1 "Arial Black",sans-serif;text-align:center}
+.rank{list-style:none;padding:0;margin:8px 0}.rank li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)}
+.pr{padding:10px 0;border-bottom:1px dashed var(--line)}
+.err{color:var(--no);font-size:14px}.okc{color:var(--ok);font-size:14px}
+.res{text-align:center;font:900 30px/1.1 "Arial Black",sans-serif;margin:10px 0}
+.dots i{display:inline-block;width:8px;height:8px;margin:0 3px;border-radius:50%;background:var(--ac);animation:bl 1.1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+/* ===== Retos incluidos: salen solos si no hay retos aprobados ===== */
+var BUILTIN=[
+['Imita a un animal hasta que alguien adivine cuál es.',30],['Habla como un presentador de telediario sobre lo que hay en la mesa.',30],['Baila sin música durante 20 segundos.',20],['Cuenta un chiste y mantén la cara seria pase lo que pase.',0],['Haz tu mejor cara de sorpresa, de enfado y de susto, una detrás de otra.',15],['Di el abecedario al revés lo más rápido que puedas.',30],['Describe a la persona de tu derecha como si fuera un personaje de videojuego.',0],['Inventa un anuncio de televisión para el objeto que tengas más cerca.',30],['Aguanta sobre un solo pie con los ojos cerrados.',20],['Cuenta tu última comida como si fuera una película de miedo.',30],['Habla sin usar la letra A durante 20 segundos.',20],['Haz de camarero y propón el menú más absurdo del mundo.',30],['Imita a otro jugador hasta que lo adivinen.',30],['Canta una canción conocida con la voz de un robot.',20],['Haz una entrevista de trabajo para ser rey o reina de un país inventado.',30],['Describe tu día de hoy en cinco palabras exactas.',0],['Haz como si fueras un guía de museo y explica una mancha de la pared.',30],['Mira a los ojos a un jugador y consigue que se ría sin tocarlo ni hablar.',20],['Di tres cosas que te encantan de la persona a tu izquierda.',0],['Pon voz de dibujos animados y pide un café.',20],['Haz tu mejor paso de baile viral sin avisar cuál es.',20],['Cuenta un secreto inventado con total convicción.',0],['Narra lo que hace otro jugador como si fuera un partido de fútbol.',30],['Haz 10 sentadillas diciendo en voz alta tus mejores cualidades.',30],['Dibuja en el aire un objeto y deja que adivinen cuál es.',30],['Habla durante 20 segundos de un tema sin repetir ninguna palabra.',20],['Haz de abuelo o abuela dando consejos de vida.',30],['Convence al grupo de que el lunes debería ser festivo.',30],['Camina como si fueras un famoso en la alfombra roja.',20],['Di un trabalenguas tres veces seguidas sin equivocarte.',20],['Haz una pose de estatua y no te muevas hasta que acabe el tiempo.',20],['Cuenta cómo sería una cita perfecta, pero con un pato.',30]];
+/* ===== Salas: usa el servidor WebSocket de la misma dirección ===== */
+function makeRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return{join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,arr=[],subs=[],done=false,closed=false,retry=0,pres={},cid=Math.random().toString(36).slice(2);
+    var room={peers:function(){return arr},
+      onPeers:function(f){subs.push(f)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello')id=m.id;
+        else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
+var app=document.getElementById('app'),NR=null,G=null,TM=null,MSG='',lastKey='';
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function $(i){return document.getElementById(i)}
+function peers(){return NR?NR.peers().filter(function(p){return p.presence&&p.presence.rm}).map(function(p){return{me:p.isMe,p:p.presence}}):[]}
+function nameOf(k){var x=peers().filter(function(y){return y.p.k===k})[0];return x?x.p.n:'?'}
+function hostP(){var x=peers().filter(function(y){return y.p.h===1})[0];return x&&x.p}
+/* ===== Presencia ===== */
+function pub(){
+  if(!NR||!G)return;
+  var p={rm:1,n:G.name,k:G.me,qs:G.qs,v:G.vote,h:null,ph:null,r:null,cur:null,sc:null,res:null,dec:null};
+  if(G.host){p.h=1;p.ph=G.ph;p.r=G.r;p.cur=G.cur;p.sc=G.sc;p.res=G.res;p.dec=G.dec}
+  NR.presence(p).catch(function(){});
+}
+function start(create){
+  if(!RM){MSG='Las salas necesitan abrir este archivo desde tu servidor (http), no como archivo suelto.';home();return}
+  var name=($('nm').value||'').trim().slice(0,16)||(create?'Anfitrión':'Jugador'),code=create?newCode():($('cd').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!code){MSG='Escribe el código de la sala.';home();return}
+  G={code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,ph:'lobby',r:0,cur:null,sc:{},dec:{},qs:[],ap:[],used:{},rot:0,res:null,vote:null,t0:0,rr:-1,open:false};
+  MSG='';lastKey='';render();
+  RM.join('ret-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').')});
+  TM=setInterval(tick,500);
+}
+function leave(msg){if(NR){NR.leave();NR=null}clearInterval(TM);G=null;MSG=msg||'';home()}
+/* ===== Lógica ===== */
+function pending(){
+  var out=[];peers().forEach(function(x){(x.p.qs||[]).forEach(function(q){if(q&&q.i&&G.dec[q.i]===undefined)out.push({i:q.i,t:String(q.t).slice(0,100),by:x.p.n})})});return out;
+}
+function decide(i,ok){
+  var q=pending().filter(function(x){return x.i===i})[0];if(!q)return;
+  if(ok)G.ap.push({t:q.t,by:q.by});
+  G.dec[i]=ok?1:0;var ks=Object.keys(G.dec);if(ks.length>40)delete G.dec[ks[0]];
+  pub();render();
+}
+function next(){
+  var ps=peers();if(ps.length<2)return;
+  var ap=G.ap.filter(function(x){return !G.used[x.t]}),pool,reto;
+  if(ap.length)reto={t:ap[0].t,s:0,by:'Propuesto por '+ap[0].by};
+  else{var left=BUILTIN.filter(function(b){return !G.used[b[0]]});if(!left.length){G.used={};left=BUILTIN}var b=sh(left)[0];reto={t:b[0],s:b[1],by:'Reto del juego'}}
+  G.used[reto.t]=1;
+  var who=ps[G.rot%ps.length];G.rot++;
+  reto.to=who.p.k;reto.tn=who.p.n;
+  G.r++;G.cur=reto;G.res=null;G.vote=null;G.ph='play';pub();sync();
+}
+function resolve(){
+  if(!G.host||!G.cur||G.res)return;
+  var y=0,n=0;peers().forEach(function(x){if(x.p.k!==G.cur.to&&x.p.v&&x.p.v.r===G.r){x.p.v.o?y++:n++}});
+  if(!y&&!n)return;
+  var ok=y>=n;if(ok)G.sc[G.cur.to]=(G.sc[G.cur.to]||0)+1;
+  G.res={r:G.r,ok:ok,y:y,n:n};pub();sync();
+}
+function vote(o){if(!G||!G.cur||G.cur.to===G.me||G.vote&&G.vote.r===G.r)return;G.vote={r:G.r,o:o};pub();sync()}
+function propose(){
+  var t=($('pt').value||'').trim();
+  if(t.length<6)return note('Escribe el reto (mínimo 6 letras).',0);
+  if(G.qs.length>=3)return note('Ya tienes 3 retos esperando respuesta.',0);
+  G.qs.push({i:Math.random().toString(36).slice(2,8),t:t.slice(0,100)});$('pt').value='';pub();note('Enviado al anfitrión ✓',1);render();
+}
+function note(m,ok){var e=$('pn');if(e){e.textContent=m;e.className=ok?'okc':'err'}}
+function sync(){
+  if(!G||!NR)return;
+  var ps=peers();
+  if(!G.host){
+    var h=hostP();
+    if(h){G.ph=h.ph||'lobby';G.cur=h.cur||null;G.sc=h.sc||{};G.res=h.res||null;G.dec=h.dec||{};
+      if(h.r!==G.r){G.r=h.r||0;G.vote=null;G.t0=Date.now()}
+      var before=G.qs.length;G.qs=G.qs.filter(function(q){return G.dec[q.i]===undefined});if(G.qs.length!==before)pub()}
+  }else{
+    if(G.cur&&G.rr!==G.r){G.rr=G.r;G.t0=Date.now()}
+    if(G.ph==='play'&&G.cur&&!G.res){
+      var vs=ps.filter(function(x){return x.p.k!==G.cur.to}),vd=vs.filter(function(x){return x.p.v&&x.p.v.r===G.r}).length;
+      if(vs.length&&vd===vs.length)resolve()}
+  }
+  render();
+}
+function tick(){
+  var e=$('tm');if(!e||!G||!G.cur||!G.cur.s)return;
+  var left=Math.max(0,G.cur.s-Math.floor((Date.now()-G.t0)/1000));e.textContent=left>0?left+' s':'¡Tiempo!';
+}
+/* ===== Pantallas ===== */
+function home(){
+  app.innerHTML='<h1>RETOS</h1><p>Cada uno desde su móvil. Salen retos del juego y, además, podéis proponer los vuestros: el anfitrión decide cuáles entran.</p><div class="card"><input id="nm" maxlength="16" placeholder="Tu nombre"><button class="btn" id="cr">Crear sala</button><p class="mut" style="text-align:center;margin:12px 0 0">o únete a una</p><input id="cd" maxlength="8" placeholder="Código de sala" autocapitalize="none"><button class="btn g" id="jn">Unirme</button>'+(MSG?'<p class="err">'+esc(MSG)+'</p>':'')+'</div>';
+  $('cr').onclick=function(){start(true)};$('jn').onclick=function(){start(false)};
+}
+function pill(x){return '<span class="pill">'+esc(x.p.n)+(x.p.h===1?' 👑':'')+(x.me?' (tú)':'')+'</span>'}
+function panel(){
+  if(!G.host)return'';
+  var pd=pending();
+  return '<div class="card"><h2>Retos propuestos ('+pd.length+')</h2>'+(pd.length?pd.map(function(q){return '<div class="pr"><b>«'+esc(q.t)+'»</b><div class="mut" style="margin:2px 0 8px">de '+esc(q.by)+'</div><button class="btn ok sm" data-ok="'+q.i+'">Aceptar</button><button class="btn no sm" data-no="'+q.i+'">Rechazar</button></div>'}).join(''):'<p class="mut">Nadie ha propuesto nada todavía.</p>')+'<p class="mut" style="margin:10px 0 0">Aceptados hasta ahora: '+G.ap.length+'. Salen antes que los del juego.</p></div>';
+}
+function proposeBox(){
+  var mine=G.qs.map(function(q){return '<li class="mut">⏳ «'+esc(q.t)+'» (esperando)</li>'}).join('');
+  return '<div class="card"><h2>Propón un reto</h2><textarea id="pt" maxlength="100" placeholder="Ej: Imita a tu profesor favorito durante 20 segundos"></textarea><p id="pn" class="err" style="min-height:1em"></p><button class="btn g" id="ps">Enviar al anfitrión</button>'+(mine?'<ul style="padding-left:18px;margin:10px 0 0">'+mine+'</ul>':'')+'</div>';
+}
+function rank(){
+  var ps=peers();return '<ul class="rank">'+ps.slice().sort(function(a,b){return (G.sc[b.p.k]||0)-(G.sc[a.p.k]||0)}).map(function(x,i){return '<li><span>'+(i+1)+'. '+esc(x.p.n)+(x.me?' (tú)':'')+'</span><b>'+(G.sc[x.p.k]||0)+'</b></li>'}).join('')+'</ul>';
+}
+function render(){
+  if(!G)return;
+  var ps=peers(),top='<div class="top"><span>Sala '+esc(G.code.toUpperCase())+(G.ph==='play'?' · Reto '+G.r:'')+'</span><button class="link" id="lv">Salir</button></div>',h='';
+  var keep=function(id){var e=$(id);return e?e.value:''},pt=keep('pt');
+  if(G.ph==='lobby'){
+    h=top+'<h1>RETOS</h1><div class="card"><div class="mut">Código de sala</div><h2 style="font-size:36px;letter-spacing:.12em">'+esc(G.code.toUpperCase())+'</h2><div class="pl">'+ps.map(pill).join('')+'</div></div>'+panel()+proposeBox()
+    +(G.host?'<button class="btn" id="st"'+(ps.length<2?' disabled':'')+'>Empezar retos</button>':'<p class="mut" style="text-align:center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>');
+  }else if(G.ph==='end'){
+    h=top+'<h1>FIN</h1><div class="card"><h2>Marcador</h2>'+rank()+'</div>';
+  }else if(G.cur){
+    var c=G.cur,mine=c.to===G.me,voted=G.vote&&G.vote.r===G.r;
+    h=top+'<div class="reto"><div class="by">'+esc(c.by)+'</div><p>'+esc(c.t)+'</p>'+(c.s?'<div class="tm" id="tm">'+c.s+' s</div>':'')+'</div><div style="text-align:center"><span class="who">'+(mine?'¡Te toca a ti!':'Le toca a '+esc(c.tn))+'</span></div>';
+    if(G.res)h+='<div class="res" style="color:'+(G.res.ok?'var(--ok)':'var(--no)')+'">'+(G.res.ok?'¡Cumplido! +1':'Fallado')+'</div><p class="mut" style="text-align:center">'+G.res.y+' a favor · '+G.res.n+' en contra</p>';
+    else if(mine)h+='<p class="mut" style="text-align:center;margin-top:12px">Haz el reto. Los demás votarán si lo has cumplido<span class="dots"><i></i><i></i><i></i></span></p>';
+    else if(voted)h+='<p class="mut" style="text-align:center;margin-top:12px">Voto enviado. Esperando a los demás…</p>';
+    else h+='<button class="btn ok" id="y">👍 Lo ha cumplido</button><button class="btn no" id="n">👎 No lo ha cumplido</button>';
+    if(G.host)h+=(G.res?'<button class="btn" id="nx">Siguiente reto</button>':'<button class="btn g" id="rs">Cerrar votación ya</button><button class="btn g" id="nx">Saltar reto</button>')+'<button class="btn g" id="en">Terminar partida</button>';
+    h+=panel()+proposeBox()+'<div class="card"><h2>Marcador</h2>'+rank()+'</div>';
+  }
+  var key=h;if(key===lastKey)return;lastKey=key;app.innerHTML=h;var p=$('pt');if(p)p.value=pt;bind();
+}
+function bind(){
+  var b=function(id,f){var e=$(id);if(e)e.onclick=f};
+  b('lv',function(){if(confirm('¿Salir de la sala?'))leave()});
+  b('st',next);b('nx',next);b('rs',resolve);b('y',function(){vote(1)});b('n',function(){vote(0)});b('ps',propose);
+  b('en',function(){if(confirm('¿Terminar la partida?')){G.ph='end';pub();sync()}});
+  [].forEach.call(document.querySelectorAll('[data-ok]'),function(e){e.onclick=function(){decide(e.getAttribute('data-ok'),true)}});
+  [].forEach.call(document.querySelectorAll('[data-no]'),function(e){e.onclick=function(){decide(e.getAttribute('data-no'),false)}});
+}
+home();
+</script>
+</body>
+</html>

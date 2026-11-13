@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El tiempo</title>
+<style>
+:root{--bg:#eef3f8;--card:#fff;--ink:#14243a;--mut:#5b6c80;--line:#d7e0ea;--bar:#e4ebf3;--ac:#2f7de1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1621;--card:#16222f;--ink:#eaf1f8;--mut:#93a5b8;--line:#263646;--bar:#223244}}
+:root[data-theme="dark"]{--bg:#0d1621;--card:#16222f;--ink:#eaf1f8;--mut:#93a5b8;--line:#263646;--bar:#223244}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:14px 14px 40px}
+.bar{display:flex;gap:8px;margin-bottom:12px}
+.bar input{flex:1;min-width:0;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit}
+.bar button,.sug button{padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.bar button:active{transform:scale(.97)}
+.sug{display:flex;flex-direction:column;gap:6px;margin:-4px 0 12px}
+.sug button{text-align:left}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.hero{border-radius:24px;padding:22px 20px;color:#fff;background:var(--sky,linear-gradient(160deg,#3b8cf0,#8fc8ff));box-shadow:0 10px 30px #0003}
+.hero .pl{font-size:15px;opacity:.9}
+.hero .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
+.hero .t{font-size:76px;font-weight:200;line-height:1;letter-spacing:-.04em}
+.hero .e{font-size:76px;line-height:1}
+.hero .d{font-size:20px;font-weight:600}
+.hero .m{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:14px;opacity:.95}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:22px 4px 8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
+.card .n{font-weight:700;margin-bottom:2px}
+.card .big{font-size:34px;line-height:1.1}
+.card .s{font-size:14px;color:var(--mut)}
+.card .s b{color:var(--ink)}
+.hours{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.h{flex:none;width:62px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;font-size:14px}
+.h .e{font-size:24px;display:block}.h small{color:var(--mut);display:block;font-size:12px}
+.day{display:grid;grid-template-columns:78px 30px 44px 1fr;align-items:center;gap:8px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.day:last-child{border:0}
+.day .e{font-size:24px}.day .r{color:var(--ac);font-size:13px}
+.rng{display:flex;align-items:center;gap:6px;font-size:14px}
+.rng .tr{position:relative;flex:1;height:7px;border-radius:7px;background:var(--bar)}
+.rng .tr i{position:absolute;top:0;bottom:0;border-radius:7px;background:linear-gradient(90deg,#4aa3ff,#ffb347)}
+.rng span{width:30px;text-align:right}.rng span:first-child{color:var(--mut)}
+.msg{text-align:center;padding:40px 10px;color:var(--mut)}
+.msg button{margin-top:12px;padding:10px 18px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.src{font-size:12px;color:var(--mut);text-align:center;margin-top:18px}
+.src a{color:inherit}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar"><input id="q" type="search" placeholder="Buscar otra ciudad…" autocomplete="off" aria-label="Buscar ciudad"><button id="bq" aria-label="Buscar">🔍</button><button id="bg" aria-label="Mi ubicación">📍</button></div>
+  <div class="sug" id="sug"></div>
+  <div id="out"><div class="msg">Buscando tu ubicación…</div></div>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)};
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+/* Códigos WMO de Open-Meteo → texto y emoji */
+function wc(c,day){
+  var m={0:['Despejado',day?'☀️':'🌙'],1:['Casi despejado',day?'🌤️':'🌙'],2:['Parcialmente nublado','⛅'],3:['Nublado','☁️'],45:['Niebla','🌫️'],48:['Niebla con escarcha','🌫️'],51:['Llovizna débil','🌦️'],53:['Llovizna','🌦️'],55:['Llovizna fuerte','🌧️'],56:['Llovizna helada','🌧️'],57:['Llovizna helada','🌧️'],61:['Lluvia débil','🌦️'],63:['Lluvia','🌧️'],65:['Lluvia fuerte','🌧️'],66:['Lluvia helada','🌧️'],67:['Lluvia helada fuerte','🌧️'],71:['Nieve débil','🌨️'],73:['Nieve','🌨️'],75:['Nieve fuerte','❄️'],77:['Granizo fino','🌨️'],80:['Chubascos débiles','🌦️'],81:['Chubascos','🌧️'],82:['Chubascos fuertes','⛈️'],85:['Chubascos de nieve','🌨️'],86:['Chubascos de nieve fuertes','❄️'],95:['Tormenta','⛈️'],96:['Tormenta con granizo','⛈️'],99:['Tormenta con granizo fuerte','⛈️']};
+  return m[c]||['—','🌡️'];
+}
+function sky(c,day){
+  if(c>=95)return'linear-gradient(160deg,#4a3a6e,#7a6aa8)';
+  if(c>=71&&c<=77||c===85||c===86)return day?'linear-gradient(160deg,#7f9bb8,#cfdbe8)':'linear-gradient(160deg,#2b3c52,#566b84)';
+  if(c>=51)return day?'linear-gradient(160deg,#4f6a85,#8aa2b9)':'linear-gradient(160deg,#1f2d3f,#3d5068)';
+  if(c===45||c===48||c===3)return day?'linear-gradient(160deg,#7d93a8,#b3c2d0)':'linear-gradient(160deg,#27374a,#4a5d72)';
+  if(c===2)return day?'linear-gradient(160deg,#4a8fd8,#a9cdee)':'linear-gradient(160deg,#16294a,#3a5380)';
+  return day?'linear-gradient(160deg,#2f7de1,#8fc8ff)':'linear-gradient(160deg,#0c1a3a,#2a3f78)';
+}
+function r(n){return Math.round(n)}
+function dayName(iso,i){
+  if(i===0)return'Hoy';if(i===1)return'Mañana';
+  var d=new Date(iso+'T12:00:00'),s=d.toLocaleDateString('es-ES',{weekday:'long'});return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function hm(iso){return iso.slice(11,16)}
+function fmtDate(iso){return new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'})}
+function saveLoc(l){try{localStorage.setItem('tiempo-loc',JSON.stringify(l))}catch(e){}}
+function loadLoc(){try{return JSON.parse(localStorage.getItem('tiempo-loc'))}catch(e){return null}}
+/* --- Datos: Open-Meteo (gratis, sin clave) --- */
+function getWeather(loc){
+  $('out').innerHTML='<div class="msg">Cargando el tiempo en '+esc(loc.name)+'…</div>';
+  var u='https://api.open-meteo.com/v1/forecast?latitude='+loc.lat+'&longitude='+loc.lon
+   +'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day'
+   +'&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code,is_day,wind_speed_10m,relative_humidity_2m'
+   +'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max'
+   +'&timezone=auto&forecast_days=8&wind_speed_unit=kmh';
+  fetch(u).then(function(res){if(!res.ok)throw 0;return res.json()}).then(function(d){show(loc,d)}).catch(function(){
+    $('out').innerHTML='<div class="msg">No se pudo cargar el tiempo. Comprueba tu conexión.<br><button id="rt">Reintentar</button></div>';$('rt').onclick=function(){getWeather(loc)};
+  });
+}
+function show(loc,d){
+  var c=d.current,day=c.is_day===1,w=wc(c.weather_code,day),D=d.daily,H=d.hourly;
+  var gmin=Math.min.apply(null,D.temperature_2m_min),gmax=Math.max.apply(null,D.temperature_2m_max),span=Math.max(gmax-gmin,1);
+  var h='<div class="hero" style="--sky:'+sky(c.weather_code,day)+'"><div class="pl">📍 '+esc(loc.name)+'</div><div class="row"><div class="t">'+r(c.temperature_2m)+'°</div><div class="e">'+w[1]+'</div></div><div class="d">'+w[0]+'</div><div class="m"><span>Sensación '+r(c.apparent_temperature)+'°</span><span>💧 '+c.relative_humidity_2m+'%</span><span>💨 '+r(c.wind_speed_10m)+' km/h</span></div></div>';
+  function card(i){return '<div class="card"><div class="n">'+dayName(D.time[i],i)+'</div><div class="big">'+wc(D.weather_code[i],true)[1]+' '+r(D.temperature_2m_max[i])+'° <span class="s">/ '+r(D.temperature_2m_min[i])+'°</span></div><div class="s">'+wc(D.weather_code[i],true)[0]+'</div><div class="s" style="margin-top:6px">☔ <b>'+(D.precipitation_probability_max[i]==null?'—':D.precipitation_probability_max[i]+'%')+'</b> · '+D.precipitation_sum[i]+' mm<br>💨 '+r(D.wind_speed_10m_max[i])+' km/h · UV '+r(D.uv_index_max[i])+'<br>🌅 '+hm(D.sunrise[i])+' · 🌇 '+hm(D.sunset[i])+'</div></div>'}
+  h+='<h2>Hoy y mañana</h2><div class="two">'+card(0)+card(1)+'</div>';
+  var from=H.time.findIndex(function(t){return t.slice(0,13)>=c.time.slice(0,13)});if(from<0)from=0;
+  var end=Math.min(from+48,H.time.length),lastDay='';
+  h+='<h2>Previsión por horas</h2><div class="hour-note">Desliza horizontalmente para ver las próximas 48 horas. La hora actual aparece resaltada.</div><div class="hours">';
+  for(var i=from;i<end;i++){
+    var hour=H.time[i].slice(11,13),date=H.time[i].slice(0,10);
+    if(date!==lastDay){
+      dayLabel=date===H.time[from].slice(0,10)?'Hoy':(function(){var z=new Date(date+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long'});return z.charAt(0).toUpperCase()+z.slice(1)})() ;
+      h+='</div><div class="hour-day">'+dayLabel+' · '+fmtDate(date)+'</div><div class="hours">';
+      lastDay=date;
+    }
+    var rain=H.precipitation_probability[i]==null?'—':H.precipitation_probability[i]+'%';
+    var wind=H.wind_speed_10m? r(H.wind_speed_10m[i]):'—';
+    var humidity=H.relative_humidity_2m? r(H.relative_humidity_2m[i]):'—';
+    h+='<div class="h '+(i===from?'now':'')+'"><small>'+(i===from?'AHORA':hour+':00')+'</small><span class="e">'+wc(H.weather_code[i],H.is_day[i]===1)[1]+'</span><span class="temp">'+r(H.temperature_2m[i])+'°</span><small>Sens. '+(H.apparent_temperature?r(H.apparent_temperature[i])+'°':'—')+'</small><div class="rain">☔ '+rain+'</div><small>💨 '+wind+' km/h</small><small>💧 '+humidity+'%</small></div>';
+  }
+  h+='</div><h2>Próximos 7 días</h2><div class="card" style="padding:0">';
+  for(var j=1;j<D.time.length;j++){
+    var l=(D.temperature_2m_min[j]-gmin)/span*100,wd=Math.max((D.temperature_2m_max[j]-D.temperature_2m_min[j])/span*100,6);
+    h+='<div class="day"><div><b>'+dayName(D.time[j],j)+'</b><br><span class="s" style="font-size:12px;color:var(--mut)">'+fmtDate(D.time[j])+'</span></div><div class="e" title="'+wc(D.weather_code[j],true)[0]+'">'+wc(D.weather_code[j],true)[1]+'</div><div class="r">☔ '+(D.precipitation_probability_max[j]==null?'—':D.precipitation_probability_max[j]+'%')+'</div><div class="rng"><span>'+r(D.temperature_2m_min[j])+'°</span><div class="tr"><i style="left:'+l+'%;width:'+wd+'%"></i></div><span>'+r(D.temperature_2m_max[j])+'°</span></div></div>';
+  }
+  h+='</div><div class="src">Datos: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Actualizado '+c.time.slice(11,16)+'</div>';
+  $('out').innerHTML=h;
+}
+/* --- Ubicación --- */
+function placeName(lat,lon){
+  return fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lon+'&localityLanguage=es').then(function(r){return r.json()}).then(function(j){
+    return j.city||j.locality||j.principalSubdivision||'Tu ubicación';}).catch(function(){return'Tu ubicación'});
+}
+function useGeo(fallback){
+  if(!navigator.geolocation){return fallback()}
+  $('out').innerHTML='<div class="msg">Buscando tu ubicación…<br><small>Acepta el permiso del navegador.</small></div>';
+  navigator.geolocation.getCurrentPosition(function(p){
+    var lat=+p.coords.latitude.toFixed(3),lon=+p.coords.longitude.toFixed(3);
+    placeName(lat,lon).then(function(n){var l={lat:lat,lon:lon,name:n};saveLoc(l);getWeather(l)});
+  },function(){fallback()},{timeout:10000,maximumAge:600000});
+}
+function fallback(){
+  var l=loadLoc()||{lat:40.416,lon:-3.703,name:'Madrid'};
+  getWeather(l);
+}
+function search(){
+  var q=$('q').value.trim();if(q.length<2)return;
+  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=5&language=es').then(function(r){return r.json()}).then(function(j){
+    var res=j.results||[];
+    $('sug').innerHTML=res.length?res.map(function(x,i){return '<button data-i="'+i+'">'+esc(x.name)+(x.admin1?', '+esc(x.admin1):'')+(x.country?' · '+esc(x.country):'')+'</button>'}).join(''):'<div class="msg" style="padding:6px">No se encontró «'+esc(q)+'».</div>';
+    [].forEach.call($('sug').querySelectorAll('button'),function(b){b.onclick=function(){var x=res[+b.getAttribute('data-i')],l={lat:x.latitude,lon:x.longitude,name:x.name};saveLoc(l);$('sug').innerHTML='';$('q').value='';getWeather(l)}});
+  }).catch(function(){$('sug').innerHTML='<div class="msg" style="padding:6px">No se pudo buscar. Revisa tu conexión.</div>'});
+}
+$('bq').onclick=search;$('q').addEventListener('keydown',function(e){if(e.key==='Enter')search()});
+$('bg').onclick=function(){useGeo(function(){$('out').innerHTML='<div class="msg">No se pudo obtener tu ubicación. Busca tu ciudad arriba.</div>'})};
+useGeo(fallback);
+</script>
+</body>
+</html>

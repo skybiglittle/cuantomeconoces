@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trivial</title>
+<style>
+:root{--bg:#f3efe6;--card:#fffdf8;--ink:#1b1a2e;--mut:#64627a;--line:#1b1a2e;--ac:#6c4cf0;--hi:#ffcf3f;--ok:#17a05d;--no:#d9453b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14122a;--card:#201d3d;--ink:#f3f0ff;--mut:#a9a5c9;--line:#f3f0ff}}
+:root[data-theme="dark"]{--bg:#14122a;--card:#201d3d;--ink:#f3f0ff;--mut:#a9a5c9;--line:#f3f0ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px 16px 48px}
+h1{font:900 clamp(44px,14vw,68px)/.92 "Arial Black",Impact,sans-serif;margin:6px 0 10px;letter-spacing:-.02em}
+h1 span{color:var(--ac)}
+h2{font:900 22px/1.1 "Arial Black",Impact,sans-serif;margin:0 0 8px}
+p{margin:0 0 12px}.mut{color:var(--mut);font-size:15px}
+.card{background:var(--card);border:3px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.lbl{font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:14px 0 6px}
+select{width:100%;padding:12px;border:3px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1;min-width:70px;padding:10px 8px;border:3px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.seg button.on{background:var(--hi);color:#1b1a2e}
+.btn{display:block;width:100%;margin-top:14px;padding:14px;border:3px solid var(--line);border-radius:10px;background:var(--ac);color:#fff;font:inherit;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--line)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.btn.g{background:var(--card);color:var(--ink)}
+.btn:disabled{opacity:.4}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;font:inherit;font-size:14px;padding:6px 0;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut);margin-bottom:8px}
+.top b{color:var(--ink)}
+.tbar{height:12px;border:3px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden;margin:6px 0 4px}
+.tbar i{display:block;height:100%;width:100%;background:var(--ac)}
+.tbar.hot i{background:var(--no)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag{padding:3px 12px;border:2px solid var(--line);border-radius:99px;font-size:13px;font-weight:700;background:var(--hi);color:#1b1a2e}
+.q{font:700 21px/1.3 Georgia,"Times New Roman",serif;margin:0 0 14px}
+.ans{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;margin:9px 0;border:3px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.ans b{flex:none;width:30px;height:30px;border-radius:50%;border:3px solid var(--line);text-align:center;font:900 14px/24px "Arial Black",sans-serif}
+.ans.ok{background:var(--ok);color:#fff}.ans.no{background:var(--no);color:#fff}
+.ans:disabled{cursor:default}.ans:disabled:not(.ok):not(.no){opacity:.55}
+.res{text-align:center;font:900 28px/1.1 "Arial Black",sans-serif;margin:10px 0 2px}
+.pts{font:900 64px/1 "Arial Black",sans-serif;text-align:center;color:var(--ac)}
+.rv{padding:10px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.rv b{color:var(--no)}.rv span{color:var(--ok);font-weight:700}
+.msg{text-align:center;padding:30px 10px;color:var(--mut)}
+.err{color:var(--no);font-size:14px}
+.src{font-size:12px;color:var(--mut);text-align:center;margin-top:20px}.src a{color:inherit}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var CATS=[[0,'Cualquier categoría'],[9,'Cultura general'],[10,'Libros'],[11,'Cine'],[12,'Música'],[13,'Teatro y musicales'],[14,'Televisión'],[15,'Videojuegos'],[16,'Juegos de mesa'],[17,'Ciencia y naturaleza'],[18,'Informática'],[19,'Matemáticas'],[20,'Mitología'],[21,'Deportes'],[22,'Geografía'],[23,'Historia'],[24,'Política'],[25,'Arte'],[26,'Famosos'],[27,'Animales'],[28,'Vehículos'],[29,'Cómics'],[30,'Gadgets'],[31,'Anime y manga'],[32,'Dibujos animados']];
+var DIFF={easy:['Fácil',10],medium:['Media',20],hard:['Difícil',30]};
+var TIME=20;
+var app=document.getElementById('app'),$=function(i){return document.getElementById(i)};
+var S={cat:0,diff:'',n:10},TOKEN=null,Q=[],i=0,score=0,right=0,streak=0,best=0,wrongs=[],tm=null,t0=0,locked=false;
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function dec(s){try{return decodeURIComponent(s)}catch(e){return s}}
+function sh(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),t=a[k];a[k]=a[j];a[j]=t}return a}
+function catName(id){return(CATS.filter(function(c){return c[0]===id})[0]||[0,''])[1]}
+try{best=+localStorage.getItem('trivia-best')||0}catch(e){}
+/* ----- Open Trivia DB: gratis y sin clave ----- */
+function getToken(){
+  if(TOKEN)return Promise.resolve(TOKEN);
+  return fetch('https://opentdb.com/api_token.php?command=request').then(function(r){return r.json()}).then(function(j){TOKEN=j.token||null;return TOKEN}).catch(function(){return null});
+}
+function load(retry){
+  app.innerHTML='<div class="msg">Cargando preguntas…</div>';
+  getToken().then(function(tk){
+    var u='https://opentdb.com/api.php?amount='+S.n+(S.cat?'&category='+S.cat:'')+(S.diff?'&difficulty='+S.diff:'')+'&encode=url3986'+(tk?'&token='+tk:'');
+    return fetch(u).then(function(r){if(r.status===429)return{response_code:5};return r.json()});
+  }).then(function(j){
+    if(j.response_code===0&&j.results&&j.results.length)return begin(j.results);
+    if(j.response_code===4&&!retry){var old=TOKEN;TOKEN=null;return fetch('https://opentdb.com/api_token.php?command=reset&token='+old).then(function(){TOKEN=old;load(true)}).catch(function(){load(true)})}
+    if(j.response_code===5){app.innerHTML='<div class="msg">La API pide esperar unos segundos entre partidas…</div>';return setTimeout(function(){load(retry)},5500)}
+    fail(j.response_code===1?'No hay suficientes preguntas con esos filtros. Prueba con menos preguntas, otra dificultad u otra categoría.':'La API no devolvió preguntas.');
+  }).catch(function(){fail('No se pudo conectar con Open Trivia DB. Comprueba tu conexión.')});
+}
+function fail(m){app.innerHTML='<div class="msg">'+esc(m)+'<br><button class="btn" id="rt">Volver</button></div>';$('rt').onclick=home}
+function begin(rs){
+  Q=rs.map(function(x){
+    var bool=dec(x.type)==='boolean',c=dec(x.correct_answer),all=bool?['True','False']:sh([c].concat(x.incorrect_answers.map(dec)));
+    return{cat:dec(x.category),diff:dec(x.difficulty),q:dec(x.question),c:c,a:all,bool:bool};
+  });
+  i=0;score=0;right=0;streak=0;wrongs=[];show();
+}
+/* ----- Pantallas ----- */
+function home(){
+  clearInterval(tm);
+  app.innerHTML='<h1>TRI<span>VIAL</span></h1><p>Preguntas de todo tipo con tiempo límite. Cuanto más rápido y más difícil, más puntos.</p><div class="card"><div class="lbl">Categoría</div><select id="cat">'+CATS.map(function(c){return '<option value="'+c[0]+'"'+(S.cat===c[0]?' selected':'')+'>'+c[1]+'</option>'}).join('')+'</select>'
+  +'<div class="lbl">Dificultad</div><div class="seg" id="df">'+[['','Cualquiera'],['easy','Fácil'],['medium','Media'],['hard','Difícil']].map(function(d){return '<button data-d="'+d[0]+'"'+(S.diff===d[0]?' class="on"':'')+'>'+d[1]+'</button>'}).join('')+'</div>'
+  +'<div class="lbl">Número de preguntas</div><div class="seg" id="nn">'+[5,10,15,20].map(function(n){return '<button data-n="'+n+'"'+(S.n===n?' class="on"':'')+'>'+n+'</button>'}).join('')+'</div>'
+  +'<button class="btn" id="go">Jugar</button>'+(best?'<p class="mut" style="text-align:center;margin:12px 0 0">Tu récord: <b>'+best+'</b> puntos</p>':'')+'</div>'
+  +'<p class="mut">Las preguntas vienen en inglés porque la base de datos original no tiene versión en español.</p><div class="src">Preguntas de <a href="https://opentdb.com" target="_blank" rel="noopener">Open Trivia DB</a></div>';
+  $('cat').onchange=function(){S.cat=+$('cat').value};
+  $('df').onclick=function(e){var b=e.target.closest('[data-d]');if(!b)return;S.diff=b.getAttribute('data-d');[].forEach.call($('df').children,function(x){x.classList.toggle('on',x===b)})};
+  $('nn').onclick=function(e){var b=e.target.closest('[data-n]');if(!b)return;S.n=+b.getAttribute('data-n');[].forEach.call($('nn').children,function(x){x.classList.toggle('on',x===b)})};
+  $('go').onclick=function(){load(false)};
+}
+function show(){
+  var q=Q[i];locked=false;t0=Date.now();
+  app.innerHTML='<div class="top"><span>Pregunta <b>'+(i+1)+'</b> de '+Q.length+'</span><span>Puntos <b id="sc">'+score+'</b>'+(streak>=2?' · 🔥 x'+streak:'')+'</span></div><div class="tbar" id="tb"><i id="ti"></i></div>'
+  +'<div class="card"><div class="tags"><span class="tag">'+esc(q.cat)+'</span><span class="tag">'+(DIFF[q.diff]?DIFF[q.diff][0]:q.diff)+'</span></div><p class="q">'+esc(q.q)+'</p>'
+  +q.a.map(function(a,k){return '<button class="ans" data-k="'+k+'"><b>'+'ABCD'[k]+'</b><span>'+esc(q.bool?(a==='True'?'Verdadero':'Falso'):a)+'</span></button>'}).join('')+'<div id="fb"></div></div>'
+  +'<button class="link" id="qt">Abandonar partida</button>';
+  $('qt').onclick=function(){if(confirm('¿Abandonar la partida?'))home()};
+  app.onclick=function(e){var b=e.target.closest('[data-k]');if(b&&!locked)answer(+b.getAttribute('data-k'))};
+  clearInterval(tm);tm=setInterval(tick,100);
+}
+function tick(){
+  var left=TIME-(Date.now()-t0)/1000,e=$('ti');if(!e){clearInterval(tm);return}
+  e.style.width=Math.max(0,left/TIME*100)+'%';$('tb').classList.toggle('hot',left<6);
+  if(left<=0&&!locked)answer(-1);
+}
+function answer(k){
+  locked=true;clearInterval(tm);
+  var q=Q[i],left=Math.max(0,TIME-(Date.now()-t0)/1000),ok=k>=0&&q.a[k]===q.c,gain=0;
+  if(ok){gain=(DIFF[q.diff]?DIFF[q.diff][1]:10)+Math.round(left/2);score+=gain;right++;streak++}else{streak=0;wrongs.push(q)}
+  [].forEach.call(document.querySelectorAll('.ans'),function(b,j){b.disabled=true;if(q.a[j]===q.c)b.classList.add('ok');else if(j===k)b.classList.add('no')});
+  $('sc').textContent=score;
+  $('fb').innerHTML='<div class="res" style="color:'+(ok?'var(--ok)':'var(--no)')+'">'+(k<0?'¡Se acabó el tiempo!':ok?'¡Correcto! +'+gain:'Fallaste')+'</div><button class="btn" id="nx">'+(i+1>=Q.length?'Ver resultado':'Siguiente')+'</button>';
+  $('nx').onclick=function(){i++;i>=Q.length?end():show()};
+}
+function end(){
+  var nb=score>best;if(nb){best=score;try{localStorage.setItem('trivia-best',best)}catch(e){}}
+  var pc=Math.round(right/Q.length*100),msg=pc>=90?'¡Eres una enciclopedia!':pc>=70?'¡Muy bien!':pc>=50?'Aprobado':pc>=30?'Hay que repasar':'Mejor suerte la próxima';
+  app.innerHTML='<h1>FIN</h1><div class="card"><div class="pts">'+score+'</div><p class="res" style="font-size:20px">'+msg+'</p><p class="mut" style="text-align:center">'+right+' de '+Q.length+' correctas ('+pc+'%)'+(nb?' · 🏆 ¡Nuevo récord!':'')+'</p></div>'
+  +(wrongs.length?'<div class="card"><h2>Para repasar</h2>'+wrongs.map(function(q){return '<div class="rv">'+esc(q.q)+'<br><span>✓ '+esc(q.bool?(q.c==='True'?'Verdadero':'Falso'):q.c)+'</span></div>'}).join('')+'</div>':'')
+  +'<button class="btn" id="ag">Jugar otra vez</button><button class="btn g" id="cf">Cambiar ajustes</button>';
+  $('ag').onclick=function(){load(false)};$('cf').onclick=home;
+}
+home();
+</script>
+</body>
+</html>

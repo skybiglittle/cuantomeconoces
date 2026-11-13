@@ -1,1 +1,168 @@
-que del diccionario me coja una palaba aleatoria o dos o el numero que yo quiera.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 Tres palabras al azar</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#111827;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .app{
+    width:100%;
+    max-width:800px;
+    background:#1f2937;
+    border-radius:24px;
+    padding:28px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+    text-align:center;
+  }
+  h1{margin:0 0 8px;font-size:clamp(28px,6vw,44px)}
+  .sub{color:#9ca3af;margin:0 0 25px}
+  .upload{
+    border:2px dashed #4b5563;
+    border-radius:18px;
+    padding:25px 15px;
+    margin-bottom:25px;
+  }
+  input[type=file]{display:none}
+  .fileBtn,.randomBtn{
+    border:0;
+    border-radius:14px;
+    padding:14px 22px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .fileBtn{background:#374151;color:white}
+  .randomBtn{
+    background:#f59e0b;
+    color:#111827;
+    width:100%;
+    font-size:20px;
+    margin-top:20px;
+  }
+  .randomBtn:hover{filter:brightness(1.08)}
+  .status{margin-top:12px;color:#9ca3af;font-size:14px}
+  .words{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-top:20px;
+  }
+  .word{
+    min-height:120px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    background:#111827;
+    border:1px solid #374151;
+    border-radius:18px;
+    font-size:clamp(20px,4vw,32px);
+    font-weight:800;
+    word-break:break-word;
+  }
+  .empty{color:#6b7280;font-size:18px;font-weight:400}
+  @media(max-width:600px){
+    .words{grid-template-columns:1fr}
+    .word{min-height:90px}
+    .app{padding:20px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🎲 Tres palabras al azar</h1>
+  <p class="sub">Carga un archivo TXT y te sacaré 3 palabras aleatorias.</p>
+
+  <div class="upload">
+    <div class="fileBtn">📚 Diccionario español</div>
+    <div id="status" class="status">Cargando DICCIONARIO/español.txt...</div>
+  </div>
+
+  <div class="words">
+    <div id="word1" class="word"><span class="empty">Palabra 1</span></div>
+    <div id="word2" class="word"><span class="empty">Palabra 2</span></div>
+    <div id="word3" class="word"><span class="empty">Palabra 3</span></div>
+  </div>
+
+  <button id="randomBtn" class="randomBtn">🎲 SACAR 3 PALABRAS</button>
+</div>
+
+<script>
+let words = [];
+
+const status = document.getElementById('status');
+const randomBtn = document.getElementById('randomBtn');
+
+// El TXT debe estar junto al HTML dentro de la carpeta:
+// DICCIONARIO/español.txt
+async function cargarDiccionario() {
+  try {
+    const response = await fetch('DICCIONARIO/español.txt', { cache: 'no-store' });
+
+    if (!response.ok) {
+      throw new Error('No se encontró el archivo');
+    }
+
+    const text = await response.text();
+
+    // Una entrada por línea.
+    words = text
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    // Eliminar duplicados sin distinguir mayúsculas/minúsculas.
+    const seen = new Set();
+    words = words.filter(word => {
+      const key = word.toLocaleLowerCase('es');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    if (words.length < 3) {
+      status.textContent = `⚠️ El diccionario solo tiene ${words.length} entradas.`;
+      words = [];
+      return;
+    }
+
+    status.textContent = `✅ Diccionario cargado: ${words.length.toLocaleString('es-ES')} palabras disponibles.`;
+  } catch (error) {
+    status.textContent =
+      '❌ No se pudo cargar DICCIONARIO/español.txt. Comprueba que el HTML y la carpeta DICCIONARIO estén en la misma ubicación.';
+    console.error(error);
+  }
+}
+
+randomBtn.addEventListener('click', () => {
+  if (words.length < 3) {
+    alert('No se ha cargado el diccionario todavía.');
+    return;
+  }
+
+  // Elegir 3 palabras diferentes al azar.
+  const selected = [...words]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+
+  document.getElementById('word1').textContent = selected[0];
+  document.getElementById('word2').textContent = selected[1];
+  document.getElementById('word3').textContent = selected[2];
+});
+
+cargarDiccionario();
+</script>
+</body>
+</html>

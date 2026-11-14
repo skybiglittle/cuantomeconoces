@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
+<title>Atrapa un millón · Apuesta en las trampillas</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--gold:#ffd166;--good:#48d597;--bad:#ff6c7f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.wrap{width:min(620px,100%);margin:auto;padding:20px 14px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.brand{font-weight:850}.brand span{color:#6ee7d4}a{color:inherit;text-decoration:none}.back{color:var(--muted);font-size:14px}
+h1{font-size:clamp(32px,8vw,50px);line-height:1;margin:0 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffd166 50%,#48d597);-webkit-background-clip:text;background-clip:text;color:transparent}h2{font-size:20px;margin:0 0 8px}h3{font-size:15px;margin:0 0 6px}
+.muted,.small{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,rgba(29,41,67,.97),rgba(17,26,45,.97));border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 12px 35px #0003}.center{text-align:center}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:10px 0 5px;text-transform:uppercase}
+input,select{width:100%;border:1.5px solid var(--line);background:#0d1629;color:var(--text);border-radius:12px;padding:13px;font:inherit;outline:none}input:focus,select:focus{border-color:var(--a)}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px 15px;background:linear-gradient(100deg,var(--a),#638cff);color:#fff;font-weight:800}.btn.secondary{background:#293753;border:1px solid var(--line)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn.good{background:linear-gradient(100deg,#149b69,#27c99b)}.btn:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.code{font-size:30px;letter-spacing:.22em;font-weight:950;color:var(--gold);text-align:center}.tag,.player{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px;margin:3px;background:#0d1629}.player.me{border-color:#6ee7d4;color:#6ee7d4}.player.ok{border-color:var(--good);color:var(--good)}
+.notice{color:var(--gold);font-size:13px;min-height:18px;margin:6px 0}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.money{font-size:30px;font-weight:950;color:var(--good);text-align:center}.money.low{color:var(--gold)}
+.bar{height:7px;background:var(--line);border-radius:7px;overflow:hidden;margin:8px 0}.bar>div{height:100%;background:linear-gradient(90deg,#fb923c,#48d597);width:100%;transition:width .25s linear}.tl{font-weight:900;font-size:18px}.tl.low{color:var(--bad)}
+.q{font-size:clamp(19px,4.4vw,25px);font-weight:900;text-align:center;margin:10px 0 14px}
+.cat{display:block;width:100%;padding:18px;margin:10px 0;border-radius:14px;border:2px solid var(--line);background:#101a2e;color:var(--text);font-size:18px;font-weight:800}.cat:hover:not(:disabled){border-color:var(--a)}.cat.on{border-color:var(--gold);background:rgba(255,209,102,.12)}
+.trap{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:9px 0;background:#101a2e;position:relative;overflow:hidden}.trap .t{display:flex;justify-content:space-between;gap:8px;font-weight:800}.trap .t span:first-child{overflow-wrap:anywhere}.trap .amt{color:var(--gold);white-space:nowrap}
+.trap .fill{height:8px;border-radius:6px;background:linear-gradient(90deg,#fb923c,#fde68a);margin:8px 0;min-width:0;transition:width .15s}.trap .ctl{display:flex;gap:6px}.trap .ctl button{flex:1;padding:8px;border-radius:10px;border:1px solid var(--line);background:#16213a;color:var(--text);font-weight:800}
+.trap.win{border-color:var(--good);background:rgba(72,213,151,.12)}.trap.lose{border-color:#7a3a46}.trap.lose.had{animation:drop 1.1s .3s both}
+@keyframes drop{0%{transform:none;opacity:1}60%{opacity:.8}100%{transform:translateY(30px);opacity:.35}}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;background:#101a2e;margin:5px 0}.sc strong{color:var(--good)}.sc.out strong{color:var(--bad)}
+.res{padding:12px;border-radius:12px;text-align:center;font-weight:800;margin:10px 0;background:#101a2e;border:1px solid var(--line)}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
+@media(max-width:520px){.settings{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="brand" href="/">Atrapa un <span>millón</span></a><a class="back" href="/">← Juegos</a></header>
+<main id="app"></main>
+<p class="foot">Atrapa un millón · Salas en directo · de 2 a 10 jugadores · juego de fans, no oficial · el dinero es ficticio</p></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),app=$('app');
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STORE='cmc_mill_session_v1',CID='cmc_mill_cid_v1',KEY='cmc_mill_key_v1';
+const MAXP=10,MINP=2,BUNDLES=40,UNIT=25000,NQ=8,CATMS=12000,LEVEL=[0,0,1,1,1,2,2,2],LETTERS='ABCD';
+const rand=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const euro=b=>(b*UNIT).toLocaleString('es-ES')+' €';
+
+// ---------- Preguntas: [pregunta, correcta, fallo, fallo, fallo]; por categoría: 2 fáciles, 2 medias, 2 difíciles ----------
+const QB=[
+['🌍 Geografía',[['¿Cuál es la capital de Italia?','Roma','Milán','Venecia','Nápoles'],['¿En qué continente está Egipto?','África','Asia','Europa','Oceanía'],['¿Cuál es la capital de Turquía?','Ankara','Estambul','Esmirna','Bursa'],['¿Cuál es el desierto cálido más grande del mundo?','Sáhara','Gobi','Kalahari','Atacama'],['¿Cuál es el país más pequeño del mundo?','Ciudad del Vaticano','Mónaco','San Marino','Liechtenstein'],['¿Qué río atraviesa Bagdad?','Tigris','Éufrates','Nilo','Jordán']]],
+['📜 Historia',[['¿En qué año llegó Colón a América?','1492','1512','1453','1521'],['¿Quién fue el primer emperador romano?','Augusto','Julio César','Nerón','Calígula'],['¿En qué año comenzó la Revolución Francesa?','1789','1769','1804','1815'],['¿Qué reina española financió el primer viaje de Colón?','Isabel la Católica','Juana la Loca','Isabel II','Urraca'],['¿Qué emperador mongol fundó la dinastía Yuan en China?','Kublai Kan','Gengis Kan','Tamerlán','Atila'],['¿Qué tratado de 1494 dividió el mundo entre España y Portugal?','Tordesillas','Utrecht','Westfalia','Versalles']]],
+['🔬 Ciencia',[['¿Qué planeta es el más grande del sistema solar?','Júpiter','Saturno','Neptuno','Marte'],['¿Cuántos días tiene un año bisiesto?','366','365','364','367'],['¿Cuál es el símbolo químico del sodio?','Na','So','Sd','S'],['¿Qué gas necesitan las plantas para la fotosíntesis?','Dióxido de carbono','Oxígeno','Nitrógeno','Hidrógeno'],['¿Cuál es el hueso más largo del cuerpo humano?','Fémur','Tibia','Húmero','Peroné'],['¿Qué científico descubrió la penicilina?','Alexander Fleming','Louis Pasteur','Marie Curie','Robert Koch']]],
+['🎬 Cine y series',[['¿Qué personaje de Disney ve crecer su nariz cuando miente?','Pinocho','Peter Pan','Dumbo','Bambi'],['¿Cómo se llama el vaquero de «Toy Story»?','Woody','Buzz','Rex','Slinky'],['¿Quién dirigió «Jurassic Park»?','Steven Spielberg','James Cameron','George Lucas','Ridley Scott'],['¿Qué serie española trata de un atraco a la Fábrica de Moneda y Timbre?','La casa de papel','Élite','Vis a vis','Las chicas del cable'],['¿Qué película ganó el Óscar a mejor película en la ceremonia de 2020?','Parásitos','1917','Joker','Ford v Ferrari'],['¿Quién dirigió «2001: Una odisea del espacio»?','Stanley Kubrick','Ridley Scott','Steven Spielberg','George Lucas']]],
+['🎵 Música',[['¿Cuántas cuerdas tiene una guitarra española?','6','4','5','8'],['¿Qué instrumento tiene teclas blancas y negras?','Piano','Violín','Trompeta','Batería'],['¿Qué cantante colombiana es famosa por «Waka Waka»?','Shakira','Karol G','Thalía','Paulina Rubio'],['¿Qué grupo cantaba «Hey Jude»?','The Beatles','The Rolling Stones','Queen','The Who'],['¿Qué compositor escribió «Las cuatro estaciones»?','Vivaldi','Bach','Mozart','Haydn'],['¿Qué grupo español cantó «La flaca»?','Jarabe de Palo','Estopa','Los Secretos','Mecano']]],
+['⚽ Deportes',[['¿Cuántos jugadores de un equipo hay en el campo en un partido de fútbol?','11','9','10','12'],['¿Qué deporte practica Rafael Nadal?','Tenis','Golf','Pádel','Baloncesto'],['¿Qué selección ganó el Mundial de fútbol de 2018?','Francia','Croacia','Brasil','Alemania'],['¿Cuántos sets hay que ganar en un partido masculino de Grand Slam?','3','2','4','5'],['¿Qué selección ganó el Mundial de fútbol de 2010?','España','Países Bajos','Alemania','Uruguay'],['¿En qué ciudad se celebraron los Juegos Olímpicos de 2000?','Sídney','Atenas','Atlanta','Pekín']]],
+['🎨 Arte y literatura',[['¿Quién escribió «Don Quijote de la Mancha»?','Miguel de Cervantes','Lope de Vega','Quevedo','Góngora'],['¿Quién pintó «La Gioconda»?','Leonardo da Vinci','Miguel Ángel','Rafael','Botticelli'],['¿Quién pintó el «Guernica»?','Pablo Picasso','Salvador Dalí','Joan Miró','Goya'],['¿Quién escribió «Cien años de soledad»?','Gabriel García Márquez','Julio Cortázar','Mario Vargas Llosa','Isabel Allende'],['¿Quién escribió «La Odisea»?','Homero','Virgilio','Sófocles','Platón'],['¿En qué museo se encuentra «Las Meninas»?','Museo del Prado','Reina Sofía','Louvre','Thyssen']]],
+['🐾 Naturaleza',[['¿Cuál es el animal terrestre más grande?','Elefante africano','Jirafa','Rinoceronte','Hipopótamo'],['¿Cuántas patas tiene un insecto?','6','8','4','10'],['¿Cuál es el animal más rápido en tierra?','Guepardo','León','Gacela','Caballo'],['¿Cómo se llama la cría de la rana?','Renacuajo','Cachorro','Alevín','Pollito'],['¿Qué mamífero marino es conocido como «el unicornio del mar»?','Narval','Beluga','Orca','Foca'],['¿Cuántos corazones tiene un pulpo?','3','1','2','4']]]
+];
+
+// ---------- Estado local y red ----------
+const load=()=>{try{return JSON.parse(sessionStorage.getItem(STORE)||'null')}catch{return null}};
+let saved=load(),name=saved?.name||'',roomCode=saved?.room||'',isHost=!!saved?.host,state=saved?.state||null,
+ own=saved?.own||{lockQ:-1,catQ:-1,pick:null},
+ myKey=sessionStorage.getItem(KEY)||Math.random().toString(36).slice(2,11),cid=sessionStorage.getItem(CID)||Math.random().toString(36).slice(2)+Date.now().toString(36),
+ socket=null,peers=[],closed=false,retry=0,connecting=false,curSig='',myPres={},offset=0,hostCats={},hostBets={},draft=[],draftQ=-1;
+sessionStorage.setItem(KEY,myKey);sessionStorage.setItem(CID,cid);
+const persist=()=>sessionStorage.setItem(STORE,JSON.stringify({name,room:roomCode,host:isHost,state,own}));
+const P=x=>x.p||{};
+const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
+const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
+function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
+function commit(){if(!isHost)return;state.v=(state.v||0)+1;state.hostNow=Date.now();publish({c_state:state});persist();render()}
+function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
+ socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
+ socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-millon-'+roomCode.toLowerCase(),cid}));
+ socket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.t==='hello')return;
+  if(m.t==='err'){closed=true;connecting=false;try{socket.close()}catch{}const msg=m.code==='room_full'?'La sala está llena.':'No se ha podido entrar en esa sala.';roomCode='';state=null;renderHome(msg);return}
+  if(m.t==='peers'){peers=m.peers||[];connecting=false;
+   if(!peers.some(x=>P(x).c_key===myKey))publish(isHost&&state?{c_state:state}:{});
+   if(!isHost){const hp=peers.find(x=>P(x).c_host===1&&P(x).c_state),inc=hp&&P(hp).c_state;if(inc&&(!state||inc.v!==state.v)){state=inc;offset=(inc.hostNow||Date.now())-Date.now();persist()}}
+   hostStep();render()}};
+ socket.onclose=()=>{connecting=false;if(closed)return;retry++;setTimeout(()=>{if(!closed)connect()},Math.min(1000*retry,8000))};socket.onerror=()=>{}}
+const code5=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[rand(c.length)];return s};
+const freshOwn=()=>({lockQ:-1,catQ:-1,pick:null});
+function createRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);roomCode=code5();isHost=true;myPres={};own=freshOwn();offset=0;state={v:0,phase:'lobby',secs:45};persist();connect();render()}
+function joinRoom(){name=($('name')?.value.trim()||'Jugador').slice(0,16);const c=($('code')?.value||'').trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(c))return renderHome('Escribe un código de sala de cinco caracteres.');roomCode=c;isHost=false;myPres={};own=freshOwn();state=null;persist();connect();render()}
+function leaveRoom(){closed=true;try{socket?.close()}catch{}socket=null;peers=[];roomCode='';state=null;curSig='';myPres={};own=freshOwn();sessionStorage.removeItem(STORE);renderHome()}
+
+// ---------- Lógica del anfitrión ----------
+const active=()=>state.order.filter(k=>state.B[k]>0);
+function startGame(){const ps=playerList().sort((a,b)=>(b.p.c_host?1:0)-(a.p.c_host?1:0)).slice(0,MAXP);if(ps.length<MINP)return;
+ const names={},B={};ps.forEach(p=>{names[p.key]=p.name;B[p.key]=BUNDLES});
+ Object.assign(state,{order:ps.map(p=>p.key),names,B,q:0,used:[],res:null});startCat()}
+function startCat(){const L=LEVEL[state.q],cs=shuffle(QB.map((_,i)=>i).filter(c=>[2*L,2*L+1].some(i=>!state.used.includes(c+':'+i)))).slice(0,2);
+ state.cats=cs;state.cvoted={};hostCats={};state.phase='cat';state.endsAt=Date.now()+CATMS;commit()}
+function endCat(){const cnt={};Object.values(hostCats).forEach(c=>cnt[c]=(cnt[c]||0)+1);let best=state.cats.filter(c=>(cnt[c]||0)===Math.max(...state.cats.map(x=>cnt[x]||0)));startBet(best[rand(best.length)])}
+function startBet(c){const L=LEVEL[state.q],cand=[2*L,2*L+1].filter(i=>!state.used.includes(c+':'+i)),i=cand[rand(cand.length)];state.used.push(c+':'+i);
+ const n=state.q<4?4:(state.q<7?3:2),wrong=shuffle([1,2,3]).slice(0,n-1);
+ state.cat=c;state.qi=i;state.opts=shuffle([0,...wrong]);state.lock={};hostBets={};state.res=null;state.phase='bet';state.endsAt=Date.now()+state.secs*1000;commit()}
+function validBet(a,B,n){return Array.isArray(a)&&a.length===n&&a.every(x=>Number.isInteger(x)&&x>=0&&x<=B)&&a.reduce((x,y)=>x+y,0)===B&&a.some(x=>x===0)}
+function resolve(){const pos=state.opts.indexOf(0),alloc={},before={...state.B},act=active();
+ act.forEach(k=>{const a=hostBets[k]||(()=>{const z=new Array(state.opts.length).fill(0);z[rand(z.length)]=state.B[k];return z})();alloc[k]=a;state.B[k]=a[pos]});
+ state.res={pos,alloc,before};state.phase='reveal';state.until=Date.now()+7500;commit()}
+function afterReveal(){if(state.q>=NQ-1||!active().length){state.phase='finished';return commit()}state.q++;startCat()}
+function hostStep(){if(!isHost||!state||state.phase==='lobby'||state.phase==='finished')return;
+ const pls=playerList(),pl={};pls.forEach(p=>pl[p.key]=p.p);const here=active().filter(k=>pl[k]);let ch=false;
+ if(state.phase==='cat'){for(const k of here){if(hostCats[k]!=null)continue;const c=pl[k].c_cat;if(c&&c.q===state.q&&state.cats.includes(c.c)){hostCats[k]=c.c;state.cvoted[k]=true;ch=true}}
+  if((here.length&&here.every(k=>hostCats[k]!=null))||Date.now()>=state.endsAt)return endCat();if(ch)commit();return}
+ if(state.phase==='bet'){for(const k of here){if(hostBets[k])continue;const b=pl[k].c_bet;if(b&&b.q===state.q&&validBet(b.a,state.B[k],state.opts.length)){hostBets[k]=b.a;state.lock[k]=true;ch=true}}
+  if((here.length&&here.every(k=>hostBets[k]))||Date.now()>=state.endsAt+3000)return resolve();if(ch)commit();return}
+ if(state.phase==='reveal'&&Date.now()>=state.until)return afterReveal()}
+
+// ---------- Acciones del jugador ----------
+const amActive=()=>state&&state.order&&state.order.includes(myKey)&&state.B[myKey]>0;
+const nOpt=()=>state.opts.length,rest=()=>state.B[myKey]-draft.reduce((a,b)=>a+b,0);
+function fix(a,B,n){a=a.slice();const s=a.reduce((x,y)=>x+y,0);if(s<B){const mx=Math.max(...a);a[mx===0?rand(n):a.indexOf(mx)]+=B-s}
+ if(a.every(x=>x>0)){const mi=a.indexOf(Math.min(...a)),ma=a.indexOf(Math.max(...a));a[ma]+=a[mi];a[mi]=0}return a}
+function sendCat(c){if(own.catQ===state.q||!amActive())return;own.catQ=state.q;publish({c_cat:{q:state.q,c}});persist();render()}
+function lockBet(auto){if(own.lockQ===state.q||!amActive())return;let a=draft.slice();
+ if(!auto&&(rest()!==0||a.every(x=>x>0))){const m=$('amsg');if(m)m.textContent=rest()!==0?'Coloca todos los fajos antes de confirmar.':'Debes dejar al menos una trampilla vacía.';return}
+ a=fix(a,state.B[myKey],nOpt());own.lockQ=state.q;publish({c_bet:{q:state.q,a}});own.pick=a;persist();render()}
+function bump(i,mode){if(own.lockQ===state.q||state.phase!=='bet')return;if(mode==='+'&&rest()>0)draft[i]++;else if(mode==='-'&&draft[i]>0)draft[i]--;else if(mode==='all')draft[i]+=rest();else if(mode==='clear')draft=draft.map(()=>0);updateGame()}
+
+// ---------- Vistas ----------
+function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
+function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>ATRAPA UN MILLÓN</h1><p class="muted">Tienes un millón de euros en 40 fajos. Responde 8 preguntas apostando en las trampillas… ¡el dinero de las respuestas falsas se cae! 💶🕳️</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Todos jugáis a la vez, cada uno con su propio millón: <b>40 fajos de 25.000 €</b>. Hay <b>8 preguntas</b> y antes de cada una el grupo vota entre <b>dos categorías</b>.<br><br>• Las preguntas 1 a 4 tienen <b>4 opciones</b>; las 5 a 7, <b>3 opciones</b>; la 8, solo <b>2</b> (¡todo o nada!).<br>• Debes repartir <b>todo tu dinero</b> entre las trampillas, pero <b>siempre una tiene que quedar vacía</b>.<br>• Al revelar la respuesta, el dinero de las trampillas falsas <b>cae</b> y solo conservas lo que apostaste en la correcta.<br>• Si te quedas sin nada, te eliminan. Al final gana quien conserve <b>más dinero</b>.</p></section>';
+ $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
+function renderLobby(){
+ mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button><div id="pl" style="margin-top:10px"></div></section>'
+ +(isHost?'<section class="card"><h3>Ajustes</h3><div class="settings"><div><label for="secs">Tiempo para apostar</label><select id="secs"><option value="30">30 s</option><option value="45">45 s</option><option value="60">60 s</option><option value="90">90 s</option></select></div></div><button class="btn" id="start" style="width:100%;margin-top:14px">Empezar</button></section>':'<section class="card center"><p class="muted">El anfitrión empezará cuando estéis listos…</p></section>')
+ +'<button class="btn ghost" id="leave" style="width:100%">Salir de la sala</button>',
+ ()=>{$('copy').onclick=()=>navigator.clipboard?.writeText(roomCode).then(()=>$('copy').textContent='¡Copiado!').catch(()=>{});$('leave').onclick=leaveRoom;
+  own=freshOwn();myPres={};publish();persist();
+  if(isHost){$('secs').onchange=()=>{state.secs=Number($('secs').value);commit()};$('start').onclick=startGame}});
+ const ps=playerList();$('pl').innerHTML=ps.map(p=>'<span class="player '+(p.key===myKey?'me':'')+'">'+safe(p.name)+(p.p.c_host?' 👑':'')+(p.key===myKey?' · tú':'')+'</span>').join('')+'<p class="small muted">'+ps.length+' conectados'+(ps.length<MINP?' · hacen falta al menos '+MINP:'')+'</p>';
+ if(isHost){const el=$('secs');if(el&&document.activeElement!==el)el.value=String(state.secs||45);$('start').disabled=ps.length<MINP}}
+const leftS=()=>Math.max(0,Math.ceil((state.endsAt-(Date.now()+offset))/1000));
+function tick(){if(!state||(state.phase!=='bet'&&state.phase!=='cat'))return;const l=leftS(),t=$('tl'),f=$('tf'),tot=state.phase==='bet'?state.secs:CATMS/1000;if(t){t.textContent=l+' s';t.classList.toggle('low',l<=5)}if(f)f.style.width=Math.min(100,l/tot*100)+'%';
+ if(l<=0&&amActive()){if(state.phase==='bet'&&own.lockQ!==state.q)lockBet(true);if(state.phase==='cat'&&own.catQ!==state.q)sendCat(state.cats[rand(2)])}}
+function scoreHtml(){return state.order.map(k=>[k,state.B[k]]).sort((a,b)=>b[1]-a[1]).map(([k,b])=>'<div class="sc '+(b?'':'out')+'"><span>'+safe(pname(k))+(k===myKey?' (tú)':'')+(state.phase==='bet'&&state.lock[k]?' ✔':'')+(state.phase==='cat'&&state.cvoted[k]?' ✔':'')+'</span><strong>'+(b?euro(b):'💸 eliminado')+'</strong></div>').join('')}
+function catHtml(){const done=own.catQ===state.q;
+ return'<p class="center muted">Vota la categoría de la pregunta '+(state.q+1)+' · gana la más votada</p>'+state.cats.map(c=>'<button class="cat" data-c="'+c+'" '+((done||!amActive())?'disabled':'')+'>'+safe(QB[c][0])+'</button>').join('')+'<p class="small muted center">'+(!amActive()?'Estás eliminado o eres espectador.':(done?'Voto enviado ✔':''))+'</p>'}
+function trapsHtml(){const q=QB[state.cat][1][state.qi],ph=state.phase,n=nOpt(),locked=own.lockQ===state.q,act=amActive();
+ const head='<div class="small muted center">'+safe(QB[state.cat][0])+' · Pregunta '+(state.q+1)+' de '+NQ+' · '+n+' opciones</div><div class="q">'+safe(q[0])+'</div>';
+ if(ph==='bet'){
+  if(draftQ!==state.q||draft.length!==n){draftQ=state.q;draft=new Array(n).fill(0)}
+  const a=locked&&own.pick?own.pick:draft,B=act?state.B[myKey]:0;
+  return head+state.opts.map((o,i)=>'<div class="trap"><div class="t"><span>'+LETTERS[i]+') '+safe(q[1+o])+'</span><span class="amt">'+(act?euro(a[i]||0):'')+'</span></div><div class="fill" style="width:'+(B?Math.round((a[i]||0)/B*100):0)+'%"></div>'
+   +(act&&!locked?'<div class="ctl"><button data-b="-" data-i="'+i+'">−</button><button data-b="+" data-i="'+i+'">+ fajo</button><button data-b="all" data-i="'+i+'">Todo aquí</button></div>':'')+'</div>').join('')
+   +(act?(locked?'<div class="res">✔ Apuesta enviada. Esperando al resto…</div>':'<div class="res">Por colocar: <b style="color:var(--gold)">'+euro(rest())+'</b> ('+rest()+' fajos)</div><div class="row"><button class="btn ghost" data-b="clear">Vaciar</button><button class="btn good" id="lock">Confirmar apuesta</button></div><p class="notice" id="amsg"></p>'):'<p class="muted center">Estás eliminado o eres espectador.</p>')}
+ const R=state.res,a=R.alloc[myKey];
+ return head+state.opts.map((o,i)=>{const win=i===R.pos,had=a&&a[i]>0;return'<div class="trap '+(win?'win':'lose')+(had&&!win?' had':'')+'"><div class="t"><span>'+(win?'✅ ':'❌ ')+LETTERS[i]+') '+safe(q[1+o])+'</span><span class="amt">'+(a?euro(a[i]):'')+'</span></div></div>'}).join('')
+  +(a?'<div class="res">'+(R.before[myKey]===state.B[myKey]?'🎉 ¡Salvas todo tu dinero!':(state.B[myKey]?'Conservas <b style="color:var(--good)">'+euro(state.B[myKey])+'</b> · pierdes '+euro(R.before[myKey]-state.B[myKey]):'💥 Lo has perdido todo'))+'</div>':'')}
+function updateGame(){if(!state||!state.order)return;
+ setHTML($('mon'),amActive()?'<div class="small muted center">TU DINERO</div><div class="money '+(state.B[myKey]<BUNDLES?'low':'')+'">'+euro(state.B[myKey])+'</div>':'<div class="small muted center">Eres espectador o estás eliminado</div>');
+ setHTML($('hdr'),'<span class="tag">Pregunta '+(state.q+1)+' / '+NQ+'</span>'+(state.phase==='bet'||state.phase==='cat'?'<span class="tl" id="tl" style="float:right"></span>':''));
+ const bar=$('barw');if(bar)bar.classList.toggle('hidden',state.phase!=='bet'&&state.phase!=='cat');
+ setHTML($('body'),state.phase==='cat'?catHtml():trapsHtml());setHTML($('sc'),scoreHtml());tick()}
+function renderGame(){mount('g',
+ '<section class="card"><div id="mon"></div><div id="hdr" style="margin-top:8px"></div><div class="bar" id="barw"><div id="tf"></div></div><div id="body"></div></section><section class="card"><h3>Clasificación</h3><div id="sc"></div></section>',
+ ()=>{$('body').onclick=e=>{const c=e.target.closest('[data-c]');if(c&&state.phase==='cat')return sendCat(Number(c.dataset.c));const b=e.target.closest('[data-b]');if(b)return bump(Number(b.dataset.i),b.dataset.b);if(e.target.closest('#lock'))lockBet(false)}});
+ updateGame()}
+function renderFinished(){const r=state.order.map(k=>[k,state.B[k]]).sort((a,b)=>b[1]-a[1]),top=r[0][1],w=r.filter(x=>x[1]===top).map(x=>pname(x[0])).join(' y ');
+ mount('fin','<section class="card center"><div class="tag">FIN DEL JUEGO</div><div style="font-size:78px">'+(top===BUNDLES?'🤑':'🏆')+'</div><h1>'+safe(top?w+(r.filter(x=>x[1]===top).length>1?' ganan':' gana'):'Nadie se lleva nada')+'</h1><div class="money">'+euro(top)+'</div>'+(top===BUNDLES?'<p class="muted">¡Se han llevado el millón entero!</p>':'')+'</section><section class="card">'+r.map(([k,b],i)=>'<div class="sc '+(b?'':'out')+'"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+safe(pname(k))+'</span><strong>'+(b?euro(b):'💸 0 €')+'</strong></div>').join('')+'</section>'
+ +(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
+ ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';own=freshOwn();myPres={};commit()});$('leave').onclick=leaveRoom})}
+function render(){if(!roomCode)return renderHome();
+ if(!socket||socket.readyState!==1){mount('conn','<section class="card center"><h2>Entrando en la sala…</h2><p class="muted">'+safe(roomCode)+'</p><button class="btn ghost" id="c">Cancelar</button></section>',()=>$('c').onclick=leaveRoom);return}
+ if(!state)return mount('wait','<section class="card center"><h2>Esperando al anfitrión…</h2><p class="muted">Sala '+safe(roomCode)+'</p><button class="btn ghost" id="l">Salir</button></section>',()=>$('l').onclick=leaveRoom);
+ if(state.phase==='lobby')renderLobby();else if(state.phase==='finished')renderFinished();else renderGame()}
+setInterval(()=>{if(roomCode&&state)hostStep()},500);
+setInterval(tick,250);
+if(saved?.room&&saved?.name){connect();render()}else renderHome();
+})();
+</script></body></html>

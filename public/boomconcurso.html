@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¡Boom! El concurso</title>
+<style>
+:root{--bg:#f4f1ea;--fg:#1a1a1a;--card:#fff;--mut:#6b6b6b;--a:#e0343a;--b:#2f6fe0;--gold:#d9a400;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161b;--fg:#f1f1f1;--card:#222630;--mut:#9aa0ab}}
+:root[data-theme="dark"]{--bg:#14161b;--fg:#f1f1f1;--card:#222630;--mut:#9aa0ab}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:640px;margin:0 auto;padding:14px}
+h1{text-align:center;font-size:2.6rem;margin:10px 0;color:var(--a);letter-spacing:2px}
+h2{margin:8px 0 12px;font-size:1.25rem;text-align:center}
+.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 2px 10px #0003;text-align:center}
+.mut{color:var(--mut);font-size:.9rem;margin:4px 0}
+.hud{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tm{background:var(--card);border-radius:12px;padding:8px 10px;border-top:5px solid var(--a);display:flex;flex-direction:column;gap:2px;opacity:.75}
+.tm.t1{border-color:var(--b)}
+.tm.on{opacity:1;outline:2px solid var(--gold)}
+.tm span{font-weight:700;font-size:1.15rem}
+.tm i{font-style:normal;letter-spacing:3px;color:#2eaa57}
+.tm u{text-decoration:none;color:var(--mut);opacity:.5}
+button{font:inherit;cursor:pointer}
+.go{background:var(--a);color:#fff;border:0;border-radius:12px;padding:12px 26px;font-weight:700;font-size:1.05rem;margin-top:10px}
+.go:active{transform:scale(.97)}
+input{font:inherit;padding:10px;border-radius:10px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);width:100%;margin:6px 0}
+.bomb{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#666,#111);margin:22px auto 14px;display:grid;place-items:center;position:relative;color:#ff4b4b;font:700 2.4rem monospace}
+.bomb::before{content:'';position:absolute;top:-15px;left:50%;width:6px;height:18px;margin-left:-3px;background:#c89b3c;border-radius:3px}
+.bomb::after{content:'';position:absolute;top:-24px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#ff9a00;animation:bl .5s infinite alternate}
+.bomb.gold{background:radial-gradient(circle at 35% 30%,#ffe27a,#b88600);color:#5a3b00}
+.bomb.sm{width:84px;height:84px;font-size:1.7rem}
+@keyframes bl{to{opacity:.2;transform:scale(.6)}}
+@keyframes sh{0%{background:#ff9a00;transform:scale(1.03)}100%{background:var(--card)}}
+.cab{display:block;width:100%;margin:8px 0;padding:12px 14px;border:0;border-left:14px solid var(--c);border-radius:6px;background:var(--bg);color:var(--fg);text-align:left;font-weight:600;position:relative}
+.cab.cut{opacity:.4;text-decoration:line-through;border-left-style:dotted}
+.cab.cut::after{content:'✂';position:absolute;right:12px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{padding:14px 8px;border-radius:10px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);font-weight:600}
+.opt:active{background:var(--gold)}
+.mini{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:6px 0 10px}
+.mini i{width:18px;height:18px;border-radius:50%;background:var(--mut);opacity:.5}
+.mini i.s1{background:#2eaa57;opacity:1}
+.mini i.s2{background:#ff9a00;opacity:1}
+.big{font-size:3.4rem}
+.bm{animation:sh .6s}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const MC=[
+["¿Cuál es la capital de Australia?","Canberra","Sídney","Melbourne","Perth"],
+["¿Quién pintó Las Meninas?","Velázquez","Goya","El Greco","Murillo"],
+["¿Cuántos huesos tiene un adulto?","206","186","226","256"],
+["¿Cuál es el planeta más cercano al Sol?","Mercurio","Venus","Marte","Tierra"],
+["¿Qué río pasa por Sevilla?","Guadalquivir","Ebro","Duero","Tajo"],
+["¿En qué año llegó el hombre a la Luna?","1969","1959","1979","1965"],
+["¿Cuál es el símbolo químico del oro?","Au","Ag","Or","Go"],
+["¿Quién escribió El Quijote?","Cervantes","Lope de Vega","Quevedo","Góngora"],
+["¿Cuántos jugadores de un equipo hay en pista en baloncesto?","5","4","6","7"],
+["¿Cuál es el océano más grande?","Pacífico","Atlántico","Índico","Ártico"],
+["¿Cuál es el animal terrestre más rápido?","Guepardo","León","Antílope","Caballo"],
+["¿En qué ciudad está la Sagrada Familia?","Barcelona","Madrid","Valencia","Sevilla"],
+["¿Cuántos lados tiene un hexágono?","6","5","7","8"],
+["¿Quién escribió Cien años de soledad?","García Márquez","Vargas Llosa","Borges","Cortázar"],
+["¿Cuál es el gas más abundante de la atmósfera?","Nitrógeno","Oxígeno","Argón","CO₂"],
+["¿Cuál es la capital de Portugal?","Lisboa","Oporto","Faro","Coímbra"],
+["¿Qué metal es líquido a temperatura ambiente?","Mercurio","Plomo","Estaño","Cobre"],
+["¿Cuántas cuerdas tiene una guitarra clásica?","6","4","5","7"],
+["¿Cuántos jugadores tiene un equipo de fútbol en campo?","11","9","10","12"],
+["¿Cuál es la capital de Francia?","París","Lyon","Marsella","Niza"]
+];
+const FIN=[
+["¿Capital de Italia?","Roma"],["¿Quién escribió Hamlet?","Shakespeare"],["¿En qué continente está Egipto?","África"],
+["¿Cuántos días tiene un año bisiesto?","366"],["¿Qué color resulta de mezclar azul y amarillo?","verde"],
+["¿Cómo se conoce al planeta Marte por su color?","rojo|planeta rojo"],["¿Cuál es la moneda de Japón?","yen"],
+["¿Cuál es el idioma oficial de Brasil?","portugués"],["¿Qué instrumento tiene teclas blancas y negras?","piano"],
+["¿Cuál es el mayor mamífero marino?","ballena azul|ballena"],["¿Cuántos minutos tiene una hora?","60"],
+["¿En qué ciudad está la Torre Eiffel?","París"],["¿Quién pintó la Mona Lisa?","Leonardo|Da Vinci"],
+["¿Qué océano separa América de Europa?","Atlántico"],["¿Cuál es el hueso más largo del cuerpo humano?","fémur"],
+["¿Cuál es la fórmula química del agua?","H2O"],["¿Cuántas patas tiene una araña?","8|ocho"]
+];
+const COL=['#e0343a','#2f6fe0','#2eaa57','#e8b800'],BOTE=50000;
+let T,bank=[],ADV=-1,tm,AC;
+const $=s=>document.querySelector(s),A=$('#app');
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>n.toLocaleString('es-ES')+' €';
+const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const nz=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+function snd(f,d,t='square',v=.05){try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+function boom(){try{AC=AC||new AudioContext();const n=AC.sampleRate*.8,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),g=AC.createGain();g.gain.value=.4;s.buffer=b;s.connect(g);g.connect(AC.destination);s.start()}catch(e){}}
+function nextQ(){if(!bank.length)bank=sh(MC);const q=bank.pop();return{q:q[0],c:q[1],o:sh(q.slice(1))}}
+function hud(a){return '<div class="hud">'+T.map((t,i)=>`<div class="tm t${i}${a===i?' on':''}"><b>${E(t.n)}</b><span>${fmt(t.m)}</span><i>${'●'.repeat(t.l)}<u>${'●'.repeat(4-t.l)}</u></i></div>`).join('')+'</div>'}
+function show(h,a){clearInterval(tm);A.innerHTML=(T?hud(a):'')+h}
+function banner(t,p,l,cb){show(`<div class="card"><h2>${t}</h2><p>${p}</p><button class="go" id="go">${l||'Continuar'}</button></div>`);$('#go').onclick=cb}
+function clock(s,end,tick){let n=s;const u=()=>{const e=$('#clk');if(e)e.textContent=n;tick&&tick(n)};u();tm=setInterval(()=>{n--;u();snd(n<6?900:600,.06);if(n<=0){clearInterval(tm);end()}},1000)}
+
+function start(){
+ T=null;ADV=-1;
+ show(`<h1>¡BOOM!</h1><div class="card"><p>Dos equipos de cuatro. Cada pregunta es una bomba y cada respuesta, un cable. ¡Corta los incorrectos y deja intacto el correcto!</p>
+ <input id="n0" value="Los Rojos" maxlength="16" aria-label="Equipo rojo"><input id="n1" value="Los Azules" maxlength="16" aria-label="Equipo azul">
+ <button class="go" id="go">¡Empezar!</button><p class="mut">Pruebas: 1 Bombas de cables · 2 Bomba caliente · 3 Bomba catastrófica · 4 Bomba dorada</p></div>`);
+ $('#go').onclick=()=>{T=[0,1].map(i=>({n:$('#n'+i).value.trim()||['Rojos','Azules'][i],m:0,l:4}));
+  banner('Prueba 1 · Bombas de cables','Cada equipo desactiva 4 bombas por turnos, con 30 segundos cada una. Corta los cables de las respuestas incorrectas. Si cortas el cable de la correcta o se acaba el tiempo, la bomba explota: pierdes un jugador y el dinero de esa bomba.','¡A por la primera!',()=>p1(0))}
+}
+function after(next){
+ const d=T.findIndex(t=>t.l<1);
+ if(d<0)return next();
+ banner('💥 Equipo eliminado',`${E(T[d].n)} se ha quedado sin jugadores. ${E(T[1-d].n)} pasa directo a la final.`,'A la bomba dorada',()=>final(1-d))
+}
+function p1(i){
+ if(i>7)return banner('Prueba 2 · Bomba caliente','Cada equipo tiene 30 segundos para responder cuantas preguntas pueda (500 € por acierto). El que más acierte gana una ventaja: +10 segundos en la prueba siguiente.','Empezar',()=>duel('Bomba caliente',30,500,r=>{ADV=r[0]===r[1]?-1:r[0]>r[1]?0:1;
+  banner('Ventaja',ADV<0?'Empate: nadie gana ventaja.':`${E(T[ADV].n)} gana 10 segundos extra en la Bomba catastrófica.`,'Continuar',()=>banner('Prueba 3 · Bomba catastrófica','Ronda rápida: 45 segundos por equipo, 1.000 € por acierto. El equipo con más dinero pasa a la final; el otro queda eliminado.','Empezar',()=>duel('Bomba catastrófica',45,1000,elim)))}));
+ const t=i%2,v=[500,1000,1500,2000][i>>1],q=nextQ();let done=0;
+ show(`<div class="card"><p class="mut">Prueba 1 · ${E(T[t].n)} · Bomba de ${fmt(v)}</p><div class="bomb"><span id="clk"></span></div><h2>${E(q.q)}</h2><div id="cb">${q.o.map((o,k)=>`<button class="cab" data-k="${k}" style="--c:${COL[k]}">${E(o)}</button>`).join('')}</div><p class="mut">Corta las incorrectas. ¡No cortes la correcta!</p></div>`,t);
+ const fin=ok=>{if(done)return;done=1;clearInterval(tm);
+  if(ok){T[t].m+=v;snd(880,.3,'sine')}else{T[t].l--;boom()}
+  show(`<div class="card${ok?'':' bm'}"><div class="big">${ok?'✅':'💥'}</div><h2>${ok?`¡Bomba desactivada! +${fmt(v)}`:`¡BOOM! ${E(T[t].n)} pierde un jugador`}</h2><p>Respuesta correcta: <b>${E(q.c)}</b></p><button class="go" id="go">Siguiente</button></div>`,t);
+  $('#go').onclick=()=>after(()=>p1(i+1))};
+ clock(30,()=>fin(false));
+ $('#cb').onclick=e=>{const b=e.target.closest('.cab');if(!b||b.classList.contains('cut')||done)return;
+  if(q.o[+b.dataset.k]===q.c)return fin(false);
+  b.classList.add('cut');snd(300,.1,'sawtooth');
+  if(A.querySelectorAll('.cab:not(.cut)').length===1)fin(true)}
+}
+function quick(t,secs,val,title,done){
+ let n=0,left=secs,q;
+ const ask=()=>{q=nextQ();
+  show(`<div class="card"><p class="mut">${title} · ${E(T[t].n)} · Aciertos: ${n}</p><div class="bomb sm"><span id="clk"></span></div><h2>${E(q.q)}</h2><div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}">${E(o)}</button>`).join('')}</div></div>`,t);
+  clock(left,()=>done(n),x=>left=x);
+  $('.opts').onclick=e=>{const b=e.target.closest('.opt');if(!b)return;
+   if(q.o[+b.dataset.k]===q.c){n++;T[t].m+=val;snd(880,.1,'sine')}else snd(150,.2,'sawtooth');ask()}};
+ ask()
+}
+function duel(title,secs,val,next){
+ const r=[],go=t=>{const s=secs+(ADV===t?10:0);
+  banner(title,`Turno de ${E(T[t].n)}: ${s} segundos. ¡Cada acierto suma ${fmt(val)}!`,'¡Desactivar!',()=>quick(t,s,val,title,a=>{r[t]=a;t?next(r):go(1)}))};
+ go(0)
+}
+function elim(){
+ const w=T[0].m>T[1].m?0:T[1].m>T[0].m?1:T[0].l>=T[1].l?0:1;
+ banner(`${E(T[w].n)} pasa a la final`,`${E(T[1-w].n)} queda eliminado (${fmt(T[1-w].m)}). ${E(T[w].n)} llega con ${fmt(T[w].m)}.`,'A la bomba dorada',()=>final(w))
+}
+function final(w){
+ const Q=sh(FIN).slice(0,15),st=Array(15).fill(0),secs=120+(ADV===w?10:0);
+ let list=[...Array(15).keys()],pos=0,rnd=1,fails=[],left=secs;
+ const win=()=>{clearInterval(tm);snd(988,.5,'sine');banner('🏆 ¡BOMBA DORADA DESACTIVADA!',`${E(T[w].n)} se lleva el bote: <b>${fmt(BOTE+T[w].m)}</b>`,'Jugar otra vez',start)};
+ const lose=()=>{clearInterval(tm);boom();show(`<div class="card bm"><div class="big">💥</div><h2>¡La bomba dorada ha explotado!</h2><p>${E(T[w].n)} se queda sin bote. El premio sigue acumulándose…</p><button class="go" id="go">Jugar otra vez</button></div>`);$('#go').onclick=start};
+ const draw=()=>{const i=list[pos];
+  show(`<div class="card"><p class="mut">Vuelta ${rnd}${rnd===2?' · ¡si fallas, explota!':''} · Minibomba ${i+1}/15</p><div class="bomb gold"><span id="clk"></span></div><div class="mini">${st.map(s=>`<i class="s${s}"></i>`).join('')}</div><h2>${E(Q[i][0])}</h2><form id="f"><input id="ans" autocomplete="off" placeholder="Tu respuesta (vacío = pasar)"><button class="go">Responder</button></form></div>`,w);
+  clock(left,lose,x=>left=x);$('#ans').focus();
+  $('#f').onsubmit=e=>{e.preventDefault();const v=nz($('#ans').value);
+   const ok=v&&Q[i][1].split('|').some(a=>{a=nz(a);return v===a||(a.length>3&&v.includes(a))});
+   if(ok){st[i]=1;snd(880,.1,'sine')}else{if(rnd===2)return lose();st[i]=2;fails.push(i);snd(150,.2,'sawtooth')}
+   if(++pos>=list.length){if(!fails.length)return win();rnd=2;list=fails;fails=[];pos=0}
+   draw()}};
+ banner('🏆 Bomba dorada',`${E(T[w].n)}: la bomba dorada está conectada a 15 minibombas. Responde por escrito en ${secs} segundos. Las falladas vuelven en una segunda vuelta; si fallas ahí, la bomba explota. Bote en juego: <b>${fmt(BOTE+T[w].m)}</b>`,'¡Vamos!',draw)
+}
+start();
+</script>
+</body>
+</html>

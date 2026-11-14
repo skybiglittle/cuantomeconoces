@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ahorcado</title>
+<style>
+:root{--bg:#f2f0eb;--fg:#161616;--box:#fff;--mut:#6b6b6b;--ok:#2e9e57;--no:#d9473f;--gold:#e8b800;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:14px}
+h1{text-align:center;font-size:2.1rem;margin:8px 0}
+h2{text-align:center;font-size:1.15rem;margin:10px 0 6px}
+.box{background:var(--box);border-radius:16px;padding:16px;box-shadow:0 2px 10px #0003}
+.mut{color:var(--mut);font-size:.9rem;margin:4px 0;text-align:center}
+.err{color:var(--no);text-align:center;font-weight:600}
+input,select{font:inherit;padding:9px;border-radius:10px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);width:100%;margin:4px 0}
+button{font:inherit;cursor:pointer}
+.go{display:block;width:100%;background:var(--fg);color:var(--bg);border:0;border-radius:12px;padding:13px;font-weight:700;font-size:1.05rem;margin-top:10px}
+.go:disabled{opacity:.35}
+.s{background:none;border:2px solid var(--mut);color:var(--fg);border-radius:10px;padding:6px 12px}
+.sc{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0}
+.sc span{background:var(--bg);border-radius:20px;padding:3px 10px;font-size:.85rem}
+.sc .me{outline:2px solid var(--gold)}
+.art{display:block;width:100%;max-width:300px;margin:6px auto;border-radius:14px}
+.wd{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+.wd b{width:30px;height:38px;border-bottom:4px solid var(--fg);text-align:center;font-size:1.6rem;line-height:38px}
+.wd b.ms{color:var(--no)}
+.wd i{width:18px}
+.kb{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.kb button{padding:10px 0;border-radius:8px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);font-weight:700}
+.kb .ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.kb .no{background:var(--no);color:#fff;border-color:var(--no)}
+.kb button:disabled{opacity:.6}
+.row{display:flex;gap:8px;margin-top:10px}
+.row>*{flex:1}
+.code{font:800 2.4rem monospace;letter-spacing:6px;text-align:center}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+function makeRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return{join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,arr=[],subs=[],done=false,closed=false,retry=0,pres={},cid=Math.random().toString(36).slice(2);
+    var room={peers:function(){return arr},
+      onPeers:function(f){subs.push(f)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello')id=m.id;
+        else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
+const WORDS={
+'Animales':['elefante','jirafa','cocodrilo','mariposa','murciélago','hipopótamo','pingüino','camaleón','ardilla','tortuga','delfín','cangrejo','gallina','caballo'],
+'Comida':['tortilla de patatas','gazpacho','paella','croquetas','chocolate','mermelada','albóndigas','espaguetis','sandía','empanada','helado','bocadillo','macarrones','churros'],
+'Países y ciudades':['Argentina','Portugal','Barcelona','Sevilla','Marruecos','Dinamarca','Valencia','Colombia','Australia','Granada','Noruega','Suiza','Zaragoza','Perú'],
+'En casa':['lavadora','frigorífico','cortina','almohada','escalera','ventilador','tostadora','paraguas','espejo','alfombra','cuchara','microondas','sartén','bombilla'],
+'Deportes':['baloncesto','natación','ciclismo','balonmano','patinaje','atletismo','voleibol','gimnasia','tenis','esgrima','senderismo','ajedrez','remo','surf'],
+'Profesiones':['bombero','panadero','enfermera','fontanero','peluquera','cartero','albañil','profesor','veterinaria','electricista','astronauta','jardinero','cocinero','pintor'],
+'Naturaleza':['montaña','relámpago','arcoíris','cascada','volcán','desierto','bosque','tormenta','glaciar','pradera','océano','estrella','isla','huracán']};
+/* ===== Dibujos: cada fallo (0-8) avanza un paso; al 8.º se pierde ===== */
+const TH=[
+{bg:'#cfe8ff',t:'¡POP! El globo explotó',d:k=>{const r=9+k*6.5,cy=128-k*3.5;let s=`<line x1="100" y1="${cy+r}" x2="100" y2="182" stroke="#777" stroke-width="2"/><rect x="90" y="182" width="20" height="12" rx="2" fill="#8a5a2b"/>`;
+ if(k>=8){let b='';for(let i=0;i<10;i++){const a=i*Math.PI/5;b+=`<line x1="${100+30*Math.cos(a)}" y1="${75+30*Math.sin(a)}" x2="${100+62*Math.cos(a)}" y2="${75+62*Math.sin(a)}"/>`}return s+`<g stroke="#e8453c" stroke-width="4" stroke-linecap="round">${b}</g><text x="100" y="84" text-anchor="middle" font-size="26" font-weight="800" fill="#e8453c">¡POP!</text>`}
+ s+=`<ellipse cx="100" cy="${cy}" rx="${r*.84}" ry="${r}" fill="#e8453c"/><ellipse cx="${100-r*.3}" cy="${cy-r*.35}" rx="${r*.13}" ry="${r*.24}" fill="#fff" opacity=".45"/>`;
+ if(k>=6)s+=`<path d="M${100+r*.3} ${cy-r*.6}l-7 9 8 7-6 9" stroke="#fff" stroke-width="2" fill="none"/>`;return s}},
+{bg:'#bfe3ff',t:'¡La marea se llevó el castillo!',d:k=>{const w=185-k*8.5,c='<rect x="52" y="112" width="96" height="50" fill="#e6bd6e"/><rect x="44" y="84" width="28" height="78" fill="#dba957"/><rect x="128" y="84" width="28" height="78" fill="#dba957"/><rect x="42" y="76" width="32" height="8" fill="#dba957"/><rect x="126" y="76" width="32" height="8" fill="#dba957"/><path d="M92 162v-22a8 8 0 0116 0v22z" fill="#a06a2c"/><path d="M100 112V88" stroke="#555" stroke-width="2"/><path d="M100 88l16 5-16 5z" fill="#e8453c"/>';
+ return `<rect y="160" width="200" height="40" fill="#f2dc9b"/>`+(k<8?c:'')+`<path d="M0 ${w}q25-14 50 0t50 0t50 0t50 0V200H0z" fill="#3b8fd9" opacity=".92"/>`+(k>=8?`<path d="M96 ${w-4}v-16l16 5-16 5" fill="#e8453c"/>`:'')}},
+{bg:'#14203a',t:'¡El cohete despegó sin vosotros!',d:k=>{const P=['<rect x="85" y="95" width="30" height="85" rx="4" fill="#e9edf2"/>','<circle cx="100" cy="125" r="9" fill="#5bc0eb" stroke="#334" stroke-width="2"/>','<path d="M85 148l-23 32h23zM115 148l23 32h-23z" fill="#e8453c"/>','<path d="M85 95q15-48 30 0z" fill="#e8453c"/>','<path d="M91 180l9 30 9-30z" fill="#ffb300"/>','<circle cx="66" cy="188" r="13" fill="#cfd4da"/><circle cx="134" cy="188" r="13" fill="#cfd4da"/>','<text x="100" y="52" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">¡3·2·1!</text>'];
+ const st='<g fill="#fff"><circle cx="30" cy="30" r="1.5"/><circle cx="165" cy="45" r="2"/><circle cx="135" cy="18" r="1.5"/><circle cx="52" cy="78" r="1.5"/><circle cx="178" cy="105" r="1.5"/></g><rect x="50" y="188" width="100" height="12" fill="#667"/>';
+ return st+(k>=8?`<g transform="translate(0,-105)">${P.slice(0,5).join('')}</g>${P[5]}`:P.slice(0,Math.min(k,7)).join(''))}},
+{bg:'#fde9c8',t:'¡La torre se derrumbó!',d:k=>{const C=['#e8453c','#3b8fd9','#f5b400','#4cae4f','#9b59b6','#ff8a65','#26a69a','#ec407a'],J=[0,3,-3,4,-4,3,-3,5];let s='';
+ for(let i=0;i<Math.min(k,8);i++){const f=k>=8&&i>3,x=f?15+(i-4)*42:70+J[i],y=f?170:188-i*20;s+=`<rect x="${x}" y="${y}" width="60" height="18" rx="2" fill="${C[i]}"${f?` transform="rotate(${i%2?9:-9} ${x+30} ${y+9})"`:''}/>`}
+ return `<rect y="188" width="200" height="12" fill="#a1887f"/>`+s}}];
+/* ===== Utilidades ===== */
+const $=id=>document.getElementById(id),app=$('app'),rnd=a=>a[Math.random()*a.length|0];
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nz=c=>c==='ñ'||c==='Ñ'?'Ñ':c.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+const nzs=s=>[...s].map(nz).join('');
+const okW=w=>/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{3,24}$/.test(w.trim());
+const LET='ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+const uniq=W=>[...new Set(W.replace(/ /g,''))];
+function calc(s){const W=nzs(s.w),u=uniq(W),wrong=[...s.tr].filter(c=>!u.includes(c)).length,miss=wrong+(s.x||0),win=u.length>0&&u.every(c=>s.tr.includes(c));return{W,miss:Math.min(miss,8),win,lose:!win&&miss>=8}}
+function gl(s,l){if(s.tr.includes(l))return 0;s.tr+=l;return nzs(s.w).split(l).length-1}
+function gh(s){const left=uniq(nzs(s.w)).filter(c=>!s.tr.includes(c));if(left.length>1){s.tr+=rnd(left);s.x=(s.x||0)+1}}
+function gf(s,v){const W=nzs(s.w);if(nzs(v.trim())===W){s.tr+=uniq(W).join('');return 1}s.x=(s.x||0)+1;return 0}
+function pickWord(cat){const c=cat&&WORDS[cat]?cat:rnd(Object.keys(WORDS));return{w:rnd(WORDS[c]),c}}
+function board(s,can){
+ const c=calc(s),T=TH[s.th],sh=[...s.w].map(ch=>{if(ch===' ')return'<i></i>';const hit=s.tr.includes(nz(ch));return`<b class="${!hit&&c.lose?'ms':''}">${hit||c.lose?E(ch.toUpperCase()):''}</b>`}).join('');
+ return`<svg viewBox="0 0 200 200" class="art"><rect width="200" height="200" fill="${T.bg}"/>${T.d(c.miss)}</svg><p class="mut">${s.c?'Pista: '+E(s.c)+' · ':''}Fallos ${c.miss}/8</p><div class="wd">${sh}</div>`+
+ (can&&!c.win&&!c.lose?`<div class="kb">${LET.map(l=>{const t=s.tr.includes(l),h=c.W.includes(l);return`<button data-a="ltr" data-v="${l}" class="${t?(h?'ok':'no'):''}" ${t?'disabled':''}>${l}</button>`}).join('')}</div>
+ <div class="row"><input id="fw" placeholder="¿Ya sabes la palabra?" autocomplete="off"><button class="s" data-a="full">Probar</button><button class="s" data-a="hint">💡 Pista (-1)</button></div>`:'');
+}
+/* ===== Estado ===== */
+let M='home',L=null,ST={w:0,l:0},NR=null,G=null,MSG='';
+const view=h=>{app.innerHTML=h};
+const bar=t=>`<p class="mut">${t} · <button class="s" data-a="home">Salir</button></p>`;
+const catOpts=()=>'<option value="">Categoría al azar</option>'+Object.keys(WORDS).map(c=>`<option>${c}</option>`).join('');
+const AC={};
+app.onclick=e=>{const b=e.target.closest('[data-a]');if(b&&AC[b.dataset.a])AC[b.dataset.a](b.dataset.v)};
+document.onkeydown=e=>{if(/INPUT|SELECT/.test(document.activeElement.tagName)||e.key.length!==1||e.ctrlKey||e.metaKey)return;const l=nz(e.key);if(/^[A-ZÑ]$/.test(l)&&canPlay())AC.ltr(l)};
+function canPlay(){if(M==='local')return L&&!calc(L).win&&!calc(L).lose;if(M==='room'&&G){const h=hs();return h&&h.ph==='play'&&h.st!==G.me}return false}
+/* ===== Inicio ===== */
+function home(){
+ if(NR){NR.leave();NR=null}M='home';L=null;G=null;
+ view(`<h1>🎈 Ahorcado</h1><div class="box"><p class="mut">Cada fallo avanza el dibujo: un globo que se hincha, una marea que sube, un cohete que se prepara o una torre que se tambalea. ¡8 fallos y se acaba!</p>
+ <button class="go" data-a="loc">📱 Jugar en este móvil</button>
+ <h2>🌐 Sala online</h2>${MSG?`<p class="err">${MSG}</p>`:''}
+ <input id="nm" placeholder="Tu nombre" maxlength="16"><div class="row"><button class="go" data-a="mk">Crear sala</button><input id="cd" placeholder="Código" maxlength="6"><button class="go" data-a="jn">Unirme</button></div></div>`);
+}
+AC.home=home;
+/* ===== Modo local ===== */
+AC.loc=()=>{M='local';L=null;view(`${bar('En este móvil')}<div class="box"><p class="mut">Ganadas ${ST.w} · Perdidas ${ST.l}</p><h2>Alguien pone la palabra</h2>
+ <input id="sw" type="password" placeholder="Palabra o frase secreta" autocomplete="off"><input id="sc" placeholder="Pista (opcional)" maxlength="30">
+ <button class="go" data-a="lok">Esconder palabra</button><h2>O elige una del juego</h2><select id="ct">${catOpts()}</select><button class="go" data-a="rand">🎲 Palabra al azar</button></div>`)};
+AC.lok=()=>{const w=$('sw').value.trim();if(!okW(w))return alert('Usa solo letras y espacios (3 a 24 caracteres).');L={w,c:$('sc').value.trim(),th:rnd(TH.map((_,i)=>i)),tr:'',x:0};view(`<div class="box"><h2>🔒 ¡Palabra escondida!</h2><p class="mut">Pasa el móvil a quien va a adivinar.</p><button class="go" data-a="play">¡Jugar!</button></div>`)};
+AC.rand=()=>{const p=pickWord($('ct').value);L={w:p.w,c:p.c,th:rnd(TH.map((_,i)=>i)),tr:'',x:0};AC.play()};
+AC.play=()=>{const c=calc(L);if((c.win||c.lose)&&!L.done){L.done=1;c.win?ST.w++:ST.l++}
+ view(`${bar('En este móvil')}<div class="box">${board(L,true)}${c.win||c.lose?`<h2>${c.win?'🎉 ¡Salvados!':TH[L.th].t}</h2><p class="mut">La palabra era <b>${E(L.w.toUpperCase())}</b></p><button class="go" data-a="loc">Otra palabra</button>`:''}</div>`)};
+/* ===== Acciones comunes (local y sala) ===== */
+AC.ltr=l=>{if(M==='local'&&canPlay()){gl(L,l);AC.play()}else if(M==='room')send(l)};
+AC.hint=()=>{if(M==='local'){gh(L);AC.play()}else send('?')};
+AC.full=()=>{const v=($('fw').value||'').trim();if(v.length<2)return;if(M==='local'){gf(L,v);AC.play()}else send(v)};
+/* ===== Salas (host autoritativo, estado en presencia) ===== */
+const peers=()=>NR?NR.peers().filter(p=>p.presence&&p.presence.rm).map(p=>({me:p.isMe,p:p.presence})):[];
+const byk=()=>{const o={};peers().forEach(x=>o[x.p.k]=x.p);return o};
+const hostP=()=>{const x=peers().find(y=>y.p.h===1);return x&&x.p};
+const hs=()=>G.host?G.hs:(hostP()||{}).hs;
+const nm=k=>{const p=byk()[k];return p?E(p.n):'?'};
+function pub(){if(NR&&G)NR.presence({rm:1,n:G.name,k:G.me,mv:G.mv,sw:G.sw,h:G.host?1:null,hs:G.host?G.hs:null}).catch(()=>{})}
+function enter(create){
+ if(!RM){MSG='Las salas necesitan abrir este archivo desde tu servidor (http).';return home()}
+ const name=($('nm').value||'').trim().slice(0,16)||(create?'Anfitrión':'Jugador'),code=create?Array.from({length:4},()=>'abcdefghjkmnpqrstuvwxyz'[Math.random()*23|0]).join(''):($('cd').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+ if(!code){MSG='Escribe el código de la sala.';return home()}
+ M='room';MSG='';G={code,name,me:Math.random().toString(36).slice(2,8),host:!!create,mv:null,sw:null,n:0,seen:{},lk:'',hs:create?{ph:'lobby',r:0,g:'',o:[],st:null,w:'',c:'',th:0,tr:'',x:0,sc:{},last:null,res:''}:null};
+ rr();RM.join('ah-'+code).then(r=>{NR=r;NR.onPeers(sync);pub();sync()}).catch(e=>{MSG=e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala.';home()});
+}
+AC.mk=()=>enter(true);AC.jn=()=>enter(false);
+function nextRound(){const h=G.hs,by=byk(),n=h.o.length;let i=h.o.indexOf(h.st);for(let j=1;j<=n;j++){const k=h.o[(i+j)%n];if(by[k]){h.st=k;break}}
+ h.r++;h.ph='set';h.w='';h.c='';h.tr='';h.x=0;h.last=null;h.res='';h.th=rnd(TH.map((_,i)=>i));pub();sync()}
+AC.start=()=>{const h=G.hs,ps=peers();if(ps.length<2)return;h.g=Math.random().toString(36).slice(2,6);h.o=ps.map(x=>x.p.k);h.st=h.o[h.o.length-1];h.r=0;h.sc={};nextRound()};
+AC.rnext=()=>nextRound();
+function hostLogic(){
+ const h=G.hs,by=byk();let ch=0;
+ if(h.ph==='lobby')return;
+ peers().forEach(x=>{if(!h.o.includes(x.p.k)){h.o.push(x.p.k);ch=1}});
+ if(h.ph!=='end'&&!by[h.st])return nextRound();
+ if(h.ph==='set'){const s=by[h.st].sw;if(s&&s.g===h.g&&s.r===h.r&&okW(s.w)){h.w=s.w.trim();h.c=(s.c||'').slice(0,30);h.ph='play';ch=1}}
+ if(h.ph==='play'){
+  h.o.forEach(k=>{const m=by[k]&&by[k].mv;if(!m||k===h.st||m.g!==h.g||m.r!==h.r||(G.seen[k]||0)>=m.n)return;G.seen[k]=m.n;ch=1;
+   if(m.l==='?')gh(h);else if(m.l.length>1){if(gf(h,m.l))h.last=k}else{const c=gl(h,m.l);if(c){h.sc[k]=(h.sc[k]||0)+c;h.last=k}}});
+  const c=calc(h);
+  if(c.win||c.lose){h.ph='end';h.res=c.win?'win':'lose';const b=c.win?h.last:h.st;if(b)h.sc[b]=(h.sc[b]||0)+3;ch=1}
+ }
+ if(ch)pub();
+}
+function send(l){const h=hs();if(!h||h.ph!=='play'||h.st===G.me)return;G.mv={g:h.g,r:h.r,n:++G.n,l};pub()}
+AC.rsend=()=>{const w=$('rw').value.trim();if(!okW(w))return alert('Usa solo letras y espacios (3 a 24 caracteres).');const h=hs();G.sw={g:h.g,r:h.r,w,c:$('rc').value.trim()};pub()};
+AC.rrand=()=>{const p=pickWord($('rct').value),h=hs();G.sw={g:h.g,r:h.r,w:p.w,c:p.c};pub()};
+function sync(){if(!G||!NR)return;if(G.host)hostLogic();rr()}
+function rr(){
+ if(M!=='room'||!G)return;
+ const h=hs(),key=h?[h.ph,h.r,h.tr.length,h.x].join():'x',a=document.activeElement;
+ if(a&&/INPUT|SELECT/.test(a.tagName)&&app.contains(a)&&G.lk===key)return;
+ G.lk=key;const top=bar(`Sala <b>${E(G.code)}</b>`);
+ if(!h)return view(top+'<div class="box"><p class="mut">Conectando con la sala… Si no aparece, revisa el código.</p></div>');
+ const sb=`<div class="sc">${peers().map(x=>`<span class="${x.me?'me':''}">${x.p.k===h.st&&h.ph!=='lobby'?'✍ ':''}${E(x.p.n)}: ${(h.sc||{})[x.p.k]||0}</span>`).join('')}</div>`,me=G.me===h.st;let b;
+ if(h.ph==='lobby')b=`<h2>Código de sala</h2><div class="code">${E(G.code)}</div><p class="mut">Los demás lo escriben en «Unirme».</p>${sb}${G.host?`<button class="go" data-a="start" ${peers().length<2?'disabled':''}>${peers().length<2?'Hacen falta 2 jugadores':'¡Empezar!'}</button>`:'<p class="mut">Esperando al anfitrión…</p>'}`;
+ else if(h.ph==='set')b=sb+(me?`<h2>✍ Te toca poner la palabra</h2><input id="rw" type="password" placeholder="Palabra o frase secreta" autocomplete="off"><input id="rc" placeholder="Pista (opcional)" maxlength="30"><button class="go" data-a="rsend">Enviar palabra</button><h2>O una del juego</h2><select id="rct">${catOpts()}</select><button class="go" data-a="rrand">🎲 Al azar</button>`:`<h2>✍ ${nm(h.st)} está eligiendo la palabra…</h2>`);
+ else{const over=h.ph==='end';b=sb+board(h,!me&&!over)+(me&&!over?`<p class="mut">Tu palabra: <b>${E(h.w.toUpperCase())}</b>. Ellos adivinan.</p>`:'')+(over?`<h2>${h.res==='win'?'🎉 ¡Palabra adivinada!':TH[h.th].t}</h2><p class="mut">Era <b>${E(h.w.toUpperCase())}</b> · ${h.res==='win'?'+3 para '+(h.last?nm(h.last):'?'):'+3 para '+nm(h.st)}</p>${G.host?'<button class="go" data-a="rnext">Siguiente ronda</button>':'<p class="mut">Esperando al anfitrión…</p>'}`:'')}
+ view(top+`<div class="box">${b}</div>`);
+}
+home();
+</script>
+</body>
+</html>

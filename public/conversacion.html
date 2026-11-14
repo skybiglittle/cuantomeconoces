@@ -1,0 +1,120 @@
+http://es.scribd.com/document/793887782/250-temas-para-iniciar-una-conversacion
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Temas de conversación</title>
+<style>
+:root{--bg:#f2f0eb;--fg:#161616;--box:#fff;--mut:#6b6b6b;--ac:#e8683c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:520px;min-height:100%;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+h1{text-align:center;font-size:1.7rem;margin:6px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips button{border:2px solid var(--mut);background:none;color:var(--fg);border-radius:20px;padding:5px 12px;font:inherit;font-size:.9rem;cursor:pointer}
+.chips button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+#card{flex:1;min-height:240px;background:var(--box);border-radius:20px;box-shadow:0 2px 12px #0003;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px;cursor:pointer;border-top:8px solid var(--ac)}
+#cat{font-size:.85rem;text-transform:uppercase;letter-spacing:2px;color:var(--ac);font-weight:700}
+#tx{font-size:1.6rem;font-weight:700;margin:14px 0 0;line-height:1.3}
+.row{display:flex;gap:10px}
+.row button{flex:1;border:0;border-radius:14px;padding:15px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer;background:var(--fg);color:var(--bg)}
+.row button.m{flex:0 0 auto;background:none;border:2px solid var(--mut);color:var(--fg)}
+.row button:disabled{opacity:.35}
+.mut{color:var(--mut);font-size:.85rem;text-align:center;margin:0}
+</style>
+</head>
+<body>
+<main id="app">
+<h1>💬 Temas de conversación</h1>
+<div class="chips" id="chips"></div>
+<div id="card" role="button" tabindex="0" aria-live="polite"><div id="cat"></div><p id="tx"></p></div>
+<div class="row"><button class="m" id="pv">←</button><button id="nx">🎲 Otro tema</button></div>
+<p class="mut" id="ct"></p>
+</main>
+<script>
+/* ===== TEMAS: añade los tuyos como ['Categoría','Texto'] ===== */
+const T=[
+['Recuerdos','¿Cuál es el mejor recuerdo de tu infancia?'],
+['Recuerdos','¿Cuál fue tu primer trabajo y qué aprendiste de él?'],
+['Recuerdos','¿Cuál ha sido el viaje más memorable de tu vida?'],
+['Recuerdos','¿Qué profesor o profesora te marcó y por qué?'],
+['Recuerdos','¿Cuál es la mejor comida que has probado en tu vida?'],
+['Recuerdos','¿A qué jugabas de pequeño con tus amigos?'],
+['Recuerdos','¿Cómo era la primera casa en la que viviste?'],
+['Recuerdos','¿Cuál es el mejor regalo que has recibido?'],
+['Imaginar','Si pudieras tener un superpoder, ¿cuál elegirías?'],
+['Imaginar','Estás en una isla desierta: ¿qué tres cosas te llevas?'],
+['Imaginar','Si pudieras viajar en el tiempo, ¿a qué época irías?'],
+['Imaginar','Si te tocara un gran premio, ¿qué sería lo primero que harías?'],
+['Imaginar','Si pudieras vivir un año en otro país, ¿cuál sería?'],
+['Imaginar','¿Qué invento nuevo cambiaría el mundo para bien?'],
+['Imaginar','¿En qué animal te convertirías por un día?'],
+['Imaginar','¿Cómo sería tu casa soñada?'],
+['Imaginar','Puedes cenar con cualquier persona de la historia: ¿con quién?'],
+['Imaginar','Si pudieras cambiar una norma del mundo, ¿cuál sería?'],
+['Divertidos','¿Cuál es tu anécdota más vergonzosa que ahora te hace reír?'],
+['Divertidos','¿Qué manía inofensiva tienes que nadie entiende?'],
+['Divertidos','¿Qué palabra o frase repites sin darte cuenta?'],
+['Divertidos','¿Qué apodo has tenido y de dónde salió?'],
+['Divertidos','¿Cuál es tu talento más inútil?'],
+['Divertidos','¿Qué película has visto más veces y por qué?'],
+['Divertidos','¿Qué canción cantas a pleno pulmón aunque no te sepas la letra?'],
+['Divertidos','¿Cuál es la mejor excusa que has puesto en tu vida?'],
+['Divertidos','¿Cómo sería para ti un domingo perfecto?'],
+['Divertidos','¿Qué es lo más raro que has comido?'],
+['Cotidiano','¿Qué aplicación del móvil usas más y por qué?'],
+['Cotidiano','¿Eres de madrugar o de trasnochar? ¿Desde cuándo?'],
+['Cotidiano','¿Cuál es el plato que mejor cocinas?'],
+['Cotidiano','¿Qué hábito te gustaría incorporar a tu rutina?'],
+['Cotidiano','¿Qué es lo primero que haces al despertarte?'],
+['Cotidiano','¿Qué serie o libro te tiene enganchado ahora mismo?'],
+['Cotidiano','¿Cómo sería tu desayuno ideal?'],
+['Cotidiano','¿Cuál es tu rincón favorito de tu ciudad?'],
+['Cotidiano','¿Qué haces cuando necesitas relajarte?'],
+['Cotidiano','¿Qué cosa haces mejor que casi todo el mundo?'],
+['Profundos','¿De qué te sientes más orgulloso últimamente?'],
+['Profundos','¿Cuál es el mejor consejo que te han dado?'],
+['Profundos','¿Qué aprendiste de un error que cometiste?'],
+['Profundos','¿Qué cualidad valoras más en un amigo?'],
+['Profundos','¿Qué te da energía cuando estás cansado?'],
+['Profundos','¿Qué te gustaría aprender si tuvieras tiempo?'],
+['Profundos','¿Qué significa para ti tener éxito?'],
+['Profundos','¿Por qué cosa estás agradecido hoy?'],
+['Profundos','Si tuvieras un año libre, ¿cómo lo aprovecharías?'],
+['Profundos','¿Qué te gustaría que la gente supiera de ti?'],
+['Elegir','¿Montaña o playa?'],['Elegir','¿Café o té?'],['Elegir','¿Madrugar o trasnochar?'],
+['Elegir','¿Viajar mucho o ahorrar para algo grande?'],['Elegir','¿Cine en casa o en sala?'],
+['Elegir','¿Cocinar o pedir comida?'],['Elegir','¿Verano o invierno?'],['Elegir','¿Libro o película?'],
+['Elegir','¿Vivir en la ciudad o en un pueblo?'],['Elegir','¿Dulce o salado?']
+];
+const $=id=>document.getElementById(id),cats=[...new Set(T.map(t=>t[0]))];
+let sel=new Set(),used=new Set(),hist=[],pos=-1;
+const pool=()=>T.map((t,i)=>i).filter(i=>!sel.size||sel.has(T[i][0]));
+function show(){
+ const t=hist[pos]!==undefined?T[hist[pos]]:null;
+ $('cat').textContent=t?t[0]:'';$('tx').textContent=t?t[1]:'Pulsa «Otro tema» para empezar';
+ $('pv').disabled=pos<1;$('ct').textContent=sel.size?`Categoría: ${[...sel].join(', ')}`:`${T.length} temas de ${cats.length} categorías`;
+}
+function next(){
+ if(pos<hist.length-1){pos++;return show()}
+ let p=pool().filter(i=>!used.has(i));
+ if(!p.length){pool().forEach(i=>used.delete(i));p=pool().filter(i=>i!==hist[pos])}
+ if(!p.length)p=pool();
+ const i=p[Math.random()*p.length|0];used.add(i);hist.push(i);pos=hist.length-1;show();
+}
+$('chips').innerHTML=['Todos',...cats].map(c=>`<button data-c="${c}" class="${c==='Todos'?'on':''}">${c}</button>`).join('');
+$('chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.c==='Todos')sel.clear();else sel.has(b.dataset.c)?sel.delete(b.dataset.c):sel.add(b.dataset.c);
+ $('chips').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.c==='Todos'?!sel.size:sel.has(x.dataset.c)));
+ hist=hist.slice(0,pos+1);next()};
+$('nx').onclick=next;$('card').onclick=next;
+$('pv').onclick=()=>{if(pos>0){pos--;show()}};
+document.onkeydown=e=>{if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'&&pos>0){pos--;show()}};
+show();
+</script>
+</body>
+</html>

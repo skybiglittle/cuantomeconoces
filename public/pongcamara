@@ -1,0 +1,951 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HAND PONG - CuántoMeConoces</title>
+
+<style>
+:root{
+  --bg:#080d18;
+  --panel:#111c2d;
+  --line:#293c55;
+  --cyan:#35e6d0;
+  --pink:#ff5c9d;
+  --text:#f1f5f9;
+  --muted:#9aabc0;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:18px;
+  min-height:100vh;
+  background:radial-gradient(ellipse at top,#18344a,#080d18 65%);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+#app{max-width:1050px;margin:auto}
+header{text-align:center;margin:10px 0 22px}
+h1{
+  font-size:clamp(38px,7vw,65px);
+  margin:0;
+  letter-spacing:5px;
+  font-weight:1000;
+  text-shadow:0 0 25px #35e6d055;
+}
+h1 span{color:var(--cyan)}
+.subtitle{
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:4px;
+  margin-top:5px;
+}
+.panel{
+  background:#111c2ddd;
+  border:1px solid var(--line);
+  border-radius:17px;
+  padding:22px;
+  box-shadow:0 15px 45px #0005;
+}
+h2{margin-top:0}
+p{line-height:1.5}
+.muted{color:var(--muted)}
+.hidden{display:none!important}
+button{
+  border:0;
+  border-radius:10px;
+  padding:13px 20px;
+  font-weight:900;
+  font-size:14px;
+  cursor:pointer;
+  background:var(--cyan);
+  color:#061a1a;
+  transition:.2s;
+}
+button:hover{filter:brightness(1.12);transform:translateY(-1px)}
+button.secondary{background:#293c55;color:white}
+button.pink{background:var(--pink);color:white}
+button:disabled{opacity:.5;cursor:wait;transform:none}
+.intro{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin:20px 0;
+}
+.intro-card{
+  padding:18px;
+  background:#0b1422;
+  border:1px solid var(--line);
+  border-radius:13px;
+}
+.intro-card h3{margin:5px 0 10px}
+.intro-card p{font-size:13px;color:var(--muted);margin-bottom:0}
+.controls{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:20px 0;
+}
+#message{
+  min-height:22px;
+  color:var(--cyan);
+  text-align:center;
+  font-size:13px;
+  margin:10px 0;
+}
+#gamePanel{padding:12px}
+.scoreboard{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px 15px;
+}
+.score-player{text-align:center}
+.score-player .name{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+.score-player .score{
+  font-size:clamp(34px,7vw,52px);
+  font-weight:1000;
+  line-height:1.2;
+}
+#score1{color:var(--cyan)}
+#score2{color:var(--pink)}
+#scoreTarget{
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.6;
+}
+#table{
+  display:block;
+  width:100%;
+  aspect-ratio:900/520;
+  background:#0b604d;
+  border-radius:12px;
+  border:2px solid #386c68;
+}
+.game-status{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:12px 8px;
+  font-size:12px;
+  color:var(--muted);
+}
+.game-status strong{color:white}
+.players-status{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:5px;
+}
+.player-status{
+  background:#0b1422;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-size:12px;
+}
+.player-status strong{display:block;margin-bottom:5px}
+#cameraBox{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin:10px 5px;
+  background:#0b1422;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+}
+#video{
+  width:135px;
+  height:95px;
+  object-fit:cover;
+  transform:scaleX(-1);
+  background:#000;
+  border-radius:8px;
+}
+.camera-info{
+  flex:1;
+  min-width:150px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.7;
+}
+.camera-info strong{color:white}
+.rules{
+  background:#0b1422;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px;
+  margin-top:20px;
+}
+.rules h3{margin-top:0}
+.rules li{font-size:13px;color:var(--muted);margin:8px 0}
+#result{text-align:center;padding:30px 15px}
+#resultIcon{font-size:65px}
+#resultTitle{font-size:35px;margin:8px}
+@media(max-width:550px){
+  body{padding:8px}
+  .panel{padding:12px}
+  .intro{grid-template-columns:1fr}
+  #video{width:105px;height:78px}
+  .scoreboard{padding:5px 0 12px}
+  .score-player .name{font-size:10px}
+  .players-status{gap:6px}
+  .player-status{padding:9px;font-size:11px}
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+<header>
+  <h1>HAND <span>PONG</span></h1>
+  <div class="subtitle">CAMERA CONTROLLED TABLE TENNIS</div>
+</header>
+
+<section id="menu" class="panel">
+  <h2>🏓 ¡Prepárate para jugar!</h2>
+  <p class="muted">
+    Dos jugadores, una cámara y una partida de ping-pong.
+    Mueve tu mano para controlar la pala y devuelve la pelota.
+  </p>
+
+  <div class="intro">
+    <div class="intro-card">
+      <div style="font-size:35px">🔵</div>
+      <h3 style="color:var(--cyan)">Jugador 1</h3>
+      <p>Controla la pala de la izquierda. Mueve tu mano arriba y abajo para golpear la pelota.</p>
+    </div>
+    <div class="intro-card">
+      <div style="font-size:35px">🔴</div>
+      <h3 style="color:var(--pink)">Jugador 2</h3>
+      <p>Controla la pala de la derecha. Intenta devolver todos los golpes del adversario.</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn">📷 ACTIVAR CÁMARA Y JUGAR</button>
+  </div>
+
+  <div id="message">Necesitas dos manos visibles para jugar.</div>
+
+  <div class="rules">
+    <h3>Cómo se juega</h3>
+    <ul>
+      <li>La mano izquierda de la imagen controla la pala izquierda.</li>
+      <li>La mano derecha de la imagen controla la pala derecha.</li>
+      <li>Sube o baja la mano para mover tu pala.</li>
+      <li>La pelota rebota en las paredes superior e inferior.</li>
+      <li>Si la pelota pasa tu pala, el contrario consigue un punto.</li>
+      <li>Gana el primero que llegue a 7 puntos.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="gamePanel" class="panel hidden">
+
+  <div class="scoreboard">
+    <div class="score-player">
+      <div class="name" style="color:var(--cyan)">JUGADOR 1</div>
+      <div class="score" id="score1">0</div>
+    </div>
+    <div id="scoreTarget">
+      PRIMERO A<br><strong style="color:white;font-size:18px">7</strong>
+    </div>
+    <div class="score-player">
+      <div class="name" style="color:var(--pink)">JUGADOR 2</div>
+      <div class="score" id="score2">0</div>
+    </div>
+  </div>
+
+  <canvas id="table" width="900" height="520"></canvas>
+
+  <div class="game-status">
+    <span>ESTADO: <strong id="stateText">En juego</strong></span>
+    <span>VELOCIDAD: <strong id="speedText">Normal</strong></span>
+    <span>MANOS: <strong id="handsText">0 / 2</strong></span>
+  </div>
+
+  <div class="players-status">
+    <div class="player-status">
+      <strong style="color:var(--cyan)">JUGADOR 1</strong>
+      <span id="hand1Status">Buscando mano...</span>
+    </div>
+    <div class="player-status">
+      <strong style="color:var(--pink)">JUGADOR 2</strong>
+      <span id="hand2Status">Buscando mano...</span>
+    </div>
+  </div>
+
+  <div id="cameraBox">
+    <video id="video" autoplay muted playsinline></video>
+    <div class="camera-info">
+      <strong>RECONOCIMIENTO DE MANOS</strong><br>
+      <span id="cameraStatus">Iniciando cámara...</span><br>
+      <span id="detectionStatus">Esperando detección...</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="secondary" id="restartBtn">↻ NUEVA PARTIDA</button>
+    <button class="pink" id="menuBtn">VOLVER AL MENÚ</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden">
+  <div id="resultIcon">🏆</div>
+  <h2 id="resultTitle">¡VICTORIA!</h2>
+  <p id="resultText" class="muted"></p>
+  <div class="controls">
+    <button id="againBtn">JUGAR OTRA VEZ</button>
+    <button class="secondary" id="resultMenuBtn">MENÚ</button>
+  </div>
+</section>
+
+</div>
+
+<script type="module">
+import {
+  FilesetResolver,
+  HandLandmarker
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+const $ = id => document.getElementById(id);
+
+const canvas=$("table");
+const ctx=canvas.getContext("2d");
+const video=$("video");
+
+const W=900;
+const H=520;
+const TARGET=7;
+
+let landmarker=null;
+let stream=null;
+let running=false;
+let animationId=null;
+let lastFrame=0;
+let lastDetection=0;
+let lastPointTime=0;
+let serving=false;
+let serveUntil=0;
+let serveDirection=1;
+let gameFinished=false;
+let cameraReady=false;
+
+let score1=0;
+let score2=0;
+let hits=0;
+
+const paddle={
+  width:17,
+  height:112,
+  left:{x:65,y:H/2,targetY:H/2,color:"#35e6d0"},
+  right:{x:W-65,y:H/2,targetY:H/2,color:"#ff5c9d"}
+};
+
+const ball={
+  x:W/2,
+  y:H/2,
+  vx:6,
+  vy:2.5,
+  r:10,
+  speed:6
+};
+
+let particles=[];
+let texts=[];
+let trail=[];
+
+let detectedHands=[];
+
+let stars=[];
+for(let i=0;i<90;i++){
+  stars.push({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:Math.random()*1.5+.3
+  });
+}
+
+function clamp(v,min,max){
+  return Math.max(min,Math.min(max,v));
+}
+
+function showMessage(msg){
+  $("message").textContent=msg;
+}
+
+async function initializeCamera(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    throw new Error("La cámara requiere HTTPS o localhost.");
+  }
+
+  $("cameraStatus").textContent="Solicitando permiso de cámara...";
+
+  stream=await navigator.mediaDevices.getUserMedia({
+    video:{
+      facingMode:"user",
+      width:{ideal:1280},
+      height:{ideal:720}
+    },
+    audio:false
+  });
+
+  video.srcObject=stream;
+  await video.play();
+
+  $("cameraStatus").textContent="Cargando reconocimiento de manos...";
+
+  if(!landmarker){
+    const vision=await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+    );
+
+    landmarker=await HandLandmarker.createFromOptions(vision,{
+      baseOptions:{
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        delegate:"GPU"
+      },
+      runningMode:"VIDEO",
+      numHands:2,
+      minHandDetectionConfidence:.55,
+      minHandPresenceConfidence:.5,
+      minTrackingConfidence:.5
+    });
+  }
+
+  cameraReady=true;
+  $("cameraStatus").textContent="Cámara activa ✓";
+}
+
+$("startBtn").addEventListener("click",async()=>{
+  $("startBtn").disabled=true;
+  showMessage("Preparando la cámara...");
+
+  try{
+    await initializeCamera();
+    startGame();
+  }catch(error){
+    console.error(error);
+    showMessage("Error: "+error.message);
+    $("startBtn").disabled=false;
+  }
+});
+
+function startGame(){
+  $("menu").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("gamePanel").classList.remove("hidden");
+
+  score1=0;
+  score2=0;
+  hits=0;
+  gameFinished=false;
+  particles=[];
+  texts=[];
+  trail=[];
+  detectedHands=[];
+
+  paddle.left.y=H/2;
+  paddle.left.targetY=H/2;
+  paddle.right.y=H/2;
+  paddle.right.targetY=H/2;
+
+  updateScore();
+  resetBall(Math.random()<.5?-1:1);
+
+  running=true;
+  lastFrame=performance.now();
+  lastDetection=0;
+  lastPointTime=0;
+
+  $("cameraStatus").textContent="Cámara activa ✓";
+  $("stateText").textContent="Preparados";
+  $("handsText").textContent="0 / 2";
+
+  if(animationId) cancelAnimationFrame(animationId);
+  animationId=requestAnimationFrame(loop);
+}
+
+function resetBall(direction){
+  ball.x=W/2;
+  ball.y=H/2;
+  ball.speed=6;
+  ball.vx=direction*ball.speed;
+  ball.vy=(Math.random()-.5)*5;
+  ball.vy=clamp(ball.vy,-3.5,3.5);
+
+  serving=true;
+  serveDirection=direction;
+  serveUntil=performance.now()+1300;
+  trail=[];
+}
+
+function detectHands(now){
+  if(!landmarker || video.readyState<2) return;
+
+  // Limita el reconocimiento para no sobrecargar el navegador.
+  if(now-lastDetection<30) return;
+  lastDetection=now;
+
+  const result=landmarker.detectForVideo(video,now);
+  const landmarks=result.landmarks||[];
+
+  detectedHands=landmarks.map((lm,index)=>{
+    // Centro aproximado de la palma.
+    const palmX=(
+      lm[0].x+
+      lm[5].x+
+      lm[9].x+
+      lm[13].x+
+      lm[17].x
+    )/5;
+
+    const palmY=(
+      lm[0].y+
+      lm[5].y+
+      lm[9].y+
+      lm[13].y+
+      lm[17].y
+    )/5;
+
+    return {
+      x:palmX,
+      y:palmY,
+      index
+    };
+  });
+
+  // Ordena las manos según su posición horizontal.
+  detectedHands.sort((a,b)=>a.x-b.x);
+
+  if(detectedHands[0]){
+    paddle.left.targetY=clamp(
+      detectedHands[0].y*H,
+      paddle.height/2,
+      H-paddle.height/2
+    );
+    $("hand1Status").textContent="Mano detectada ✓";
+  }else{
+    $("hand1Status").textContent="No detectada";
+  }
+
+  if(detectedHands[1]){
+    paddle.right.targetY=clamp(
+      detectedHands[1].y*H,
+      paddle.height/2,
+      H-paddle.height/2
+    );
+    $("hand2Status").textContent="Mano detectada ✓";
+  }else{
+    $("hand2Status").textContent="No detectada";
+  }
+
+  $("handsText").textContent=detectedHands.length+" / 2";
+
+  if(detectedHands.length===2){
+    $("detectionStatus").textContent="¡Dos manos detectadas! ✓";
+  }else if(detectedHands.length===1){
+    $("detectionStatus").textContent="Falta una mano para jugar.";
+  }else{
+    $("detectionStatus").textContent="Acerca las manos a la cámara.";
+  }
+}
+
+function update(dt,now){
+  detectHands(now);
+
+  // Movimiento suave de las palas.
+  const smoothing=Math.min(1,dt*.018);
+
+  paddle.left.y+=(paddle.left.targetY-paddle.left.y)*smoothing;
+  paddle.right.y+=(paddle.right.targetY-paddle.right.y)*smoothing;
+
+  if(serving){
+    if(now>=serveUntil){
+      serving=false;
+      $("stateText").textContent="¡En juego!";
+    }
+    updateEffects(dt);
+    return;
+  }
+
+  const factor=dt/16.67;
+
+  ball.x+=ball.vx*factor;
+  ball.y+=ball.vy*factor;
+
+  // Estela de la pelota.
+  trail.push({x:ball.x,y:ball.y});
+  if(trail.length>12) trail.shift();
+
+  // Rebote superior e inferior.
+  if(ball.y-ball.r<0){
+    ball.y=ball.r;
+    ball.vy=Math.abs(ball.vy);
+    createBurst(ball.x,ball.y,"#ffffff",8);
+  }
+
+  if(ball.y+ball.r>H){
+    ball.y=H-ball.r;
+    ball.vy=-Math.abs(ball.vy);
+    createBurst(ball.x,ball.y,"#ffffff",8);
+  }
+
+  // Colisión con la pala izquierda.
+  if(
+    ball.vx<0 &&
+    ball.x-ball.r<=paddle.left.x+paddle.width/2 &&
+    ball.x>paddle.left.x-15 &&
+    Math.abs(ball.y-paddle.left.y)<paddle.height/2+ball.r
+  ){
+    hitPaddle(paddle.left,1);
+  }
+
+  // Colisión con la pala derecha.
+  if(
+    ball.vx>0 &&
+    ball.x+ball.r>=paddle.right.x-paddle.width/2 &&
+    ball.x<paddle.right.x+15 &&
+    Math.abs(ball.y-paddle.right.y)<paddle.height/2+ball.r
+  ){
+    hitPaddle(paddle.right,-1);
+  }
+
+  // Punto si la pelota sale de la mesa.
+  if(ball.x<-20){
+    pointScored(2);
+  }else if(ball.x>W+20){
+    pointScored(1);
+  }
+
+  updateEffects(dt);
+}
+
+function hitPaddle(p, direction){
+  const relative=(ball.y-p.y)/(paddle.height/2);
+  const normalized=clamp(relative,-1,1);
+
+  // El punto de impacto determina el ángulo de salida.
+  const angle=normalized*0.95;
+
+  ball.speed=Math.min(ball.speed+0.35,14);
+
+  ball.vx=direction*Math.sqrt(
+    Math.max(1,ball.speed*ball.speed-
+    Math.pow(ball.speed*Math.sin(angle),2))
+  );
+
+  ball.vy=ball.speed*Math.sin(angle);
+
+  // Evita que la pelota quede dentro de la pala.
+  ball.x=direction===1
+    ?paddle.left.x+paddle.width/2+ball.r
+    :paddle.right.x-paddle.width/2-ball.r;
+
+  hits++;
+  createBurst(ball.x,ball.y,p.color,16);
+  addText(ball.x,ball.y-25,"¡BUEN GOLPE!",p.color);
+}
+
+function pointScored(player){
+  if(performance.now()-lastPointTime<500) return;
+  lastPointTime=performance.now();
+
+  if(player===1){
+    score1++;
+    addText(W/2,H/2-45,"PUNTO JUGADOR 1","#35e6d0");
+    resetBall(-1);
+  }else{
+    score2++;
+    addText(W/2,H/2-45,"PUNTO JUGADOR 2","#ff5c9d");
+    resetBall(1);
+  }
+
+  updateScore();
+
+  createBurst(W/2,H/2,player===1?"#35e6d0":"#ff5c9d",35);
+
+  if(score1>=TARGET || score2>=TARGET){
+    finishGame(score1>=TARGET?1:2);
+  }else{
+    $("stateText").textContent="Punto conseguido";
+  }
+}
+
+function updateScore(){
+  $("score1").textContent=score1;
+  $("score2").textContent=score2;
+}
+
+function createBurst(x,y,color,count){
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2;
+    const s=Math.random()*5+1;
+    particles.push({
+      x,y,
+      vx:Math.cos(a)*s,
+      vy:Math.sin(a)*s,
+      life:Math.random()*30+15,
+      color,
+      size:Math.random()*4+1
+    });
+  }
+}
+
+function addText(x,y,text,color){
+  texts.push({x,y,text,color,life:55});
+}
+
+function updateEffects(dt){
+  const f=dt/16.67;
+
+  particles.forEach(p=>{
+    p.x+=p.vx*f;
+    p.y+=p.vy*f;
+    p.vx*=.97;
+    p.vy*=.97;
+    p.life-=f;
+  });
+  particles=particles.filter(p=>p.life>0);
+
+  texts.forEach(t=>{
+    t.y-=.7*f;
+    t.life-=f;
+  });
+  texts=texts.filter(t=>t.life>0);
+}
+
+function drawBackground(){
+  ctx.fillStyle="#0b604d";
+  ctx.fillRect(0,0,W,H);
+
+  // Superficie de la mesa.
+  const gradient=ctx.createLinearGradient(0,0,0,H);
+  gradient.addColorStop(0,"#167d62");
+  gradient.addColorStop(1,"#07543f");
+  ctx.fillStyle=gradient;
+  ctx.fillRect(10,10,W-20,H-20);
+
+  // Límites.
+  ctx.strokeStyle="#d5fff2";
+  ctx.lineWidth=4;
+  ctx.strokeRect(10,10,W-20,H-20);
+
+  // Línea central.
+  ctx.setLineDash([9,12]);
+  ctx.strokeStyle="#d5fff277";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(W/2,10);
+  ctx.lineTo(W/2,H-10);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Red central.
+  ctx.fillStyle="#d7e9e3";
+  ctx.fillRect(W/2-4,10,8,H-20);
+  ctx.fillStyle="#ffffff55";
+  ctx.fillRect(W/2-7,10,3,H-20);
+}
+
+function drawPaddle(p){
+  ctx.save();
+
+  ctx.shadowColor=p.color;
+  ctx.shadowBlur=22;
+
+  const x=p.x-paddle.width/2;
+  const y=p.y-paddle.height/2;
+
+  ctx.fillStyle=p.color;
+  ctx.beginPath();
+  ctx.roundRect(x,y,paddle.width,paddle.height,9);
+  ctx.fill();
+
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#ffffff88";
+  ctx.fillRect(x+4,y+10,3,paddle.height-20);
+
+  ctx.restore();
+}
+
+function drawBall(){
+  // Estela.
+  trail.forEach((t,i)=>{
+    ctx.globalAlpha=(i/trail.length)*.3;
+    ctx.fillStyle="#ffffff";
+    ctx.beginPath();
+    ctx.arc(t.x,t.y,ball.r*(i/trail.length),0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  ctx.save();
+  ctx.shadowColor="#ffffff";
+  ctx.shadowBlur=25;
+  ctx.fillStyle="#ffffff";
+  ctx.beginPath();
+  ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawEffects(){
+  particles.forEach(p=>{
+    ctx.globalAlpha=Math.min(1,p.life/20);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  texts.forEach(t=>{
+    ctx.globalAlpha=Math.min(1,t.life/15);
+    ctx.font="bold 22px Arial";
+    ctx.textAlign="center";
+    ctx.fillStyle=t.color;
+    ctx.shadowColor=t.color;
+    ctx.shadowBlur=12;
+    ctx.fillText(t.text,t.x,t.y);
+    ctx.shadowBlur=0;
+  });
+  ctx.globalAlpha=1;
+}
+
+function draw(now){
+  drawBackground();
+
+  // Indicadores de las palas.
+  drawPaddle(paddle.left);
+  drawPaddle(paddle.right);
+
+  drawBall();
+  drawEffects();
+
+  if(serving){
+    ctx.fillStyle="#ffffff";
+    ctx.font="bold 28px Arial";
+    ctx.textAlign="center";
+    ctx.shadowColor="#000";
+    ctx.shadowBlur=10;
+    const remaining=Math.max(1,Math.ceil((serveUntil-now)/1000));
+    ctx.fillText("PREPÁRATE",W/2,H/2-45);
+    ctx.font="bold 48px Arial";
+    ctx.fillText(remaining,W/2,H/2+20);
+    ctx.shadowBlur=0;
+  }
+}
+
+function updateSpeed(){
+  if(ball.speed<7) $("speedText").textContent="Normal";
+  else if(ball.speed<10) $("speedText").textContent="Rápida";
+  else if(ball.speed<12) $("speedText").textContent="Muy rápida";
+  else $("speedText").textContent="Máxima";
+}
+
+function loop(now){
+  if(!running) return;
+
+  const dt=Math.min(now-lastFrame,40);
+  lastFrame=now;
+
+  update(dt,now);
+  draw(now);
+  updateSpeed();
+
+  if(running){
+    animationId=requestAnimationFrame(loop);
+  }
+}
+
+function finishGame(winner){
+  if(gameFinished) return;
+
+  gameFinished=true;
+  running=false;
+
+  if(animationId) cancelAnimationFrame(animationId);
+
+  $("gamePanel").classList.add("hidden");
+  $("result").classList.remove("hidden");
+
+  $("resultIcon").textContent="🏆";
+  $("resultTitle").textContent="¡JUGADOR "+winner+" GANA!";
+  $("resultTitle").style.color=winner===1?"#35e6d0":"#ff5c9d";
+
+  $("resultText").textContent=
+    "Marcador final: "+score1+" - "+score2+
+    ". ¡Buena partida!";
+}
+
+function stopCamera(){
+  if(stream){
+    stream.getTracks().forEach(track=>track.stop());
+    stream=null;
+  }
+
+  video.srcObject=null;
+  cameraReady=false;
+
+  if(landmarker){
+    landmarker.close();
+    landmarker=null;
+  }
+}
+
+function goToMenu(){
+  running=false;
+  gameFinished=false;
+
+  if(animationId) cancelAnimationFrame(animationId);
+  animationId=null;
+
+  stopCamera();
+
+  $("gamePanel").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("menu").classList.remove("hidden");
+
+  $("startBtn").disabled=false;
+  $("cameraStatus").textContent="Cámara desconectada.";
+  $("detectionStatus").textContent="Esperando detección...";
+  $("hand1Status").textContent="Buscando mano...";
+  $("hand2Status").textContent="Buscando mano...";
+
+  showMessage("Activa la cámara para comenzar otra partida.");
+}
+
+$("restartBtn").addEventListener("click",()=>{
+  startGame();
+});
+
+$("againBtn").addEventListener("click",()=>{
+  startGame();
+});
+
+$("menuBtn").addEventListener("click",goToMenu);
+$("resultMenuBtn").addEventListener("click",goToMenu);
+
+// Dibujo de la mesa antes de empezar.
+drawBackground();
+drawPaddle(paddle.left);
+drawPaddle(paddle.right);
+
+</script>
+</body>
+</html>

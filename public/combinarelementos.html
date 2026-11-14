@@ -49,6 +49,104 @@ button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 <script>
 // ---- Datos: id -> [icono, nombre] ----
 const E={
+
+presion:['💨','Presión'],
+luz:['✨','Luz'],
+trigo:['🌾','Trigo'],
+comida:['🍽️','Comida'],
+noche:['🌃','Noche'],
+viaje:['🧳','Viaje'],
+grano:['🌾','Grano'],
+
+
+// CIENCIA Y MATERIALES
+mineral:['💎','Mineral'],
+hierro:['⛓️','Hierro'],
+metal:['🔩','Metal'],
+oro:['🥇','Oro'],
+plata:['🥈','Plata'],
+diamante:['💎','Diamante'],
+electricidad:['⚡','Electricidad'],
+magnetismo:['🧲','Magnetismo'],
+iman:['🧲','Imán'],
+cristal:['🔮','Cristal'],
+plastico:['🧴','Plástico'],
+carbon:['⚫','Carbón'],
+petroleo:['🛢️','Petróleo'],
+gas:['♨️','Gas'],
+oxigeno:['🫧','Oxígeno'],
+atomo:['⚛️','Átomo'],
+explosion:['💥','Explosión'],
+humo:['💨','Humo'],
+// TECNOLOGÍA
+cable:['🔌','Cable'],
+bombilla:['💡','Bombilla'],
+bateria:['🔋','Batería'],
+ordenador:['💻','Ordenador'],
+internet:['🌐','Internet'],
+movil:['📱','Móvil'],
+robot:['🤖','Robot'],
+television:['📺','Televisión'],
+camara:['📷','Cámara'],
+fotografia:['🖼️','Fotografía'],
+programa:['🖥️','Programa'],
+videojuego:['🎮','Videojuego'],
+codigo:['💻','Código'],
+// TRANSPORTES
+rueda:['🛞','Rueda'],
+bicicleta:['🚲','Bicicleta'],
+coche:['🚗','Coche'],
+motor:['⚙️','Motor'],
+gasolina:['⛽','Gasolina'],
+moto:['🏍️','Moto'],
+tren:['🚆','Tren'],
+avion:['✈️','Avión'],
+barco:['🚢','Barco'],
+cohete:['🚀','Cohete'],
+// OBJETOS Y HOGAR
+madera:['🪵','Madera'],
+herramienta:['🔨','Herramienta'],
+papel:['📄','Papel'],
+libro:['📚','Libro'],
+mesa:['🪑','Mesa'],
+reloj:['⌚','Reloj'],
+ropa:['👕','Ropa'],
+zapato:['👟','Zapato'],
+llave:['🔑','Llave'],
+puerta:['🚪','Puerta'],
+ventana:['🪟','Ventana'],
+dinero:['💰','Dinero'],
+// ALIMENTACIÓN
+leche:['🥛','Leche'],
+queso:['🧀','Queso'],
+pan:['🍞','Pan'],
+harina:['🌾','Harina'],
+huevo:['🥚','Huevo'],
+pizza:['🍕','Pizza'],
+hamburguesa:['🍔','Hamburguesa'],
+chocolate:['🍫','Chocolate'],
+azucar:['🍬','Azúcar'],
+cafe:['☕','Café'],
+// ESPACIO Y CIENCIA
+sol:['☀️','Sol'],
+luna:['🌙','Luna'],
+estrella:['⭐','Estrella'],
+planeta:['🪐','Planeta'],
+universo:['🌌','Universo'],
+astronauta:['👨‍🚀','Astronauta'],
+alien:['👽','Alien'],
+satellite:['🛰️','Satélite'],
+// SOCIEDAD Y PERSONAJES
+medico:['🧑‍⚕️','Médico'],
+policia:['👮','Policía'],
+bombero:['🧑‍🚒','Bombero'],
+chef:['👨‍🍳','Chef'],
+ladron:['🦹','Ladrón'],
+rey:['👑','Rey'],
+fantasma:['👻','Fantasma'],
+pirata:['🏴‍☠️','Pirata'],
+
+  
 agua:['💧','Agua'],fuego:['🔥','Fuego'],tierra:['🌍','Tierra'],aire:['💨','Aire'],
 vapor:['♨️','Vapor'],lava:['🌋','Lava'],barro:['🟤','Barro'],polvo:['🌫️','Polvo'],energia:['⚡','Energía'],
 nube:['☁️','Nube'],lluvia:['🌧️','Lluvia'],piedra:['🪨','Piedra'],arena:['⏳','Arena'],vidrio:['🔍','Vidrio'],
@@ -60,9 +158,268 @@ tocino:['🥓','Tocino'],carne:['🥩','Carne'],barbacoa:['🍖','Barbacoa'],lad
 cerveza:['🍺','Cerveza'],bar:['🍻','Bar'],playa:['🏖️','Playa'],ceniza:['🪵','Ceniza'],cenicero:['🚬','Cenicero'],
 batman:['🦸','Batman'],arma:['🗡️','Arma'],veneno:['☠️','Veneno'],armaven:['🏹','Armas envenenadas'],
 asesino:['🥷','Asesino'],gripe:['🤧','Gripe'],gripeaviar:['🐔','Gripe aviar'],canguro:['🦘','Canguro'],
+
+
+ 
+// =====================================
+// DESCUBRIMIENTOS ESPECIALES Y SECRETOS
+// =====================================
+tiempo:['⏳','Tiempo'],
+historia:['📜','Historia'],
+leyenda:['🏆','Leyenda'],
+espacio:['🌌','Espacio'],
+agujeronegro:['🕳️','Agujero negro'],
+dimension:['🌀','Dimensión'],
+multiverso:['🌌','Multiverso'],
+caos:['💥','Caos'],
+caosprimordial:['🌋','Caos primordial'],
+dioscaos:['👑','Dios del Caos'],
+portal:['🌀','Portal dimensional'],
+maquinatiempo:['⌛','Máquina del tiempo'],
+paradoja:['♾️','Paradoja temporal'],
+anillounico:['💍','Anillo único'],
+
+// =====================================
+// CRIATURAS Y LEYENDAS
+// =====================================
+yeti:['❄️','Yeti'],
+nessie:['🐉','Nessie'],
+ovni:['🛸','OVNI'],
+dinosaurio:['🦕','Dinosaurio'],
+fosil:['🦴','Fósil'],
+hueso:['🦴','Hueso'],
+arqueologo:['🧑‍🔬','Arqueólogo'],
+mito:['🏺','Mito'],
+dragón:['🐉','Dragón'],
+
+// =====================================
+// MISTERIOS Y PERSONAJES
+// =====================================
+detective:['🕵️','Detective'],
+misterio:['❓','Misterio'],
+conspiracion:['👁️','Conspiración'],
+hacker:['🥷','Hacker'],
+influencer:['🤳','Influencer'],
+superheroe:['🦸','Superhéroe'],
+invisibilidad:['👻','Invisibilidad'],
+clon:['👥','Clon'],
+inmortalidad:['♾️','Inmortalidad'],
+
+// =====================================
+// DESCUBRIMIENTOS ABSURDOS
+// =====================================
+gatomillonario:['😼','Gato millonario'],
+perroespacial:['🐶','Perro espacial'],
+reycaos:['🤴','Rey del Caos'],
+batmanrobot:['🤖','Batman robot'],
+casaencantada:['🏚️','Casa encantada'],
+naveespacial:['🛸','Nave espacial'],
+superordenador:['🖥️','Superordenador'],
+piratatemporal:['🏴‍☠️','Pirata temporal'],
+inflacion:['📈','Inflación'],
+pizzaincendiada:['🍕','Pizza incendiada'],
+cerdoreal:['🐷','Cerdo real'],
+
+// Ingredientes adicionales
+mar:['🌊','Mar'],
+gato:['🐈','Gato'],
+perro:['🐕','Perro'],
+viento:['💨','Viento'],
+muerte:['💀','Muerte'],
+
+
+  
 ciudad:['🏙️','Ciudad'],pais:['🗺️','País'],australia:['🇦🇺','Australia'],montana:['⛰️','Montaña']
 };
 const R=[
+  
+// =====================================
+// 🌌 UNIVERSO Y DIMENSIONES
+// =====================================
+['estrella','espacio','agujeronegro'],
+['agujeronegro','luz','dimension'],
+['dimension','portal','multiverso'],
+['energia','caos','caosprimordial'],
+['caosprimordial','rey','dioscaos'],
+['universo','energia','espacio'],
+
+// =====================================
+// ⏳ VIAJES TEMPORALES
+// =====================================
+['reloj','sol','tiempo'],
+['tiempo','papel','historia'],
+['historia','libro','mito'],
+['metal','tiempo','maquinatiempo'],
+['maquinatiempo','dinosaurio','paradoja'],
+['maquinatiempo','pirata','piratatemporal'],
+['tiempo','vida','inmortalidad'],
+['tiempo','hueso','fosil'],
+
+// =====================================
+// 🐉 LEYENDAS Y CRIATURAS
+// =====================================
+['hielo','leyenda','yeti'],
+['mar','leyenda','nessie'],
+['espacio','metal','ovni'],
+['fosil','libro','arqueologo'],
+['mito','lagarto','dragon'],
+['dragon','oro','anillounico'],
+['animal','hueso','dinosaurio'],
+
+// =====================================
+// 🕵️ MISTERIOS
+// =====================================
+['misterio','humano','detective'],
+['detective','internet','conspiracion'],
+['internet','programa','hacker'],
+['ovni','humano','misterio'],
+['fantasma','luz','invisibilidad'],
+['muerte','animal','hueso'],
+
+// =====================================
+// 🤖 TECNOLOGÍA AVANZADA
+// =====================================
+['robot','humano','clon'],
+['robot','internet','superordenador'],
+['cohete','ordenador','naveespacial'],
+['batman','robot','batmanrobot'],
+['batman','humano','superheroe'],
+
+// =====================================
+// 😂 DESCUBRIMIENTOS ABSURDOS
+// =====================================
+['gato','oro','gatomillonario'],
+['perro','cohete','perroespacial'],
+['dioscaos','gatomillonario','reycaos'],
+['casa','fantasma','casaencantada'],
+['cerdo','oro','cerdoreal'],
+['pizza','fuego','pizzaincendiada'],
+['dinero','caos','inflacion'],
+['humano','internet','influencer'],
+['portal','maquinatiempo','multiverso'],
+['anillounico','multiverso','caos'],
+// CIENCIA Y MATERIALES
+['montana','energia','mineral'],
+['mineral','fuego','hierro'],
+['hierro','fuego','metal'],
+['mineral','fuego','oro'],
+['mineral','agua','plata'],
+['presion','carbon','diamante'],
+['metal','energia','electricidad'],
+['metal','metal','herramienta'],
+['metal','energia','magnetismo'],
+['magnetismo','metal','iman'],
+['arena','energia','cristal'],
+['petroleo','fuego','plastico'],
+['arbol','arma','madera'],
+['madera','fuego','carbon'],
+['vida','agua','oxigeno'],
+['aire','planta','oxigeno'],
+['atomo','energia','explosion'],
+['fuego','aire','humo'],
+['petroleo','tierra','gas'],
+['planta','energia','oxigeno'],
+
+  
+['agua','agua','presion'],
+['mineral','energia','oro'],
+['hierro','electricidad','magnetismo'],
+['metal','agua','bateria'],
+['metal','electricidad','motor'],
+['cable','electricidad','bombilla'],
+['planta','sol','trigo'],
+['trigo','humano','grano'],
+['planta','agua','cafe'],
+['leche','azucar','chocolate'],
+['madera','metal','rueda'],
+['madera','humano','mesa'],
+['madera','vapor','barco'],
+['huevo','fuego','comida'],
+['ordenador','electricidad','television'],
+['sol','energia','luz'],
+['sol','luna','noche'],
+['sol','noche','estrella'],
+['astronauta','cohete','viaje'],
+['universo','piedra','planeta'],
+['metal','planeta','satellite'],
+['animal','planta','huevo'],
+['viaje','cohete','universo'],
+
+// TECNOLOGÍA
+['metal','herramienta','cable'],
+['cable','electricidad','bombilla'],
+['metal','electricidad','bateria'],
+['bateria','cable','ordenador'],
+['ordenador','internet','movil'],
+['metal','humano','robot'],
+['ordenador','electricidad','programa'],
+['programa','programa','codigo'],
+['codigo','ordenador','videojuego'],
+['ordenador','luz','television'],
+['cristal','herramienta','camara'],
+['camara','humano','fotografia'],
+['fotografia','papel','libro'],
+
+// TRANSPORTES
+['madera','herramienta','rueda'],
+['rueda','metal','bicicleta'],
+['metal','rueda','coche'],
+['metal','energia','motor'],
+['petroleo','fuego','gasolina'],
+['motor','rueda','coche'],
+['coche','coche','moto'],
+['metal','rueda','tren'],
+['metal','aire','avion'],
+['madera','agua','barco'],
+['avion','energia','cohete'],
+['cohete','astronauta','viaje'],
+
+// OBJETOS Y HOGAR
+['madera','agua','papel'],
+['papel','humano','libro'],
+['madera','herramienta','mesa'],
+['metal','energia','reloj'],
+['animal','humano','ropa'],
+['animal','herramienta','zapato'],
+['metal','humano','llave'],
+['madera','herramienta','puerta'],
+['cristal','casa','ventana'],
+['metal','oro','dinero'],
+['casa','madera','mesa'],
+
+// ALIMENTACIÓN
+['animal','humano','leche'],
+['leche','bacteria','queso'],
+['trigo','agua','harina'],
+['harina','fuego','pan'],
+['huevo','fuego','comida'],
+['pan','queso','pizza'],
+['pan','carne','hamburguesa'],
+['leche','planta','chocolate'],
+['planta','energia','azucar'],
+['agua','energia','cafe'],
+
+// ESPACIO
+['fuego','energia','sol'],
+['piedra','noche','luna'],
+['sol','noche','estrella'],
+['estrella','estrella','universo'],
+['universo','piedra','planeta'],
+['humano','cohete','astronauta'],
+['vida','universo','alien'],
+['metal','planeta','satellite'],
+['satellite','energia','internet'],
+
+// SOCIEDAD
+['humano','vida','medico'],
+['humano','arma','policia'],
+['humano','fuego','bombero'],
+['humano','barbacoa','chef'],
+['humano','dinero','ladron'],
+['humano','casa','rey'],
+['humano','noche','fantasma'],
+['humano','barco','pirata'],
+
 ['agua','fuego','vapor'],['fuego','tierra','lava'],['agua','tierra','barro'],['aire','tierra','polvo'],
 ['aire','fuego','energia'],['aire','vapor','nube'],['agua','nube','lluvia'],['agua','lava','piedra'],
 ['aire','piedra','arena'],['arena','fuego','vidrio'],['aire','lluvia','frio'],['agua','frio','hielo'],
@@ -77,6 +434,51 @@ const R=[
 ['bacteria','humano','gripe'],['gripe','pajaro','gripeaviar'],['animal','playa','canguro'],['casa','casa','ciudad'],
 ['ciudad','ciudad','pais'],['canguro','pais','australia'],['piedra','piedra','montana']
 ];
+
+
+console.log('🔍 REVISIÓN DEL JUEGO');
+
+// 1. Buscar recetas duplicadas
+const recetasVistas = new Map();
+
+R.forEach(([a,b,c]) => {
+  const k = key(a,b);
+  if (recetasVistas.has(k)) {
+    console.warn(
+      '⚠️ RECETA DUPLICADA:',
+      a,'+',b,
+      '->',recetasVistas.get(k),
+      'y',c
+    );
+  } else {
+    recetasVistas.set(k,c);
+  }
+});
+
+// 2. Buscar ingredientes inexistentes
+R.forEach(([a,b,c]) => {
+  [a,b,c].forEach(id => {
+    if (!E[id]) {
+      console.error('❌ ELEMENTO INEXISTENTE:',id);
+    }
+  });
+});
+
+// 3. Buscar elementos que nunca se crean
+const creados = new Set(BASE);
+R.forEach(([a,b,c]) => creados.add(c));
+
+Object.keys(E).forEach(id => {
+  if (!creados.has(id)) {
+    console.warn('🔒 ELEMENTO SIN RECETA:',id);
+  }
+});
+
+console.log('✅ Revisión terminada');
+console.log('Elementos:',Object.keys(E).length);
+console.log('Recetas:',R.length);
+
+  
 const key=(a,b)=>[a,b].sort().join('|');
 const M=Object.fromEntries(R.map(([a,b,c])=>[key(a,b),c]));
 const BASE=['agua','fuego','tierra','aire'];

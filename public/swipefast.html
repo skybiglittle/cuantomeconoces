@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#6d28d9">
+<title>Swipe Fast</title>
+<style>
+:root{--top:#7c2cc9;--bot:#5b21b6;--tile:rgba(255,255,255,.16);--tile2:rgba(255,255,255,.24);--white:#fff;--blue:#22b8f0;--blue2:#2d6cf0;--warn:#ff9b21;--bad:#ff4d5e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#14091f}
+body{font-family:"Arial Narrow","Roboto Condensed",system-ui,sans-serif;color:var(--white)}
+#app{position:fixed;inset:0;margin:auto;max-width:520px;background:linear-gradient(180deg,var(--top),var(--bot));display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:700;opacity:.9;min-height:38px}
+.top button{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:7px 13px;font:inherit}
+#score{font-size:clamp(64px,19vw,108px);font-weight:900;text-align:center;line-height:1;margin-top:6px;letter-spacing:-.02em;text-shadow:0 4px 0 rgba(0,0,0,.18);transition:transform .08s}
+#score.pop{transform:scale(1.12)}
+#hint{text-align:center;font-size:clamp(16px,4.6vw,22px);font-weight:800;line-height:1.1;margin:10px 6px 14px;text-shadow:0 2px 0 rgba(0,0,0,.2);min-height:2.4em}
+#grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;touch-action:none;min-height:0}
+.tile{position:relative;border-radius:22px;background:var(--tile);box-shadow:0 5px 0 rgba(0,0,0,.18);display:grid;place-items:center;overflow:hidden;touch-action:none;transition:background .08s}
+.tile.ok{background:var(--tile2)}
+.tile.shake{animation:shake .25s}
+.tile.dead{background:rgba(255,77,94,.55)}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.arr{width:46%;max-width:110px;fill:#fff;transition:transform .12s;filter:drop-shadow(0 3px 0 rgba(0,0,0,.18))}
+.bar{position:absolute;left:0;right:0;bottom:0;height:9px;background:rgba(0,0,0,.22)}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--blue),var(--blue2))}
+.bar i.low{background:linear-gradient(90deg,var(--warn),#ffd166)}
+.bar i.crit{background:linear-gradient(90deg,var(--bad),#ff8a95)}
+.ov{position:absolute;inset:0;background:rgba(40,12,70,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:12px;z-index:5}
+.ov.hidden{display:none}
+.ov h1{margin:0;font-size:clamp(44px,14vw,72px);line-height:.95;font-weight:900;letter-spacing:-.02em}
+.ov p{margin:0;max-width:330px;font-size:17px;line-height:1.25;opacity:.92}
+.ov .big{font-size:clamp(64px,20vw,110px);font-weight:900;line-height:1}
+.btn{border:0;border-radius:16px;padding:16px 34px;font:inherit;font-size:22px;font-weight:900;color:#2b0d52;background:#fff;box-shadow:0 5px 0 rgba(0,0,0,.25);margin-top:6px}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.seg{display:flex;gap:8px}.seg button{border:2px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:12px;padding:9px 14px;font:inherit;font-size:16px;font-weight:800}.seg button.on{background:#fff;color:#2b0d52;border-color:#fff}
+.small{font-size:14px;opacity:.7}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top"><span id="best">Récord: 0</span><button id="snd" aria-label="Sonido">🔊</button></div>
+  <div id="score">0</div>
+  <div id="hint">Desliza hacia donde apunta la flecha antes de que se acabe su barra</div>
+  <div id="grid"></div>
+
+  <div class="ov" id="ovStart">
+    <h1>SWIPE<br>FAST</h1>
+    <p>Desliza el dedo en la dirección de la flecha para <b>recargar</b> su barra. ¡Mantén las <b>cuatro</b> con tiempo! Cada vez se vacían más rápido, sobre todo las de abajo.</p>
+    <div class="seg" id="modes"><button data-m="ud" class="on">↑ ↓ Solo vertical</button><button data-m="all">✥ 4 direcciones</button></div>
+    <button class="btn" id="play">JUGAR</button>
+    <div class="small">Pensado para móvil · también funciona con el ratón</div>
+  </div>
+  <div class="ov hidden" id="ovOver">
+    <div class="small" id="why">¡Se acabó el tiempo!</div>
+    <div class="big" id="final">0</div>
+    <p id="rec"></p>
+    <button class="btn" id="again">OTRA VEZ</button>
+  </div>
+  <div class="ov hidden" id="ovPause">
+    <h1>PAUSA</h1>
+    <button class="btn" id="resume">CONTINUAR</button>
+  </div>
+</div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const ARROW='<svg class="arr" viewBox="0 0 24 24"><path d="M12 2.5l-8 8h5.6V21.5h4.8V10.5H20z"/></svg>';
+const ROT={up:0,right:90,down:180,left:270};
+const HINTS=['Desliza hacia donde apunta la flecha antes de que se acabe su barra','Si os fijáis, las de abajo se vacían más rápido: ¡atiéndelas antes!','Cada acierto recarga la barra de esa casilla','Mantén las cuatro con tiempo'];
+const TH=26,PENALTY=.3;
+let mode='ud',tiles=[],score=0,elapsed=0,running=false,last=0,best={ud:0,all:0},sound=true,actx=null,raf=0;
+try{best=Object.assign(best,JSON.parse(localStorage.getItem('swipefast_best')||'{}'))}catch(e){}
+const saveBest=()=>{try{localStorage.setItem('swipefast_best',JSON.stringify(best))}catch(e){}};
+const dirsOf=()=>mode==='ud'?['up','down']:['up','down','left','right'];
+const randDir=prev=>{const d=dirsOf();return d[Math.floor(Math.random()*d.length)]};
+
+// ---------- construir casillas ----------
+const grid=$('grid');
+for(let i=0;i<4;i++){const t=document.createElement('div');t.className='tile';t.dataset.i=i;t.innerHTML=ARROW+'<div class="bar"><i></i></div>';grid.appendChild(t)}
+const els=[...grid.children];
+function drawTile(i){const t=tiles[i],el=els[i];el.dataset.dir=t.dir;el.querySelector('.arr').style.transform='rotate('+ROT[t.dir]+'deg)'}
+function drawBars(){tiles.forEach((t,i)=>{const b=els[i].querySelector('.bar i');b.style.width=Math.max(0,t.t*100)+'%';b.className=t.t<.18?'crit':t.t<.38?'low':''})}
+const bestTxt=()=>$('best').textContent='Récord: '+best[mode];
+
+// ---------- sonido y vibración ----------
+function beep(f,d,type){if(!sound)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.value=.06;g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d)}catch(e){}}
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+
+// ---------- partida ----------
+function start(){
+  score=0;elapsed=0;tiles=[0,1,2,3].map(()=>({dir:randDir(),t:1}));tiles.forEach((_,i)=>{drawTile(i);els[i].classList.remove('dead')});drawBars();
+  $('score').textContent='0';$('hint').textContent=HINTS[0];bestTxt();
+  $('ovStart').classList.add('hidden');$('ovOver').classList.add('hidden');$('ovPause').classList.add('hidden');
+  running=true;last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}
+function speed(i){
+  const base=Math.min(1.7,.30+.011*score+.010*elapsed);       // barras por segundo (se acelera con el tiempo y los aciertos)
+  const bottom=i>1?1.25+Math.min(.6,score/90):1;                // las de abajo se vacían más rápido
+  return base*bottom}
+function frame(ts){
+  if(!running)return;
+  const dt=Math.min(.05,(ts-last)/1000);last=ts;elapsed+=dt;
+  for(let i=0;i<4;i++){tiles[i].t-=speed(i)*dt;if(tiles[i].t<=0){tiles[i].t=0;drawBars();return over(i)}}
+  drawBars();raf=requestAnimationFrame(frame)}
+function over(i){
+  running=false;els[i].classList.add('dead');beep(110,.35,'sawtooth');vib([60,40,120]);
+  const rec=score>best[mode];if(rec){best[mode]=score;saveBest()}
+  setTimeout(()=>{$('final').textContent=score;$('rec').textContent=rec&&score>0?'🏆 ¡Nuevo récord!':'Récord: '+best[mode];$('ovOver').classList.remove('hidden')},600)}
+function swipe(i,dir){
+  if(!running)return;const t=tiles[i],el=els[i];
+  if(dir===t.dir){
+    t.t=1;t.dir=randDir();score++;drawTile(i);drawBars();$('score').textContent=score;
+    $('score').classList.add('pop');setTimeout(()=>$('score').classList.remove('pop'),80);
+    el.classList.add('ok');setTimeout(()=>el.classList.remove('ok'),90);
+    if(score%10===0)$('hint').textContent=HINTS[(score/10)%HINTS.length];
+    beep(420+Math.min(score,60)*9,.06)}
+  else{
+    t.t-=PENALTY;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');vib(25);beep(180,.08,'square');
+    if(t.t<=0){t.t=0;drawBars();running=false;over(i)}else drawBars()}}
+
+// ---------- gestos (varios dedos a la vez) ----------
+const touches={};
+grid.addEventListener('pointerdown',e=>{const t=e.target.closest('.tile');if(!t||!running)return;touches[e.pointerId]={i:+t.dataset.i,x:e.clientX,y:e.clientY,done:false}});
+window.addEventListener('pointermove',e=>{const s=touches[e.pointerId];if(!s||s.done)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;
+  if(Math.hypot(dx,dy)<TH)return;s.done=true;const dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');swipe(s.i,dir)});
+['pointerup','pointercancel'].forEach(n=>window.addEventListener(n,e=>{delete touches[e.pointerId]}));
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){running=false;$('ovPause').classList.remove('hidden')}});
+
+// ---------- botones ----------
+$('play').onclick=start;$('again').onclick=start;
+$('resume').onclick=()=>{$('ovPause').classList.add('hidden');running=true;last=performance.now();raf=requestAnimationFrame(frame)};
+$('snd').onclick=()=>{sound=!sound;$('snd').textContent=sound?'🔊':'🔇'};
+$('modes').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;mode=b.dataset.m;[...$('modes').children].forEach(x=>x.classList.toggle('on',x===b));bestTxt()};
+bestTxt();
+})();
+</script>
+</body>
+</html>

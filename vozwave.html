@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Space Waves de voz</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#3b1d4e,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8.5vw,52px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#53dfca 55%,#9b8cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}.sub{color:var(--m);margin:0 0 16px}.small{font-size:13px;color:var(--m)}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
+.hidden{display:none!important}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}
+select:focus-visible,.btn:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.full{width:100%;margin-top:12px}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}
+.vw{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--l);background:#070b18;touch-action:none}
+canvas{display:block;width:100%;aspect-ratio:16/9}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;background:#070b18cc;font-weight:800;font-size:clamp(17px,4.5vw,26px)}
+.ov h2{font-size:clamp(24px,6vw,38px);margin:0}.ov p{margin:0;color:var(--m);font-size:15px;font-weight:600}.ov .row{display:flex;gap:10px}
+</style></head><body><main>
+<header><span class="tag">🎙️ CONTROLADO CON LA VOZ</span><h1>Space Waves de voz</h1><p class="sub">Guía la flecha por el túnel espacial con tu voz: sin tocar la pantalla.</p></header>
+<section id="menu" class="panel"><h2>Elige cómo jugar</h2>
+<label for="md">Control</label><select id="md"><option value="vol">🔊 Volumen: más fuerte = más alto</option><option value="pit">🎵 Tono: más agudo = más alto</option><option value="touch">👆 Táctil o ratón (para probar)</option></select>
+<label for="lvl">Nivel</label><select id="lvl"><option value="0">🟢 Fácil</option><option value="1">🟡 Medio</option><option value="2">🔴 Difícil</option></select>
+<button class="btn g full" id="go">Jugar</button>
+<div class="notice"><b>Cómo se juega:</b> la flecha avanza sola y sube o baja siguiendo tu voz. Esquiva paredes, sierras giratorias y pinchos hasta llegar a la meta. Antes de empezar se calibra tu voz (silencio y volumen, o un sonido grave y uno agudo). Funciona en móvil y en ordenador con micrófono. Mejor en horizontal.</div></section>
+<section id="gm" class="hidden"><div class="vw"><canvas id="cv" width="800" height="450"></canvas><div class="ov hidden" id="ov"></div></div><button class="btn gh full" id="back">← Menú</button></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),wait=ms=>new Promise(r=>setTimeout(r,ms)),clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),rnd=Math.random,W=800,H=450;
+const cv=$('cv'),x=cv.getContext('2d'),ovl=$('ov');
+const LV=[{n:'Fácil',g0:320,gm:200,d:36,sp:170,sm:230,goal:140,ob:.18},{n:'Medio',g0:280,gm:160,d:42,sp:200,sm:290,goal:200,ob:.28},{n:'Difícil',g0:240,gm:135,d:46,sp:230,sm:340,goal:260,ob:.38}];
+let ac,an,buf,stream,mode='',lv=0,fl=-60,ce=-20,lo=150,hi=400,hold=false,st='menu',sid=0,raf=0,best={},cal={},pf=[];
+let scroll=0,y=H/2,tg=.5,ang=0,pts=[],obs=[],trail=[],tm=0,flash=0,goalPx=0;
+const stars=Array.from({length:70},()=>({x:rnd()*W,y:rnd()*H,s:.2+rnd()*.8}));
+try{best=JSON.parse(localStorage.getItem('sw_best')||'{}')}catch(e){}
+const ov=h=>{ovl.innerHTML=h;ovl.classList.toggle('hidden',!h)};
+const AC=()=>{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac};
+const beep=(f,d=.15,v=.1)=>{try{const a=AC(),o=a.createOscillator(),g=a.createGain();o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}};
+/* ---- micrófono ---- */
+async function mic(){if(stream)return;stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});AC();an=ac.createAnalyser();an.fftSize=2048;ac.createMediaStreamSource(stream).connect(an);buf=new Float32Array(2048)}
+const level=()=>{an.getFloatTimeDomainData(buf);let e=0;for(let i=0;i<buf.length;i++)e+=buf[i]*buf[i];return 20*Math.log10(Math.sqrt(e/buf.length)+1e-6)};
+const pitch=()=>{an.getFloatTimeDomainData(buf);const n=buf.length,sr=ac.sampleRate;let e=0;for(let i=0;i<n;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/n)<.01)return-1;
+ const a=sr/1000|0,b=sr/80|0,c=[];let mx=0;for(let l=a;l<=b;l++){let s=0;for(let i=0;i<n-l;i+=2)s+=buf[i]*buf[i+l];c[l]=s;if(s>mx)mx=s}
+ if(mx<e*.2)return-1;for(let l=a+1;l<b;l++)if(c[l]>=mx*.9&&c[l]>=c[l-1]&&c[l]>=c[l+1])return sr/l;return-1};
+const read=()=>{if(mode==='touch')return hold?1:0;
+ if(mode==='vol')return clamp((level()-fl)/(ce-fl));
+ const f=pitch();if(f<0){pf=[];return null}pf.push(f);if(pf.length>3)pf.shift();const m=[...pf].sort((a,b)=>a-b)[pf.length>>1];return clamp(Math.log(m/lo)/Math.log(hi/lo))};
+const med=(a,p=.5)=>a.slice().sort((m,n)=>m-n)[Math.floor(a.length*p)];
+const col=(ms,fn)=>new Promise(r=>{const a=[],t=setInterval(()=>{const v=fn();if(v>-Infinity&&v>0||v<0&&fn===level)a.push(v)},40);setTimeout(()=>{clearInterval(t);r(a)},ms)});
+async function calib(my){
+ const ask=async(t,s)=>{ov('<p>Prepárate…</p>'+t);await wait(1100);if(my!==sid)throw'x';beep(880,.1);ov('<h2>'+s+'</h2>')};
+ if(mode==='vol'){await ask('🤫 Silencio','🤫 Silencio…');const a=await col(1300,level);fl=med(a)+2;
+  await ask('🗣️ Habla FUERTE','🗣️ «¡AAAAA!» fuerte');const b=await col(2200,level);ce=med(b,.9);if(ce<fl+12)ce=fl+25}
+ else{await ask('🔈 Un sonido GRAVE','🔈 «ooooo» grave');const a=await col(2200,pitch);if(a.length<8)throw'low';lo=med(a);
+  await ask('🔔 Un sonido AGUDO','🔔 «iiiii» agudo');const b=await col(2200,pitch);if(b.length<8)throw'low';hi=med(b);if(hi<lo*1.25)hi=lo*1.8}
+ cal[mode]=1}
+/* ---- mundo ---- */
+const lvl=()=>LV[lv],spd=()=>Math.min(lvl().sp+scroll/30,lvl().sm);
+function reset(){scroll=0;y=H/2;tg=.5;ang=0;trail=[];obs=[];pts=[{x:-100,c:H/2,g:lvl().g0}];goalPx=lvl().goal*10;gen()}
+function gen(){let l=pts[pts.length-1];const L=lvl();while(l.x<scroll+W+200&&l.x<goalPx+300){const g=Math.max(L.gm,L.g0-scroll/40),c=clamp(l.c+(rnd()-.5)*2*L.d,g/2+22,H-22-g/2),n={x:l.x+90,c,g};
+ if(scroll>500&&n.x<goalPx-100&&rnd()<L.ob){const t=rnd();obs.push(t<.4?{k:'g',x:n.x,y:c,r:20}:{k:'s',x:n.x,top:t<.7,w:44,h:g*.3})}
+ pts.push(n);l=n}
+ while(pts.length>3&&pts[1].x<scroll-100)pts.shift();while(obs.length&&obs[0].x<scroll-120)obs.shift()}
+const wall=(wx,top)=>{for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];if(wx>=a.x&&wx<b.x){const t=(wx-a.x)/(b.x-a.x),c=a.c+(b.c-a.c)*t,g=a.g+(b.g-a.g)*t;return top?c-g/2:c+g/2}}return top?0:H};
+const spikeH=(o,wx)=>{const u=(wx-o.x)/o.w;return u<0||u>1?0:o.h*(1-Math.abs(2*u-1))};
+function die(){st='dead';flash=1;beep(120,.6,.2);const m=Math.floor(scroll/10),k=mode+lv;if(m>(best[k]||0)){best[k]=m;try{localStorage.setItem('sw_best',JSON.stringify(best))}catch(e){}}
+ ov('<h2>💥 '+m+' m</h2><p>Récord ('+lvl().n+'): '+(best[k]||0)+' m</p><div class="row"><button class="btn g" data-a="again">Reintentar</button><button class="btn gh" data-a="menu">Menú</button></div>')}
+function win(){st='dead';beep(660,.15);setTimeout(()=>beep(990,.3),160);const k=mode+lv;best[k]=Math.max(best[k]||0,lvl().goal);try{localStorage.setItem('sw_best',JSON.stringify(best))}catch(e){}
+ ov('<h2>🏆 ¡Nivel '+lvl().n+' superado!</h2><div class="row"><button class="btn g" data-a="again">Otra vez</button><button class="btn gh" data-a="menu">Menú</button></div>')}
+function step(dt){const s=spd();scroll+=s*dt;const n=read();if(n!==null)tg=mode==='vol'?tg+(n-tg)*.6:n;
+ const ty=H-25-tg*(H-50),m=s*dt*1.1,dy=clamp(ty-y,-m,m);y+=dy;ang=Math.atan2(dy,s*dt);const wx=scroll+200;trail.push({x:wx,y});if(trail.length>80)trail.shift();gen();
+ if(wx>=goalPx)return win();
+ if(y-5<wall(wx,true)||y+5>wall(wx,false)||y<4||y>H-4)return die();
+ for(const o of obs){if(o.k==='g'){if(Math.hypot(wx-o.x,y-o.y)<o.r+4)return die()}
+  else{const h=spikeH(o,wx);if(h>0){const w=wall(wx,o.top);if(o.top?y-5<w+h:y+5>w-h)return die()}}}}
+/* ---- dibujo ---- */
+function draw(){x.fillStyle='#070b18';x.fillRect(0,0,W,H);x.fillStyle='#fff';
+ for(const s of stars){x.globalAlpha=.3+s.s*.5;x.fillRect(((s.x-scroll*s.s*.25)%W+W)%W,s.y,1+s.s*1.5,1+s.s*1.5)}x.globalAlpha=1;
+ const o0=scroll;x.shadowColor='#53dfca';x.shadowBlur=10;x.fillStyle='#10183a';x.strokeStyle='#53dfca';x.lineWidth=3;
+ for(const top of[true,false]){x.beginPath();x.moveTo(pts[0].x-o0,top?0:H);for(const p of pts)x.lineTo(p.x-o0,top?p.c-p.g/2:p.c+p.g/2);x.lineTo(pts[pts.length-1].x-o0,top?0:H);x.closePath();x.fill();x.stroke()}
+ for(const o of obs){const X=o.x-o0;if(X<-80||X>W+80)continue;
+  if(o.k==='g'){x.save();x.translate(X,o.y);x.rotate(tm*2);x.fillStyle='#ff5a6e';x.shadowColor='#ff5a6e';x.beginPath();for(let i=0;i<16;i++){const r=i%2?o.r-6:o.r+4,a=i*Math.PI/8;x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}x.closePath();x.fill();x.fillStyle='#070b18';x.beginPath();x.arc(0,0,5,0,7);x.fill();x.restore()}
+  else{x.fillStyle='#ffd166';x.shadowColor='#ffd166';const a=wall(o.x,o.top),b=wall(o.x+o.w,o.top);x.beginPath();x.moveTo(X,a);x.lineTo(X+o.w,b);x.lineTo(X+o.w/2,(a+b)/2+(o.top?o.h:-o.h));x.closePath();x.fill()}}
+ if(goalPx-o0<W+50){x.shadowBlur=0;for(let i=0;i<18;i++){x.fillStyle=i%2?'#fff':'#39d98a';x.fillRect(goalPx-o0,i*H/18,14,H/18)}}
+ x.shadowBlur=14;x.shadowColor='#9b8cff';x.lineWidth=4;x.lineJoin='round';
+ for(let i=1;i<trail.length;i++){x.strokeStyle='rgba(155,140,255,'+(i/trail.length)+')';x.beginPath();x.moveTo(trail[i-1].x-o0,trail[i-1].y);x.lineTo(trail[i].x-o0,trail[i].y);x.stroke()}
+ x.save();x.translate(200,y);x.rotate(ang);x.fillStyle='#fff';x.shadowColor='#53dfca';x.beginPath();x.moveTo(12,0);x.lineTo(-9,-8);x.lineTo(-5,0);x.lineTo(-9,8);x.closePath();x.fill();x.restore();x.shadowBlur=0;
+ const ty=H-25-tg*(H-50);x.fillStyle='#ffd166';x.beginPath();x.moveTo(6,ty-8);x.lineTo(20,ty);x.lineTo(6,ty+8);x.fill();
+ x.fillStyle='#fff';x.font='bold 18px system-ui';x.textAlign='left';x.fillText(Math.floor(scroll/10)+' / '+lvl().goal+' m',40,28);
+ if(flash>0){x.fillStyle='rgba(255,255,255,'+flash*.6+')';x.fillRect(0,0,W,H);flash-=.05}}
+/* ---- bucle y menús ---- */
+let last=0;
+function loop(t){const my=sid;if(st==='menu')return;const dt=Math.min(.05,(t-last)/1000||0);last=t;tm+=dt;if(st==='play')step(dt);if(pts.length)draw();raf=requestAnimationFrame(loop)}
+async function countdown(my){reset();st='count';for(let i=3;i>0;i--){ov('<h2>'+i+'</h2><p>'+(mode==='touch'?'Mantén pulsado para subir':mode==='vol'?'Más fuerte = más alto':'Más agudo = más alto')+'</p>');beep(520,.1);await wait(850);if(my!==sid)return}
+ ov('');beep(880,.2);st='play'}
+async function begin(){const my=++sid;mode=$('md').value;lv=+$('lvl').value;$('menu').classList.add('hidden');$('gm').classList.remove('hidden');st='cal';reset();cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(loop);
+ if(mode!=='touch'){try{await mic()}catch(e){return ov('<p>No pude usar el micrófono. Permítelo en el navegador.</p><button class="btn gh" data-a="menu">Menú</button>')}
+  if(!cal[mode]){try{await calib(my)}catch(e){if(e==='x')return;return ov('<p>No te he oído bien. Habla más cerca del micrófono.</p><div class="row"><button class="btn g" data-a="redo">Reintentar</button><button class="btn gh" data-a="menu">Menú</button></div>')}}}
+ if(my===sid)countdown(my)}
+function toMenu(){sid++;st='menu';cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;cal={}}ov('');$('gm').classList.add('hidden');$('menu').classList.remove('hidden')}
+ovl.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;if(a==='menu')toMenu();else if(a==='redo'){cal={};begin()}else if(a==='again'){const my=++sid;ov('');countdown(my)}};
+$('go').onclick=begin;$('back').onclick=toMenu;
+const dn=e=>{hold=true;e.preventDefault()},up=()=>{hold=false};
+cv.addEventListener('pointerdown',dn);addEventListener('pointerup',up);addEventListener('pointercancel',up);
+addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW'){hold=true;e.preventDefault()}});addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW')hold=false});
+})();
+</script></body></html>

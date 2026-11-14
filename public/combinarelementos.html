@@ -203,6 +203,7 @@ const R=[
 ];
 const key=(a,b)=>[a,b].sort().join('|');
 const M=Object.fromEntries(R.map(([a,b,c])=>[key(a,b),c]));
+  const HOW={};R.forEach(([a,b,c])=>HOW[c]=(HOW[c]?HOW[c]+' o ':'')+E[a][0]+' '+E[a][1]+' + '+E[b][0]+' '+E[b][1]);
 const BASE=['agua','fuego','tierra','aire'];
 
 // ---- Estado ----
@@ -213,7 +214,9 @@ const save=()=>{try{localStorage.setItem('combinarelementos',JSON.stringify(foun
 
 function chip(id){
   const d=document.createElement('div');d.className='el';d.dataset.id=id;
-  d.innerHTML='<i>'+E[id][0]+'</i><span>'+E[id][1]+'</span>';return d;
+  d.innerHTML='<i>'+E[id][0]+'</i><span>'+E[id][1]+'</span>';
+  d.title=HOW[id]||'Elemento básico';return d;
+  
 }
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 function renderSide(newId){

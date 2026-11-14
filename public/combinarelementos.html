@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combinar elementos</title>
+<style>
+:root{--bg:#16263a;--dot:#27405c;--panel:#0d1824;--chip:#eef4f7;--ink:#10202f;--acc:#7fd6e6;--mut:#8fa6b8}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;background:var(--panel);color:#fff;display:grid;grid-template-columns:1fr 300px;grid-template-rows:auto 1fr;overflow:hidden}
+header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid #223548}
+h1{font-size:20px;margin:0;letter-spacing:.3px;margin-right:auto}
+#count{color:var(--acc);font-weight:700}
+button{font:inherit;background:#1d3349;color:#fff;border:1px solid #33506d;border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{background:#26435f}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#work{position:relative;background:var(--bg);background-image:radial-gradient(var(--dot) 1.5px,transparent 1.6px);background-size:26px 26px;overflow:hidden;touch-action:none}
+#hint{position:absolute;inset:auto 0 14px 0;text-align:center;color:var(--mut);font-size:14px;pointer-events:none;padding:0 12px}
+#side{background:var(--panel);border-left:1px solid #223548;overflow-y:auto;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+#side.del{background:#3a1d24}
+.el{display:flex;align-items:center;gap:6px;background:var(--chip);color:var(--ink);border-radius:999px;padding:5px 12px 5px 8px;font-weight:700;font-size:14px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;white-space:nowrap;box-shadow:0 2px 0 #9fb4c0}
+.el i{font-style:normal;font-size:24px;line-height:1}
+#work .el{position:absolute;transform:translate(-50%,-50%)}
+.el.drag{cursor:grabbing;z-index:50;box-shadow:0 8px 18px #0008;transform:translate(-50%,-50%) scale(1.06)}
+.el.target{outline:3px solid var(--acc)}
+.el.shake{animation:sh .35s}
+.el.new{animation:pop .5s}
+@keyframes sh{25%{margin-left:-8px}75%{margin-left:8px}}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.3)}70%{transform:translate(-50%,-50%) scale(1.2)}}
+#toast{position:fixed;left:50%;top:64px;transform:translate(-50%,-20px);background:var(--acc);color:var(--ink);padding:8px 18px;border-radius:999px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:700px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr 38%}#side{border-left:0;border-top:1px solid #223548}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Combinar elementos</h1>
+  <span><span id="count">0</span> descubiertos</span>
+  <button id="hintBtn" title="Sugerir una combinación">Pista</button>
+  <button id="clearBtn" title="Vaciar la mesa">Limpiar</button>
+  <button id="resetBtn" title="Empezar de cero">Reiniciar</button>
+</header>
+<main id="work"><div id="hint">Arrastra un elemento sobre otro para combinarlos. Suelta uno en la lista para quitarlo.</div></main>
+<aside id="side" aria-label="Elementos descubiertos"></aside>
+<div id="toast" role="status"></div>
+
+<script>
+// ---- Datos: id -> [icono, nombre] ----
+const E={
+agua:['💧','Agua'],fuego:['🔥','Fuego'],tierra:['🌍','Tierra'],aire:['💨','Aire'],
+vapor:['♨️','Vapor'],lava:['🌋','Lava'],barro:['🟤','Barro'],polvo:['🌫️','Polvo'],energia:['⚡','Energía'],
+nube:['☁️','Nube'],lluvia:['🌧️','Lluvia'],piedra:['🪨','Piedra'],arena:['⏳','Arena'],vidrio:['🔍','Vidrio'],
+frio:['🥶','Frío'],hielo:['🧊','Hielo'],nieve:['❄️','Nieve'],vida:['🧬','Vida'],planta:['🌱','Planta'],
+arbol:['🌳','Árbol'],bosque:['🌲','Bosque'],pantano:['🐸','Pantano'],bacteria:['🦠','Bacteria'],
+animal:['🐾','Animal'],lagarto:['🦎','Lagarto'],bestia:['🦖','Bestia'],cerdo:['🐖','Cerdo'],pajaro:['🐦','Pájaro'],
+pez:['🐟','Pez'],cueva:['🕳️','Cueva'],murcielago:['🦇','Murciélago'],humano:['🧑','Humano'],bebe:['👶','Bebé'],
+tocino:['🥓','Tocino'],carne:['🥩','Carne'],barbacoa:['🍖','Barbacoa'],ladrillo:['🧱','Ladrillo'],casa:['🏠','Casa'],
+cerveza:['🍺','Cerveza'],bar:['🍻','Bar'],playa:['🏖️','Playa'],ceniza:['🪵','Ceniza'],cenicero:['🚬','Cenicero'],
+batman:['🦸','Batman'],arma:['🗡️','Arma'],veneno:['☠️','Veneno'],armaven:['🏹','Armas envenenadas'],
+asesino:['🥷','Asesino'],gripe:['🤧','Gripe'],gripeaviar:['🐔','Gripe aviar'],canguro:['🦘','Canguro'],
+ciudad:['🏙️','Ciudad'],pais:['🗺️','País'],australia:['🇦🇺','Australia'],montana:['⛰️','Montaña']
+};
+const R=[
+['agua','fuego','vapor'],['fuego','tierra','lava'],['agua','tierra','barro'],['aire','tierra','polvo'],
+['aire','fuego','energia'],['aire','vapor','nube'],['agua','nube','lluvia'],['agua','lava','piedra'],
+['aire','piedra','arena'],['arena','fuego','vidrio'],['aire','lluvia','frio'],['agua','frio','hielo'],
+['frio','nube','nieve'],['barro','energia','vida'],['lluvia','vida','planta'],['planta','planta','arbol'],
+['arbol','arbol','bosque'],['barro','planta','pantano'],['pantano','vida','bacteria'],['tierra','vida','animal'],
+['animal','pantano','lagarto'],['lagarto','tierra','bestia'],['animal','barro','cerdo'],['animal','aire','pajaro'],
+['agua','animal','pez'],['piedra','tierra','cueva'],['cueva','pajaro','murcielago'],['animal','energia','humano'],
+['humano','humano','bebe'],['cerdo','fuego','tocino'],['cerdo','humano','carne'],['carne','fuego','barbacoa'],
+['barro','fuego','ladrillo'],['ladrillo','ladrillo','casa'],['planta','vapor','cerveza'],['casa','cerveza','bar'],
+['agua','arena','playa'],['fuego','planta','ceniza'],['ceniza','vidrio','cenicero'],['humano','murcielago','batman'],
+['humano','piedra','arma'],['agua','bacteria','veneno'],['arma','veneno','armaven'],['armaven','humano','asesino'],
+['bacteria','humano','gripe'],['gripe','pajaro','gripeaviar'],['animal','playa','canguro'],['casa','casa','ciudad'],
+['ciudad','ciudad','pais'],['canguro','pais','australia'],['piedra','piedra','montana']
+];
+const key=(a,b)=>[a,b].sort().join('|');
+const M=Object.fromEntries(R.map(([a,b,c])=>[key(a,b),c]));
+const BASE=['agua','fuego','tierra','aire'];
+
+// ---- Estado ----
+const work=document.getElementById('work'),side=document.getElementById('side');
+let found=BASE.slice();
+try{const s=JSON.parse(localStorage.getItem('combinarelementos')||'null');if(Array.isArray(s)&&s.length)found=s.filter(x=>E[x])}catch(e){}
+const save=()=>{try{localStorage.setItem('combinarelementos',JSON.stringify(found))}catch(e){}};
+
+function chip(id){
+  const d=document.createElement('div');d.className='el';d.dataset.id=id;
+  d.innerHTML='<i>'+E[id][0]+'</i><span>'+E[id][1]+'</span>';return d;
+}
+function renderSide(newId){
+  side.innerHTML='';
+  found.forEach(id=>{
+    const c=chip(id);if(id===newId)c.classList.add('new');
+    c.style.position='relative';c.style.transform='none';
+    c.addEventListener('pointerdown',e=>fromSide(e,id));
+    side.appendChild(c);
+  });
+  document.getElementById('count').textContent=found.length+' / '+Object.keys(E).length;
+}
+let tt;
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>x.classList.remove('on'),1800)}
+
+// ---- Arrastre ----
+let drag=null;
+function place(el,x,y){el.style.left=x+'px';el.style.top=y+'px'}
+function local(e){const r=work.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
+function spawn(id,x,y){const el=chip(id);place(el,x,y);work.appendChild(el);el.addEventListener('pointerdown',e=>begin(e,el));return el}
+function fromSide(e,id){
+  e.preventDefault();
+  const [x,y]=local(e);const el=spawn(id,x,y);
+  begin(e,el,true);
+}
+function begin(e,el,fresh){
+  e.preventDefault();
+  drag={el,fresh,sx:e.clientX,sy:e.clientY,moved:false};
+  el.classList.add('drag');work.appendChild(el);
+  el.setPointerCapture&&el.setPointerCapture(e.pointerId);
+  el.onpointermove=move;el.onpointerup=el.onpointercancel=end;
+}
+function overSide(e){const r=side.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom}
+function targetAt(e){
+  let best=null;
+  work.querySelectorAll('.el').forEach(o=>{
+    if(o===drag.el)return;const r=o.getBoundingClientRect();
+    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)best=o;
+  });return best;
+}
+function move(e){
+  if(!drag)return;
+  if(Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>5)drag.moved=true;
+  const [x,y]=local(e);place(drag.el,x,y);
+  work.querySelectorAll('.target').forEach(t=>t.classList.remove('target'));
+  const t=targetAt(e);if(t)t.classList.add('target');
+  side.classList.toggle('del',overSide(e)&&!drag.fresh);
+}
+function end(e){
+  if(!drag)return;
+  const {el,fresh,moved}=drag;drag=null;
+  el.classList.remove('drag');el.onpointermove=el.onpointerup=el.onpointercancel=null;
+  work.querySelectorAll('.target').forEach(t=>t.classList.remove('target'));
+  side.classList.remove('del');
+  if(overSide(e)){el.remove();return}
+  if(fresh&&!moved){ // clic simple: colocar en un punto libre
+    const w=work.clientWidth,h=work.clientHeight;
+    place(el,80+Math.random()*(w-160),60+Math.random()*(h-140));return;
+  }
+  drag={el};const t=targetAt(e);drag=null;
+  if(t)combine(el,t);
+  else{const [x,y]=local(e);place(el,Math.max(40,Math.min(work.clientWidth-40,x)),Math.max(30,Math.min(work.clientHeight-30,y)))}
+}
+function combine(a,b){
+  const r=M[key(a.dataset.id,b.dataset.id)];
+  if(!r){
+    [a,b].forEach(n=>{n.classList.remove('shake');void n.offsetWidth;n.classList.add('shake')});
+    a.style.left=(parseFloat(a.style.left)+(Math.random()<.5?-70:70))+'px';
+    return;
+  }
+  const x=b.style.left,y=b.style.top;a.remove();b.remove();
+  const n=spawn(r,0,0);n.style.left=x;n.style.top=y;n.classList.add('new');
+  if(!found.includes(r)){found.push(r);save();renderSide(r);toast('Nuevo: '+E[r][0]+' '+E[r][1]+'!');
+    if(found.length===Object.keys(E).length)setTimeout(()=>toast('¡Lo has descubierto todo!'),2000)}
+}
+
+// ---- Botones ----
+document.getElementById('clearBtn').onclick=()=>work.querySelectorAll('.el').forEach(e=>e.remove());
+document.getElementById('resetBtn').onclick=()=>{
+  if(!confirm('¿Borrar todo tu progreso?'))return;
+  found=BASE.slice();save();work.querySelectorAll('.el').forEach(e=>e.remove());renderSide();
+};
+document.getElementById('hintBtn').onclick=()=>{
+  const opts=R.filter(([a,b,c])=>found.includes(a)&&found.includes(b)&&!found.includes(c));
+  if(!opts.length){toast('No quedan pistas por ahora');return}
+  const [a,b]=opts[Math.floor(Math.random()*opts.length)];
+  toast('Prueba: '+E[a][0]+' '+E[a][1]+' + '+E[b][0]+' '+E[b][1]);
+};
+renderSide();
+</script>
+</body>
+</html>

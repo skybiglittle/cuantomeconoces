@@ -600,7 +600,7 @@ function pub(){
  NR.presence({rm:1,n:G.name,k:G.me,s:G.sub,pk:G.pk,h:G.host?1:null,hs:G.host?G.hs:null}).catch(()=>{});
 }
 function home(){
- app.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Juego de cartas de humor negro para adultos. Cada uno juega desde su móvil.</p>
+ app.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Juego de cartas. Cada uno juega desde su móvil.</p>
  ${MSG?`<p class="err">${MSG}</p>`:''}
  <input id="nm" placeholder="Tu nombre" maxlength="16">
  <h2>Crear sala</h2><label>Puntos para ganar: <select id="tg">${[3,5,7,10].map(v=>`<option ${v==5?'selected':''}>${v}</option>`).join('')}</select></label>

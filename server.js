@@ -133,7 +133,7 @@ const server = http.createServer(async (req, res) => {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache',
       });
-      return res.end(status === 404 ? 'No se encuentra esa página o archivo en public' : 'Error al leer el archivo');
+      return res.end(status === 404 ? 'Esa página no existe, pero gracias por tu optimismo. Atentamente, Dani.' : 'Error al leer el archivo');
     }
 
     const contentType = MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';

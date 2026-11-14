@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Teléfono descompuesto</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#3b1d4e,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:640px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8.5vw,52px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#7fe6d6 55%,#ffd166);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}h3{font-size:16px;margin:16px 0 6px}.m,.sub{color:var(--m)}.sub{margin:0 0 16px}.small{font-size:13px;color:var(--m)}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}
+input:focus-visible,select:focus-visible,.btn:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}
+.pls{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.pl{background:#0f172a;border:1px solid var(--l);padding:6px 11px;border-radius:99px;font-size:13px}.pl.me{border-color:var(--b);color:var(--b)}
+.code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch span{background:#0f172a;border:1px solid var(--l);border-radius:12px;padding:5px 10px;font-size:13px}.ch .now{border-color:var(--y);color:var(--y)}.ch .me{border-color:var(--b)}
+.turn{border-radius:22px;padding:18px 14px;border:3px solid var(--a);background:#1f1a45;text-align:center}
+.turn.wait{border-color:var(--l);background:#131c30}
+.who{font-size:13px;font-weight:900;letter-spacing:.08em;color:var(--y)}
+.words{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+.w{font:inherit;cursor:pointer;border:2px solid var(--l);background:#0f172a;color:var(--t);border-radius:14px;padding:9px 13px;font-size:20px;font-weight:800}
+.w.sel{border-color:var(--y);background:#332719;color:var(--y)}
+.st{min-height:24px;font-weight:700;color:var(--b)}
+.hear{min-height:28px;font-size:20px;font-weight:800;margin:8px 0}
+.mic{width:76px;height:76px;border-radius:50%;font-size:32px;padding:0;margin:6px auto;display:block}
+.mic.on{background:linear-gradient(100deg,#c01f40,#ff5a6e);animation:pulse 1.1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #ff5a6e88}100%{box-shadow:0 0 0 22px #ff5a6e00}}
+.meter{height:8px;background:#303b55;border-radius:99px;overflow:hidden;margin:12px 0}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--y),var(--r))}
+.rv{font-size:14px;padding:9px 0;border-bottom:1px solid #1f2a44}.rv:last-child{border:0}.rv b{color:var(--y)}.rv .ok{color:var(--g)}.rv .no{color:var(--r)}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--l)}.sc:last-child{border:0}
+@media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
+</style></head><body><main>
+<header><span class="tag">🎙️ MULTIJUGADOR · SALAS · CON VOZ</span><h1>Teléfono descompuesto</h1><p class="sub">Dices una frase. El sistema le cambia una palabra. Al siguiente le llega… ¿notará el cambio?</p></header>
+<section id="home" class="panel"><h2>Entra en partida</h2><p class="m">Crea una sala y comparte el código, o únete a la de otra persona.</p>
+<label for="pn">Tu nombre</label><input id="pn" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="cb">Crear sala</button><button class="btn s" id="sj">Unirme a una sala</button></div>
+<div id="jb" class="hidden"><label for="rc">Código de sala</label><input id="rc" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn full" id="jn">Entrar en la sala</button></div>
+<p id="hm" class="notice hidden" aria-live="polite"></p></section>
+<section id="lobby" class="panel hidden">
+<div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
+<h3>Jugadores conectados</h3><div id="lp" class="pls"></div>
+<div id="opt" class="hidden"><label for="rounds">Rondas (cuántas veces habla cada uno)</label><select id="rounds"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></div>
+<div class="notice"><b>Cómo se juega:</b> habláis por turnos. Cuando te toque, el micrófono se activa solo: di una frase y se envía sola. El sistema cambia una palabra al azar y se la pasa al siguiente, que la oye en voz alta. Si crees saber cuál palabra cambió, tócala: aciertas y ganas 2 puntos. Luego responde tú y se repite. Al final veis toda la cadena.</div>
+<div class="row"><button class="btn g" id="st">Empezar partida</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
+<section id="game" class="hidden"></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),rnd=n=>Math.random()*n|0,pick=a=>a[rnd(a.length)];
+const RW=['pingüino','calcetín','tractor','mermelada','dinosaurio','zanahoria','paraguas','submarino','elefante','trompeta','pijama','volcán','chancleta','astronauta','croqueta','murciélago','bicicleta','mostaza','tortuga','ventilador','fantasma','pulpo','helicóptero','cactus','sandía','robot','espagueti','jirafa','cohete','pepino','bufanda','tiburón','marciano','trampolín','berenjena','castillo','linterna','bocadillo','camello','sombrero','canguro','patata','payaso','piano','salchicha','lagarto','molino','gallina','almohada','tormenta'];
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition,synth='speechSynthesis' in window?window.speechSynthesis:null;
+let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={ac:0},offs=0,gk='',sig='',ac=null,T=0,rec=null,listening=false,rsig='';const seen={};
+const uid=()=>Math.random().toString(36).slice(2,10),now=()=>Date.now()+offs,msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),dat=k=>{const p=peers.find(q=>q.k===k);return(p&&p.d)||{}},on=k=>peers.some(p=>p.k===k);
+const fresh=()=>({ph:'lobby',v:0,gid:0,rounds:2,pl:[],nm:{},sc:{},turn:0,cur:'',inc:null,hist:[],ts:0,dl:0});
+const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now();pub({h:1,s:S});rend()},pubD=()=>pub({d:{ac:L.ac,text:L.text,guess:L.guess,turn:L.turn}});
+const seed=()=>roster().forEach(p=>{seen[p.k]=(p.d||{}).ac});
+function tone(f,d,v=.06){try{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+/* ---------- red (igual que No hacer) ---------- */
+function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
+ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
+const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'cmb-td-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
+else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};
+sock.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))}};
+open();setTimeout(()=>{if(!done){done=1;closed=1;rej('timeout')}},15000)})}
+function onPeers(){
+const hs=peers.filter(p=>p.h&&p.s).sort((a,b)=>(b.s.v-a.s.v)||(a.k<b.k?-1:1));
+if(H&&hs.length&&hs[0].k!==K&&hs[0].s.v>=S.v){H=false;pub({h:0,s:null})}
+if(!H){const hp=hs[0];
+if(hp){if(!S||hp.s.v>S.v){S=hp.s;offs=S.t-Date.now()}}
+else if(ready&&roster()[0]&&roster()[0].k===K){H=true;S=S||fresh();seed();pubS()}}
+rend();if(H){proc();hostTick()}}
+async function start(host){N=($('pn').value.trim()||'Jugador').slice(0,18);K=uid();H=host;S=host?fresh():null;ready=0;unlock();
+if(host)code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+else{code=$('rc').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(code))return msg('Escribe un código de cinco caracteres.')}
+try{await connect(code);P={k:K,n:N,t:Date.now(),d:{}};ready=1;if(host)pubS();else pub({})}catch(e){H=false;msg(e==='room_full'?'La sala está llena.':host?'No se pudo crear la sala. Inténtalo de nuevo.':'No se pudo entrar. Comprueba el código.')}}
+/* ---------- lógica del anfitrión ---------- */
+const clean=t=>String(t||'').replace(/\s+/g,' ').trim().slice(0,160);
+const core=w=>w.match(/^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u);
+function swap(text){const ws2=text.split(' ');let c=ws2.map((w,i)=>i).filter(i=>core(ws2[i])[2].length>=3);if(!c.length)c=ws2.map((w,i)=>i);
+const i=pick(c),m=core(ws2[i]),old=m[2];let nw;do{nw=pick(RW)}while(nw===old.toLowerCase());ws2[i]=m[1]+nw+m[3];return{sent:ws2.join(' '),sw:i,old,nw}}
+function advance(){S.turn++;if(S.turn>=S.pl.length*S.rounds){S.ph='end';S.cur='';S.inc=null;if(S.hist.length)S.hist[S.hist.length-1].rev=1;return}
+S.cur=S.pl[S.turn%S.pl.length];S.ts=Date.now();S.dl=S.ts+70000}
+function startGame(){if(!H)return;const ps=roster().slice(0,8);if(ps.length<2)return;
+const ks=ps.map(p=>p.k).sort(()=>Math.random()-.5);
+Object.assign(S,{rounds:+$('rounds').value,pl:ks,nm:{},sc:{},turn:0,cur:ks[0],inc:null,hist:[],ts:Date.now(),dl:Date.now()+70000});
+ps.forEach(p=>{S.nm[p.k]=p.n;S.sc[p.k]=0});S.gid++;S.ph='play';seed();pubS()}
+function handle(k,d){const text=clean(d.text);if(!text)return false;const last=S.hist[S.hist.length-1];
+if(S.inc&&last){last.rev=1;last.gi=d.guess;if(typeof d.guess==='number'&&d.guess===last.sw){last.ok=1;S.sc[k]+=2}}
+const r=swap(text);S.hist.push({by:k,to:S.pl[(S.turn+1)%S.pl.length],said:text,sent:r.sent,sw:r.sw,old:r.old,nw:r.nw,rev:0});
+S.inc={from:k,text:r.sent};advance();return true}
+function proc(){if(!H||!S||S.ph!=='play')return;let ch=0;
+for(const p of roster()){const d=p.d||{};if(d.ac&&seen[p.k]!==d.ac){seen[p.k]=d.ac;
+if(p.k===S.cur&&d.turn===S.gid+'-'+S.turn&&handle(p.k,d)){ch=1;break}}}
+if(ch)pubS()}
+function hostTick(){if(!H||!S||S.ph!=='play')return;const t=Date.now();
+if(t>S.dl||(!on(S.cur)&&t>S.ts+8000)){const last=S.hist[S.hist.length-1];if(S.inc&&last)last.rev=1;advance();pubS()}}
+/* ---------- voz ---------- */
+function unlock(){if(synth)try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;synth.speak(u)}catch(e){}}
+function stopAll(){T++;listening=false;try{synth&&synth.cancel()}catch(e){}try{rec&&rec.abort()}catch(e){}rec=null}
+function speak(text,tk,done){let fin=0;const end=()=>{if(fin)return;fin=1;clearTimeout(g);if(tk===T)done()};const g=setTimeout(end,text.length*110+2500);
+if(!synth)return;try{synth.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='es-ES';u.rate=1;u.onend=end;u.onerror=end;synth.speak(u)}catch(e){end()}}
+const setSt=t=>{const e=$('st2');if(e)e.textContent=t};
+function mic(on2){listening=on2;const b=$('mb');if(b)b.classList.toggle('on',on2)}
+function listen(){const tk=T;if(!SR){setSt('Tu navegador no oye: escribe tu frase abajo.');return}
+try{rec=new SR();rec.lang='es-ES';rec.interimResults=true;rec.maxAlternatives=1;let fin='',it='';
+rec.onresult=e=>{fin='';it='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else it+=r[0].transcript}const h=$('hear');if(h)h.textContent=(fin+it)?'«'+(fin+it).trim()+'»':''};
+rec.onend=()=>{if(tk!==T)return;mic(false);const tx=(fin||it).trim();if(tx)submit(tx);else setSt('No te he oído. Pulsa 🎤 para repetir.')};
+rec.onerror=e=>{if(tk!==T)return;if(e.error==='not-allowed'||e.error==='service-not-allowed')setSt('Permite el micrófono o escribe tu frase abajo.')};
+tone(880,.12);mic(true);setSt('🎤 Te escucho… habla ya.');rec.start()}catch(e){mic(false);setSt('No se pudo abrir el micrófono. Escribe tu frase abajo.')}}
+function submit(text){text=clean(text);if(!text||L.sent||!S||S.cur!==K)return;L.sent=1;stopAll();L.ac++;L.text=text;L.turn=S.gid+'-'+S.turn;pubD();
+const c=$('mine');if(c)c.innerHTML='<div class="who">ENVIADO</div><div class="hear">«'+esc(text)+'»</div><p class="small">El sistema le está cambiando una palabra…</p>'}
+/* ---------- interfaz ---------- */
+function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k;$('cl').textContent=code;
+$('lp').innerHTML=ps.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('');
+$('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';$('opt').classList.toggle('hidden',!H);
+$('st').classList.toggle('hidden',!H);$('st').disabled=ps.length<2||ps.length>8;
+$('lm').textContent=ps.length<2?'Hacen falta al menos 2 jugadores.':ps.length>8?'Máximo 8 jugadores.':H?'Ya podéis empezar.':'El anfitrión empezará cuando estéis listos.'}
+const hl=h=>{const w=h.sent.split(' ');return w.map((x,i)=>i===h.sw?'<b>'+esc(x)+'</b>':esc(x)).join(' ')};
+function rvLine(h){const nm=k=>esc(S.nm[k]);return '<div class="rv">'+nm(h.by)+' dijo «'+esc(h.said)+'»<br>→ a '+nm(h.to)+' le llegó «'+hl(h)+'» <span class="small">(cambió «'+esc(h.old)+'» por «'+esc(h.nw)+'»)</span>'+(h.gi!==undefined?(h.ok?' <span class="ok">· ¡'+nm(h.to)+' lo adivinó! +2</span>':' <span class="no">· '+nm(h.to)+' no lo adivinó</span>'):'')+'</div>'}
+function buildTurn(){stopAll();L={ac:L.ac,sent:0,guess:null};const me=S.cur===K,inc=S.inc;
+$('game').innerHTML='<div class="panel" style="margin-top:0"><div class="small" id="info"></div><div class="ch" id="chs" style="margin-top:8px"></div></div><div class="turn'+(me?'':' wait')+'" id="mine"></div><div class="meter"><span id="bar"></span></div><div class="panel"><h3 style="margin-top:0">Reveladas</h3><div id="lg"></div></div><div id="hc" class="hidden"><button class="btn gh full" id="fn">Terminar partida</button></div>';
+$('fn').onclick=()=>{S.ph='end';S.cur='';S.inc=null;if(S.hist.length)S.hist[S.hist.length-1].rev=1;pubS()};
+const c=$('mine');
+if(!me){c.innerHTML='<div class="who">TURNO DE '+esc(S.nm[S.cur]).toUpperCase()+'</div><p class="hear" style="font-size:18px">'+(inc?'🎧 Está escuchando el mensaje de '+esc(S.nm[inc.from])+'…':'🎤 Va a decir la primera frase…')+'</p><p class="small" id="left"></p>';return}
+tone(660,.2);try{navigator.vibrate&&navigator.vibrate(80)}catch(x){}
+const ws2=inc?inc.text.split(' '):[];
+c.innerHTML='<div class="who">'+(inc?'TE LLEGÓ DE '+esc(S.nm[inc.from]).toUpperCase():'ERES EL PRIMERO')+'</div>'
++(inc?'<div class="words" id="wds">'+ws2.map((w,i)=>'<button class="w" data-i="'+i+'">'+esc(w)+'</button>').join('')+'</div><p class="small">Toca la palabra que crees que cambió el sistema (opcional) y luego contesta.</p><button class="btn s" id="rp">🔊 Repetir mensaje</button>':'<p class="m">Di una frase para empezar, por ejemplo: «Ayer vi un perro enorme en el parque».</p>')
++'<button class="btn mic" id="mb" aria-label="Hablar">🎤</button><div class="st" id="st2"></div><div class="hear" id="hear"></div><div class="row"><input id="ti" maxlength="160" placeholder="o escríbelo aquí"><button class="btn" id="ts" style="flex:0 0 auto">Enviar</button></div><p class="small" id="left" style="margin-top:8px"></p>';
+$('ts').onclick=()=>submit($('ti').value);$('ti').onkeydown=e=>{if(e.key==='Enter')submit($('ti').value)};
+$('mb').onclick=()=>{if(L.sent)return;if(listening){try{rec.stop()}catch(e){}}else{const k=T;try{synth&&synth.cancel()}catch(e){}listen()}};
+if(inc){$('wds').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const i=+b.dataset.i;L.guess=L.guess===i?null:i;[...$('wds').children].forEach(x=>x.classList.toggle('sel',+x.dataset.i===L.guess))};
+$('rp').onclick=()=>{if(L.sent)return;stopAll();L.sent=0;const k=T;setSt('🔊 Escucha…');speak(inc.text,k,listen)};
+const k=T;setSt('🔊 Escucha…');speak(inc.text,k,listen)}else setTimeout(()=>{if(S&&S.cur===K&&!L.sent)listen()},600)}
+function fill(){const t=now(),n=S.pl.length;
+$('info').textContent='Turno '+(S.turn+1)+' de '+n*S.rounds+' · el sistema cambia una palabra en cada mensaje';
+const s2=S.pl.map(k=>S.sc[k]).join()+S.cur;if(s2!==sig){sig=s2;$('chs').innerHTML=S.pl.map(k=>'<span class="'+(k===S.cur?'now ':'')+(k===K?'me':'')+'">'+(k===S.cur?'🎙️ ':'')+esc(S.nm[k])+' · '+S.sc[k]+' pts</span>').join('')}
+const left=Math.max(0,S.dl-t);$('bar').style.width=left/70000*100+'%';const l=$('left');if(l)l.textContent=Math.ceil(left/1000)+' s';
+const rv=S.hist.filter(h=>h.rev).slice(-3).reverse(),r2=rv.length+':'+S.v;if(r2!==rsig){rsig=r2;$('lg').innerHTML=rv.length?rv.map(rvLine).join(''):'<p class="small">Cuando alguien conteste, aquí verás qué se dijo de verdad y qué palabra cambió.</p>'}
+$('hc').classList.toggle('hidden',!H)}
+function rend(){if(!code)return;if(!S||S.ph==='lobby'){stopAll();show('lobby');gk='';rLobby();return}
+show('game');
+if(S.ph==='end'){if(gk!=='end'+S.gid){stopAll();gk='end'+S.gid}
+const r=S.pl.slice().sort((a,b)=>S.sc[b]-S.sc[a]),w=r[0];
+$('game').innerHTML='<div class="panel"><span class="tag">PARTIDA TERMINADA</span><h2 style="margin-top:10px">🏆 Gana '+esc(S.nm[w])+'</h2>'+r.map((k,i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+esc(S.nm[k])+(k===K?' (tú)':'')+'</span><strong>'+S.sc[k]+' pts</strong></div>').join('')+'<h3>La cadena completa</h3>'+S.hist.map(rvLine).join('')+'<div class="row" style="margin-top:14px">'+(H?'<button class="btn g" id="ag">Jugar otra vez</button>':'<span class="small">Esperando al anfitrión…</span>')+'<button class="btn gh" id="ex">Salir</button></div></div>';
+if(H)$('ag').onclick=()=>{S.ph='lobby';pubS()};$('ex').onclick=()=>location.reload();return}
+const k='g'+S.gid+'-'+S.turn+'-'+S.cur;if(k!==gk){gk=k;sig='';rsig='';buildTurn()}fill()}
+$('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
+$('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+$('cp').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>$('cp').textContent='¡Copiado!').catch(()=>{})};
+$('st').onclick=startGame;$('lv').onclick=()=>{if(ws)ws.leave();location.reload()};
+setInterval(()=>{if(H)hostTick();if(S&&S.ph==='play'&&gk)fill()},250);addEventListener('beforeunload',()=>{if(ws)ws.leave()});
+})();
+</script></body></html>

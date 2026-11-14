@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bingo relámpago</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8edf7;--ink:#14213d;--card:#ffffff;--line:#c4cfe4;--muted:#55678a;--accent:#d93a73;--ok:#18935f;--bad:#d62f3f;--ballin:#ffffff;--belt:#d3dbed;--stripe:rgba(85,103,138,.28);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0e1730;--ink:#f1f4fb;--card:#1a2a4f;--line:#2e4274;--muted:#9fb0d3;--ballin:#14213d;--belt:#16233f;--stripe:rgba(159,176,211,.2)}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0e1730;--ink:#f1f4fb;--card:#1a2a4f;--line:#2e4274;--muted:#9fb0d3;--ballin:#14213d;--belt:#16233f;--stripe:rgba(159,176,211,.2)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:500;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+main{max-width:520px;height:100%;margin:0 auto;padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.top b{font-size:34px;font-weight:800;line-height:1}
+.top small{display:block;color:var(--muted);font-size:13px}
+.lives{font-size:24px;color:var(--accent);letter-spacing:2px}
+.belt{position:relative;height:104px;flex:none;border-radius:14px;border:2px solid var(--line);background-color:var(--belt);background-image:repeating-linear-gradient(90deg,transparent 0 22px,var(--stripe) 22px 24px);overflow:hidden;touch-action:manipulation}
+.belt::after{content:"";position:absolute;top:0;right:0;bottom:0;width:34px;background:linear-gradient(90deg,transparent,rgba(214,47,63,.35));pointer-events:none}
+.ball{position:absolute;left:0;top:18px;width:64px;height:64px;border-radius:50%;background:var(--bc,#999);display:grid;place-items:center;box-shadow:inset -6px -7px 12px rgba(0,0,0,.25),0 4px 10px rgba(0,0,0,.2);cursor:pointer;will-change:transform}
+.ball .in{width:42px;height:42px;border-radius:50%;background:var(--ballin);color:var(--ink);display:grid;place-items:center;line-height:1;text-align:center;font-weight:800;font-size:20px}
+.ball .l{display:block;font-size:10px;color:var(--bc);margin-bottom:1px}
+.ball.got{transition:opacity .25s;opacity:0}
+.ball.got .in{background:var(--ok);color:#fff}
+.toast{height:22px;text-align:center;font-size:15px;color:var(--muted)}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{position:relative;border:2px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);font:800 clamp(44px,13vw,68px)/1 "Bricolage Grotesque",system-ui,sans-serif;cursor:pointer;display:grid;place-items:center;transition:transform .1s}
+.card:active{transform:scale(.97)}
+.card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card .k{position:absolute;top:8px;left:12px;font-size:13px;font-weight:500;color:var(--muted)}
+.card .c{position:absolute;top:10px;right:12px;width:12px;height:12px;border-radius:50%;background:var(--bc)}
+.card.ok{animation:ok .3s}
+.card.bad{animation:bad .3s}
+@keyframes ok{0%{background:var(--ok);color:#fff}100%{background:var(--card)}}
+@keyframes bad{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px);background:var(--bad);color:#fff}75%{transform:translateX(8px)}}
+.ctrl{display:flex;gap:8px;align-items:center}
+.ctrl button,.btn{font:inherit;font-weight:800;border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:12px;padding:11px 12px;cursor:pointer}
+.ctrl button:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.ctrl .lvl{flex:1;text-align:center;font-size:14px;color:var(--muted);line-height:1.2}
+.ctrl .lvl b{display:block;color:var(--ink);font-size:16px}
+.ctrl .p{border-color:var(--line);color:var(--muted)}
+.ov{position:fixed;inset:0;background:rgba(10,18,40,.82);display:grid;place-items:center;padding:20px;z-index:20}
+.ov[hidden]{display:none}
+.panel{width:100%;max-width:380px;background:var(--card);color:var(--ink);border-radius:20px;padding:24px;text-align:center}
+.panel h1{margin:0 0 8px;font-size:32px;font-weight:800}
+.panel p{margin:0 0 16px;color:var(--muted);line-height:1.4}
+.seg{display:flex;gap:6px;margin:0 0 16px}
+.seg button{flex:1;font:inherit;font-weight:800;padding:10px 4px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+.btn.go{width:100%;background:var(--accent);border-color:var(--accent);color:#fff;font-size:18px;padding:14px}
+.big{font-size:52px;font-weight:800;line-height:1;margin:4px 0 12px}
+.hint{margin-top:12px;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.card.ok,.card.bad{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><b id="score">0</b><small id="best">Récord: 0</small></div>
+    <div class="lives" id="lives" aria-label="Vidas"></div>
+  </div>
+  <div class="belt" id="belt" aria-label="Cinta transportadora de bolas"></div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <div class="grid" id="grid"></div>
+  <div class="ctrl">
+    <button id="easier" type="button">Más fácil</button>
+    <div class="lvl"><b id="lvlName">Normal</b><span id="lvlNum">Ritmo 4/7</span></div>
+    <button id="harder" type="button">Más difícil</button>
+    <button id="pause" class="p" type="button" aria-label="Pausa">II</button>
+  </div>
+</main>
+
+<div class="ov" id="ov">
+  <div class="panel">
+    <h1 id="ovT">Bingo relámpago</h1>
+    <p id="ovP">Las bolas pasan por la cinta de izquierda a derecha. Si ves una con uno de tus 4 números, tócala (o toca tu casilla) antes de que salga. Cada vez va más rápido.</p>
+    <div class="big" id="ovBig" hidden></div>
+    <div class="seg" id="seg">
+      <button type="button" data-l="1">Fácil</button>
+      <button type="button" data-l="3" aria-pressed="true">Normal</button>
+      <button type="button" data-l="5">Difícil</button>
+    </div>
+    <button class="btn go" id="go" type="button">Jugar</button>
+    <div class="hint">Teclado: 1, 2, 3, 4 para tus casillas · P para pausar</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var LADDER=[0.6,0.75,0.9,1,1.2,1.45,1.75];
+  var NAMES=['Muy tranquilo','Tranquilo','Suave','Normal','Rápido','Muy rápido','Frenético'];
+  var COLORS=['#d93a73','#e5a400','#18935f','#2f74d0','#8a4fd8'];
+  var LET=['B','I','N','G','O'];
+  var SIZE=64,GAP=92;
+  var $=function(id){return document.getElementById(id)};
+  var st={running:false,over:true,lvl:3,startLvl:3,best:0,balls:[],t:0,v:0,off:0,sp:0,cards:[],lock:{}};
+  try{st.best=parseInt(localStorage.getItem('bingo-best')||'0',10)||0}catch(e){}
+
+  function grp(n){return Math.min(4,Math.floor((n-1)/20))}
+  function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+  function W(){return $('belt').clientWidth}
+  function scale(){return Math.max(.7,W()/460)}
+  function target(){return Math.min(430,70+3.2*st.t)*LADDER[st.lvl]*scale()}
+  function onBelt(n){for(var i=0;i<st.balls.length;i++)if(st.balls[i].n===n)return true;return false}
+  function newNum(){var n;do{n=rnd(1,100)}while(st.cards.indexOf(n)>-1||onBelt(n));return n}
+
+  function cardHTML(i,n){return '<span class="k">'+(i+1)+'</span><span class="c"></span>'+n}
+  function renderCards(){
+    var g=$('grid');g.innerHTML='';
+    st.cards.forEach(function(n,i){
+      var b=document.createElement('button');b.type='button';b.className='card';b.id='c'+i;
+      b.style.setProperty('--bc',COLORS[grp(n)]);b.innerHTML=cardHTML(i,n);
+      b.addEventListener('pointerdown',function(e){e.preventDefault();tapCard(i)});
+      g.appendChild(b);
+    });
+  }
+  function renderLives(){var s='';for(var i=0;i<3;i++)s+=i<st.lives?'♥':'♡';$('lives').textContent=s}
+  function renderTop(){$('score').textContent=st.score;$('best').textContent='Récord: '+st.best}
+  function renderLvl(){$('lvlName').textContent=NAMES[st.lvl];$('lvlNum').textContent='Ritmo '+(st.lvl+1)+'/7';
+    $('easier').style.opacity=st.lvl===0?.4:1;$('harder').style.opacity=st.lvl===6?.4:1}
+  function toast(t){$('toast').textContent=t;clearTimeout(st.tt);st.tt=setTimeout(function(){$('toast').textContent=''},1400)}
+  function flash(i,c){var el=$('c'+i);if(!el)return;el.classList.remove('ok','bad');void el.offsetWidth;el.classList.add(c)}
+
+  function lose(msg,i){
+    st.lives--;st.combo=0;renderLives();toast(msg);
+    if(i!=null)flash(i,'bad');
+    try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}
+    if(st.lives<=0)gameOver();
+  }
+
+  function spawn(){
+    var n;
+    if(Math.random()<0.38){
+      var c=st.cards[rnd(0,3)];
+      n=onBelt(c)?null:c;
+    }
+    if(n==null){do{n=rnd(1,100)}while(st.cards.indexOf(n)>-1||onBelt(n))}
+    var el=document.createElement('div');el.className='ball';el.style.setProperty('--bc',COLORS[grp(n)]);
+    el.innerHTML='<div class="in"><div><span class="l">'+LET[grp(n)]+'</span>'+n+'</div></div>';
+    var b={n:n,x:-SIZE,el:el};
+    el.style.transform='translateX('+b.x+'px)';
+    el.addEventListener('pointerdown',function(e){e.preventDefault();tapBall(b)});
+    $('belt').appendChild(el);st.balls.push(b);
+  }
+
+  function collect(b){
+    var i=st.cards.indexOf(b.n);
+    var k=st.balls.indexOf(b);if(k>-1)st.balls.splice(k,1);
+    b.el.classList.add('got');setTimeout(function(){b.el.remove()},260);
+    var frac=Math.max(0,1-b.x/W());
+    st.score+=100+Math.round(frac*100)+st.combo*10;st.combo++;
+    st.cards[i]=newNum();
+    var el=$('c'+i);el.style.setProperty('--bc',COLORS[grp(st.cards[i])]);el.innerHTML=cardHTML(i,st.cards[i]);
+    flash(i,'ok');
+    st.lock[i]=performance.now()+250;
+    toast(st.combo>1?'¡Racha de '+st.combo+'!':'¡Bien!');
+    renderTop();
+  }
+
+  function tapBall(b){
+    if(!st.running)return;
+    if(st.balls.indexOf(b)<0)return;
+    if(st.cards.indexOf(b.n)>-1)collect(b);
+    else lose('El '+b.n+' no es tuyo');
+  }
+  function tapCard(i){
+    if(!st.running)return;
+    if(st.lock[i]&&performance.now()<st.lock[i])return;
+    var n=st.cards[i],best=null;
+    st.balls.forEach(function(b){if(b.n===n&&(!best||b.x>best.x))best=b});
+    if(best)collect(best);
+    else lose('El '+n+' aún no ha salido',i);
+  }
+
+  var last=0;
+  function loop(t){
+    requestAnimationFrame(loop);
+    var dt=Math.min(.1,(t-last)/1000);last=t;
+    if(!st.running)return;
+    st.t+=dt;
+    st.v+=(target()-st.v)*Math.min(1,dt*3);
+    var dx=st.v*dt;
+    st.off+=dx;$('belt').style.backgroundPositionX=st.off+'px';
+    st.sp+=dx;
+    if(st.sp>=GAP){st.sp-=GAP;spawn()}
+    var w=W();
+    for(var i=st.balls.length-1;i>=0;i--){
+      var b=st.balls[i];b.x+=dx;
+      if(b.x>w){
+        var mine=st.cards.indexOf(b.n)>-1;
+        b.el.remove();st.balls.splice(i,1);
+        if(mine){lose('Se te escapó el '+b.n);if(st.over)return}
+      }else b.el.style.transform='translateX('+b.x+'px)';
+    }
+  }
+
+  function start(){
+    st.lvl=st.startLvl;st.score=0;st.lives=3;st.combo=0;st.t=0;st.sp=GAP;st.lock={};
+    st.balls.forEach(function(b){b.el.remove()});st.balls=[];
+    st.cards=[];while(st.cards.length<4){var n=rnd(1,100);if(st.cards.indexOf(n)<0)st.cards.push(n)}
+    st.v=target();
+    renderCards();renderLives();renderTop();renderLvl();
+    st.over=false;st.running=true;$('ov').hidden=true;
+  }
+
+  function gameOver(){
+    st.running=false;st.over=true;
+    var rec=st.score>st.best;
+    if(rec){st.best=st.score;try{localStorage.setItem('bingo-best',String(st.best))}catch(e){}}
+    renderTop();
+    showOv('Fin de la partida','Has aguantado '+Math.round(st.t)+' segundos hasta el ritmo '+(st.lvl+1)+'/7.'+(rec?' ¡Nuevo récord!':''),st.score,'Jugar otra vez',true);
+  }
+  function showOv(t,p,big,btn,seg){
+    $('ovT').textContent=t;$('ovP').textContent=p;
+    var bg=$('ovBig');if(big==null){bg.hidden=true}else{bg.hidden=false;bg.textContent=big}
+    $('go').textContent=btn;$('seg').hidden=!seg;$('ov').hidden=false;
+  }
+  function pause(){
+    if(!st.running)return;
+    st.running=false;
+    showOv('En pausa','Ritmo actual: '+NAMES[st.lvl]+'.',null,'Continuar',false);
+  }
+  function resume(){st.running=true;$('ov').hidden=true}
+
+  $('go').addEventListener('click',function(){if(st.over)start();else resume()});
+  $('pause').addEventListener('click',pause);
+  $('easier').addEventListener('click',function(){if(st.lvl>0&&!st.over){st.lvl--;renderLvl();toast('Bajando el ritmo…')}});
+  $('harder').addEventListener('click',function(){if(st.lvl<6&&!st.over){st.lvl++;renderLvl();toast('Subiendo el ritmo…')}});
+  Array.prototype.forEach.call($('seg').children,function(b){
+    b.addEventListener('click',function(){
+      st.startLvl=parseInt(b.getAttribute('data-l'),10);
+      Array.prototype.forEach.call($('seg').children,function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+    });
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key>='1'&&e.key<='4'){tapCard(parseInt(e.key,10)-1)}
+    else if(e.key==='p'||e.key==='P'||e.key==='Escape'){if(st.running)pause();else if(!st.over)resume()}
+  });
+
+  st.score=0;st.lives=3;renderLives();renderTop();renderLvl();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -34,6 +34,15 @@ button:focus-visible,#q:focus-visible{outline:2px solid var(--acc);outline-offse
 @keyframes pops{0%{transform:scale(.3)}70%{transform:scale(1.2)}}
 #toast{position:fixed;left:50%;top:64px;transform:translate(-50%,-20px);background:var(--acc);color:var(--ink);padding:8px 18px;border-radius:999px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99;max-width:90vw;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+dialog{background:#10202f;color:#fff;border:1px solid #33506d;border-radius:14px;padding:20px;width:min(440px,92vw)}
+dialog::backdrop{background:#000a}
+dialog h2{margin:0 0 4px;font-size:18px}
+dialog p{margin:0 0 10px;color:var(--mut);font-size:14px;line-height:1.4}
+dialog textarea,dialog input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #33506d;background:#14283a;color:#fff;font:600 15px/1.4 ui-monospace,Consolas,monospace;resize:none}
+dialog .row{display:flex;gap:8px;margin:8px 0 18px}
+dialog .row input{flex:1}
+#msg{min-height:20px;margin:0 0 6px;color:var(--acc);font-size:14px}
+#msg.err{color:#ff9b9b}
 @media(max-width:700px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr 38%}#side{border-left:0;border-top:1px solid #223548}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -42,6 +51,7 @@ button:focus-visible,#q:focus-visible{outline:2px solid var(--acc);outline-offse
 <header>
   <h1>Combinar elementos</h1>
   <span><span id="count">0</span> descubiertos</span>
+  <button id="keyBtn" title="Guardar o recuperar tu progreso con una clave">Clave</button>
   <button id="hintBtn" title="Sugerir una combinación">Pista</button>
   <button id="clearBtn" title="Vaciar la mesa">Limpiar</button>
   <button id="resetBtn" title="Empezar de cero">Reiniciar</button>
@@ -52,6 +62,16 @@ button:focus-visible,#q:focus-visible{outline:2px solid var(--acc);outline-offse
   <div id="list"></div>
 </aside>
 <div id="toast" role="status"></div>
+<dialog id="dlg">
+  <h2>Clave de progreso</h2>
+  <p>Copia esta clave y guárdala. Con ella puedes recuperar tus elementos en otro navegador u ordenador.</p>
+  <textarea id="myKey" rows="3" readonly aria-label="Tu clave"></textarea>
+  <div class="row"><button id="copyBtn">Copiar clave</button></div>
+  <p>¿Ya tienes una clave? Pégala aquí para recuperar tu progreso. Se añadirá a lo que ya tengas.</p>
+  <div class="row"><input id="keyIn" placeholder="CE-XXXXXX-XXXXXX-…" aria-label="Clave a cargar" autocomplete="off" spellcheck="false"><button id="loadBtn">Cargar</button></div>
+  <div id="msg" role="status"></div>
+  <button id="closeBtn">Cerrar</button>
+</dialog>
 
 <script>
 // ---- Datos: id -> [icono, nombre] ----
@@ -284,6 +304,41 @@ document.getElementById('hintBtn').onclick=()=>{
   const [a,b]=opts[Math.floor(Math.random()*opts.length)];
   toast('Prueba: '+E[a][0]+' '+E[a][1]+' + '+E[b][0]+' '+E[b][1]);
 };
+// ---- Clave de progreso ----
+// La clave codifica qué elementos tienes (1 bit por elemento) + 2 caracteres de comprobación.
+const AL='0123456789ABCDEFGHJKMNPQRSTVWXYZ',IDS=Object.keys(E);
+const chk=s=>{let n=0;for(const c of s)n=(n*31+AL.indexOf(c)+1)%1024;return AL[n>>5]+AL[n&31]};
+function makeKey(){
+  const bits=IDS.map(id=>found.includes(id)?1:0);
+  while(bits.length%5)bits.push(0);
+  let s='';for(let i=0;i<bits.length;i+=5)s+=AL[bits[i]*16+bits[i+1]*8+bits[i+2]*4+bits[i+3]*2+bits[i+4]];
+  return 'CE-'+(s+chk(s)).match(/.{1,6}/g).join('-');
+}
+function readKey(k){
+  const s=k.toUpperCase().replace(/O/g,'0').replace(/[IL]/g,'1').replace(/[^0-9A-Z]/g,'');
+  if(s.slice(0,2)!=='CE'||s.length<5)return null;
+  const body=s.slice(2,-2);
+  if([...body,...s.slice(-2)].some(c=>AL.indexOf(c)<0)||chk(body)!==s.slice(-2))return null;
+  const bits=[...body].flatMap(c=>{const v=AL.indexOf(c);return[v>>4&1,v>>3&1,v>>2&1,v>>1&1,v&1]});
+  return IDS.filter((id,i)=>bits[i]);
+}
+const dlg=document.getElementById('dlg'),msg=document.getElementById('msg'),keyIn=document.getElementById('keyIn'),myKey=document.getElementById('myKey');
+const say=(t,err)=>{msg.textContent=t;msg.className=err?'err':''};
+document.getElementById('keyBtn').onclick=()=>{myKey.value=makeKey();keyIn.value='';say('');dlg.showModal()};
+document.getElementById('closeBtn').onclick=()=>dlg.close();
+document.getElementById('copyBtn').onclick=async()=>{
+  try{await navigator.clipboard.writeText(myKey.value)}catch(e){myKey.select();document.execCommand('copy')}
+  say('Clave copiada.');
+};
+document.getElementById('loadBtn').onclick=()=>{
+  const ids=readKey(keyIn.value);
+  if(!ids){say('Clave no válida. Comprueba que esté completa y sin errores.',true);return}
+  const before=found.length;
+  found=[...new Set([...found,...BASE,...ids])];
+  save();renderSide();myKey.value=makeKey();
+  say('Progreso recuperado: '+found.length+' elementos ('+(found.length-before)+' nuevos).');
+};
+keyIn.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loadBtn').click()});
 renderSide();
 </script>
 </body>

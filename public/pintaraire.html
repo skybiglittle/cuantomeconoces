@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Pintar en el aire</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#3b1d4e,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:760px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8.5vw,52px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffd166 50%,#ff8da1);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}.sub{color:var(--m);margin:0 0 16px}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
+.hidden{display:none!important}.r2{display:flex;gap:10px}.r2>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}
+select:focus-visible,.btn:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.full{width:100%;margin-top:12px}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}
+.hud{display:flex;justify-content:space-between;gap:10px;font-weight:800;margin-bottom:8px}
+.vw{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--l);background:#070b18;touch-action:none}
+canvas{display:block;width:100%;aspect-ratio:16/9;cursor:crosshair}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;background:#070b18cc;font-weight:800;font-size:clamp(17px,4.5vw,26px)}
+.ov h2{font-size:clamp(24px,6vw,40px);margin:0}.ov p{margin:0;color:var(--m);font-size:15px;font-weight:600}
+.st{min-height:26px;font-weight:700;color:var(--b);margin:8px 0}
+#vd{position:fixed;right:0;bottom:0;width:64px;height:48px;opacity:.01;pointer-events:none}
+</style></head><body><main>
+<header><span class="tag">📷 CÁMARA · SEGUIMIENTO DE MANOS</span><h1>Pintar en el aire</h1><p class="sub">Dibuja con el dedo delante de la cámara y copia la forma que aparece en pantalla.</p></header>
+<section id="menu" class="panel"><h2>Prepárate</h2>
+<label for="pm">Cuándo se dibuja</label><select id="pm"><option value="0">☝️ Solo con el índice levantado (el resto de dedos cerrados)</option><option value="1">✋ Siempre que se vea tu mano</option></select>
+<button class="btn g full" id="go">Empezar con la cámara</button>
+<div class="notice"><b>Cómo se juega:</b> te enseño 5 formas, una por una. Con la mano delante de la cámara, señala con el dedo índice (puño cerrado salvo el índice) para pintar; abre la mano para levantar el pincel y moverte sin pintar. Tienes 25 segundos por forma. Puntúo lo parecido que es tu dibujo, aunque lo hagas más grande, más pequeño o en otro sitio. Hace falta internet para cargar el seguimiento de manos. Sin cámara puedes dibujar con el ratón o el dedo.</div></section>
+<section id="gm" class="hidden"><div class="hud"><span id="h1">Forma 1/5</span><span id="h2">25 s</span><span id="h3">0 pts</span></div>
+<div class="vw"><canvas id="cv" width="800" height="450"></canvas><div class="ov hidden" id="ov"></div></div>
+<video id="vd" playsinline muted></video><div class="st" id="st"></div><div class="r2" id="ct"></div>
+<button class="btn gh full" id="back">← Menú</button></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),wait=ms=>new Promise(r=>setTimeout(r,ms)),W=800,H=450,R=150;
+const cv=$('cv'),x=cv.getContext('2d'),vd=$('vd'),ovl=$('ov'),ctl=$('ct');
+let hl=null,cam=false,stream=null,st='menu',sid=0,raf=0,ac=null,strokes=[],cur=null,pen={on:false},tip={x:W/2,y:H/2,seen:false},ptrDown=false,hpOn=false,hpRaw=false,hc=0,mode=0;
+let order=[],ri=0,tg=null,tgN=null,tleft=0,total=0,res=null,tlast=0;
+const ov=h=>{ovl.innerHTML=h;ovl.classList.toggle('hidden',!h)};
+const beep=(f,d=.12,v=.1)=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}};
+/* ---- formas ---- */
+const poly=(n,rot=-Math.PI/2)=>Array.from({length:n},(_,i)=>[Math.cos(rot+i*2*Math.PI/n),Math.sin(rot+i*2*Math.PI/n)]);
+const SH=[['Círculo',poly(64)],['Cuadrado',[[-1,-1],[1,-1],[1,1],[-1,1]]],['Triángulo',poly(3)],['Rombo',poly(4)],
+['Estrella',Array.from({length:10},(_,i)=>{const r=i%2?.42:1,a=-Math.PI/2+i*Math.PI/5;return[Math.cos(a)*r,Math.sin(a)*r]})],
+['Corazón',Array.from({length:64},(_,i)=>{const t=i/64*2*Math.PI;return[Math.sin(t)**3,-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/16]})],
+['Casa',[[-.9,.9],[-.9,-.2],[0,-1],[.9,-.2],[.9,.9]]],
+['Infinito',Array.from({length:80},(_,i)=>{const t=i/80*2*Math.PI,d=1+Math.sin(t)**2;return[1.2*Math.cos(t)/d,1.2*Math.sin(t)*Math.cos(t)/d]})]];
+const dens=(p,step,closed)=>{const o=[],n=p.length;for(let i=0;i<n;i++){const a=p[i],b=closed?p[(i+1)%n]:p[i+1];if(!b){o.push(a);break}const k=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/step));for(let j=0;j<k;j++)o.push([a[0]+(b[0]-a[0])*j/k,a[1]+(b[1]-a[1])*j/k])}return o};
+const norm=p=>{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const q of p){a=Math.min(a,q[0]);b=Math.max(b,q[0]);c=Math.min(c,q[1]);d=Math.max(d,q[1])}const s=Math.max(b-a,d-c)/2||1,cx=(a+b)/2,cy=(c+d)/2;return{s,cx,cy,size:s*2,f:q=>[(q[0]-cx)/s,(q[1]-cy)/s]}};
+const md=(q,arr)=>{let m=9;for(const r of arr){const d=Math.hypot(q[0]-r[0],q[1]-r[1]);if(d<m)m=d}return m};
+function grade(){const flat=strokes.flatMap(s=>dens(s,5,false));if(flat.length<8)return{sc:0,msg:'No has dibujado casi nada',d:[]};
+ const n=norm(flat);if(n.size<80)return{sc:0,msg:'Dibujo demasiado pequeño',d:[]};
+ const d=strokes.map(s=>dens(s,5,false).map(n.f)),all=d.flat(),T=.22;let c=0,p=0;
+ for(const q of tgN)if(md(q,all)<T)c++;for(const q of all)if(md(q,tgN)<T)p++;
+ c/=tgN.length;p/=all.length;const sc=c+p?Math.round(200*c*p/(c+p)):0;return{sc,msg:c<.5?'Te faltó parte de la forma':p<.5?'Te sobraron trazos':'¡Bien trazado!',d}}
+/* ---- entrada ---- */
+function setPen(on,px,py){if(on&&!pen.on&&st==='draw'){cur=[];strokes.push(cur)}pen.on=on;
+ if(on&&st==='draw'&&cur){const l=cur[cur.length-1];if(!l||Math.hypot(px-l[0],py-l[1])>4)cur.push([px,py])}}
+const cover=(c,w,h)=>{const vw=vd.videoWidth,vh=vd.videoHeight;if(!vw)return;const s=Math.max(w/vw,h/vh),sw=w/s,sh=h/s;c.save();c.translate(w,0);c.scale(-1,1);c.drawImage(vd,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,w,h);c.restore()};
+const dd=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function track(){if(!hl||!vd.videoWidth)return;let r;try{r=hl.detectForVideo(vd,performance.now())}catch(e){return}
+ const l=r&&r.landmarks&&r.landmarks[0];if(!l){tip.seen=false;hpOn=false;hc=0;if(!ptrDown)setPen(false);return}
+ const vw=vd.videoWidth,vh=vd.videoHeight,s=Math.max(W/vw,H/vh),ox=(vw-W/s)/2,oy=(vh-H/s)/2,nx=W-(l[8].x*vw-ox)*s,ny=(l[8].y*vh-oy)*s;
+ if(!tip.seen){tip.x=nx;tip.y=ny}tip.seen=true;tip.x+=(nx-tip.x)*.5;tip.y+=(ny-tip.y)*.5;
+ const ext=(t,p)=>dd(l[0],l[t])>dd(l[0],l[p])*1.1,raw=mode?true:(ext(8,6)&&!ext(12,10));
+ if(raw===hpRaw)hc++;else{hpRaw=raw;hc=0}if(hc>=2)hpOn=raw;if(!ptrDown)setPen(hpOn,tip.x,tip.y)}
+const pp=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]};
+cv.addEventListener('pointerdown',e=>{ptrDown=true;const[a,b]=pp(e);tip.x=a;tip.y=b;tip.seen=true;setPen(true,a,b)});
+cv.addEventListener('pointermove',e=>{if(ptrDown){const[a,b]=pp(e);tip.x=a;tip.y=b;setPen(true,a,b)}});
+addEventListener('pointerup',()=>{if(ptrDown){ptrDown=false;setPen(false)}});
+/* ---- dibujo ---- */
+const P=(q,k=1)=>[W/2+q[0]*R*k,H/2+q[1]*R*k];
+function line(pts,close){x.beginPath();pts.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));if(close)x.closePath();x.stroke()}
+function draw(){x.clearRect(0,0,W,H);if(cam){cover(x,W,H);x.fillStyle='rgba(7,11,24,.45)';x.fillRect(0,0,W,H)}else{x.fillStyle='#0e1a3a';x.fillRect(0,0,W,H)}
+ x.lineCap=x.lineJoin='round';
+ if(tgN&&(st==='prep'||st==='draw'||st==='review')){x.setLineDash(st==='review'?[]:[12,12]);x.lineWidth=5;x.strokeStyle=st==='review'?'#39d98a':'rgba(255,255,255,.6)';line(tgN.map(q=>P(q)),true);x.setLineDash([])}
+ x.shadowColor='#ffd166';x.shadowBlur=14;x.strokeStyle='#ffd166';x.lineWidth=7;
+ if(st==='review'&&res)for(const s of res.d)line(s.map(q=>P(q)));else for(const s of strokes)if(s.length>1)line(s);
+ x.shadowBlur=0;
+ if(st==='draw'&&(tip.seen)){x.fillStyle=pen.on?'#ff5a6e':'#53dfca';x.beginPath();x.arc(tip.x,tip.y,pen.on?10:14,0,7);x.fill();if(!pen.on){x.strokeStyle='#fff';x.lineWidth=2;x.stroke()}}}
+function frame(t){if(st==='menu')return;const dt=Math.min(.05,(t-tlast)/1000||0);tlast=t;
+ if(st==='draw'){track();tleft-=dt;$('h2').textContent=Math.max(0,Math.ceil(tleft))+' s';
+  $('st').textContent=!cam&&!hl?'🖱️ Dibuja con el ratón o el dedo':!tip.seen&&!ptrDown?'🙈 No veo tu mano':pen.on?'✏️ Dibujando':'✋ Pincel levantado'+(mode?'':' · señala con el índice para dibujar');
+  if(tleft<=0)finish()}
+ draw();raf=requestAnimationFrame(frame)}
+/* ---- flujo ---- */
+const hud=()=>{$('h1').textContent='Forma '+(ri+1)+'/5';$('h3').textContent=total+' pts'};
+async function round(my){strokes=[];cur=null;pen.on=false;res=null;const s=SH[order[ri]];tg=dens(s[1],.04,true);tgN=tg.map(norm(tg).f);hud();ctl.innerHTML='';
+ st='prep';$('h2').textContent='25 s';$('st').textContent='';
+ for(let i=3;i>0;i--){ov('<h2>'+s[0]+'</h2><p>Prepárate… '+i+'</p>');beep(520,.1);await wait(900);if(my!==sid)return}
+ ov('');beep(880,.2);tleft=25;st='draw';
+ ctl.innerHTML='<button class="btn gh" data-a="clear">🗑️ Borrar</button><button class="btn g" data-a="done">✅ Listo</button>'}
+function finish(){if(st!=='draw')return;st='review';pen.on=false;res=grade();total+=res.sc;hud();
+ const n=res.sc>=85?'⭐⭐⭐':res.sc>=70?'⭐⭐':res.sc>=50?'⭐':'';beep(res.sc>=50?760:200,.3,.12);
+ $('st').textContent=res.msg+' · '+res.sc+' puntos '+n;
+ ctl.innerHTML='<button class="btn g" data-a="next">'+(ri<4?'Siguiente forma →':'Ver resultado')+'</button>'}
+function next(){if(ri<4){ri++;round(sid)}else{st='final';ctl.innerHTML='';const avg=Math.round(total/5);beep(660,.15);setTimeout(()=>beep(990,.3),170);
+ ov('<h2>🎨 '+total+' / 500</h2><p>Media: '+avg+' · '+(avg>=85?'¡Artista!':avg>=65?'¡Muy bien!':avg>=40?'Vas mejorando':'Sigue practicando')+'</p><div class="r2"><button class="btn g" data-a="again">Jugar otra vez</button><button class="btn gh" data-a="menu">Menú</button></div>')}}
+function start(){const my=++sid;order=SH.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,5);ri=0;total=0;cancelAnimationFrame(raf);tlast=performance.now();raf=requestAnimationFrame(frame);round(my)}
+async function begin(){const my=++sid;mode=+$('pm').value;$('menu').classList.add('hidden');$('gm').classList.remove('hidden');st='load';ov('<h2>Cargando…</h2><p>Abriendo cámara y seguimiento de manos</p>');tlast=performance.now();raf=requestAnimationFrame(frame);
+ if(!cam){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});vd.srcObject=stream;await vd.play();cam=true;
+  if(!hl){const B='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',M=await import(B+'/vision_bundle.mjs'),fs=await M.FilesetResolver.forVisionTasks(B+'/wasm');
+   hl=await M.HandLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'},runningMode:'VIDEO',numHands:1})}}
+  catch(e){hl=null}}
+ if(my!==sid)return;if(!hl){ov('<h2>Sin seguimiento de manos</h2><p>No pude abrir la cámara o cargar el modelo (hace falta permiso e internet). Puedes jugar dibujando con el ratón o el dedo.</p><button class="btn g" data-a="go">Jugar así</button>');return}
+ start()}
+function toMenu(){sid++;st='menu';cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}cam=false;ov('');ctl.innerHTML='';$('gm').classList.add('hidden');$('menu').classList.remove('hidden')}
+const act=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+ if(a==='clear'){strokes=[];cur=null;pen.on=false}else if(a==='done')finish();else if(a==='next')next();else if(a==='again'||a==='go'){ov('');start()}else if(a==='menu')toMenu()};
+ovl.onclick=act;ctl.onclick=act;$('go').onclick=begin;$('back').onclick=toMenu;
+})();
+</script></body></html>

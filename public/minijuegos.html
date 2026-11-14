@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Minijuegos con sensores</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#3b1d4e,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:640px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8.5vw,52px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b9adff 55%,#53dfca);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}.m,.sub{color:var(--m)}.sub{margin:0 0 16px}.small{font-size:13px;color:var(--m)}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.full{width:100%;margin-top:12px}
+.btn:focus-visible,.gm:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gm{text-align:left;font:inherit;color:var(--t);background:linear-gradient(145deg,#1d2943,#121b2f);border:1px solid var(--l);border-radius:18px;padding:14px;cursor:pointer}
+.gm i{font-style:normal;font-size:30px;display:block}.gm b{display:block;font-size:17px}.gm span{font-size:13px;color:var(--m)}
+.pad{border-radius:22px;border:3px solid var(--a);background:#1f1a45;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px;font-size:clamp(22px,6vw,30px);font-weight:900;user-select:none;touch-action:manipulation;margin:12px 0;transition:background .1s}
+.pad.lit{background:var(--y);color:#111;border-color:var(--y)}
+.meter{height:12px;background:#303b55;border-radius:99px;overflow:hidden;margin:10px 0}.meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--b),var(--y),var(--r))}
+.st{min-height:24px;font-weight:700;color:var(--b)}.big{font-size:clamp(24px,7vw,36px);font-weight:950;text-align:center}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}
+.vw{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.vw video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.vw canvas{position:absolute;right:8px;top:8px;width:34%;background:#0b1020cc;border-radius:12px;border:2px solid var(--y)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><main>
+<header><span class="tag">📱 SENSORES DEL MÓVIL</span><h1>Minijuegos con sensores</h1><p class="sub">Vibración, giroscopio, micrófono, cámara y Bluetooth. Mejor en un móvil con Chrome.</p></header>
+<nav id="menu" class="grid">
+<button class="gm" data-g="pat"><i>📳</i><b>Patrón</b><span>Copia toques cortos y largos</span></button>
+<button class="gm" data-g="est"><i>🗿</i><b>Estatua</b><span>Baila y congélate (giroscopio)</span></button>
+<button class="gm" data-g="tar"><i>🎤</i><b>Tararea</b><span>Repite la melodía con la voz</span></button>
+<button class="gm" data-g="sil"><i>🧍</i><b>Siluetas</b><span>Imita poses con la cámara</span></button>
+<button class="gm" data-g="bt"><i>📶</i><b>Escondite Bluetooth</b><span>Caliente o frío por señal</span></button>
+<button class="gm" data-g="snd"><i>🔊</i><b>Escondite sonoro</b><span>Encuentra el móvil por el pitido</span></button>
+</nav>
+<section id="g" class="panel hidden"><button class="btn gh" id="back">← Menú</button><div id="v" style="margin-top:14px"></div></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),rnd=n=>Math.random()*n|0,pick=a=>a[rnd(a.length)],wait=ms=>new Promise(r=>setTimeout(r,ms)),clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+let ac=null,CL=[],run=0;const G={};
+const AC=()=>{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac};
+const beep=(f,d=.15,v=.1,t='sine')=>{try{const a=AC(),o=a.createOscillator(),g=a.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}};
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const say=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';speechSynthesis.speak(u)}catch(e){}};
+const v=h=>$('v').innerHTML=h,on=f=>CL.push(f);
+const stop=()=>{CL.forEach(f=>{try{f()}catch(e){}});CL=[];try{speechSynthesis.cancel()}catch(e){}vib(0)};
+const mic=async()=>{const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});on(()=>s.getTracks().forEach(t=>t.stop()));const a=AC(),an=a.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=.4;a.createMediaStreamSource(s).connect(an);return an};
+document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{stop();$('menu').classList.add('hidden');$('g').classList.remove('hidden');G[b.dataset.g](++run)});
+$('back').onclick=()=>{stop();run++;$('g').classList.add('hidden');$('menu').classList.remove('hidden')};
+
+/* 1 · PATRÓN */
+G.pat=id=>{let seq=[],inp=[],busy=1,t0=0,lv=0;
+v('<h2>📳 Patrón</h2><p class="m">Mira y siente el patrón y cópialo: toque <b>corto</b> o <b>largo</b> (mantén pulsado). En Android también vibra.</p><div class="pad" id="pd">Pulsa Empezar</div><div class="st" id="ps"></div><button class="btn g full" id="pg">Empezar</button>');
+const pd=$('pd'),ps=$('ps');
+const play=async()=>{busy=1;inp=[];ps.textContent='Mira y escucha…';pd.textContent='👀';await wait(600);
+ for(const s of seq){if(id!==run)return;const d=s?650:200;pd.classList.add('lit');beep(s?250:520,d/1e3,.12);vib(d);await wait(d);pd.classList.remove('lit');await wait(300)}
+ busy=0;pd.textContent='Toca aquí';ps.textContent='Tu turno: '+seq.length+' toques'};
+$('pg').onclick=()=>{lv=0;seq=[rnd(2),rnd(2),rnd(2)];play()};
+pd.onpointerdown=()=>{if(busy)return;t0=Date.now();pd.classList.add('lit')};
+pd.onpointerup=pd.onpointercancel=()=>{if(busy||!t0)return;pd.classList.remove('lit');const s=Date.now()-t0>400?1:0;t0=0;inp.push(s);
+ if(s!==seq[inp.length-1]){busy=1;beep(150,.5,.15);vib(300);ps.textContent='❌ Fallaste. Nivel alcanzado: '+lv;pd.textContent='Fin';return}
+ beep(s?250:520,.08,.06);
+ if(inp.length===seq.length){lv++;busy=1;ps.textContent='✅ ¡Bien! Nivel '+lv;seq.push(rnd(2));setTimeout(()=>{if(id===run)play()},900)}}};
+
+/* 2 · ESTATUA (giroscopio) */
+G.est=id=>{let sum=0,cnt=0,cur=0,lives=3,score=0;
+v('<h2>🗿 Estatua</h2><p class="m">Suena música: ¡baila con el móvil en la mano! Cuando oigas «¡Estatua!», quédate quieto 3 segundos. Tienes 3 vidas.</p><div class="pad" id="pd">Listo</div><div class="meter"><span id="bar"></span></div><div class="st" id="ps"></div><button class="btn g full" id="pg">Empezar</button>');
+const pd=$('pd'),ps=$('ps'),bar=$('bar');
+const h=e=>{const r=e.rotationRate||{},a=e.acceleration||{},m=Math.hypot(r.alpha||0,r.beta||0,r.gamma||0)+Math.hypot(a.x||0,a.y||0,a.z||0)*8;cur=m;sum+=m;cnt++};
+addEventListener('devicemotion',h);on(()=>removeEventListener('devicemotion',h));
+const ui=setInterval(()=>{bar.style.width=clamp(cur/60)*100+'%'},100);on(()=>clearInterval(ui));
+$('pg').onclick=async()=>{
+ try{if(window.DeviceMotionEvent&&DeviceMotionEvent.requestPermission&&await DeviceMotionEvent.requestPermission()!=='granted')return ps.textContent='Permiso de movimiento denegado.'}catch(e){}
+ $('pg').classList.add('hidden');lives=3;score=0;AC();
+ while(lives>0){
+  ps.textContent='Vidas '+'❤️'.repeat(lives)+' · Puntos '+score;pd.textContent='💃 ¡Baila!';sum=0;cnt=0;
+  const mel=setInterval(()=>beep(pick([262,294,330,392,440,523]),.18,.08,'triangle'),230);
+  await wait(3000+rnd(4000));clearInterval(mel);if(id!==run)return;
+  if(cnt<5){ps.textContent='No detecto sensores de movimiento. Prueba en un móvil.';$('pg').classList.remove('hidden');return}
+  const dance=sum/cnt;say('¡Estatua!');beep(880,.4,.15);vib(200);pd.textContent='🛑 ¡ESTATUA!';await wait(600);
+  sum=0;cnt=0;await wait(3000);if(id!==run)return;
+  const avg=sum/Math.max(cnt,1),thr=Math.max(7,14-score);let ok=false,m;
+  if(dance<40){lives--;m='😴 No bailaste lo suficiente'}
+  else if(avg>thr){lives--;m='❌ Te moviste ('+Math.round(avg)+' > '+thr+')'}
+  else{score++;ok=true;m='✅ ¡Como una estatua! ('+Math.round(avg)+')'}
+  pd.textContent=m;ok?beep(660,.2):beep(160,.4,.15);await wait(1800);if(id!==run)return}
+ pd.textContent='Fin: '+score+' puntos';ps.textContent='';$('pg').textContent='Jugar otra vez';$('pg').classList.remove('hidden')}};
+
+/* 3 · TARARÉA (micrófono) */
+const pitch=(x,sr)=>{const n=x.length;let e=0;for(let i=0;i<n;i++)e+=x[i]*x[i];if(Math.sqrt(e/n)<.012)return-1;
+ const lo=sr/700|0,hi=sr/80|0,c=[];let mx=0;for(let l=lo;l<=hi;l++){let s=0;for(let i=0;i<n-l;i+=2)s+=x[i]*x[i+l];c[l]=s;if(s>mx)mx=s}
+ if(mx<e*.2)return-1;for(let l=lo+1;l<hi;l++)if(c[l]>=mx*.9&&c[l]>=c[l-1]&&c[l]>=c[l+1])return sr/l;return-1};
+const lev=(a,b)=>{const d=[...Array(a.length+1)].map((_,i)=>[i,...Array(b.length).fill(0)]);for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]};
+const notes=f=>{const o=[];let c=[],g=0;const fl=()=>{if(c.length>=4){const s=[...c].sort((a,b)=>a-b);o.push(s[s.length>>1])}c=[]};
+ for(const p of f){if(p<0){if(++g>=2)fl();continue}g=0;const m=69+12*Math.log2(p/440);if(c.length&&Math.abs(m-c[c.length-1])>1.2)fl();c.push(m)}fl();
+ for(let i=1;i<o.length;i++){const d=o[i]-o[i-1];if(Math.abs(Math.abs(d)-12)<1.5)o[i]-=Math.sign(d)*12}return o};
+const par=a=>a.slice(1).map((x,i)=>{const d=x-a[i];return d>=1?'U':d<=-1?'D':'S'}).join('');
+const arr=s=>[...s].map(c=>c==='U'?'⬆️':c==='D'?'⬇️':'➡️').join(' ');
+G.tar=id=>{const M=[['Estrellita',[60,60,67,67,69,69,67]],['Cumpleaños',[67,67,69,67,72,71]],['Himno a la alegría',[64,64,65,67,67,65,64,62,60,60,62,64,64,62,62]]],NN=['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+v('<h2>🎤 Tararea</h2><p class="m">Oirás una melodía. Tararéala separando cada nota («la‑la‑la»). El juego compara si subes y bajas igual que la original.</p><div class="pad" id="pd">Elige una melodía</div><div class="st" id="ps"></div><div class="grid" id="mb">'+M.map((m,i)=>'<button class="btn s" data-i="'+i+'">'+m[0]+'</button>').join('')+'</div>');
+const pd=$('pd'),ps=$('ps');let busy=0;
+$('mb').onclick=async e=>{const b=e.target.closest('[data-i]');if(!b||busy)return;const m=M[+b.dataset.i];busy=1;
+ let an;try{an=await mic()}catch(x){busy=0;return ps.textContent='Necesito permiso de micrófono.'}
+ ps.textContent='';pd.textContent='🔊 Escucha…';
+ for(const n of m[1]){if(id!==run)return;beep(440*2**((n-69)/12),.4,.15,'triangle');await wait(450)}
+ pd.textContent='🎤 ¡Tararea!';beep(880,.1);await wait(250);
+ const buf=new Float32Array(2048),sr=AC().sampleRate,fr=[],t=Date.now();
+ while(Date.now()-t<m[1].length*900+4000){if(id!==run)return;an.getFloatTimeDomainData(buf);const p=pitch(buf,sr);fr.push(p);
+  pd.textContent=p>0?'🎵 '+NN[(Math.round(69+12*Math.log2(p/440))%12+12)%12]:'🎤 …';
+  const vc=fr.filter(x=>x>0).length;if(vc>10&&fr.length>40&&fr.slice(-40).every(x=>x<0))break;await wait(40)}
+ const u=notes(fr),tp=par(m[1]),up=par(u);
+ if(u.length<2){pd.textContent='🤔 No te he oído';ps.textContent='Tararea más fuerte y separa las notas.'}
+ else{const sc=Math.round(100*(1-lev(tp,up)/Math.max(tp.length,up.length,1)));pd.textContent=(sc>=80?'🏆 ':sc>=50?'👍 ':'😅 ')+sc+'%';ps.innerHTML='Original: '+arr(tp)+'<br>Tú ('+u.length+' notas): '+arr(up)}
+ busy=0}};
+
+/* 4 · SILUETAS (cámara) */
+G.sil=async id=>{const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ const PS=[['Manos arriba',[30,5],[70,5],(l,s,y)=>y-l[15].y>s*.6&&y-l[16].y>s*.6],
+ ['Brazos en cruz',[6,32],[94,32],(l,s,y)=>D(l[15],l[16])>s*3&&Math.abs(l[15].y-y)<s*.6&&Math.abs(l[16].y-y)<s*.6],
+ ['Mano derecha arriba',[34,62],[70,5],(l,s,y)=>y-l[16].y>s*.6&&l[15].y>y],
+ ['Mano izquierda arriba',[30,5],[66,62],(l,s,y)=>y-l[15].y>s*.6&&l[16].y>y],
+ ['Manos en la cabeza',[44,14],[56,14],(l,s)=>D(l[15],l[0])<s*.9&&D(l[16],l[0])<s*.9],
+ ['Manos juntas al pecho',[47,46],[53,46],(l,s,y)=>D(l[15],l[16])<s*.6&&l[15].y>y&&l[15].y<y+s*1.8]];
+ v('<h2>🧍 Siluetas</h2><p class="m">Imita la silueta mirando a la cámara y aguanta la pose ¾ de segundo. Colócate para que se te vea de cintura para arriba.</p><div class="vw"><video id="vd" playsinline muted></video><canvas id="cv" width="100" height="100"></canvas></div><div class="meter"><span id="bar"></span></div><div class="big" id="pn"></div><div class="st" id="ps">Cargando cámara y modelo…</div>');
+ const vd=$('vd'),cv=$('cv'),ps=$('ps'),pn=$('pn'),bar=$('bar');let pl;
+ try{const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});on(()=>st.getTracks().forEach(t=>t.stop()));vd.srcObject=st;await vd.play();
+  const B='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',M=await import(B+'/vision_bundle.mjs'),fs=await M.FilesetResolver.forVisionTasks(B+'/wasm');
+  pl=await M.PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task'},runningMode:'VIDEO',numPoses:1})}
+ catch(e){return ps.textContent='No pude abrir la cámara o cargar el modelo (hace falta internet y permiso de cámara).'}
+ if(id!==run)return;
+ const draw=p=>{const x=cv.getContext('2d');x.clearRect(0,0,100,100);x.strokeStyle='#ffd166';x.lineWidth=5;x.lineCap='round';x.beginPath();x.arc(50,17,8,0,7);x.stroke();
+  [[50,26,50,66],[38,32,62,32],[38,32,...p[1]],[62,32,...p[2]],[50,66,40,96],[50,66,60,96]].forEach(s=>{x.beginPath();x.moveTo(s[0],s[1]);x.lineTo(s[2],s[3]);x.stroke()})};
+ const order=PS.slice().sort(()=>Math.random()-.5);let score=0;
+ for(const p of order){if(id!==run)return;draw(p);pn.textContent=p[0];say(p[0]);ps.textContent='¡Imita la silueta!';
+  const t0=Date.now();let hold=0,ok=false;
+  while(Date.now()-t0<9000&&!ok){if(id!==run)return;
+   let l;try{l=(pl.detectForVideo(vd,performance.now()).landmarks||[])[0]}catch(e){}
+   if(l){const s=Math.max(Math.abs(l[11].x-l[12].x),.08),y=(l[11].y+l[12].y)/2;
+    if(p[3](l,s,y)){hold=hold||Date.now();if(Date.now()-hold>700)ok=true}else hold=0}else hold=0;
+   bar.style.width=hold?clamp((Date.now()-hold)/700)*100+'%':'0%';await wait(60)}
+  bar.style.width='0%';
+  if(ok){score++;beep(660,.25,.12);ps.textContent='✅ ¡Perfecto!'}else{beep(160,.4,.15);ps.textContent='⏱️ Se acabó el tiempo'}
+  await wait(1200)}
+ pn.textContent='Fin: '+score+' de '+order.length;ps.textContent='';
+ const b=document.createElement('button');b.className='btn g full';b.textContent='Jugar otra vez';b.onclick=()=>{stop();G.sil(++run)};$('v').appendChild(b)};
+
+/* 5 y 6 · ESCONDITE (Bluetooth / sonido) */
+const hide=async(id,mode)=>{let heat=0,rssi=-100,last=0;const bt=mode==='bt';
+ v('<h2>'+(bt?'📶 Escondite Bluetooth':'🔊 Escondite sonoro')+'</h2><p class="m">'+(bt?'Esconde un aparato Bluetooth (auriculares, altavoz, reloj) y búscalo: elígelo en la lista y sigue el «caliente / frío».':'Un móvil se esconde emitiendo pitidos y el otro lo busca con el micrófono. Cuanto más cerca, más rápido pita y vibra.')+'</p><div id="ar"></div>');
+ const ar=$('ar'),again=()=>{stop();G[mode](++run)},note=t=>ar.insertAdjacentHTML('beforeend','<p class="notice">'+t+'</p>');
+ const go=sam=>{ar.innerHTML='<div class="pad" id="pd"></div><div class="meter"><span id="bar"></span></div><div class="st" id="ps"></div><button class="btn gh full" id="sp">Parar</button>';$('sp').onclick=again;
+  const t=setInterval(()=>{heat=sam(heat);$('bar').style.width=heat*100+'%';$('pd').textContent=heat<.15?'🥶 Frío':heat<.4?'😐 Tibio':heat<.7?'🔥 Caliente':'🎯 ¡Aquí cerca!'},50);on(()=>clearInterval(t));
+  (async()=>{while(id===run){beep(600,.05,.07);if(heat>.15)vib(25);await wait(1100-950*heat)}})()};
+ if(bt){ar.innerHTML='<button class="btn full" id="pk">Elegir dispositivo Bluetooth</button>';
+  if(!navigator.bluetooth)return note('Tu navegador no soporta Web Bluetooth. Usa Chrome en Android o en ordenador, o prueba el escondite sonoro.');
+  $('pk').onclick=async()=>{try{const d=await navigator.bluetooth.requestDevice({acceptAllDevices:true});
+   d.addEventListener('advertisementreceived',e=>{rssi=e.rssi;last=Date.now()});await d.watchAdvertisements();on(()=>{try{d.unwatchAdvertisements()}catch(x){}});
+   go(h=>{const ok=Date.now()-last<4000;$('ps').textContent=ok?'Señal: '+rssi+' dBm':'Sin señal reciente…';return h+((ok?clamp((rssi+95)/50):0)-h)*.15})}
+   catch(x){note(x.name==='NotFoundError'?'No elegiste ningún dispositivo.':'No se pudo leer la señal. Puede que tu navegador no permita medir la distancia por Bluetooth (en ordenador activa chrome://flags/#enable-experimental-web-platform-features). Prueba el escondite sonoro.')}}}
+ else{ar.innerHTML='<div class="row"><button class="btn" id="hi">📣 Esconder este móvil</button><button class="btn g" id="se">🔍 Buscar</button></div>';
+  $('hi').onclick=()=>{AC();ar.innerHTML='<div class="pad">📣 Emitiendo señal…<span class="small">Sube el volumen al máximo y escóndelo</span></div><button class="btn gh full" id="sp">Parar</button>';const t=setInterval(()=>beep(1800,.2,.6),600);on(()=>clearInterval(t));$('sp').onclick=again};
+  $('se').onclick=async()=>{let an;try{an=await mic()}catch(e){return note('Necesito permiso de micrófono.')}
+   const n=an.frequencyBinCount,b=Math.round(1800/(AC().sampleRate/2)*n),d=new Uint8Array(n);
+   go(h=>{an.getByteFrequencyData(d);let p=0,q=0;for(let i=b-3;i<=b+3;i++)p=Math.max(p,d[i]);for(let i=b+25;i<b+45;i++)q+=d[i]/20;return Math.max(clamp((p-q)/110),h*.95)})}}};
+G.bt=id=>hide(id,'bt');G.snd=id=>hide(id,'snd');
+})();
+</script></body></html>

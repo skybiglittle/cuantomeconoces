@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piano Aéreo</title>
+<style>
+:root{
+  --bg:#090d18;--panel:#111a2b;--line:#263650;
+  --text:#f2f5fc;--muted:#8c9bb5;
+  --blue:#59b9ff;--cyan:#6ce5df;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;
+  background:
+    radial-gradient(ellipse at 50% -20%,#203b62 0%,transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,Arial,sans-serif;
+}
+header{
+  max-width:1250px;margin:auto;padding:26px 24px 12px;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:15px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+  width:48px;height:48px;border-radius:15px;
+  display:grid;place-items:center;font-size:25px;
+  background:linear-gradient(135deg,#235a85,#18304f);
+  border:1px solid #47749c;
+}
+h1{font-size:25px;margin:0;letter-spacing:-.7px}
+.subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+.live{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 13px;border-radius:30px;
+  border:1px solid var(--line);background:#101a2a;
+  font-size:12px;color:var(--muted);
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#65758b}
+.dot.on{background:#4ce2b0;box-shadow:0 0 12px #4ce2b0}
+main{max-width:1250px;margin:auto;padding:12px 24px 35px}
+.top{
+  display:grid;grid-template-columns:1fr 300px;
+  gap:16px;margin-bottom:17px;
+}
+.instructions,.camera-card{
+  background:linear-gradient(145deg,#142137,#101827);
+  border:1px solid var(--line);border-radius:17px;
+  padding:17px;
+}
+.instructions h2{font-size:15px;margin:0 0 13px}
+.steps{display:flex;gap:12px;flex-wrap:wrap}
+.step{
+  display:flex;align-items:center;gap:9px;
+  color:#c2cce0;font-size:12px;
+}
+.number{
+  width:25px;height:25px;display:grid;place-items:center;
+  border-radius:8px;background:#203b5c;color:#8ed5ff;
+  font-weight:800;flex-shrink:0;
+}
+.camera-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.camera-head strong{font-size:13px}
+.camera-head span{font-size:10px;color:var(--muted)}
+.camera-box{
+  width:100%;height:145px;position:relative;overflow:hidden;
+  background:#080d16;border-radius:11px;
+  border:1px solid #30435f;
+}
+video{
+  width:100%;height:100%;object-fit:cover;
+  transform:scaleX(-1);opacity:.88;
+}
+.camera-placeholder{
+  position:absolute;inset:0;display:grid;place-items:center;
+  color:#8190a9;font-size:12px;text-align:center;padding:12px;
+  background:#0b1220;
+}
+.camera-placeholder.hidden{display:none}
+.camera-message{
+  font-size:10px;color:var(--muted);margin-top:9px;
+  min-height:13px;
+}
+.controlbar{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;flex-wrap:wrap;margin:19px 0 12px;
+}
+.control-left,.control-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+button{
+  border:0;border-radius:10px;padding:11px 16px;
+  font-size:12px;font-weight:750;cursor:pointer;
+  transition:.15s;
+}
+button:hover{filter:brightness(1.13);transform:translateY(-1px)}
+button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.primary{
+  color:#071523;background:linear-gradient(135deg,#7bdcff,#59b9ff);
+  box-shadow:0 5px 20px #349ee533;
+}
+.secondary{color:#c8d7ed;background:#1a2940;border:1px solid #344a68}
+.hint{font-size:11px;color:var(--muted)}
+.piano-shell{
+  background:linear-gradient(145deg,#17243a,#0e1727);
+  border:1px solid #30425d;border-radius:19px;
+  padding:20px 17px 18px;
+  box-shadow:0 18px 50px #0007;
+}
+.piano-top{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;gap:10px;
+}
+.piano-top strong{font-size:13px;letter-spacing:.5px}
+.piano-top span{font-size:11px;color:var(--muted)}
+.keyboard{
+  height:260px;position:relative;display:flex;
+  border-radius:9px;overflow:hidden;
+  background:#060b13;user-select:none;
+  touch-action:none;
+  border:1px solid #52647c;
+}
+.white-key{
+  position:relative;flex:1;height:100%;
+  background:linear-gradient(90deg,#d7dce4,#fff 35%,#f1f2f5 90%,#c5ccd7);
+  border-right:1px solid #aeb7c4;
+  border-radius:0 0 5px 5px;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:12px;color:#687487;
+  font-size:10px;font-weight:700;
+  transition:background .08s;
+}
+.white-key.active{
+  background:linear-gradient(180deg,#b7eaff,#5ebcf5);
+  box-shadow:inset 0 0 18px #fff9;
+}
+.black-key{
+  position:absolute;top:0;height:62%;width:4.15%;
+  z-index:3;border-radius:0 0 6px 6px;
+  background:linear-gradient(90deg,#05080e,#202b3b 55%,#080c13);
+  border:1px solid #03060a;
+  box-shadow:0 5px 8px #0008,inset 0 -5px 8px #ffffff0a;
+  transform:translateX(-50%);
+}
+.black-key.active{
+  background:linear-gradient(180deg,#b5eaff,#398dca);
+  box-shadow:0 0 18px #53bdff99;
+}
+.cursor{
+  position:absolute;z-index:5;width:23px;height:23px;
+  border:3px solid #65e5ff;border-radius:50%;
+  box-shadow:0 0 0 5px #65e5ff22,0 0 18px #65e5ff;
+  pointer-events:none;transform:translate(-50%,-50%);
+  display:none;
+}
+.cursor.visible{display:block}
+.cursor:after{
+  content:"";position:absolute;inset:5px;
+  border-radius:50%;background:#fff;
+}
+.keyboard-foot{
+  display:flex;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-top:13px;
+  font-size:10px;color:#8798b2;
+}
+.note-display{
+  display:flex;align-items:center;justify-content:center;
+  gap:15px;margin-top:17px;
+  background:#0b1422;border:1px solid #253752;
+  border-radius:13px;padding:12px;
+}
+.note-circle{
+  width:45px;height:45px;border-radius:50%;
+  display:grid;place-items:center;font-size:18px;font-weight:800;
+  color:#8bdcff;background:#193653;border:1px solid #3975a0;
+}
+.note-info strong{display:block;font-size:13px}
+.note-info span{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+footer{text-align:center;color:#66758d;font-size:10px;margin-top:18px}
+@media(max-width:760px){
+  header{padding:18px 14px 8px}
+  main{padding:10px 12px 25px}
+  .top{grid-template-columns:1fr}
+  .camera-card{order:-1}
+  .camera-box{height:125px}
+  .keyboard{height:190px}
+  .piano-shell{padding:13px 9px}
+  .black-key{width:4.2%}
+  .white-key{font-size:8px;padding-bottom:8px}
+  .steps{gap:10px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">🎹</div>
+    <div>
+      <h1>Piano Aéreo</h1>
+      <div class="subtitle">Toca música con tus manos, sin tocar nada</div>
+    </div>
+  </div>
+  <div class="live">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Cámara desconectada</span>
+  </div>
+</header>
+
+<main>
+  <section class="top">
+    <div class="instructions">
+      <h2>Cómo tocar</h2>
+      <div class="steps">
+        <div class="step"><span class="number">1</span> Activa la cámara</div>
+        <div class="step"><span class="number">2</span> Mueve el índice a izquierda y derecha</div>
+        <div class="step"><span class="number">3</span> Baja el índice para tocar</div>
+      </div>
+    </div>
+    <div class="camera-card">
+      <div class="camera-head">
+        <strong>Tu cámara</strong>
+        <span>Detección de mano</span>
+      </div>
+      <div class="camera-box">
+        <video id="video" autoplay muted playsinline></video>
+        <div class="camera-placeholder" id="placeholder">
+          <div>📷<br>La imagen de tu mano aparecerá aquí</div>
+        </div>
+      </div>
+      <div class="camera-message" id="cameraMessage">Pulsa activar para comenzar</div>
+    </div>
+  </section>
+
+  <div class="controlbar">
+    <div class="control-left">
+      <button class="primary" id="startBtn">▶ Activar cámara y sonido</button>
+      <button class="secondary" id="stopBtn" disabled>Detener</button>
+    </div>
+    <div class="control-right">
+      <span class="hint" id="handStatus">Esperando cámara...</span>
+    </div>
+  </div>
+
+  <section class="piano-shell">
+    <div class="piano-top">
+      <strong>PIANO · DOS OCTAVAS</strong>
+      <span>Do3 — Do5</span>
+    </div>
+    <div class="keyboard" id="keyboard">
+      <div class="cursor" id="cursor"></div>
+    </div>
+    <div class="keyboard-foot">
+      <span>● Blancas: notas naturales</span>
+      <span>● Negras: sostenidos ♯</span>
+      <span>Índice hacia abajo = pulsar</span>
+    </div>
+    <div class="note-display">
+      <div class="note-circle" id="noteCircle">—</div>
+      <div class="note-info">
+        <strong id="noteName">Listo para tocar</strong>
+        <span id="noteFrequency">Activa la cámara y mueve tu mano</span>
+      </div>
+    </div>
+  </section>
+  <footer>MediaPipe Hand Landmarker · El procesamiento de la mano se realiza en tu navegador</footer>
+</main>
+
+<script type="module">
+import {
+  FilesetResolver,
+  HandLandmarker
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+const video = document.getElementById("video");
+const keyboard = document.getElementById("keyboard");
+const cursor = document.getElementById("cursor");
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const statusDot = document.getElementById("statusDot");
+const statusText = document.getElementById("statusText");
+const cameraMessage = document.getElementById("cameraMessage");
+const handStatus = document.getElementById("handStatus");
+const placeholder = document.getElementById("placeholder");
+
+const whiteSemitones = [
+  0,2,4,5,7,9,11,12,14,16,17,19,21,23,24
+];
+
+const blackNotes = [
+  {semi:1,after:0},
+  {semi:3,after:1},
+  {semi:6,after:3},
+  {semi:8,after:4},
+  {semi:10,after:5},
+  {semi:13,after:7},
+  {semi:15,after:8},
+  {semi:18,after:10},
+  {semi:20,after:11},
+  {semi:22,after:12}
+];
+
+const names = ["Do","Do♯","Re","Re♯","Mi","Fa",
+  "Fa♯","Sol","Sol♯","La","La♯","Si"];
+
+const whiteKeys = [];
+const blackKeyElements = new Map();
+let activeKey = null;
+let audioContext = null;
+let handLandmarker = null;
+let stream = null;
+let running = false;
+let lastDetection = 0;
+let lastFinger = null;
+
+function noteName(semi){
+  return names[semi % 12] + (3 + Math.floor(semi / 12));
+}
+
+function frequency(semi){
+  const midi = 48 + semi;
+  return 440 * Math.pow(2,(midi - 69) / 12);
+}
+
+// Construir teclas blancas
+whiteSemitones.forEach((semi,index)=>{
+  const key = document.createElement("div");
+  key.className = "white-key";
+  key.dataset.semi = semi;
+  key.innerHTML = `<span>${noteName(semi)}</span>`;
+  keyboard.appendChild(key);
+  whiteKeys.push({semi,element:key,index});
+});
+
+// Construir teclas negras
+blackNotes.forEach(item=>{
+  const key = document.createElement("div");
+  key.className = "black-key";
+  key.dataset.semi = item.semi;
+  key.style.left = ((item.after + 1) / 15 * 100) + "%";
+  keyboard.appendChild(key);
+  blackKeyElements.set(item.semi,key);
+});
+
+keyboard.appendChild(cursor);
+
+function initAudio(){
+  if(!audioContext){
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioContext.state === "suspended") audioContext.resume();
+}
+
+function playNote(semi){
+  initAudio();
+  const freq = frequency(semi);
+  const now = audioContext.currentTime;
+
+  const gain = audioContext.createGain();
+  gain.gain.setValueAtTime(0.0001,now);
+  gain.gain.exponentialRampToValueAtTime(0.20,now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.10,now + 0.12);
+  gain.connect(audioContext.destination);
+
+  const osc1 = audioContext.createOscillator();
+  const osc2 = audioContext.createOscillator();
+  const volume2 = audioContext.createGain();
+
+  osc1.type = "triangle";
+  osc1.frequency.value = freq;
+  osc2.type = "sine";
+  osc2.frequency.value = freq * 2;
+  volume2.gain.value = 0.18;
+
+  osc1.connect(gain);
+  osc2.connect(volume2);
+  volume2.connect(gain);
+
+  osc1.start(now);
+  osc2.start(now);
+
+  activeKey = {semi,gain,osc1,osc2};
+  document.getElementById("noteCircle").textContent = names[semi%12];
+  document.getElementById("noteName").textContent = noteName(semi);
+  document.getElementById("noteFrequency").textContent =
+    Math.round(freq) + " Hz · Tocando";
+}
+
+function releaseNote(){
+  if(!activeKey) return;
+  const old = activeKey;
+  activeKey = null;
+  const now = audioContext.currentTime;
+  old.gain.gain.cancelScheduledValues(now);
+  old.gain.gain.setTargetAtTime(0.0001,now,0.06);
+  old.osc1.stop(now + 0.25);
+  old.osc2.stop(now + 0.25);
+  document.getElementById("noteFrequency").textContent =
+    "Mueve el dedo para tocar otra nota";
+}
+
+function clearKeys(){
+  document.querySelectorAll(".white-key,.black-key")
+    .forEach(k=>k.classList.remove("active"));
+}
+
+function selectNote(x){
+  // x va de 0 a 1, de izquierda a derecha
+  // Primero comprobamos si está sobre una tecla negra
+  for(const item of blackNotes){
+    const center = (item.after + 1) / 15;
+    const halfWidth = 0.0208;
+    if(Math.abs(x-center) < halfWidth){
+      return item.semi;
+    }
+  }
+  const index = Math.min(14,Math.max(0,Math.floor(x*15)));
+  return whiteSemitones[index];
+}
+
+function updateFinger(landmark){
+  // La cámara está invertida visualmente, así que invertimos X
+  const x = 1 - landmark.x;
+  const y = landmark.y;
+
+  // Mostrar el cursor sobre el piano
+  const top = Math.max(3,Math.min(95,(y-0.35)*190));
+  cursor.style.left = (x*100) + "%";
+  cursor.style.top = top + "%";
+  cursor.classList.add("visible");
+
+  // Solo tocar cuando el índice baja hacia la zona inferior
+  const touching = y > 0.59;
+
+  if(touching){
+    const semi = selectNote(x);
+    if(!activeKey || activeKey.semi !== semi){
+      releaseNote();
+      clearKeys();
+      const element = whiteKeys.find(k=>k.semi===semi)?.element ||
+        blackKeyElements.get(semi);
+      if(element) element.classList.add("active");
+      playNote(semi);
+    }
+    handStatus.textContent = "✋ Mano detectada · Tocando";
+  }else{
+    if(activeKey){
+      releaseNote();
+      clearKeys();
+    }
+    handStatus.textContent = "✋ Mano detectada · Mueve el índice";
+  }
+}
+
+function noHand(){
+  cursor.classList.remove("visible");
+  if(activeKey){
+    releaseNote();
+    clearKeys();
+  }
+  handStatus.textContent = "No se detecta ninguna mano";
+}
+
+async function startCamera(){
+  startBtn.disabled = true;
+  cameraMessage.textContent = "Preparando cámara...";
+  statusText.textContent = "Conectando...";
+  try{
+    initAudio();
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:"user",
+        width:{ideal:1280},
+        height:{ideal:720}
+      },
+      audio:false
+    });
+
+    video.srcObject = stream;
+    await video.play();
+    placeholder.classList.add("hidden");
+
+    cameraMessage.textContent = "Cargando detector de manos...";
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+    );
+
+    handLandmarker = await HandLandmarker.createFromOptions(vision,{
+      baseOptions:{
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+      },
+      runningMode:"VIDEO",
+      numHands:1,
+      minHandDetectionConfidence:0.55,
+      minHandPresenceConfidence:0.5,
+      minTrackingConfidence:0.5
+    });
+
+    running = true;
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    statusDot.classList.add("on");
+    statusText.textContent = "Cámara activa";
+    cameraMessage.textContent = "Coloca la mano frente a la cámara";
+    handStatus.textContent = "Buscando tu mano...";
+    requestAnimationFrame(detectLoop);
+
+  }catch(error){
+    console.error(error);
+    stopCamera();
+    startBtn.disabled = false;
+    statusText.textContent = "Error de cámara";
+    cameraMessage.textContent =
+      error.name === "NotAllowedError"
+      ? "Debes permitir el acceso a la cámara."
+      : "No se pudo iniciar. Comprueba la cámara y tu conexión.";
+    handStatus.textContent = "No se ha podido iniciar";
+  }
+}
+
+function detectLoop(now){
+  if(!running) return;
+  requestAnimationFrame(detectLoop);
+
+  if(now-lastDetection < 30 || video.readyState < 2) return;
+  lastDetection = now;
+
+  try{
+    const results = handLandmarker.detectForVideo(video,now);
+    if(results.landmarks && results.landmarks.length){
+      const landmarks = results.landmarks[0];
+      updateFinger(landmarks[8]);
+    }else{
+      noHand();
+    }
+  }catch(error){
+    console.warn("Error detectando mano:",error);
+  }
+}
+
+function stopCamera(){
+  running = false;
+  releaseNote();
+  clearKeys();
+  cursor.classList.remove("visible");
+
+  if(stream){
+    stream.getTracks().forEach(track=>track.stop());
+    stream = null;
+  }
+  video.srcObject = null;
+  if(handLandmarker){
+    handLandmarker.close();
+    handLandmarker = null;
+  }
+
+  placeholder.classList.remove("hidden");
+  statusDot.classList.remove("on");
+  statusText.textContent = "Cámara desconectada";
+  cameraMessage.textContent = "Pulsa activar para comenzar";
+  handStatus.textContent = "Esperando cámara...";
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+}
+
+startBtn.addEventListener("click",startCamera);
+stopBtn.addEventListener("click",stopCamera);
+window.addEventListener("beforeunload",()=>{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Humanity Cards</title>
+<style>
+:root{--bg:#f2f0eb;--fg:#161616;--box:#fff;--mut:#6b6b6b;--gold:#e8b800;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:680px;margin:0 auto;padding:14px}
+h1{text-align:center;font-size:2rem;margin:8px 0 12px}
+h2{text-align:center;font-size:1.15rem;margin:12px 0 6px}
+.box{background:var(--box);border-radius:16px;padding:16px;box-shadow:0 2px 10px #0003}
+.mut{color:var(--mut);font-size:.9rem;margin:4px 0;text-align:center}
+.err{color:#d33;text-align:center;font-weight:600}
+.sc{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+.sc span{background:var(--box);border-radius:20px;padding:3px 10px;font-size:.85rem}
+.sc .me{outline:2px solid var(--gold)}
+input,textarea,select{font:inherit;padding:9px;border-radius:10px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);width:100%;margin:4px 0}
+select{width:auto}
+textarea{min-height:100px}
+button{font:inherit;cursor:pointer}
+.go{display:block;width:100%;background:var(--fg);color:var(--bg);border:0;border-radius:12px;padding:13px;font-weight:700;font-size:1.05rem;margin-top:12px}
+.go:disabled{opacity:.35}
+.s{background:none;border:2px solid var(--mut);color:var(--fg);border-radius:10px;padding:8px 12px;margin:8px 6px 0 0}
+.c{display:block;width:100%;border-radius:12px;padding:14px;font-weight:700;text-align:left;min-height:110px;font-size:1rem;position:relative;border:0;margin:8px 0}
+.k{background:#111;color:#fff}
+.k u{color:#ffd54a;text-decoration-thickness:2px}
+.w{background:#fff;color:#111;border:2px solid #bbb;margin:0}
+.on{outline:4px solid var(--gold)}
+.w.on::after{content:attr(data-o);position:absolute;top:6px;right:8px;background:var(--gold);border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.85rem}
+.hd{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0}
+.hd .k{margin:0}
+.code{font:800 2.6rem monospace;letter-spacing:8px;text-align:center}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+function makeRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return{join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,arr=[],subs=[],done=false,closed=false,retry=0,pres={},cid=Math.random().toString(36).slice(2);
+    var room={peers:function(){return arr},
+      onPeers:function(f){subs.push(f)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello')id=m.id;
+        else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
+const BASE_B=[
+"Lo que más me gusta de mi suegra es ___.","Hacienda me ha llamado por culpa de ___.","En mi currículum pongo ___ como mayor logro.","Mi psicólogo cree que mi problema es ___.","¿Qué hay debajo de mi cama? ___.","Lo único que sobrevivirá al fin del mundo: ___.","La boda de mi primo se fue al garete por ___.","Última hora en el telediario: ___.","Para triunfar en la vida solo necesitas ___ y ___.","Me han echado del gimnasio por ___.","El nuevo reto viral de TikTok: ___.","Nada une más a una familia que ___.","Ayer mi vecino me pidió prestado ___.","El secreto de mi éxito: ___ combinado con ___.","Lo peor de las vacaciones en Benidorm: ___.","Querido diario: hoy descubrí ___.","En la cena de Navidad, mi tío habló de ___ y de ___.","Prohibido en este restaurante: ___."
+];
+const BASE_W=[
+"Mi cuñado explicando criptomonedas","Una siesta de tres horas","El WhatsApp de la familia a las 7 de la mañana","Un chándal de terciopelo","Pagar la declaración de la renta","Un croquetón sospechoso","La tortilla con cebolla (¡con cebolla!)","Un karaoke sin vuelta atrás","Mi ex escribiéndome a las 3 de la madrugada","Una piscina de gelatina","El WiFi del vecino","Los abuelos con el móvil en altavoz","Un dron con malas intenciones","El gimnasio en enero","Una paella con piña","Perder las llaves otra vez","Un mariachi inoportuno","Bailar sin música","Un perro con complejo de superioridad","La cola de Correos","Fingir que entiendo de vinos","Una crisis de los cuarenta","Mi tía contando el mismo chiste","Un gato que sabe demasiado","Pisar un Lego descalzo","El último trozo de pizza","Un mago borracho","Un abrazo muy largo e incómodo","Un tutorial de YouTube que sale mal","Comer pipas en el cine","Un cuñado con megáfono","Hablar solo en el ascensor","Mi currículum lleno de mentiras","Un sofá con muchos secretos","Una abuela ninja","Un pulpo con rencor","Un pavo de Navidad con vida propia","El grupo de padres del colegio","Una reunión que podría haber sido un email","Un jamón con pasaporte","Una dieta que empieza el lunes","Mi gemelo malvado"
+];
+const $=i=>document.getElementById(i),app=$('app');
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const L=t=>t.split('\n').map(x=>x.trim()).filter(Boolean);
+const newCode=()=>Array.from({length:4},()=>'abcdefghjkmnpqrstuvwxyz'[Math.random()*23|0]).join('');
+let NR=null,G=null,MSG='';
+
+const peers=()=>NR?NR.peers().filter(p=>p.presence&&p.presence.rm).map(p=>({me:p.isMe,p:p.presence})):[];
+const byk=()=>{const o={};peers().forEach(x=>o[x.p.k]=x.p);return o};
+const hostP=()=>{const x=peers().find(y=>y.p.h===1);return x&&x.p};
+const H=()=>G.host?G.hs:(hostP()||{}).hs;
+const valid=(s,h)=>s&&s.g===h.g&&s.r===h.r;
+const nm=k=>{const p=byk()[k];return p?E(p.n):'?'};
+const pk=b=>Math.min(3,Math.max(1,(b.match(/___/g)||[]).length));
+const black=h=>{const a=BASE_B.concat(h.cc.b||[]);return a[h.bd[(h.r-1)%h.bd.length]%a.length]};
+function fillB(b,cs){let i=0,s=E(b).replace(/___/g,()=>`<u>${E(cs[i++]??'___')}</u>`);if(cs.length&&!i)s+=`<br><u>${E(cs.join(' / '))}</u>`;return s}
+const bc=(b,cs=[])=>`<div class="c k">${fillB(b,cs)}</div>`;
+const sb=h=>`<div class="sc">${peers().map(x=>`<span class="${x.me?'me':''}">${x.p.k===h.cz?'⚖ ':''}${E(x.p.n)}: ${h.sc[x.p.k]||0}</span>`).join('')}</div>`;
+
+function pub(){
+ if(!NR||!G)return;
+ NR.presence({rm:1,n:G.name,k:G.me,s:G.sub,pk:G.pk,h:G.host?1:null,hs:G.host?G.hs:null}).catch(()=>{});
+}
+function home(){
+ app.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Juego de cartas de humor negro para adultos. Cada uno juega desde su móvil.</p>
+ ${MSG?`<p class="err">${MSG}</p>`:''}
+ <input id="nm" placeholder="Tu nombre" maxlength="16">
+ <h2>Crear sala</h2><label>Puntos para ganar: <select id="tg">${[3,5,7,10].map(v=>`<option ${v==5?'selected':''}>${v}</option>`).join('')}</select></label>
+ <button class="go" id="cr">Crear sala</button>
+ <h2>Unirme a una sala</h2><input id="cd" placeholder="Código de la sala" maxlength="6"><button class="go" id="jn">Unirme</button></div>`;
+ $('cr').onclick=()=>enter(true);$('jn').onclick=()=>enter(false);
+}
+function enter(create){
+ if(!RM){MSG='Las salas necesitan abrir este archivo desde tu servidor (http), no como archivo suelto.';return home()}
+ const name=($('nm').value||'').trim().slice(0,16)||(create?'Anfitrión':'Jugador');
+ const code=create?newCode():($('cd').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+ if(!code){MSG='Escribe el código de la sala.';return home()}
+ G={code,name,me:Math.random().toString(36).slice(2,8),host:!!create,sub:null,pk:null,hand:[],sel:[],jsel:null,jo:{r:-1,ks:[]},ct:{b:'',w:''},lk:'',
+  hs:create?{ph:'lobby',r:0,g:'',o:[],bd:[],cc:{b:[],w:[]},t:+$('tg').value,sc:{},win:null,cz:null}:null};
+ MSG='';render();
+ RM.join('hc-'+code).then(r=>{NR=r;NR.onPeers(sync);pub();sync()}).catch(e=>leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').'));
+}
+function leave(m){if(NR){NR.leave();NR=null}G=null;MSG=m||'';home()}
+
+/* ===== Lógica del anfitrión ===== */
+function nextCz(){const h=G.hs,by=byk(),n=h.o.length,i=h.o.indexOf(h.cz);for(let j=1;j<=n;j++){const k=h.o[(i+j)%n];if(by[k]){h.cz=k;return}}}
+function adv(){const h=G.hs;nextCz();h.r++;h.ph='play';h.win=null;pub();sync()}
+function hostLogic(){
+ const h=G.hs,by=byk();let ch=0;
+ if(h.ph==='lobby')return;
+ peers().forEach(x=>{if(!h.o.includes(x.p.k)){h.o.push(x.p.k);ch=1}});
+ if(ch)pub();
+ if(h.ph!=='play'&&h.ph!=='judge')return;
+ const cz=by[h.cz];if(!cz)return adv();
+ if(h.ph==='play'){
+  const need=h.o.filter(k=>k!==h.cz&&by[k]);
+  if(need.length&&need.every(k=>valid(by[k].s,h))){h.ph='judge';pub()}
+ }else if(cz.pk&&cz.pk.g===h.g&&cz.pk.r===h.r&&by[cz.pk.k]&&valid(by[cz.pk.k].s,h)){
+  const w=cz.pk.k;h.sc[w]=(h.sc[w]||0)+1;h.win={k:w,n:by[w].n,c:by[w].s.c};h.ph=h.sc[w]>=h.t?'end':'reveal';pub();
+ }
+}
+function startGame(){
+ const h=G.hs,ps=peers();if(ps.length<3)return;
+ h.g=Math.random().toString(36).slice(2,6);h.o=ps.map(x=>x.p.k);h.cz=h.o[0];h.r=1;
+ h.cc={b:L(G.ct.b),w:L(G.ct.w)};h.bd=sh([...Array(BASE_B.length+h.cc.b.length).keys()]);h.sc={};h.win=null;h.ph='play';pub();sync();
+}
+function again(){const h=G.hs;h.ph='lobby';h.sc={};h.win=null;h.r=0;pub();sync()}
+function sync(){if(!G||!NR)return;if(G.host)hostLogic();render()}
+
+/* ===== Jugador ===== */
+function ensure(h){const w=BASE_W.concat(h.cc.w||[]);while(G.hand.length<10&&G.hand.length<w.length){const c=w[Math.random()*w.length|0];if(!G.hand.includes(c))G.hand.push(c)}}
+function send(h){const cs=G.sel.map(i=>G.hand[i]);G.hand=G.hand.filter((_,i)=>!G.sel.includes(i));G.sel=[];G.sub={g:h.g,r:h.r,c:cs};pub();render()}
+function pick(h){G.pk={g:h.g,r:h.r,k:G.jsel};G.jsel=null;pub();render()}
+
+/* ===== Pantallas ===== */
+function render(){
+ if(!G)return home();
+ const h=H(),key=h?h.ph+h.r:'x',a=document.activeElement;
+ if(a&&/TEXTAREA|INPUT/.test(a.tagName)&&app.contains(a)&&G.lk===key)return;
+ G.lk=key;
+ const top=`<p class="mut">Sala <b>${E(G.code)}</b>${h?` · meta ${h.t} puntos`:''} · <button class="s" id="lv" style="margin:0;padding:2px 8px">Salir</button></p>`;
+ let b;
+ if(!h)b='<div class="box"><p class="mut">Conectando con la sala… Si no aparece, revisa el código.</p></div>';
+ else if(h.ph==='lobby')b=lobby(h);
+ else b=sb(h)+(h.ph==='play'?(h.cz===G.me?czWait(h):mine(h)):h.ph==='judge'?(h.cz===G.me?judge(h):`<div class="box">${bc(black(h))}<h2>⚖ ${nm(h.cz)} está eligiendo…</h2></div>`):result(h));
+ app.innerHTML=top+b;wire(h);
+}
+function lobby(h){
+ const n=peers().length;
+ return `<div class="box"><h2>Código de sala</h2><div class="code">${E(G.code)}</div><p class="mut">Los demás lo escriben en «Unirme a una sala».</p>
+ <h2>Jugadores (${n})</h2><div class="sc">${peers().map(x=>`<span>${E(x.p.n)}${x.p.h===1?' ★':''}</span>`).join('')}</div>
+ ${G.host?`<details><summary>Añadir mis cartas (opcional)</summary><p class="mut">Una por línea. En las negras usa ___ para el hueco.</p>
+ <textarea id="tb" placeholder="Negras">${E(G.ct.b)}</textarea><textarea id="tw" placeholder="Blancas">${E(G.ct.w)}</textarea></details>
+ <button class="go" id="st" ${n<3?'disabled':''}>${n<3?'Hacen falta 3 jugadores':'¡Empezar!'}</button>`:'<p class="mut">Esperando a que el anfitrión empiece…</p>'}</div>`;
+}
+function czWait(h){
+ const by=byk(),need=h.o.filter(k=>k!==h.cz&&by[k]),got=need.filter(k=>valid(by[k].s,h)).length;
+ return `<div class="box">${bc(black(h))}<h2>⚖ Eres el juez</h2><p class="mut">Esperando respuestas (${got}/${need.length})…</p></div>`;
+}
+function mine(h){
+ const b=black(h),k=pk(b);
+ if(valid(G.sub,h))return `<div class="box">${bc(b)}<h2>Respuesta enviada ✓</h2><p class="mut">Esperando al resto…</p></div>`;
+ ensure(h);
+ return `<div class="box">${bc(b)}<p class="mut">Elige ${k} carta${k>1?'s (en orden)':''}</p><div class="hd" id="hd">${G.hand.map((w,i)=>{const j=G.sel.indexOf(i);return `<button class="c w${j>=0?' on':''}" data-i="${i}" data-o="${j>=0?j+1:''}">${E(w)}</button>`}).join('')}</div><button class="go" id="ok" ${G.sel.length!==k?'disabled':''}>Enviar</button></div>`;
+}
+function judge(h){
+ const by=byk();
+ if(G.jo.r!==h.r||G.jo.g!==h.g)G.jo={r:h.r,g:h.g,ks:sh(h.o.filter(k=>k!==h.cz&&by[k]&&valid(by[k].s,h)))};
+ const ks=G.jo.ks.filter(k=>by[k]&&by[k].s);
+ return `<div class="box"><p class="mut">Elige la mejor respuesta</p><div class="hd" id="jd">${ks.map(k=>`<button class="c k${G.jsel===k?' on':''}" data-k="${k}">${fillB(black(h),by[k].s.c)}</button>`).join('')}</div><button class="go" id="pk" ${G.jsel?'':'disabled'}>Elegir ganador</button></div>`;
+}
+function result(h){
+ const w=h.win,end=h.ph==='end';
+ return `<div class="box">${bc(black(h),w.c)}<h2>🏆 ${E(w.n)} ${end?'gana la partida':'gana la ronda (+1)'}</h2>
+ ${G.host?`<button class="go" id="${end?'ag':'nx'}">${end?'Nueva partida':'Siguiente ronda'}</button>`:'<p class="mut">Esperando al anfitrión…</p>'}</div>`;
+}
+function wire(h){
+ $('lv')&&($('lv').onclick=()=>leave());
+ if($('tb')){$('tb').oninput=e=>G.ct.b=e.target.value;$('tw').oninput=e=>G.ct.w=e.target.value}
+ $('st')&&($('st').onclick=startGame);$('ag')&&($('ag').onclick=again);$('nx')&&($('nx').onclick=adv);
+ if($('hd')){const k=pk(black(h));$('hd').onclick=e=>{const b=e.target.closest('.w');if(!b)return;const i=+b.dataset.i,x=G.sel.indexOf(i);if(x>=0)G.sel.splice(x,1);else if(G.sel.length<k)G.sel.push(i);render()};$('ok').onclick=()=>send(h)}
+ if($('jd')){$('jd').onclick=e=>{const b=e.target.closest('.k');if(!b)return;G.jsel=b.dataset.k;render()};$('pk').onclick=()=>pick(h)}
+}
+home();
+</script>
+</body>
+</html>

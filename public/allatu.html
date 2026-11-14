@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10152b">
+<title>¡Allá tú! — Juego</title>
+<style>
+:root{color-scheme:dark;--bg:#10152b;--panel:#19213d;--panel2:#202b4d;--line:#344267;--text:#f6f7ff;--muted:#aab5d4;--gold:#ffd45a;--green:#43d6a0;--red:#ff657b;--blue:#75a7ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -10%,#263867 0,#10152b 55%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0}button:disabled{cursor:not-allowed;opacity:.42}
+.wrap{max-width:1200px;margin:auto;padding:20px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.brand{font-weight:1000;font-size:clamp(25px,4vw,38px);letter-spacing:-1.5px}.brand span{color:var(--gold)}.sub{color:var(--muted);font-size:13px}
+.pill{border:1px solid var(--line);background:#17213d;padding:8px 12px;border-radius:999px;color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
+.main,.side{background:linear-gradient(180deg,#1b2544,#151d36);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 16px 40px #0003}
+h2{font-size:17px;margin:0 0 12px}.status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.phase{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gold)}
+.message{background:#111a32;border:1px solid #2c3a61;border-radius:13px;padding:13px 15px;color:#dbe3ff;line-height:1.45;margin:12px 0 16px;min-height:54px}
+.boxes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.case{min-height:76px;border:1px solid #7185b9;border-bottom:4px solid #4b5f91;border-radius:12px;background:linear-gradient(145deg,#38518a,#1d2c55);color:white;font-size:22px;font-weight:900;box-shadow:inset 0 1px #ffffff33,0 4px 8px #0002;transition:.15s}
+.case:not(:disabled):hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 0 0 2px #ffd45a33}
+.case.chosen{border-color:var(--gold);background:linear-gradient(145deg,#a77a24,#624715);color:#fff4c5}
+.case.opened{background:#10172b;border:1px dashed #536181;border-bottom:1px dashed #536181;color:#8290b4;box-shadow:none;font-size:12px}
+.case.mine{border-color:var(--green);background:linear-gradient(145deg,#167a61,#104b4a);color:#e1fff4}
+.case .small{display:block;font-size:10px;font-weight:600;opacity:.8}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.action{border-radius:12px;padding:12px 16px;font-weight:850;background:var(--gold);color:#2a210b;box-shadow:0 4px 0 #a87919}
+.action.secondary{background:#2c3a61;color:#e8edff;box-shadow:0 4px 0 #17213b;border:1px solid #52658e}
+.action.danger{background:var(--red);color:#2a0910;box-shadow:0 4px 0 #a52f46}
+.action:active{transform:translateY(2px);box-shadow:none}
+.offer{border:1px solid #8b7132;background:linear-gradient(135deg,#3c321d,#24243a);border-radius:16px;padding:16px;text-align:center;margin-top:14px}
+.offer .amount{font-size:clamp(30px,5vw,44px);font-weight:1000;color:var(--gold);letter-spacing:-1px}
+.offer p{margin:5px 0 13px;color:#d7d1b7;font-size:13px}
+.offer-actions{display:flex;gap:10px}.offer-actions button{flex:1}
+.hidden{display:none!important}
+.prizes{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.prize{padding:7px 9px;border-radius:8px;background:#243052;border:1px solid #34456f;display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:750}
+.prize.gone{opacity:.24;text-decoration:line-through;background:#111827}
+.prize.low{color:#c6e8ff}.prize.high{color:#ffda75}
+.botlist{display:grid;gap:8px;margin-top:10px}
+.bot{display:flex;align-items:center;gap:9px;background:#202b4d;border:1px solid #344267;border-radius:11px;padding:9px}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#354a7a;font-size:17px}
+.bot b{font-size:12px}.bot small{display:block;color:var(--muted);font-size:11px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.stat{background:#111a32;border-radius:10px;padding:10px}.stat small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase}.stat b{font-size:17px}
+.modal{position:fixed;inset:0;background:#050817d9;display:grid;place-items:center;padding:18px;z-index:10}
+.dialog{width:min(520px,100%);background:#1b2544;border:1px solid #596b98;border-radius:20px;padding:24px;box-shadow:0 20px 70px #0009;text-align:center}
+.dialog h1{margin:0 0 8px;color:var(--gold);font-size:30px}.dialog p{color:#c3cce5;line-height:1.5}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#111a32;color:white}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:15px;color:var(--muted);font-size:11px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:14px}.side section+section{margin-top:0}}
+@media(max-width:560px){.wrap{padding:12px}.main,.side{padding:13px;border-radius:15px}.boxes{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.case{min-height:65px}.side{display:block}.side section+section{margin-top:16px}.columns{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.offer-actions{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><div class="brand">¡ALLÁ <span>TÚ!</span></div><div class="sub">Elige tu caja. Abre las demás. Desafía al banquero.</div></div>
+    <div class="pill" id="roundPill">PARTIDA NUEVA</div>
+  </header>
+  <div class="layout">
+    <main class="main">
+      <div class="status"><div><div class="phase" id="phase">Elige tu caja</div><div class="sub" id="instruction">Selecciona una caja para guardar tu premio secreto.</div></div><div class="pill" id="remainingPill">22 cajas cerradas</div></div>
+      <div class="message" id="message">¡Bienvenido! Primero elige una caja. Nadie, ni siquiera tú, sabrá cuánto dinero contiene hasta el final.</div>
+      <h2 id="boardTitle">Elige tu caja</h2>
+      <div class="boxes" id="boxes"></div>
+      <div class="offer hidden" id="offer">
+        <div class="phase">☎ Oferta del banquero</div>
+        <div class="amount" id="offerAmount">0 €</div>
+        <p id="offerText">¿Aceptas el trato o sigues jugando?</p>
+        <div class="offer-actions"><button class="action" id="dealBtn">¡Trato!</button><button class="action secondary" id="noDealBtn">No hay trato</button></div>
+      </div>
+      <div class="columns" id="controls">
+        <button class="action secondary" id="newBtn">Nueva partida</button>
+        <button class="action" id="continueBtn" disabled>Abre una caja</button>
+      </div>
+      <div class="footer"><span>Partida individual contra el banquero</span><span id="openedCount">0 cajas abiertas</span></div>
+    </main>
+    <aside class="side">
+      <section>
+        <h2>💶 Premios que quedan</h2>
+        <div class="prizes" id="prizes"></div>
+      </section>
+      <section>
+        <h2>🤖 Tus rivales</h2>
+        <div class="botlist" id="bots">
+          <div class="bot"><div class="avatar">🧔</div><div><b>Manolo</b><small>«Yo no aceptaría tan pronto»</small></div></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><small>Tu caja</small><b id="myCase">—</b></div>
+          <div class="stat"><small>Tu oferta</small><b id="lastOffer">—</b></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+<div class="modal" id="startModal">
+  <div class="dialog">
+    <h1>¡ALLÁ TÚ!</h1>
+    <p>Tienes una caja secreta. Abre las demás por rondas y escucha las ofertas del banquero. ¿Te conformarás con una cantidad segura o irás a por el premio gordo?</p>
+    <p><b>Reglas:</b> elige una caja, abre las cantidades indicadas en cada ronda y decide si aceptas la oferta.</p>
+    <button class="action" id="startBtn" style="width:100%;margin-top:8px">¡A jugar!</button>
+  </div>
+</div>
+<div class="modal hidden" id="endModal">
+  <div class="dialog">
+    <h1 id="endTitle">¡Fin de la partida!</h1>
+    <p id="endText"></p>
+    <button class="action" id="againBtn" style="width:100%;margin-top:8px">Jugar otra vez</button>
+  </div>
+</div>
+<script>
+(() => {
+'use strict';
+const PRIZES=[0.01,1,5,10,25,50,100,200,300,500,750,1000,3000,5000,10000,15000,25000,50000,75000,100000,200000,500000];
+const ROUND_SIZES=[4,3,3,2,2,1,1,1,1,1];
+const BOT_DATA=[
+  ['Manolo','🧔','prudente'],['Lola','👩‍🦱','optimista'],['Kevin','🧢','atrevido'],['Pili','👵','prudente'],['Rafa','🕶️','calculador']
+];
+let values=[],opened=new Set(),myBox=null,round=0,openedThisRound=0,offer=0,lastOffer=0,mode='choose',dealAmount=null;
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:n<1?2:0}).format(n);
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function remaining(){return values.filter((_,i)=>!opened.has(i)&&i!==myBox)}
+function expected(){let r=remaining();return r.length?r.reduce((s,v)=>s+v,0)/r.length:values[myBox]}
+function bankerOffer(){let left=remaining();if(!left.length)return values[myBox];let avg=left.reduce((a,b)=>a+b,0)/left.length;let progress=opened.size/(PRIZES.length-1);let factor=.48+progress*.43;let spread=left.reduce((s,v)=>s+Math.abs(v-avg),0)/left.length;let offer=avg*factor;offer+=Math.min(spread*.035,avg*.12);return Math.max(1,Math.round(offer/100)*100)}
+function newGame(){
+ values=shuffle([...PRIZES]);opened=new Set();myBox=null;round=0;openedThisRound=0;offer=0;lastOffer=0;mode='choose';dealAmount=null;
+ $('offer').classList.add('hidden');$('endModal').classList.add('hidden');$('startModal').classList.remove('hidden');
+ $('message').textContent='¡Bienvenido! Elige una caja que será tuya durante toda la partida.';
+ $('phase').textContent='Elige tu caja';$('instruction').textContent='Selecciona una caja para guardar tu premio secreto.';
+ $('boardTitle').textContent='Elige tu caja';$('continueBtn').disabled=true;$('continueBtn').textContent='Abre una caja';
+ $('roundPill').textContent='PARTIDA NUEVA';$('myCase').textContent='—';$('lastOffer').textContent='—';
+ render();
+}
+function render(){
+ const grid=$('boxes');grid.innerHTML='';
+ for(let i=0;i<values.length;i++){
+  const b=document.createElement('button');b.className='case';b.type='button';
+  if(opened.has(i)){b.classList.add('opened');b.innerHTML=`<span class="small">CAJA</span>${i+1}<span class="small">${money(values[i])}</span>`;b.disabled=true}
+  else if(i===myBox){b.classList.add('mine');b.innerHTML=`<span class="small">TU CAJA</span>${i+1}`;b.disabled=true}
+  else {b.innerHTML=`<span class="small">CAJA</span>${i+1}`;b.disabled=!(mode==='open'||mode==='choose');b.addEventListener('click',()=>openBox(i))}
+  grid.appendChild(b);
+ }
+ $('remainingPill').textContent=`${values.length-opened.size} cajas cerradas`;
+ $('openedCount').textContent=`${opened.size} cajas abiertas`;
+ $('prizes').innerHTML='';
+ PRIZES.forEach(v=>{
+  const gone=opened.size>0&&!values.some((x,i)=>x===v&&!opened.has(i)) && !(myBox!==null&&values[myBox]===v);
+  const p=document.createElement('div');p.className='prize '+(gone?'gone':(v>=50000?'high':'low'));
+  p.innerHTML=`<span>●</span><span>${money(v)}</span>`;$('prizes').appendChild(p);
+ });
+ $('myCase').textContent=myBox===null?'—':`N.º ${myBox+1}`;
+ $('lastOffer').textContent=lastOffer?money(lastOffer):'—';
+ renderBots();
+}
+function renderBots(){
+ const comments=[
+  '«¡Qué nervios! A ver qué sale…»','«Yo esperaría una ronda más.»','«Esa oferta no está nada mal.»',
+  '«¡No vendas tu caja todavía!»','«El banquero sabe algo, seguro.»'
+ ];
+ $('bots').innerHTML='';
+ BOT_DATA.forEach((b,i)=>{
+  let el=document.createElement('div');el.className='bot';
+  let line=mode==='ended'?'«¡Enhorabuena por la partida!»':comments[(round+i)%comments.length];
+  el.innerHTML=`<div class="avatar">${b[1]}</div><div><b>${b[0]}</b><small>${line}</small></div>`;$('bots').appendChild(el);
+ });
+}
+function chooseBox(i){
+ myBox=i;mode='open';$('startModal').classList.add('hidden');
+ $('phase').textContent='Abre las cajas';$('instruction').textContent='Abre las cajas que no son tuyas. Tu caja queda protegida.';
+ $('boardTitle').textContent='Selecciona una caja para abrir';$('message').textContent=`Has elegido la caja ${i+1}. Ahora abre las cajas de los demás. ¡Intenta conservar los premios grandes!`;
+ $('continueBtn').disabled=false;$('continueBtn').textContent='Ver tablero';$('roundPill').textContent='RONDA 1';render();
+}
+function openBox(i){
+ if(mode!=='open'||opened.has(i)||i===myBox)return;
+ opened.add(i);openedThisRound++;
+ const val=values[i];
+ $('message').textContent=`¡La caja ${i+1} escondía ${money(val)}! ${val>=50000?'¡Se ha ido un premio importante!':'Sigue habiendo premios grandes en juego.'}`;
+ render();
+ const target=ROUND_SIZES[Math.min(round,ROUND_SIZES.length-1)];
+ if(openedThisRound>=target){showOffer();}else{
+  $('instruction').textContent=`Abre ${target-openedThisRound} caja(s) más para recibir una oferta.`;
+  $('continueBtn').disabled=true;
+ }
+}
+function showOffer(){
+ mode='offer';offer=bankerOffer();lastOffer=offer;
+ $('phase').textContent='El banquero llama';$('instruction').textContent='Decide si aceptas el dinero o sigues jugando.';
+ $('message').textContent='☎ Está sonando el teléfono… El banquero ha calculado una oferta para comprar tu caja.';
+ $('offerAmount').textContent=money(offer);
+ $('offerText').textContent=`Quedan ${remaining().length+1} cajas posibles, incluida la tuya. ¿Aceptas ${money(offer)}?`;
+ $('offer').classList.remove('hidden');$('continueBtn').disabled=true;
+ $('roundPill').textContent=`RONDA ${round+1} · OFERTA`;
+ renderBots();
+}
+function deal(){
+ dealAmount=offer;mode='ended';$('offer').classList.add('hidden');
+ $('message').textContent=`¡Has aceptado ${money(dealAmount)}! Ahora vamos a descubrir qué había en tu caja…`;
+ $('phase').textContent='Trato aceptado';$('instruction').textContent='El trato está cerrado.';
+ revealEnd(true);
+}
+function noDeal(){
+ $('offer').classList.add('hidden');round++;openedThisRound=0;mode='open';
+ $('phase').textContent='¡No hay trato!';$('instruction').textContent='Sigue abriendo cajas hasta la próxima oferta.';
+ $('message').textContent='Has rechazado la oferta. El banquero tendrá que mejorarla… o quizá no.';
+ $('roundPill').textContent=`RONDA ${round+1}`;$('continueBtn').disabled=true;
+ if(remaining().length<=1){let last=remaining()[0];if(last!==undefined){opened.add(last);$('message').textContent=`La última caja abierta contenía ${money(values[last])}.`;render();}finishFinal();return}
+ render();
+}
+function finishFinal(){
+ mode='ended';$('phase').textContent='Últimas cajas';$('instruction').textContent='Ya no quedan cajas que abrir.';
+ $('message').textContent='¡Has llegado al final! Tu premio estaba en tu caja.';
+ revealEnd(false);
+}
+function revealEnd(tookDeal){
+ const own=values[myBox];
+ let title=tookDeal?'¡Has cerrado el trato!':'¡Has llegado al final!';
+ let text=tookDeal?`Te llevas ${money(dealAmount)}. En tu caja ${myBox+1} había ${money(own)}.`:`Tu caja ${myBox+1} contenía ${money(own)}.`;
+ text+=tookDeal?(dealAmount>=own?' ¡Has salido ganando!':' El contenido de tu caja era mayor que la oferta.'):' Ese es tu premio final.';
+ $('endTitle').textContent=title;$('endText').textContent=text;$('endModal').classList.remove('hidden');
+ $('phase').textContent='Partida terminada';$('roundPill').textContent='FIN DE PARTIDA';$('continueBtn').disabled=true;renderBots();
+}
+function openRemainingLast(){
+ let r=remaining();if(r.length===1){let i=r[0];opened.add(i);$('message').textContent=`La última caja abierta contenía ${money(values[i])}.`;render();finishFinal()}
+}
+$('startBtn').addEventListener('click',()=>{$('startModal').classList.add('hidden');});
+$('dealBtn').addEventListener('click',deal);
+$('noDealBtn').addEventListener('click',noDeal);
+$('newBtn').addEventListener('click',newGame);
+$('againBtn').addEventListener('click',newGame);
+$('continueBtn').addEventListener('click',()=>{
+ if(mode==='choose')return;
+ if(mode==='open'&&remaining().length===1)openRemainingLast();
+});
+$('boxes').addEventListener('click',e=>{
+ const b=e.target.closest('button.case');if(!b||mode!=='choose')return;
+ const idx=[...$('boxes').children].indexOf(b);if(idx>=0)chooseBox(idx);
+});
+newGame();
+})();
+</script>
+</body>
+</html>

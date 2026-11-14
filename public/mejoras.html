@@ -1,1 +1,203 @@
+eeye toy pensar referncias jeugos caon camara
+
+
+
+
+
+
+•	Fruit Ninja de mano: pasan frutas volando y las cortas moviendo la mano. Hay bombas que no debes tocar.
+•	Topos con las manos: salen topos en distintos huecos de la pantalla y los golpeas con la mano antes de que se escondan.
+•	Reventar burbujas: suben burbujas por la pantalla y las explotas con las manos. Las doradas valen más y las negras restan.
+•	Portero: vienen balones hacia la cámara y los paras con los brazos. Cada vez son más rápidos y desde ángulos distintos.
+•	Esquiva obstáculos: caen cosas desde arriba y tienes que moverte a izquierda o derecha. El juego usa tu posición en la imagen.
+•	Baile de zonas: se iluminan zonas de la pantalla en una secuencia y tienes que tocarlas en orden con las manos, como un Simón.
+•	Mata mosquitos: mosquitos vuelan por la pantalla y los aplastas dándoles un manotazo. Algunos son mariposas y no hay que tocarlas.
+
+
+ CREA UN JUEGO MULTIJUGADOR HTML: EL JUICIO ABSURDO
+Quiero desarrollar un juego multijugador online llamado EL JUICIO, pensado para jugar con amigos a través de una web. Debe ser divertido, caótico, lleno de situaciones absurdas y con mucha interacción entre jugadores.
+Debe desarrollarse en un archivo independiente llamado juicio.html, con HTML, CSS y JavaScript. Utiliza el sistema de salas y WebSockets que ya tiene mi proyecto, si está disponible. No inventes un sistema de conexión diferente ni rompas la arquitectura existente.
+1. IDEA DEL JUEGO
+En cada ronda se celebra un juicio disparatado.
+Un jugador es el acusado de haber cometido una barbaridad absurda, por ejemplo:
+•	Haber sustituido todas las croquetas por patatas.
+•	Haber robado los patinetes de toda la ciudad.
+•	Haber enseñado a hablar a las palomas para que reclamen impuestos.
+•	Haber cambiado el himno nacional por la canción de Mercadona.
+•	Haber escondido todos los mandos de la televisión.
+•	Haber convencido a un grupo de jubilados para fundar una banda de rock.
+Los demás jugadores reciben diferentes papeles:
+•	Acusado: debe defenderse y demostrar su inocencia.
+•	Fiscal: debe demostrar que el acusado es culpable.
+•	Abogado defensor: debe ayudar al acusado.
+•	Testigos: deben declarar sobre lo ocurrido.
+•	Jurado: escucha el juicio y decide el veredicto.
+Los papeles deben repartirse automáticamente y de manera equilibrada.
+2. DESARROLLO DE UNA RONDA
+Cada ronda debe tener las siguientes fases:
+FASE 1. El delito
+Se presenta el caso en pantalla con una animación de apertura del juicio.
+Ejemplo:
+«SE ABRE LA SESIÓN. Se acusa al jugador Dani de haber robado 300 kilos de croquetas y haberlos sustituido por brócoli».
+El acusado recibe su papel y puede leerlo en privado.
+FASE 2. Preparación de la defensa
+El acusado y su abogado disponen de 45 segundos para preparar su estrategia.
+El fiscal dispone del mismo tiempo para preparar la acusación.
+Pueden comunicarse mediante un pequeño chat privado o un sistema de mensajes entre compañeros de equipo.
+FASE 3. Interrogatorio
+El fiscal dispone de 45 segundos para formular preguntas al acusado.
+El acusado debe responder en directo.
+El abogado defensor puede intervenir una vez para hacer una pregunta o formular una objeción.
+FASE 4. Testigos
+Se seleccionan uno o dos testigos.
+Cada testigo recibe una información privada sobre el caso. Puede ser:
+•	Una pista que perjudica al acusado.
+•	Una pista que favorece al acusado.
+•	Una información absurda que no tiene demasiado sentido.
+Los testigos deben declarar y responder a las preguntas del fiscal y del abogado.
+El testigo puede mentir libremente, pero no conoce necesariamente toda la información.
+FASE 5. Alegatos finales
+El fiscal tiene 30 segundos para presentar sus conclusiones.
+El abogado defensor tiene otros 30 segundos para intentar convencer al jurado.
+El acusado puede realizar una última declaración de 15 segundos.
+FASE 6. Veredicto
+El jurado vota individualmente y en secreto:
+•	CULPABLE.
+•	INOCENTE.
+Los jugadores que participan en el juicio no pueden votar.
+Se muestra el resultado cuando todos los jurados hayan votado.
+Si hay empate, se declara el juicio nulo.
+3. SISTEMA DE PUNTUACIÓN
+La puntuación debe premiar la interpretación y la estrategia, no únicamente acertar.
+•	Acusado: gana puntos si consigue ser declarado inocente.
+•	Fiscal: gana puntos si consigue una condena.
+•	Abogado: gana puntos si consigue la absolución.
+•	Testigos: ganan puntos si el jurado considera que su declaración ha sido convincente.
+•	Jurado: gana puntos si su voto coincide con el veredicto final.
+Añade puntos adicionales por votaciones especiales:
+•	Mejor actuación.
+•	Mejor argumento.
+•	Testimonio más absurdo.
+Las votaciones especiales deben realizarse después del veredicto.
+No debe poder votarse a uno mismo.
+4. ROTACIÓN DE PAPELES
+Los papeles deben cambiar en cada ronda para que todos puedan participar en diferentes posiciones.
+Evita que un jugador sea acusado o fiscal repetidamente mientras otros nunca reciben esos papeles.
+Adapta automáticamente los papeles al número de participantes.
+Con pocos jugadores, elimina los testigos y reduce el número de miembros del jurado.
+Con muchos jugadores, aumenta el número de testigos y jurados.
+Nunca asignes a un jugador dos papeles incompatibles.
+5. GENERADOR DE CASOS
+Crea una base amplia de delitos absurdos, originales y variados.
+Cada caso debe incluir:
+•	Un delito.
+•	Una breve descripción de lo sucedido.
+•	Información privada para el acusado.
+•	Información privada para el fiscal.
+•	Información privada para el abogado.
+•	Una o varias pistas para los testigos.
+Los casos deben ser cómicos, inesperados y aptos para jugar entre amigos.
+Ejemplos de temáticas:
+•	Comida y restaurantes.
+•	Vecinos y comunidades.
+•	Animales.
+•	Tecnología.
+•	Televisión y famosos.
+•	Situaciones cotidianas.
+•	Inventos absurdos.
+•	Viajes y vacaciones.
+Evita que todos los casos sean variaciones de robar o destruir cosas.
+6. INTERFAZ Y DISEÑO
+Quiero una estética de tribunal, pero divertida y moderna.
+Elementos visuales:
+•	Un gran título: EL JUICIO.
+•	Un estrado para el acusado.
+•	Una zona para el fiscal y otra para el abogado.
+•	Un espacio para los testigos.
+•	Un jurado representado visualmente.
+•	Un reloj de cuenta atrás.
+•	Un indicador de la fase actual.
+•	Un panel de puntuaciones.
+•	Una pantalla especial para mostrar el veredicto con una animación.
+La interfaz debe adaptarse perfectamente a móviles y ordenadores.
+Cada jugador debe ver únicamente la información privada de su papel. El resto de jugadores no debe poder acceder a ella.
+7. SISTEMA MULTIJUGADOR
+•	Crear y unirse a salas mediante código.
+•	Mostrar quién está conectado.
+•	Sincronizar las fases y los temporizadores.
+•	Evitar que se pueda votar dos veces.
+•	Gestionar desconexiones y reconexiones.
+•	Evitar que un jugador pueda consultar los papeles privados de otros.
+•	El servidor debe validar los cambios de fase, los votos y las puntuaciones.
+•	El anfitrión debe poder iniciar la partida cuando haya suficientes jugadores.
+8. DETALLES IMPORTANTES
+•	Las partidas deben ser ágiles.
+•	No obligues a utilizar micrófono ni cámara.
+•	El juego debe poder jugarse hablando en persona y utilizando la web para gestionar los turnos.
+•	Añade un botón para saltar una ronda si hay algún problema.
+•	Incluye un tutorial breve.
+•	Añade un historial de juicios anteriores.
+•	Incluye un ranking acumulado de la partida.
+9. ENTREGA
+Genera el archivo completo juicio.html, listo para incorporar a mi proyecto.
+Antes de terminar:
+•	Comprueba que no hay errores de JavaScript.
+•	Comprueba que todas las fases funcionan.
+•	Comprueba que la rotación de papeles es correcta.
+•	Comprueba que la información privada no se filtra.
+•	Comprueba que funciona con diferentes cantidades de jugadores.
+•	Comprueba que no hay problemas al abrir varias pestañas o reconectar jugadores.
+No entregues pseudocódigo ni fragmentos incompletos. Quiero el HTML completo y funcional.
+
+
+SISTEMA DE PRUEBAS ABSURDAS
+El juego debe incorporar un sistema de pruebas sorpresa que aparezcan durante el juicio para alimentar la improvisación.
+Las pruebas NO deben contener diálogos ni respuestas preparadas. Su objetivo es proporcionar información absurda que los jugadores tendrán que interpretar, explicar, cuestionar o utilizar a su favor.
+1. ¿Quién crea las pruebas?
+Las pruebas estarán generadas previamente en una base de datos incluida en el propio juego. No deben depender de una IA ni de servicios externos.
+Crea una colección amplia y variada de pruebas, organizadas por categorías:
+•	Fotografías ficticias.
+•	Objetos encontrados.
+•	Mensajes y conversaciones.
+•	Recibos y facturas.
+•	Documentos oficiales.
+•	Grabaciones y testimonios.
+•	Huellas y rastros.
+•	Pruebas completamente absurdas.
+2. ¿Cómo aparecen?
+Durante el juicio, el juego podrá introducir entre 2 y 3 pruebas sorpresa en momentos aleatorios o en fases determinadas.
+Cada prueba debe mostrarse en pantalla para todos los participantes.
+Ejemplos:
+•	«Se ha encontrado una patata con las iniciales del acusado».
+•	«Existe un recibo de compra de 450 kilos de croquetas a nombre del acusado».
+•	«Un vecino asegura haber visto al acusado hablando con una paloma».
+•	«Se ha encontrado una nota que dice: La operación Croqueta comienza a las 22:00».
+•	«Una cámara de seguridad muestra a alguien huyendo con un carrito de supermercado lleno de patatas».
+3. ¿Qué hacen los jugadores con ellas?
+Las pruebas no tienen una interpretación correcta. Los jugadores deben improvisar.
+•	El fiscal puede utilizarlas para reforzar la acusación.
+•	El abogado puede buscar explicaciones alternativas.
+•	El acusado puede inventar una justificación.
+•	Los testigos pueden confirmar, cuestionar o contradecir las pruebas.
+•	El jurado debe valorar cómo han reaccionado los participantes.
+4. Pruebas con doble interpretación
+Es importante que algunas pruebas puedan beneficiar a cualquiera de las dos partes.
+Por ejemplo:
+«Se ha encontrado una fotografía del acusado sosteniendo una bolsa llena de patatas».
+El fiscal puede decir que demuestra su participación en el delito.
+El abogado puede argumentar que estaba preparando una tortilla para una fiesta.
+La gracia es que los jugadores construyan sus propios argumentos.
+5. Reglas
+•	Las pruebas aparecen automáticamente.
+•	Ningún jugador puede elegir qué prueba sale.
+•	Todos pueden verla, pero nadie recibe una explicación de cómo interpretarla.
+•	Las pruebas no determinan automáticamente la culpabilidad.
+•	Los jugadores pueden utilizarlas libremente durante sus intervenciones.
+•	Debe existir variedad suficiente para que no se repitan constantemente.
+El objetivo es que las pruebas provoquen nuevas situaciones y hagan que la improvisación sea todavía más divertida.
+
+
+_
+Lo del eye toy de limpiar ventana podría estar bien
+	
 

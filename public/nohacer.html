@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>No hacer</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#4d1d2e,transparent 42%),radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:640px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(34px,9vw,56px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ff8da1 55%,#ffd166);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}h3{font-size:16px;margin:16px 0 6px}.m,.sub{color:var(--m)}.sub{margin:0 0 16px}.small{font-size:13px;color:var(--m)}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
+.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
+input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.btn.r{background:linear-gradient(100deg,#c01f40,#ff5a6e)}.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}
+.pls{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.pl{background:#0f172a;border:1px solid var(--l);padding:6px 11px;border-radius:99px;font-size:13px}.pl.me{border-color:var(--b);color:var(--b)}
+.code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}
+.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}
+.rp{border-radius:22px;padding:20px 14px;text-align:center;border:3px solid var(--r);background:#3a1220;min-height:190px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.rp.must{border-color:var(--a);background:#1f1a45}.rp.tg{box-shadow:0 0 0 4px #ffd16655}.rp.flash{animation:fl .6s}
+@keyframes fl{0%{transform:scale(.9);filter:brightness(2.2)}60%{transform:scale(1.03)}100%{transform:none;filter:none}}
+.who{font-size:13px;font-weight:900;letter-spacing:.12em;color:var(--y)}.ri{font-size:clamp(24px,7.2vw,38px);font-weight:950;line-height:1.1}.ri small{display:block;font-size:.5em;color:#ffb3bf;letter-spacing:.08em;margin-bottom:2px}.must .ri small{color:#c9bfff}
+.meter{height:10px;background:#303b55;border-radius:99px;overflow:hidden;margin:10px 0}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--y),var(--r));transition:width .25s linear}
+.tl{display:flex;justify-content:space-between;font-size:12px;color:var(--m);font-weight:700}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch span{background:#0f172a;border:1px solid var(--l);border-radius:12px;padding:5px 10px;font-size:13px}.ch .out{opacity:.4;text-decoration:line-through}.ch .me{border-color:var(--b)}
+.acc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.acc .btn{padding:12px 6px}
+.vt{border:2px solid var(--y);background:#332719;border-radius:16px;padding:14px;margin:10px 0;text-align:center}.vt b{color:var(--y)}
+.lg{font-size:13px;color:var(--m);padding:3px 0;border-bottom:1px solid #1f2a44}
+.sc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--l)}.sc:last-child{border:0}
+</style></head><body><main>
+<header><span class="tag">🚫 MULTIJUGADOR · SALAS · EN PERSONA O POR VIDEOLLAMADA</span><h1>No hacer</h1><p class="sub">Cada pocos segundos cambia lo que NO puedes hacer. Todos lo ven… y todos se vigilan.</p></header>
+<section id="home" class="panel"><h2>Entra en partida</h2><p class="m">Crea una sala y comparte el código, o únete a la de otra persona.</p>
+<label for="pn">Tu nombre</label><input id="pn" maxlength="18" autocomplete="nickname" placeholder="Por ejemplo, Dani">
+<div class="row" style="margin-top:12px"><button class="btn" id="cb">Crear sala</button><button class="btn s" id="sj">Unirme a una sala</button></div>
+<div id="jb" class="hidden"><label for="rc">Código de sala</label><input id="rc" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn full" id="jn">Entrar en la sala</button></div>
+<p id="hm" class="notice hidden" aria-live="polite"></p></section>
+<section id="lobby" class="panel hidden">
+<div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
+<h3>Jugadores conectados</h3><div id="lp" class="pls"></div>
+<div id="opt" class="hidden"><div class="row"><div><label for="iv">Cambio de regla</label><select id="iv"><option value="8">cada 8 s</option><option value="10" selected>cada 10 s</option><option value="15">cada 15 s</option></select></div><div><label for="lives">Vidas</label><select id="lives"><option value="2">2</option><option value="3" selected>3</option><option value="5">5</option></select></div></div>
+<div class="row"><div><label for="mem">🙈 Modo memoria</label><select id="mem"><option value="0">No</option><option value="1">Sí: la regla se oculta a los 3 s</option></select></div><div><label for="must">🔵 Obligaciones</label><select id="must"><option value="0">No</option><option value="1">Sí: a veces «tienes que…»</option></select></div></div></div>
+<div class="notice"><b>Cómo se juega:</b> todos os miráis en persona o por videollamada. Si pillas a alguien haciendo lo prohibido, pulsa su nombre. Los demás votan: si la mayoría dice que sí, pierde una vida y tú ganas 2 puntos; si no, pierdes 1 punto. Cada vez salen más reglas, más rápidas, a veces dos a la vez o solo para uno de vosotros. Gana quien sobreviva.</div>
+<div class="row"><button class="btn g" id="st">Empezar partida</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
+<section id="game" class="hidden"></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),rnd=n=>Math.random()*n|0,pick=a=>a[rnd(a.length)];
+const NO=['parpadear','tragar saliva','sonreír','reírte','hablar','decir «sí» ni «no»','mover los pies','cruzar las piernas','tocarte la cara','tocarte el pelo','mirar a los ojos a otro jugador','mirar el móvil','mover la cabeza','asentir','fruncir el ceño','sacar la lengua','aplaudir','señalar con el dedo','cruzar los brazos','rascarte','bostezar','toser','suspirar','tararear ni silbar','decir nombres propios','decir «yo»','nombrar a otro jugador','hacer preguntas','tocar la mesa','mover los ojos de lado a lado','mirar hacia arriba','mirar hacia abajo','apretar los dientes','cerrar los ojos','inclinar la cabeza','mover las manos','tocar a otra persona','levantarte','sentarte','tocarte la nariz','beber','hacer ningún ruido','poner cara de sorpresa','respirar por la nariz','respirar por la boca','mover las cejas','usar las manos al hablar','decir «vale», «ok» ni «bueno»','mirar a quien esté hablando'];
+const MUST=['mantener un dedo sobre la nariz','mirar al techo','hablar en susurros','sonreír sin parar','tener las manos sobre la cabeza','cerrar un ojo','tararear en bajo','mantener un pie en el aire','mirar fijamente a un jugador','estar de pie','tocarte una oreja','balancearte de lado a lado'];
+let ws,code='',K='',N='',peers=[],S=null,H=false,P={},ready=0,L={ac:0,vt:{}},offs=0,gk='',lr=-1,la=-1,sig='',ac=null;const seen={};
+const uid=()=>Math.random().toString(36).slice(2,10),now=()=>Date.now()+offs,msg=t=>{const e=$('hm');e.textContent=t||'';e.classList.toggle('hidden',!t)},show=id=>['home','lobby','game'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const roster=()=>peers.filter(p=>p.k).sort((a,b)=>(a.t-b.t)||(a.k<b.k?-1:1)),dat=k=>{const p=peers.find(q=>q.k===k);return(p&&p.d)||{}},on=k=>peers.some(p=>p.k===k);
+const fresh=()=>({ph:'lobby',v:0,gid:0,iv:10,lives:3,mem:0,must:0,pl:[],nm:{},lv:{},sc:{},rid:0,rc:0,br:0,aid:0,log:[]});
+const pub=o=>{Object.assign(P,o);if(ws)ws.send()},pubS=()=>{S.v++;S.t=Date.now();pub({h:1,s:S});rend()},pubD=()=>pub({d:{ac:L.ac,on:L.on,vt:L.vt}});
+const seed=()=>roster().forEach(p=>{seen[p.k]=(p.d||{}).ac});
+const ruleTxt=r=>r.items.map(i=>(i.t==='no'?'no puedes ':'tienes que ')+i.x).join(' + ');
+function tone(f,d,v=.07){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+function connect(c){return new Promise((res,rej)=>{let sock,done=0,closed=0,retry=0;const cid=uid();
+ws={send(){if(sock&&sock.readyState===1)sock.send(JSON.stringify({t:'pres',p:P}))},leave(){closed=1;try{sock.close()}catch(e){}}};
+const open=()=>{sock=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+sock.onopen=()=>{retry=0;sock.send(JSON.stringify({t:'join',room:'cmb-nh-'+c.toLowerCase(),cid}));if(done)ws.send()};
+sock.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.t==='peers'){peers=m.peers.map(q=>q.p||{});if(!done){done=1;res()}onPeers()}
+else if(m.t==='err'){closed=1;if(done)msg('No se pudo continuar en la sala.');else{done=1;rej(m.code)}}};
+sock.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))}};
+open();setTimeout(()=>{if(!done){done=1;closed=1;rej('timeout')}},15000)})}
+function onPeers(){
+const hs=peers.filter(p=>p.h&&p.s).sort((a,b)=>(b.s.v-a.s.v)||(a.k<b.k?-1:1));
+if(H&&hs.length&&hs[0].k!==K&&hs[0].s.v>=S.v){H=false;pub({h:0,s:null})}
+if(!H){const hp=hs[0];
+if(hp){if(!S||hp.s.v>S.v){S=hp.s;offs=S.t-Date.now()}}
+else if(ready&&roster()[0]&&roster()[0].k===K){H=true;S=S||fresh();seed();pubS()}}
+rend();if(H){proc();hostTick()}}
+async function start(host){N=($('pn').value.trim()||'Jugador').slice(0,18);K=uid();H=host;S=host?fresh():null;ready=0;
+if(host)code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+else{code=$('rc').value.trim().toUpperCase();if(!/^[A-Z0-9]{5}$/.test(code))return msg('Escribe un código de cinco caracteres.')}
+try{await connect(code);P={k:K,n:N,t:Date.now(),d:{}};ready=1;if(host)pubS();else pub({})}catch(e){H=false;msg(e==='room_full'?'La sala está llena.':host?'No se pudo crear la sala. Inténtalo de nuevo.':'No se pudo entrar. Comprueba el código.')}}
+function startGame(){if(!H)return;const ps=roster().slice(0,10);if(ps.length<3)return;
+Object.assign(S,{iv:+$('iv').value,lives:+$('lives').value,mem:+$('mem').value,must:+$('must').value,pl:ps.map(p=>p.k),nm:{},lv:{},sc:{},rid:0,rc:0,br:0,aid:0,log:[],ac:null,rule:null});
+ps.forEach(p=>{S.nm[p.k]=p.n;S.lv[p.k]=S.lives;S.sc[p.k]=0});S.gid++;S.ph='play';seed();newRule();pubS()}
+function newRule(){const alive=S.pl.filter(k=>S.lv[k]>0&&on(k)),n=S.rc++;let items=[],dur=Math.max(S.iv*.6,S.iv-Math.floor(n/3)*.5);
+if(!S.br&&n>=3&&rnd(100)<8){S.br=1;items=[{t:'no',x:'respirar (¡aguanta el aire solo 5 s!)'}];dur=5}
+else{const cnt=n>=6&&rnd(100)<35?2:1,prev=S.rule?S.rule.items.map(i=>i.x):[];
+ while(items.length<cnt){const must=S.must&&rnd(100)<25,x=pick(must?MUST:NO);if(prev.includes(x)||items.some(i=>i.x===x))continue;items.push({t:must?'must':'no',x})}}
+const tg=alive.length>2&&rnd(100)<30?pick(alive):'';S.rule={id:++S.rid,items,tg,at:Date.now()};S.rd=Date.now()+dur*1000}
+const lg=m=>{S.log.unshift(m);S.log=S.log.slice(0,5)};
+function proc(){if(!H||!S||S.ph!=='play')return;let ch=0;
+for(const p of roster()){const d=p.d||{};if(d.ac&&seen[p.k]!==d.ac){seen[p.k]=d.ac;const t=d.on;
+ if(!S.ac&&S.pl.includes(p.k)&&S.lv[p.k]>0&&S.lv[t]>0&&t!==p.k&&on(t)&&(!S.rule.tg||t===S.rule.tg)){S.ac={id:++S.aid,by:p.k,on:t,txt:ruleTxt(S.rule),dl:Date.now()+8000};ch=1}}}
+if(ch)pubS()}
+function hostTick(){if(!H||!S||S.ph!=='play')return;const t=Date.now();let ch=0;
+if(S.ac){const a=S.ac,vs=S.pl.filter(k=>k!==a.by&&S.lv[k]>0&&on(k)).map(k=>(dat(k).vt||{})[a.id]);
+ if(vs.every(x=>x!==undefined)||t>a.dl){let y=1,n=0;vs.forEach(x=>{if(x===1)y++;else if(x===0)n++});
+  if(y>n){S.lv[a.on]--;S.sc[a.by]+=2;lg('✅ '+S.nm[a.by]+' pilló a '+S.nm[a.on]+' ('+y+'–'+n+'): −1 vida'+(S.lv[a.on]<1?' · ¡ELIMINADO!':''))}
+  else{S.sc[a.by]-=1;lg('❌ '+S.nm[a.by]+' acusó sin razón a '+S.nm[a.on]+' ('+y+'–'+n+'): −1 punto')}
+  S.ac=null;ch=1;if(S.pl.filter(k=>S.lv[k]>0).length<=1){S.ph='end';return pubS()}}}
+if(t>=S.rd){newRule();ch=1}
+if(ch)pubS()}
+function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k;$('cl').textContent=code;
+$('lp').innerHTML=ps.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('');
+$('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';$('opt').classList.toggle('hidden',!H);
+$('st').classList.toggle('hidden',!H);$('st').disabled=ps.length<3||ps.length>10;
+$('lm').textContent=ps.length<3?'Hacen falta al menos 3 jugadores.':ps.length>10?'Máximo 10 jugadores.':H?'Ya podéis empezar.':'El anfitrión empezará cuando estéis listos.'}
+function build(){la=-1;lr=-1;sig='';L={ac:L.ac,vt:{}};$('game').innerHTML='<div class="tl"><span id="inf"></span><span id="tm"></span></div><div class="meter"><span id="bar"></span></div><div id="rp" class="rp"><div class="who" id="rw"></div><div class="ri" id="ri"></div></div><div class="panel"><div class="ch" id="chs"></div></div><div id="vt"></div><div class="panel" id="ap"></div><div class="panel"><h3 style="margin-top:0">Últimos sucesos</h3><div id="lg"></div></div><div id="hc" class="hidden"><button class="btn gh full" id="fn">Terminar partida</button></div>';
+$('ap').onclick=e=>{const b=e.target.closest('[data-t]');if(b){L.ac++;L.on=b.dataset.t;pubD()}};
+$('vt').onclick=e=>{const b=e.target.closest('[data-v]');if(b&&S.ac){L.vt[S.ac.id]=+b.dataset.v;pubD();fill()}};
+$('fn').onclick=()=>{S.ph='end';pubS()}}
+function fill(){const r=S.rule,me=S.pl.includes(K),alive=S.lv[K]>0,al=S.pl.filter(k=>S.lv[k]>0),t=now();
+if(r.id!==lr){lr=r.id;const e=$('rp');e.className='rp '+(r.items[0].t==='must'?'must':'no')+(r.tg?' tg':'');void e.offsetWidth;e.classList.add('flash');tone(r.items[0].t==='must'?700:300,.25,.1);try{navigator.vibrate&&navigator.vibrate(r.tg===K?[120,60,120]:60)}catch(x){}}
+const hide=S.mem&&t-r.at>3000;
+$('rw').textContent=r.tg?(r.tg===K?'👉 SOLO TÚ':'👉 SOLO '+S.nm[r.tg].toUpperCase()):'TODOS';
+$('ri').innerHTML=hide?'🙈 <small>¿recuerdas qué era?</small>':r.items.map(i=>'<div><small>'+(i.t==='no'?'NO PUEDES':'TIENES QUE')+'</small>'+esc(i.x)+'</div>').join('<div style="font-size:.5em;color:#ffd166">+</div>');
+const tot=S.rd-r.at,left=Math.max(0,S.rd-t);$('bar').style.width=left/tot*100+'%';$('tm').textContent=Math.ceil(left/1000)+' s';
+$('inf').textContent='REGLA Nº '+S.rid+' · '+al.length+' en pie';
+$('chs').innerHTML=S.pl.map(k=>'<span class="'+(S.lv[k]<1?'out ':'')+(k===K?'me':'')+'">'+esc(S.nm[k])+' '+(S.lv[k]>0?'❤️'.repeat(S.lv[k]):'💀')+' · '+S.sc[k]+' pts</span>').join('');
+const a=S.ac,s2=[S.ac?S.ac.id:0,alive,r.tg,al.join(),L.vt[S.ac&&S.ac.id]].join('|');
+if(s2!==sig){sig=s2;
+ $('vt').innerHTML=a?'<div class="vt">⚖️ <b>'+esc(S.nm[a.by])+'</b> acusa a <b>'+(a.on===K?'ti':esc(S.nm[a.on]))+'</b> de no cumplir:<br>«'+esc(a.txt)+'»'+(me&&alive&&a.by!==K?(L.vt[a.id]===undefined?'<div class="acc"><button class="btn g" data-v="1">Sí, lo hizo</button><button class="btn r" data-v="0">No</button></div>':'<p class="small">Voto enviado ✔</p>'):'<p class="small">Esperando los votos…</p>')+'</div>':'';
+ const tg=al.filter(k=>k!==K&&(!r.tg||k===r.tg));
+ $('ap').innerHTML=!me?'<p class="small">Hay una partida en marcha. Entras en la siguiente.</p>':!alive?'<p class="small">💀 Estás eliminado: mira y vota como espectador cuando haya acusaciones.</p>':'<h3 style="margin-top:0">🕵️ ¡Te pillé!</h3>'+(a?'<p class="small">Hay una acusación abierta.</p>':'<div class="acc">'+tg.map(k=>'<button class="btn r" data-t="'+esc(k)+'">'+esc(S.nm[k])+'</button>').join('')+'</div>'+(r.tg&&r.tg===K?'<p class="small">Esta regla es solo para ti: ¡cuidado!</p>':''))}
+$('lg').innerHTML=S.log.length?S.log.map(x=>'<div class="lg">'+esc(x)+'</div>').join(''):'<p class="small">Todavía no ha pasado nada…</p>';$('hc').classList.toggle('hidden',!H)}
+function rend(){if(!code)return;if(!S||S.ph==='lobby'){show('lobby');gk='';rLobby();return}
+show('game');
+if(S.ph==='end'){gk='';const r=S.pl.slice().sort((a,b)=>(S.lv[b]-S.lv[a])||(S.sc[b]-S.sc[a])),w=r[0];
+$('game').innerHTML='<div class="panel"><span class="tag">PARTIDA TERMINADA</span><h2 style="margin-top:10px">🏆 Gana '+esc(S.nm[w])+'</h2>'+r.map((k,i)=>'<div class="sc"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+esc(S.nm[k])+(k===K?' (tú)':'')+'</span><strong>'+(S.lv[k]>0?'❤️'.repeat(S.lv[k]):'💀')+' · '+S.sc[k]+' pts</strong></div>').join('')+'<div class="row" style="margin-top:14px">'+(H?'<button class="btn g" id="ag">Jugar otra vez</button>':'<span class="small">Esperando al anfitrión…</span>')+'<button class="btn gh" id="ex">Salir</button></div></div>';
+if(H)$('ag').onclick=()=>{S.ph='lobby';pubS()};$('ex').onclick=()=>location.reload();return}
+const k='g'+S.gid;if(k!==gk){gk=k;build()}fill()}
+$('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
+$('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+$('cp').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(code).then(()=>$('cp').textContent='¡Copiado!').catch(()=>{})};
+$('st').onclick=startGame;$('lv').onclick=()=>{if(ws)ws.leave();location.reload()};
+setInterval(()=>{if(H)hostTick();if(S&&S.ph==='play'&&gk)fill()},250);addEventListener('beforeunload',()=>{if(ws)ws.leave()});
+})();
+</script></body></html>

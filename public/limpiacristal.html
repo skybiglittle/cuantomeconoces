@@ -23,16 +23,17 @@ select:focus-visible,.btn:focus-visible{outline:3px solid var(--y);outline-offse
 canvas{display:block;width:100%;aspect-ratio:4/3}
 .ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;background:#070b18cc;font-weight:800;font-size:clamp(18px,5vw,28px)}
 .ov h2{font-size:clamp(26px,7vw,42px);margin:0}.ov p{margin:0;color:var(--m);font-size:15px;font-weight:600}.ov .row{display:flex;gap:10px}
-#vd{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none}
+#vd{position:fixed;right:0;bottom:0;width:64px;height:48px;opacity:.01;pointer-events:none}
 </style></head><body><main>
 <header><span class="tag">📷 JUEGO DE CÁMARA</span><h1>Limpia el cristal</h1><p class="sub">El cristal está sucio y borroso. ¡Límpialo moviendo las manos delante de la cámara!</p></header>
 <section id="menu" class="panel"><h2>Prepárate</h2>
 <label for="lvl">Nivel</label><select id="lvl"><option value="0">🟢 Fácil · 35 s</option><option value="1">🟡 Medio · 30 s</option><option value="2">🔴 Difícil · 25 s</option></select>
+<label for="sn">Sensibilidad al movimiento</label><select id="sn"><option value="7">Alta (recomendado)</option><option value="12">Media</option><option value="20">Baja</option></select>
 <button class="btn g full" id="go">Jugar con la cámara</button>
 <div class="notice"><b>Cómo se juega:</b> colócate a un metro de la cámara para que se te vean los brazos. Todo lo que se mueve «frota» el cristal y lo deja limpio. Las manchas marrones cuestan más. Limpia el 96 % antes de que se acabe el tiempo, pero cuidado: la suciedad vuelve a salir. Si no tienes cámara, puedes limpiar con el ratón o el dedo.</div></section>
 <section id="gm" class="hidden"><div class="hud"><span id="lv">Nivel</span><span id="pc">0%</span><span id="tx">0 s</span></div><div class="meter"><span id="tb"></span></div>
 <div class="vw"><canvas id="cv" width="640" height="480"></canvas><div class="ov hidden" id="ov"></div></div>
-<video id="vd" playsinline muted></video><button class="btn gh full" id="back">← Menú</button></section>
+<p id="cm" style="font-size:13px;color:var(--m);margin:8px 0 0"></p><video id="vd" playsinline muted></video><button class="btn gh full" id="back">← Menú</button></section>
 </main>
 <script>
 (()=>{'use strict';
@@ -41,7 +42,7 @@ const LV=[{n:'Fácil',t:35,rate:3,rg:.03,sp:3},{n:'Medio',t:30,rate:2,rg:.06,sp:
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const cv=$('cv'),x=cv.getContext('2d'),vd=$('vd'),ovl=$('ov');
 const fog=mk(W,H),fx=fog.getContext('2d'),sm=mk(24,18),sx=sm.getContext('2d'),mc=mk(GW,GH),mx=mc.getContext('2d',{willReadFrequently:true}),mask=mk(GW,GH),kx=mask.getContext('2d');
-let tex,dirt=new Float32Array(N),init=new Float32Array(N),prev=new Float32Array(N),ptr=[],cam=false,stream=null,st='menu',sid=0,raf=0,lv=0,left=0,pct=0,last=0,sq=0,ac=null,tm=0;
+let TH=7,mvg=new Uint8Array(N),mvPct=0,tex,dirt=new Float32Array(N),init=new Float32Array(N),prev=new Float32Array(N),ptr=[],cam=false,stream=null,st='menu',sid=0,raf=0,lv=0,left=0,pct=0,last=0,sq=0,ac=null,tm=0;
 const ov=h=>{ovl.innerHTML=h;ovl.classList.toggle('hidden',!h)};
 const beep=(f,d=.15,v=.1,t='sine')=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}};
 const cover=(c,w,h)=>{const vw=vd.videoWidth,vh=vd.videoHeight;if(!vw)return;const s=Math.max(w/vw,h/vh),sw=w/s,sh=h/s;c.save();c.translate(w,0);c.scale(-1,1);c.drawImage(vd,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,w,h);c.restore()};
@@ -57,8 +58,10 @@ function reset(){const L=LV[lv];dirt.fill(1);prev.fill(0);ptr=[];
  init.set(dirt);left=L.t;pct=0;$('lv').textContent='Nivel '+L.n}
 function motion(dt){const L=LV[lv],mv=new Uint8Array(N);let cnt=0;
  if(cam){mx.clearRect(0,0,GW,GH);cover(mx,GW,GH);const d=mx.getImageData(0,0,GW,GH).data;
-  for(let i=0;i<N;i++){const l=d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11;if(Math.abs(l-prev[i])>24&&prev[i]>0){mv[i]=1;cnt++}prev[i]=l||1}
-  if(cnt>N*.6)mv.fill(0)}
+  const df=new Float32Array(N);let sum=0;for(let i=0;i<N;i++){const l=d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11;df[i]=prev[i]>0?l-prev[i]:0;prev[i]=l||1;sum+=df[i]}
+  const mean=sum/N;for(let i=0;i<N;i++)if(Math.abs(df[i]-mean)>TH){mv[i]=1;cnt++}
+  if(cnt>N*.6){mv.fill(0);cnt=0}}
+ mvg=mv;mvPct=cnt/N;
  for(const p of ptr)mv[p]=1;ptr=[];let cl=0;
  for(let i=0;i<N;i++)if(mv[i]){const gx=i%GW,gy=i/GW|0;
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=gx+dx,Y=gy+dy;if(X<0||Y<0||X>=GW||Y>=GH)continue;const j=Y*GW+X,a=L.rate*dt*(dx||dy?.45:1);if(dirt[j]>0){dirt[j]=Math.max(0,dirt[j]-a);cl+=a}}}
@@ -73,7 +76,7 @@ function frame(t){if(st==='menu')return;const dt=Math.min(.05,(t-last)/1000||0);
  x.clearRect(0,0,W,H);src(x,W,H);
  sx.clearRect(0,0,24,18);src(sx,24,18);fx.globalCompositeOperation='source-over';fx.clearRect(0,0,W,H);fx.imageSmoothingEnabled=true;fx.drawImage(sm,0,0,W,H);fx.drawImage(tex,0,0);
  const im=kx.createImageData(GW,GH);for(let i=0;i<N;i++){im.data[i*4+3]=Math.min(1,dirt[i])*255}kx.putImageData(im,0,0);
- fx.globalCompositeOperation='destination-in';fx.drawImage(mask,0,0,W,H);fx.globalCompositeOperation='source-over';x.drawImage(fog,0,0);
+ fx.globalCompositeOperation='destination-in';fx.drawImage(mask,0,0,W,H);fx.globalCompositeOperation='source-over';x.drawImage(fog,0,0);x.fillStyle='rgba(255,255,255,.16)';for(let i=0;i<N;i++)if(mvg[i])x.fillRect(i%GW*16,(i/GW|0)*16,16,16);if(cam)$('cm').textContent='📷 Cámara activa · movimiento detectado: '+Math.round(mvPct*100)+'%';
  raf=requestAnimationFrame(frame)}
 function end(win){st='end';cancelAnimationFrame(raf);const L=LV[lv],r=left/L.t;
  if(win){beep(660,.15);setTimeout(()=>beep(990,.3),170);try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}
@@ -82,9 +85,9 @@ function end(win){st='end';cancelAnimationFrame(raf);const L=LV[lv],r=left/L.t;
 async function countdown(my){reset();st='count';cancelAnimationFrame(raf);last=performance.now();raf=requestAnimationFrame(frame);
  for(let i=3;i>0;i--){ov('<h2>'+i+'</h2><p>'+(cam?'Prepárate para frotar con las manos':'Frota con el ratón o el dedo')+'</p>');beep(520,.1);await wait(850);if(my!==sid)return}
  ov('');beep(880,.2);prev.fill(0);st='play'}
-async function begin(){const my=++sid;lv=+$('lvl').value;$('menu').classList.add('hidden');$('gm').classList.remove('hidden');
+async function begin(){const my=++sid;lv=+$('lvl').value;TH=+$('sn').value;mx.imageSmoothingQuality='high';$('menu').classList.add('hidden');$('gm').classList.remove('hidden');
  if(!cam){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480}});vd.srcObject=stream;await vd.play();cam=true}catch(e){cam=false}}
- if(my!==sid)return;await countdown(my)}
+ if(my!==sid)return;$('cm').textContent=cam?'📷 Cámara activa':'🖱️ Sin cámara: limpia con el ratón o el dedo (revisa el permiso de cámara)';await countdown(my)}
 function toMenu(){sid++;st='menu';cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}cam=false;ov('');$('gm').classList.add('hidden');$('menu').classList.remove('hidden')}
 ovl.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;b.dataset.a==='menu'?toMenu():countdown(++sid)};
 $('go').onclick=begin;$('back').onclick=toMenu;

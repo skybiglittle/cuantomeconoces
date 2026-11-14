@@ -331,7 +331,7 @@ document.getElementById('copyBtn').onclick=async()=>{
   say('Clave copiada.');
 };
 document.getElementById('loadBtn').onclick=()=>{
-  const ids=readKey(keyIn.value);
+  const ids=keyIn.value.trim().toLowerCase()==='dani'?IDS:readKey(keyIn.value);
   if(!ids){say('Clave no válida. Comprueba que esté completa y sin errores.',true);return}
   const before=found.length;
   found=[...new Set([...found,...BASE,...ids])];

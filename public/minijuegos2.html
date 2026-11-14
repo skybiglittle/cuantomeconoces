@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Color, equilibrio y estrellas</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#3b1d4e,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:640px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(32px,8.5vw,52px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#ffd166 55%,#ff8da1);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:21px;margin:0 0 8px}.m,.sub{color:var(--m)}.sub{margin:0 0 16px}.small{font-size:13px;color:var(--m)}
+.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
+.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
+.hidden{display:none!important}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}.btn.gh{background:transparent;border:1px solid var(--l)}.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}.full{width:100%;margin-top:12px}
+.btn:focus-visible,.gm:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.gm{text-align:left;font:inherit;color:var(--t);background:linear-gradient(145deg,#1d2943,#121b2f);border:1px solid var(--l);border-radius:18px;padding:14px;cursor:pointer}
+.gm i{font-style:normal;font-size:30px;display:block}.gm b{display:block;font-size:17px}.gm span{font-size:13px;color:var(--m)}
+.meter{height:12px;background:#303b55;border-radius:99px;overflow:hidden;margin:10px 0}.meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--b),var(--y),var(--r))}
+.meter.k span{background:var(--g)}
+.st{min-height:24px;font-weight:700;color:var(--b)}.big{font-size:clamp(24px,7vw,36px);font-weight:950;text-align:center;margin:8px 0}
+.vw{position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(#0b1020,#1d3a4e);aspect-ratio:4/3}
+.vw video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vw canvas{position:absolute;inset:0;width:100%;height:100%}
+.ret{position:absolute;left:50%;top:50%;width:22.5%;aspect-ratio:1;transform:translate(-50%,-50%);border:3px dashed #fff;border-radius:12px}
+.lv{position:relative;width:min(80vw,300px);aspect-ratio:1;margin:12px auto;border-radius:50%;border:3px solid var(--l);background:#0f172a}
+.zn{position:absolute;left:50%;top:50%;border-radius:50%;border:3px solid var(--g);transform:translate(-50%,-50%)}.zn.out{border-color:var(--r)}
+.bb{position:absolute;width:26px;height:26px;border-radius:50%;background:var(--y);left:50%;top:50%;margin:-13px 0 0 -13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><main>
+<header><span class="tag">📱 CÁMARA Y GIROSCOPIO</span><h1>Color, equilibrio y estrellas</h1><p class="sub">Tres juegos para jugar en movimiento. Mejor en un móvil con Chrome o Safari.</p></header>
+<nav id="menu" class="grid">
+<button class="gm" data-g="col"><i>🎨</i><b>Busca el color</b><span>«Busca algo azul»: enséñaselo a la cámara</span></button>
+<button class="gm" data-g="bal"><i>⚖️</i><b>Equilibrista</b><span>Mantén el móvil nivelado sobre la mano</span></button>
+<button class="gm" data-g="sta"><i>⭐</i><b>Caza de estrellas</b><span>Gira y apunta para encontrar estrellas ocultas</span></button>
+</nav>
+<section id="g" class="panel hidden"><button class="btn gh" id="back">← Menú</button><div id="v" style="margin-top:14px"></div></section>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),rnd=n=>Math.random()*n|0,pick=a=>a[rnd(a.length)],wait=ms=>new Promise(r=>setTimeout(r,ms)),clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),wrap=a=>((a%360)+540)%360-180;
+let ac=null,CL=[],run=0;const G={};
+const AC=()=>{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac};
+const beep=(f,d=.15,v=.1,t='sine')=>{try{const a=AC(),o=a.createOscillator(),g=a.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(a.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}};
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const say=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';speechSynthesis.speak(u)}catch(e){}};
+const v=h=>$('v').innerHTML=h,on=f=>CL.push(f);
+const stop=()=>{CL.forEach(f=>{try{f()}catch(e){}});CL=[];try{speechSynthesis.cancel()}catch(e){}vib(0)};
+const again=n=>{const b=document.createElement('button');b.className='btn g full';b.textContent='Jugar otra vez';b.onclick=()=>{stop();G[n](++run)};$('v').appendChild(b)};
+const orient=async()=>{try{if(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission)return(await DeviceOrientationEvent.requestPermission())==='granted'}catch(e){return false}return true};
+document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{stop();$('menu').classList.add('hidden');$('g').classList.remove('hidden');G[b.dataset.g](++run)});
+$('back').onclick=()=>{stop();run++;$('g').classList.add('hidden');$('menu').classList.remove('hidden')};
+
+/* 1 · BUSCA EL COLOR */
+const hsv=(r,g,b)=>{r/=255;g/=255;b/=255;const M=Math.max(r,g,b),m=Math.min(r,g,b),d=M-m;let h=0;if(d){h=M===r?((g-b)/d)%6:M===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}return[h,M?d/M:0,M]};
+G.col=async id=>{
+ const C=[['rojo','#ff3b3b',h=>h<12||h>345,.5,.3],['naranja','#ff9f1c',h=>h>=15&&h<=40,.55,.45],['amarillo','#ffe14d',h=>h>=45&&h<=70,.5,.5],['verde','#39d98a',h=>h>=85&&h<=150,.4,.25],['azul','#4d8dff',h=>h>=195&&h<=250,.45,.25],['morado','#a46bff',h=>h>=265&&h<=300,.35,.25],['rosa','#ff7ac8',h=>h>=310&&h<=345,.3,.5]];
+ v('<h2>🎨 Busca el color</h2><p class="m">Te diré un color. Busca algo de ese color y apunta con la cámara al cuadro central. Tienes 15 segundos por color.</p><div class="vw"><video id="vd" playsinline muted></video><div class="ret" id="rt"></div></div><div class="big" id="pn">Preparando…</div><div class="small">Tiempo</div><div class="meter"><span id="bar"></span></div><div class="small">Color encontrado</div><div class="meter k"><span id="mt"></span></div><div class="st" id="ps"></div>');
+ const vd=$('vd'),ps=$('ps'),pn=$('pn'),bar=$('bar'),mt=$('mt'),rt=$('rt');
+ try{const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});on(()=>st.getTracks().forEach(t=>t.stop()));vd.srcObject=st;await vd.play()}catch(e){return ps.textContent='Necesito permiso de cámara.'}
+ const cv=document.createElement('canvas');cv.width=cv.height=24;const x=cv.getContext('2d',{willReadFrequently:true});
+ const frac=c=>{const w=vd.videoWidth,h=vd.videoHeight;if(!w)return 0;const s=Math.min(w,h)*.3;x.drawImage(vd,(w-s)/2,(h-s)/2,s,s,0,0,24,24);const d=x.getImageData(0,0,24,24).data;let n=0;for(let i=0;i<d.length;i+=4){const q=hsv(d[i],d[i+1],d[i+2]);if(c[2](q[0])&&q[1]>c[3]&&q[2]>c[4])n++}return n/576};
+ const order=C.slice().sort(()=>Math.random()-.5).slice(0,6);let score=0;
+ for(const c of order){if(id!==run)return;pn.textContent='Busca algo '+c[0].toUpperCase();pn.style.color=c[1];rt.style.borderColor=c[1];say('Busca algo '+c[0]);ps.textContent='';
+  const t0=Date.now();let hold=0,ok=false;
+  while(Date.now()-t0<15000&&!ok){if(id!==run)return;const f=frac(c);mt.style.width=clamp(f/.45)*100+'%';bar.style.width=(1-(Date.now()-t0)/15000)*100+'%';
+   if(f>.45){hold=hold||Date.now();if(Date.now()-hold>800)ok=true}else hold=0;await wait(100)}
+  if(ok){score++;beep(660,.25,.12);vib(80);ps.textContent='✅ ¡Lo encontraste!'}else{beep(160,.4,.15);ps.textContent='⏱️ Se acabó el tiempo'}
+  await wait(1300)}
+ pn.style.color='';pn.textContent='Fin: '+score+' de '+order.length;ps.textContent='';again('col')};
+
+/* 2 · EQUILIBRISTA */
+G.bal=id=>{let b=null,g=null,best=0;try{best=+localStorage.getItem('eq_best')||0}catch(e){}
+ v('<h2>⚖️ Equilibrista</h2><p class="m">Pon el móvil plano sobre la palma de la mano (o sobre la cabeza). Mantén la burbuja dentro del círculo verde, que cada vez es más pequeño. Si te sales más de un segundo, pierdes.</p><div class="lv" id="lv"><div class="zn" id="zn"></div><div class="bb" id="bb"></div></div><div class="big" id="pn">0.0 s</div><div class="st" id="ps">Récord: '+best.toFixed(1)+' s</div><button class="btn g full" id="pg">Empezar</button>');
+ const lv=$('lv'),zn=$('zn'),bb=$('bb'),pn=$('pn'),ps=$('ps'),pg=$('pg');
+ const h=e=>{b=e.beta;g=e.gamma};addEventListener('deviceorientation',h);on(()=>removeEventListener('deviceorientation',h));
+ pg.onclick=async()=>{if(!await orient())return ps.textContent='Permiso de movimiento denegado.';pg.classList.add('hidden');AC();
+  for(let i=3;i>0;i--){ps.textContent='Pon el móvil plano… '+i;beep(520,.1);await wait(1000);if(id!==run)return}
+  if(typeof b!=='number'){ps.textContent='No detecto sensores. Prueba en un móvil.';pg.classList.remove('hidden');return}
+  const b0=b,g0=g,R=lv.clientWidth/2*.9,t0=Date.now();let last=t0,out=0,t=0;beep(880,.2);
+  while(out<1000){if(id!==run)return;const n=Date.now(),dt=n-last;last=n;t=(n-t0)/1000;
+   const dx=g-g0,dy=b-b0,d=Math.hypot(dx,dy),tol=Math.max(3,12-t*.25),k=d>20?20/d:1;
+   bb.style.transform='translate('+dx*k/20*R+'px,'+dy*k/20*R+'px)';zn.style.width=zn.style.height=tol/20*R*2+'px';
+   if(d>tol){out+=dt;zn.classList.add('out')}else{out=Math.max(0,out-dt*2);zn.classList.remove('out')}
+   pn.textContent=t.toFixed(1)+' s';await wait(40)}
+  beep(150,.5,.15);vib(300);let m='💥 ¡Te caíste!';if(t>best){best=t;m='🏆 ¡Nuevo récord!';try{localStorage.setItem('eq_best',String(t))}catch(e){}}
+  ps.textContent=m+' Récord: '+best.toFixed(1)+' s';pg.textContent='Jugar otra vez';pg.classList.remove('hidden')}};
+
+/* 3 · CAZA DE ESTRELLAS */
+G.sta=id=>{let al=null,be=null;
+ v('<h2>⭐ Caza de estrellas</h2><p class="m">Hay estrellas escondidas a tu alrededor. Con el móvil en vertical, gira sobre ti mismo y mira arriba y abajo. Apunta una estrella al centro y aguanta 1 segundo. Los pitidos suben de velocidad cuando te acercas.</p><div class="vw" style="aspect-ratio:3/4"><video id="vd" playsinline muted></video><canvas id="cv"></canvas></div><div class="st" id="ps"></div><button class="btn g full" id="pg">Empezar</button>');
+ const vd=$('vd'),cv=$('cv'),ps=$('ps'),pg=$('pg');
+ const h=e=>{al=e.alpha;be=e.beta};addEventListener('deviceorientation',h);on(()=>removeEventListener('deviceorientation',h));
+ pg.onclick=async()=>{if(!await orient())return ps.textContent='Permiso de movimiento denegado.';pg.classList.add('hidden');AC();
+  try{const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});on(()=>st.getTracks().forEach(t=>t.stop()));vd.srcObject=st;await vd.play()}catch(e){}
+  await wait(400);if(id!==run)return;
+  if(typeof al!=='number'){ps.textContent='No detecto sensores de movimiento. Prueba en un móvil.';pg.classList.remove('hidden');return}
+  const dpr=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight,x=cv.getContext('2d');cv.width=W*dpr;cv.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0);
+  const a0=al,ppd=W/55,cx=W/2,cy=H/2,TOT=8,TL=75000,st=[];
+  while(st.length<TOT){const s={az:rnd(360)-180,el:rnd(70)-15,hold:0,got:0};if(st.every(o=>Math.hypot(wrap(o.az-s.az),o.el-s.el)>30))st.push(s)}
+  let dn=180,score=0,over=false;const t0=Date.now();let last=t0;
+  (async()=>{while(id===run&&!over){beep(900,.04,.06);await wait(180+clamp(dn/90)*1000)}})();
+  const star=(X,Y,r,rot)=>{x.beginPath();for(let i=0;i<10;i++){const q=i%2?r*.45:r,a=rot+i*Math.PI/5-Math.PI/2;x.lineTo(X+Math.cos(a)*q,Y+Math.sin(a)*q)}x.closePath();x.fill()};
+  const draw=()=>{if(id!==run||over)return;const n=Date.now(),dt=n-last;last=n;
+   const head=a0-al,pit=be-90;x.clearRect(0,0,W,H);dn=180;let nr=0,ne=0;
+   for(const s of st){if(s.got)continue;const rx=wrap(s.az-head),ry=s.el-pit,d=Math.hypot(rx,ry);if(d<dn){dn=d;nr=rx;ne=ry}
+    const X=cx+rx*ppd,Y=cy-ry*ppd;
+    if(d<7){s.hold+=dt}else s.hold=Math.max(0,s.hold-dt*2);
+    if(s.hold>=1000){s.got=1;score++;beep(880,.12,.12);beep(1320,.25,.1);vib(80)}
+    if(X>-30&&X<W+30&&Y>-30&&Y<H+30){x.fillStyle='#ffd166';x.shadowColor='#ffd166';x.shadowBlur=14;star(X,Y,16+Math.sin(n/200+s.az)*2,n/1500);x.shadowBlur=0;
+     if(s.hold>0){x.strokeStyle='#39d98a';x.lineWidth=4;x.beginPath();x.arc(cx,cy,26,-Math.PI/2,-Math.PI/2+s.hold/1000*2*Math.PI);x.stroke()}}}
+   x.strokeStyle='#fff';x.lineWidth=2;x.beginPath();x.arc(cx,cy,20,0,7);x.moveTo(cx-30,cy);x.lineTo(cx-12,cy);x.moveTo(cx+12,cy);x.lineTo(cx+30,cy);x.moveTo(cx,cy-30);x.lineTo(cx,cy-12);x.moveTo(cx,cy+12);x.lineTo(cx,cy+30);x.stroke();
+   if(dn>12&&dn<180){const an=Math.atan2(-ne,nr),r=Math.min(W,H)*.36,px=cx+Math.cos(an)*r,py=cy+Math.sin(an)*r;x.fillStyle='#53dfca';x.beginPath();x.moveTo(px+Math.cos(an)*14,py+Math.sin(an)*14);x.lineTo(px+Math.cos(an+2.5)*12,py+Math.sin(an+2.5)*12);x.lineTo(px+Math.cos(an-2.5)*12,py+Math.sin(an-2.5)*12);x.fill()}
+   const left=Math.max(0,TL-(n-t0));ps.textContent='⭐ '+score+' de '+TOT+' · '+Math.ceil(left/1000)+' s';
+   if(score>=TOT||left<=0){over=true;beep(score>=TOT?990:200,.5,.12);ps.textContent=(score>=TOT?'🏆 ¡Cazaste todas! ':'⏱️ Se acabó el tiempo. ')+score+' de '+TOT+' estrellas';pg.textContent='Jugar otra vez';pg.classList.remove('hidden');return}
+   requestAnimationFrame(draw)};
+  draw()}};
+})();
+</script></body></html>

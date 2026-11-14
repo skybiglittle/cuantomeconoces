@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Humanity Cards</title>
+<style>
+:root{--bg:#f2f0eb;--fg:#161616;--box:#fff;--mut:#6b6b6b;--gold:#e8b800;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:680px;margin:0 auto;padding:14px}
+h1{text-align:center;font-size:2.2rem;margin:8px 0 12px}
+h2{text-align:center;font-size:1.2rem;margin:12px 0 6px}
+.box{background:var(--box);border-radius:16px;padding:16px;box-shadow:0 2px 10px #0003}
+.mut{color:var(--mut);font-size:.9rem;margin:4px 0;text-align:center}
+.sc{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+.sc span{background:var(--box);border-radius:20px;padding:3px 10px;font-size:.85rem}
+input,textarea,select{font:inherit;padding:9px;border-radius:10px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);width:100%;margin:4px 0}
+select{width:auto}
+textarea{min-height:130px}
+button{font:inherit;cursor:pointer}
+.go{display:block;width:100%;background:var(--fg);color:var(--bg);border:0;border-radius:12px;padding:13px;font-weight:700;font-size:1.05rem;margin-top:12px}
+.go:disabled{opacity:.35}
+.s{background:none;border:2px solid var(--mut);color:var(--fg);border-radius:10px;padding:8px 12px;margin:6px 6px 0 0}
+.c{display:block;width:100%;border-radius:12px;padding:14px;font-weight:700;text-align:left;min-height:110px;font-size:1rem;position:relative;border:0;margin:8px 0}
+.k{background:#111;color:#fff}
+.k u{color:#ffd54a;text-decoration-thickness:2px}
+.w{background:#fff;color:#111;border:2px solid #bbb;margin:0}
+.on{outline:4px solid var(--gold)}
+.w.on::after{content:attr(data-o);position:absolute;top:6px;right:8px;background:var(--gold);border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.85rem}
+.hd{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0}
+.hd .k{margin:0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ===== CARTAS BASE (originales). Puedes añadir más aquí o desde el menú «Añadir mis cartas» ===== */
+const BASE_B=[
+"Lo que más me gusta de mi suegra es ___.",
+"Hacienda me ha llamado por culpa de ___.",
+"En mi currículum pongo ___ como mayor logro.",
+"Mi psicólogo cree que mi problema es ___.",
+"¿Qué hay debajo de mi cama? ___.",
+"Lo único que sobrevivirá al fin del mundo: ___.",
+"La boda de mi primo se fue al garete por ___.",
+"Mi abuela nunca perdonó ___.",
+"Última hora en el telediario: ___.",
+"Para triunfar en la vida solo necesitas ___ y ___.",
+"Me han echado del gimnasio por ___.",
+"El nuevo reto viral de TikTok: ___.",
+"Nada une más a una familia que ___.",
+"¿Qué me hizo llorar en el supermercado? ___.",
+"Ayer mi vecino me pidió prestado ___.",
+"El secreto de mi éxito: ___ combinado con ___.",
+"El Gobierno anuncia una nueva ley contra ___.",
+"Lo peor de las vacaciones en Benidorm: ___.",
+"Querido diario: hoy descubrí ___.",
+"Mi mayor miedo: ___ durante una videollamada.",
+"En la cena de Navidad, mi tío empezó a hablar de ___ y de ___.",
+"Prohibido en este restaurante: ___."
+];
+const BASE_W=[
+"Mi cuñado explicando criptomonedas","Una siesta de tres horas","El WhatsApp de la familia a las 7 de la mañana","Un chándal de terciopelo","Pagar la declaración de la renta","Un croquetón sospechoso","La tortilla con cebolla (¡con cebolla!)","Un karaoke sin vuelta atrás","Mi ex escribiéndome a las 3 de la madrugada","Una piscina de gelatina","El WiFi del vecino","Un flamenco muy intenso","Los abuelos con el móvil en altavoz","Un dron con malas intenciones","El gimnasio en enero","Discutir por el aire acondicionado","Una paella con piña","Perder las llaves otra vez","Un mariachi inoportuno","El hilo interminable de un influencer","Bailar sin música","Un perro con complejo de superioridad","La cola de Correos","Un bocadillo de calamares a las 8 de la mañana","Fingir que entiendo de vinos","Una pelea de gallinas","El reggaeton a todo volumen","Una crisis de los cuarenta","Mi tía contando el mismo chiste","Un gato que sabe demasiado","Pisar un Lego descalzo","El último trozo de pizza","Un mago borracho","Un abrazo muy largo e incómodo","Tropezar delante de todo el mundo","Un tutorial de YouTube que sale mal","Comer pipas en el cine","Un cuñado con megáfono","El ruido de la lavadora a medianoche","Hablar solo en el ascensor","Mi currículum lleno de mentiras","Un sofá con muchos secretos","Gritar «¡que viene el lobo!»","Un karaoke de Camela","Una abuela ninja","Un pulpo con rencor","Aprender a conducir a los 60","Un pavo de Navidad con vida propia","El grupo de padres del colegio","Una reunión que podría haber sido un email","Villancicos en agosto","Un jamón con pasaporte","Una dieta que empieza el lunes","Mi gemelo malvado","El sonido de una cremallera en un funeral"
+];
+
+const $=s=>document.querySelector(s),A=$('#app');
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+function load(){try{return JSON.parse(localStorage.getItem('hc_custom'))||{b:[],w:[]}}catch(e){return{b:[],w:[]}}}
+function save(c){try{localStorage.setItem('hc_custom',JSON.stringify(c));return true}catch(e){return false}}
+let C=load(),G;
+const allB=()=>BASE_B.concat(C.b),allW=()=>BASE_W.concat(C.w);
+const pk=b=>Math.min(3,Math.max(1,(b.match(/___/g)||[]).length));
+function fillB(b,cs){let i=0,s=E(b).replace(/___/g,()=>`<u>${E(cs[i++]??'___')}</u>`);if(cs.length&&!i)s+=`<br><u>${E(cs.join(' / '))}</u>`;return s}
+const bc=(b,cs=[])=>`<div class="c k">${fillB(b,cs)}</div>`;
+const sb=()=>`<div class="sc">${G.p.map((p,i)=>`<span>${i===G.czar?'⚖ ':''}${E(p.n)}: ${p.s}</span>`).join('')}</div>`;
+
+function setup(names=['Ana','Luis','Marta'],target=5){
+ A.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Juego de cartas de humor negro para adultos. Se juega pasándose el dispositivo. De 3 a 8 jugadores.</p>
+ <div id="pl">${names.map(n=>`<input value="${E(n)}" maxlength="14">`).join('')}</div>
+ <button class="s" id="ad">+ Jugador</button><button class="s" id="rm">− Jugador</button>
+ <p><label>Puntos para ganar: <select id="tg">${[3,5,7,10].map(v=>`<option ${v==target?'selected':''}>${v}</option>`).join('')}</select></label></p>
+ <button class="go" id="go">¡Jugar!</button><button class="s" id="cu" style="margin-top:12px">Añadir mis cartas (${C.b.length+C.w.length} propias)</button></div>`;
+ const ins=()=>[...A.querySelectorAll('#pl input')];
+ $('#ad').onclick=()=>{if(ins().length<8){const i=document.createElement('input');i.maxLength=14;i.value='Jugador '+(ins().length+1);$('#pl').append(i)}};
+ $('#rm').onclick=()=>{if(ins().length>3)ins().pop().remove()};
+ $('#cu').onclick=custom;
+ $('#go').onclick=()=>newGame(ins().map((x,i)=>x.value.trim()||'Jugador '+(i+1)),+$('#tg').value);
+}
+function newGame(names,target){
+ G={p:names.map(n=>({n,s:0,h:[]})),czar:0,target,dw:[],db:[],subs:[],names};
+ round();
+}
+function dr(){
+ if(!G.dw.length){const u=new Set(G.p.flatMap(p=>p.h).concat(G.subs.flatMap(s=>s.c)));G.dw=sh(allW().filter(w=>!u.has(w)));if(!G.dw.length)G.dw=sh(allW())}
+ return G.dw.pop();
+}
+function round(){
+ if(!G.db.length)G.db=sh(allB());
+ G.b=G.db.pop();G.pk=pk(G.b);G.subs=[];
+ G.p.forEach(p=>{while(p.h.length<10)p.h.push(dr())});
+ G.ord=G.p.map((_,i)=>i).filter(i=>i!==G.czar);
+ intro(0);
+}
+function intro(k){
+ if(k>=G.ord.length)return czarIn();
+ const p=G.p[G.ord[k]];
+ A.innerHTML=`${sb()}<div class="box"><p class="mut">Juez de la ronda: ⚖ ${E(G.p[G.czar].n)}</p>${bc(G.b)}<h2>Pasa el dispositivo a ${E(p.n)}</h2><p class="mut">Que nadie más mire la pantalla.</p><button class="go" id="go">Soy ${E(p.n)}</button></div>`;
+ $('#go').onclick=()=>hand(k);
+}
+function hand(k){
+ const p=G.p[G.ord[k]],sel=[];
+ A.innerHTML=`${sb()}<div class="box">${bc(G.b)}<p class="mut">${E(p.n)}, elige ${G.pk} carta${G.pk>1?'s (en orden)':''}</p><div class="hd">${p.h.map((w,i)=>`<button class="c w" data-i="${i}">${E(w)}</button>`).join('')}</div><button class="go" id="ok" disabled>Confirmar</button></div>`;
+ $('.hd').onclick=e=>{const b=e.target.closest('.w');if(!b)return;const i=+b.dataset.i,x=sel.indexOf(i);
+  if(x>=0)sel.splice(x,1);else if(sel.length<G.pk)sel.push(i);
+  A.querySelectorAll('.w').forEach(el=>{const j=sel.indexOf(+el.dataset.i);el.classList.toggle('on',j>=0);el.dataset.o=j>=0?j+1:''});
+  $('#ok').disabled=sel.length!==G.pk};
+ $('#ok').onclick=()=>{const cs=sel.map(i=>p.h[i]);p.h=p.h.filter((_,i)=>!sel.includes(i));G.subs.push({p:G.ord[k],c:cs});intro(k+1)};
+}
+function czarIn(){
+ G.subs=sh(G.subs);const p=G.p[G.czar];
+ A.innerHTML=`${sb()}<div class="box"><h2>Pasa el dispositivo al juez</h2><p class="mut">Ya están todas las respuestas.</p><button class="go" id="go">Soy ${E(p.n)}</button></div>`;
+ $('#go').onclick=judge;
+}
+function judge(){
+ let sel=-1;
+ A.innerHTML=`${sb()}<div class="box"><p class="mut">${E(G.p[G.czar].n)}, elige la mejor respuesta</p><div class="hd">${G.subs.map((s,i)=>`<button class="c k" data-i="${i}">${fillB(G.b,s.c)}</button>`).join('')}</div><button class="go" id="ok" disabled>Elegir ganador</button></div>`;
+ $('.hd').onclick=e=>{const b=e.target.closest('.k');if(!b)return;sel=+b.dataset.i;
+  A.querySelectorAll('.hd .k').forEach(el=>el.classList.toggle('on',+el.dataset.i===sel));$('#ok').disabled=false};
+ $('#ok').onclick=()=>win(G.subs[sel]);
+}
+function win(s){
+ const p=G.p[s.p];p.s++;const end=p.s>=G.target;
+ A.innerHTML=`${sb()}<div class="box">${bc(G.b,s.c)}<h2>🏆 ${E(p.n)} gana la ronda (+1)</h2><button class="go" id="go">${end?'Ver resultado':'Siguiente ronda'}</button></div>`;
+ $('#go').onclick=()=>end?fin(p):(G.czar=(G.czar+1)%G.p.length,round());
+}
+function fin(w){
+ const r=[...G.p].sort((a,b)=>b.s-a.s);
+ A.innerHTML=`<h1>🏆 ${E(w.n)}</h1><div class="box"><h2>¡Es el más retorcido de la mesa!</h2>${r.map((p,i)=>`<p style="text-align:center">${i+1}. ${E(p.n)} — ${p.s} punto${p.s==1?'':'s'}</p>`).join('')}<button class="go" id="go">Jugar otra vez</button><button class="s" id="mn" style="margin-top:12px">Menú</button></div>`;
+ $('#go').onclick=()=>newGame(G.names,G.target);$('#mn').onclick=()=>setup(G.names,G.target);
+}
+function custom(){
+ A.innerHTML=`<h1>Mis cartas</h1><div class="box">
+ <p class="mut">Una carta por línea. Puedes escribir aquí o cargar un archivo .txt (una carta por línea).</p>
+ <h2>Cartas negras (preguntas)</h2><p class="mut">Usa ___ para el hueco. Con 2 huecos se eligen 2 blancas.</p>
+ <textarea id="tb">${E(C.b.join('\n'))}</textarea><input type="file" accept=".txt,text/plain" data-t="tb">
+ <h2>Cartas blancas (respuestas)</h2>
+ <textarea id="tw">${E(C.w.join('\n'))}</textarea><input type="file" accept=".txt,text/plain" data-t="tw">
+ <button class="go" id="sv">Guardar</button><p class="mut" id="ms"></p><button class="s" id="bk">← Volver</button></div>`;
+ A.querySelectorAll('input[type=file]').forEach(f=>f.onchange=()=>{const t=$('#'+f.dataset.t),r=new FileReader();r.onload=()=>{t.value+=(t.value?'\n':'')+r.result};if(f.files[0])r.readAsText(f.files[0])});
+ const L=id=>$(id).value.split('\n').map(x=>x.trim()).filter(Boolean);
+ $('#sv').onclick=()=>{C={b:L('#tb'),w:L('#tw')};$('#ms').textContent=save(C)?`Guardado ✓ (${C.b.length} negras, ${C.w.length} blancas)`:'Se usarán en esta sesión, pero el navegador no permite guardarlas.'};
+ $('#bk').onclick=()=>setup();
+}
+setup();
+</script>
+</body>
+</html>

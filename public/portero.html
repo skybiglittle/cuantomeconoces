@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portero</title>
+<style>
+:root{--bg:#0e1318;--panel:#18212b;--ink:#f2f6fa;--mut:#9fb0c0;--acc:#4da3ff;--ok:#3ddc97}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;display:grid;place-items:center;padding:12px}
+#stage{position:relative;width:min(960px,100%);aspect-ratio:4/3;background:#000;border-radius:14px;overflow:hidden;border:2px solid #223040}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+video{display:none}
+#ov{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;text-align:center;padding:24px;background:#0a1016e6}
+#ov.hide{display:none}
+#ov h1{margin:0;font-size:clamp(30px,6vw,52px)}
+#ov p{margin:0;max-width:46ch;color:var(--mut);line-height:1.5}
+#ov .err{color:#ff9b7a}
+button{font:inherit;font-weight:700;font-size:18px;background:var(--acc);color:#04121f;border:0;border-radius:12px;padding:12px 26px;cursor:pointer}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="v" playsinline muted></video>
+  <canvas id="c" width="640" height="480"></canvas>
+  <div id="ov">
+    <h1 id="title">Portero</h1>
+    <p id="txt">Ponte a unos 2 metros de la cámara, con los brazos y el torso a la vista. Te lanzan balones desde distintos ángulos: páralos con los brazos. Cada vez vienen más rápido. Tienes 3 vidas.</p>
+    <p id="err" class="err"></p>
+    <button id="go">Iniciar cámara y jugar</button>
+  </div>
+</div>
+
+<script type="module">
+import {PoseLandmarker,FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+const $=id=>document.getElementById(id);
+const v=$('v'),cv=$('c'),ctx=cv.getContext('2d'),ov=$('ov');
+// ---- Dificultad (ajusta a tu gusto) ----
+const DUR0=2400,DURMIN=650,DUR_K=.95;     // duración del vuelo del balón en ms: empieza en DUR0 y se reduce un 5 % por balón hasta DURMIN
+const GAP0=1500,GAPMIN=450,GAP_K=.96;     // tiempo entre balones en ms
+const LIVES=3;
+
+let pose,stream,audio,W=640,H=480,state='idle',L=null,arms=[],lastT=-1;
+let balls=[],score=0,lives=LIVES,spawned=0,nextSpawn=0,cdStart=0,flash=0;
+let best=0;try{best=+localStorage.getItem('portero-mejor')||0}catch(e){}
+
+async function loadModel(){
+  const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  for(const delegate of ['GPU','CPU']){
+    try{
+      pose=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate},runningMode:"VIDEO",numPoses:1});
+      return;
+    }catch(e){if(delegate==='CPU')throw e}
+  }
+}
+async function startCamera(){
+  audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+  $('go').textContent='Cargando…';
+  if(!pose)await loadModel();
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:960},height:{ideal:720}},audio:false});
+  v.srcObject=stream;await v.play();
+  W=cv.width=v.videoWidth;H=cv.height=v.videoHeight;
+  $('stage').style.aspectRatio=W+'/'+H;
+}
+function beep(f,d){
+  const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=f;g.gain.value=.15;
+  o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+d);
+}
+function startGame(){
+  balls=[];score=0;lives=LIVES;spawned=0;flash=0;cdStart=performance.now();state='countdown';ov.classList.add('hide');
+}
+function gameOver(){
+  state='over';balls=[];
+  if(score>best){best=score;try{localStorage.setItem('portero-mejor',best)}catch(e){}}
+  $('title').textContent='Fin del partido';
+  $('txt').textContent='Paradas: '+score+' · Mejor marca: '+best;
+  $('go').textContent='Jugar otra vez';ov.classList.remove('hide');
+}
+$('go').onclick=async()=>{
+  $('err').textContent='';
+  try{if(!stream)await startCamera();startGame()}
+  catch(e){
+    console.error(e);$('go').textContent='Iniciar cámara y jugar';
+    $('err').textContent=e&&e.name==='NotAllowedError'?'Permiso de cámara denegado. Actívalo en el navegador y vuelve a intentarlo.':'No se pudo iniciar. Comprueba la cámara y la conexión a internet (se necesita para cargar el modelo).';
+  }
+};
+
+// ---- Brazos: segmentos hombro→codo, codo→muñeca y la mano (prolongación del antebrazo) ----
+function getArms(L){
+  const P=i=>(L[i].visibility??0)>.4?{x:(1-L[i].x)*W,y:L[i].y*H}:null;   // imagen en espejo
+  const segs=[];
+  [[11,13,15],[12,14,16]].forEach(([s,e,w])=>{
+    const S=P(s),E=P(e),R=P(w);
+    if(S&&E)segs.push([S,E]);
+    if(E&&R){segs.push([E,R]);segs.push([R,{x:R.x+(R.x-E.x)*.35,y:R.y+(R.y-E.y)*.35}])}
+    else if(R)segs.push([R,R]);
+  });
+  return segs;
+}
+function nearest(p,A,B){
+  const dx=B.x-A.x,dy=B.y-A.y,l2=dx*dx+dy*dy;
+  let t=l2?((p.x-A.x)*dx+(p.y-A.y)*dy)/l2:0;t=Math.max(0,Math.min(1,t));
+  const q={x:A.x+t*dx,y:A.y+t*dy};return{q,d:Math.hypot(p.x-q.x,p.y-q.y)};
+}
+
+// ---- Balones: trayectoria curva desde un punto lejano (pequeño) hasta un punto cercano (grande) ----
+function spawn(now){
+  const n=spawned++;
+  const a=Math.random()*Math.PI*2,rad=.05+Math.random()*.25;
+  const S={x:W*(.5+Math.cos(a)*rad),y:H*(.42+Math.sin(a)*rad*.8)};
+  const T={x:W*(.08+Math.random()*.84),y:H*(.15+Math.random()*.75)};
+  const k=(Math.random()-.5)*.8;
+  const C={x:(S.x+T.x)/2-(T.y-S.y)*k,y:(S.y+T.y)/2+(T.x-S.x)*k};
+  balls.push({S,T,C,t0:now,dur:Math.max(DURMIN,DUR0*Math.pow(DUR_K,n)),s:'fly'});
+}
+const pos=(b,p)=>{const t=Math.pow(p,1.6),u=1-t;return{x:u*u*b.S.x+2*u*t*b.C.x+t*t*b.T.x,y:u*u*b.S.y+2*u*t*b.C.y+t*t*b.T.y}};
+const rad=p=>W*(.02+.1*p*p);
+
+function update(now){
+  if(now>=nextSpawn){spawn(now);nextSpawn=now+Math.max(GAPMIN,GAP0*Math.pow(GAP_K,spawned))}
+  let dead=false;
+  for(const b of balls){
+    if(b.s!=='fly')continue;
+    const p=Math.min(1,(now-b.t0)/b.dur);
+    if(p>.5){
+      const c=pos(b,p),r=rad(p);
+      for(const [A,B] of arms){
+        const h=nearest(c,A,B);
+        if(h.d<r+W*.03){
+          b.s='saved';b.t1=now;b.x=c.x;b.y=c.y;b.r=r;
+          const m=Math.max(1,h.d);b.vx=(c.x-h.q.x)/m*W*.0012;b.vy=(c.y-h.q.y)/m*W*.0012-W*.0004;
+          score++;beep(880,.1);break;
+        }
+      }
+    }
+    if(b.s==='fly'&&p>=1){b.s='goal';b.t1=now;lives--;flash=1;beep(170,.3);if(lives<=0)dead=true}
+  }
+  balls=balls.filter(b=>b.s==='fly'||now-b.t1<500);
+  if(dead)gameOver();
+}
+function ball(x,y,r,alpha){
+  ctx.globalAlpha=alpha;ctx.font=(r*2)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('⚽',x,y);ctx.globalAlpha=1;
+}
+function drawBalls(now){
+  for(const b of balls){
+    if(b.s==='fly'){const p=Math.min(1,(now-b.t0)/b.dur),c=pos(b,p);ball(c.x,c.y,rad(p),1)}
+    else{
+      const dt=now-b.t1,f=dt/500;
+      if(b.s==='saved')ball(b.x+b.vx*dt,b.y+b.vy*dt,b.r*(1-.5*f),1-f);
+      else ball(b.T.x,b.T.y,rad(1)*(1+.4*f),1-f);
+    }
+  }
+}
+function drawArms(){
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#3ddc97';ctx.lineWidth=W*.03;ctx.globalAlpha=.85;
+  for(const [A,B] of arms){ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke()}
+  ctx.globalAlpha=1;
+}
+function text(t,x,y,size,align){
+  ctx.font='bold '+size+'px "Trebuchet MS",sans-serif';ctx.textAlign=align;ctx.textBaseline='middle';
+  ctx.lineWidth=size/6;ctx.strokeStyle='#000c';ctx.strokeText(t,x,y);ctx.fillStyle='#fff';ctx.fillText(t,x,y);
+}
+function hud(now){
+  if(state!=='play'&&state!=='countdown')return;
+  text('Paradas '+score,W*.03,H*.07,W/24,'left');
+  text('Nivel '+(Math.floor(spawned/6)+1),W/2,H*.07,W/30,'center');
+  text('❤️'.repeat(Math.max(0,lives))+'🖤'.repeat(LIVES-Math.max(0,lives)),W*.97,H*.07,W/26,'right');
+  if(state==='countdown'){
+    const e=now-cdStart;
+    if(e>=3000){state='play';nextSpawn=now+400}
+    else text(String(3-Math.floor(e/1000)),W/2,H/2,H/3,'center');
+  }else if(!arms.length)text('No veo tus brazos: aléjate un poco',W/2,H*.93,W/28,'center');
+}
+function frame(){
+  requestAnimationFrame(frame);
+  const now=performance.now();
+  if(stream&&v.readyState>=2){
+    if(v.currentTime!==lastT){lastT=v.currentTime;L=pose.detectForVideo(v,now).landmarks[0]||null;arms=L?getArms(L):[]}
+    ctx.save();ctx.translate(W,0);ctx.scale(-1,1);ctx.drawImage(v,0,0,W,H);ctx.restore();
+    ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(0,0,W,H);
+  }else{ctx.fillStyle='#000';ctx.fillRect(0,0,W,H)}
+  drawArms();
+  if(state==='play')update(now);
+  drawBalls(now);
+  hud(now);
+  if(flash>0){ctx.fillStyle='rgba(255,70,60,'+(flash*.45)+')';ctx.fillRect(0,0,W,H);flash=Math.max(0,flash-.04)}
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

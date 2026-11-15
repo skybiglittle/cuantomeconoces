@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dibujo con cámara</title>
+<style>
+:root{--bg:#0f1115;--card:#1a1d24;--txt:#f2f3f5;--ac:#7c5cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:14px;gap:10px}
+h1{margin:0;font-size:1.3rem}
+.card{background:var(--card);border:1px solid #2c303a;border-radius:14px;padding:16px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:10px}
+input{background:#0f1115;color:var(--txt);border:1px solid #2c303a;border-radius:10px;padding:10px;font-size:1rem;width:100%}
+button{background:var(--card);color:var(--txt);border:1px solid #2c303a;border-radius:10px;padding:8px 12px;font-size:.88rem;cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.on{background:var(--ac);border-color:var(--ac)}
+button.big{background:var(--ac);border-color:var(--ac);padding:11px;font-size:1rem}
+#game{display:none;flex-direction:column;align-items:center;gap:10px;width:100%}
+#stage{width:100%;max-width:760px;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:4/3}
+canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:760px}
+.sw{width:30px;height:30px;border-radius:50%;padding:0;border:3px solid #2c303a}
+.sw.on{border-color:#fff}
+#status{font-size:.9rem;min-height:1.2em;text-align:center}
+#plist{width:100%;max-width:760px;display:flex;flex-direction:column;gap:6px}
+.pr{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--card);border-radius:10px;padding:6px 10px;font-size:.88rem}
+.pr b{flex:1;min-width:90px;font-weight:600}
+.dot{width:12px;height:12px;border-radius:50%}
+.pr button{padding:4px 8px;font-size:.8rem}
+#hint{color:#ffd60a;font-size:.9rem;text-align:center}
+small{color:#9aa0ac}
+</style>
+</head>
+<body>
+<h1>✍️ Dibujo con cámara</h1>
+
+<div id="lobby" class="card">
+  <input id="name" placeholder="Tu nombre" maxlength="14">
+  <button class="big" id="create">➕ Crear sala (soy el anfitrión)</button>
+  <input id="code" placeholder="Código de sala" maxlength="4" style="text-transform:uppercase">
+  <button class="big" id="join">🚪 Unirme a la sala</button>
+  <div id="lobmsg" style="min-height:1.2em;font-size:.9rem;color:#ffd60a"></div>
+  <small>Dibujas con el dedo índice delante de la cámara. Con la mano cerrada no escribes. Sin cámara también puedes dibujar con el ratón o el dedo en pantalla. La cámara necesita http://localhost o https.</small>
+</div>
+
+<div id="game">
+  <div class="row"><b id="roomtag"></b><small id="who"></small></div>
+  <div id="stage"><canvas id="c" width="640" height="480"></canvas></div>
+  <div id="status"></div>
+  <div id="hint"></div>
+  <div class="row" id="tools"></div>
+  <div id="plist"></div>
+</div>
+<video id="v" playsinline muted hidden></video>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const c=$('c'), ctx=c.getContext('2d'), v=$('v'), CW=640, CH=480;
+const PAL=['#ff3b30','#ff9500','#ffd60a','#34c759','#00c7ff','#0a84ff','#bf5af2','#ffffff','#000000'];
+let peer=null, conns={}, hostConn=null, me={id:'',name:'',host:false}, room='', players=[], layers={}, cursors={};
+let tool='pen', color=PAL[0], size=6, outbox=[], selTarget=null, drag=null, ptr=null, last=null, sm=null, hand=null;
+let hl=null, camOn=false, lastT=-1, lostN=0, curInp=null, started=false;
+
+$('name').value='Jugador'+Math.floor(Math.random()*90+10);
+if(location.hash.length>1)$('code').value=location.hash.slice(1,5).toUpperCase();
+const lob=t=>$('lobmsg').textContent=t;
+const pl=id=>players.find(p=>p.id===id);
+
+/* ---------- Capas de dibujo ---------- */
+function layer(id){
+  if(!layers[id]){const cv=document.createElement('canvas');cv.width=CW;cv.height=CH;layers[id]={cv,cx:cv.getContext('2d')}}
+  return layers[id];
+}
+function applySeg(id,s){
+  const g=layer(id).cx;
+  g.globalCompositeOperation=s[6]?'destination-out':'source-over';
+  g.strokeStyle=s[4];g.lineWidth=s[5];g.lineCap=g.lineJoin='round';
+  g.beginPath();g.moveTo(s[0]*CW,s[1]*CH);g.lineTo(s[2]*CW,s[3]*CH+.01);g.stroke();
+}
+function doClear(id){
+  const ids=id==='all'?Object.keys(layers):[id];
+  ids.forEach(k=>{if(layers[k])layers[k].cx.clearRect(0,0,CW,CH)});
+}
+const inArea=(a,x,y)=>!a||(x>=a.x&&x<=a.x+a.w&&y>=a.y&&y<=a.y+a.h);
+
+/* ---------- Red (WebRTC con PeerJS, sin servidor propio) ---------- */
+const sendHost=m=>{if(hostConn&&hostConn.open)hostConn.send(m)};
+const bcast=(m,except)=>{for(const k in conns)if(k!==except&&conns[k].open)conns[k].send(m)};
+const pushState=()=>{bcast({t:'state',players});panel()};
+
+function mkRoom(){
+  if(peer)peer.destroy();
+  const code=Math.random().toString(36).slice(2,6).toUpperCase().replace(/[^A-Z0-9]/g,'X');
+  peer=new Peer('dibcam-'+code);
+  peer.on('open',()=>{
+    me={id:'H',name:$('name').value.trim()||'Anfitrión',host:true};room=code;
+    players=[{id:'H',name:me.name,can:true,area:null,col:'hsl(0 80% 60%)'}];
+    enter();
+  });
+  peer.on('error',e=>{if(e.type==='unavailable-id')mkRoom();else lob('Error de red: '+e.type)});
+  peer.on('connection',conn=>{
+    conns[conn.peer]=conn;
+    conn.on('data',m=>hostData(conn.peer,conn,m));
+    conn.on('close',()=>{delete conns[conn.peer];players=players.filter(p=>p.id!==conn.peer);delete cursors[conn.peer];pushState()});
+  });
+}
+function hostData(from,conn,m){
+  if(m.t==='join'){
+    players.push({id:from,name:String(m.name||'Jugador').slice(0,14),can:true,area:null,col:`hsl(${(players.length*67)%360} 80% 60%)`});
+    const o={};for(const k in layers)o[k]=layers[k].cv.toDataURL();
+    conn.send({t:'sync',layers:o});pushState();
+  }else if(m.t==='seg'){
+    const p=pl(from);if(!p||!p.can)return;
+    const ok=m.segs.filter(s=>inArea(p.area,s[0],s[1])&&inArea(p.area,s[2],s[3]));
+    ok.forEach(s=>applySeg(from,s));
+    if(ok.length)bcast({t:'seg',id:from,segs:ok},from);
+  }else if(m.t==='cur'){
+    cursors[from]={x:m.x,y:m.y,on:m.on,t:Date.now()};
+    bcast({t:'cur',id:from,x:m.x,y:m.y,on:m.on},from);
+  }else if(m.t==='clear'){doClear(from);bcast({t:'clear',id:from},from)}
+}
+function joinRoom(){
+  const code=$('code').value.trim().toUpperCase();
+  if(code.length<4)return lob('Escribe el código de 4 letras');
+  lob('Conectando…');
+  if(peer)peer.destroy();
+  peer=new Peer();
+  peer.on('open',id=>{
+    me={id,name:$('name').value.trim()||'Jugador',host:false};room=code;
+    hostConn=peer.connect('dibcam-'+code,{reliable:true});
+    hostConn.on('open',()=>{sendHost({t:'join',name:me.name});enter()});
+    hostConn.on('data',guestData);
+    hostConn.on('close',()=>{$('status').textContent='⚠ El anfitrión cerró la sala'});
+    setTimeout(()=>{if(!started)lob('No se pudo conectar con esa sala')},8000);
+  });
+  peer.on('error',e=>lob(e.type==='peer-unavailable'?'Esa sala no existe':'Error de red: '+e.type));
+}
+function guestData(m){
+  if(m.t==='state'){players=m.players;panel()}
+  else if(m.t==='seg')m.segs.forEach(s=>applySeg(m.id,s));
+  else if(m.t==='cur')cursors[m.id]={x:m.x,y:m.y,on:m.on,t:Date.now()};
+  else if(m.t==='clear')doClear(m.id);
+  else if(m.t==='sync')for(const k in m.layers){const im=new Image();im.onload=()=>{const g=layer(k).cx;g.globalCompositeOperation='source-over';g.drawImage(im,0,0)};im.src=m.layers[k]}
+}
+setInterval(()=>{ // envío de trazos y cursor
+  if(!started)return;
+  if(outbox.length){const m={t:'seg',id:me.id,segs:outbox};outbox=[];me.host?bcast(m):sendHost(m)}
+  const m={t:'cur',id:me.id,x:curInp?curInp.x:-1,y:curInp?curInp.y:-1,on:!!(curInp&&curInp.down)};
+  me.host?bcast(m):sendHost(m);
+},60);
+
+/* ---------- Acciones del anfitrión ---------- */
+function setCan(id,val){players.forEach(p=>{if(p.id!=='H'&&(id==='all'||p.id===id))p.can=val});pushState()}
+function setArea(id,a){players.forEach(p=>{if(id==='all'||p.id===id)p.area=a});pushState()}
+function clearAll(id){doClear(id);bcast({t:'clear',id})}
+
+function panel(){
+  const el=$('plist');el.innerHTML='';
+  const B=(t,f)=>{const b=document.createElement('button');b.textContent=t;b.onclick=f;return b};
+  const rows=[...players];
+  if(me.host){
+    const r=document.createElement('div');r.className='pr';
+    const n=document.createElement('b');n.textContent='👥 Todos';r.append(n,
+      B('✍️ Permitir',()=>setCan('all',true)),B('🔒 Bloquear',()=>setCan('all',false)),
+      B('▭ Área',()=>pickArea('all')),B('✖ Áreas',()=>setArea('all',null)),B('🗑 Todo',()=>clearAll('all')));
+    el.append(r);
+  }
+  rows.forEach(p=>{
+    const r=document.createElement('div');r.className='pr';
+    const d=document.createElement('span');d.className='dot';d.style.background=p.col;
+    const n=document.createElement('b');
+    n.textContent=p.name+(p.id==='H'?' 👑':'')+(p.id===me.id?' (tú)':'')+(p.can?'':' 🔒')+(p.area?' ▭':'');
+    r.append(d,n);
+    if(me.host){
+      if(p.id!=='H')r.append(B(p.can?'🔒 Bloquear':'✍️ Permitir',()=>setCan(p.id,!p.can)));
+      r.append(B('▭ Área',()=>pickArea(p.id)));
+      if(p.area)r.append(B('✖',()=>setArea(p.id,null)));
+      r.append(B('🗑',()=>clearAll(p.id)));
+    }
+    el.append(r);
+  });
+}
+function pickArea(id){selTarget=id;$('hint').textContent='Arrastra sobre el lienzo para marcar el área ('+(id==='all'?'todos':pl(id).name)+')';}
+
+/* ---------- Interfaz ---------- */
+function enter(){
+  started=true;
+  $('lobby').style.display='none';$('game').style.display='flex';
+  $('roomtag').textContent='Sala: '+room;
+  $('who').textContent=me.host?'Eres el anfitrión: comparte el código':'Conectado como '+me.name;
+  panel();startCam();
+}
+$('create').onclick=mkRoom;$('join').onclick=joinRoom;
+const tools=$('tools');
+PAL.forEach(col=>{const b=document.createElement('button');b.className='sw'+(col===color?' on':'');b.style.background=col;
+  b.onclick=()=>{color=col;tool='pen';refreshTools()};tools.append(b)});
+const tp=document.createElement('button'),te=document.createElement('button'),sl=document.createElement('input'),cl=document.createElement('button'),sv=document.createElement('button');
+tp.textContent='✏️ Lápiz';te.textContent='🧽 Borrador';cl.textContent='🗑 Borrar lo mío';sv.textContent='📸 Guardar';
+tp.onclick=()=>{tool='pen';refreshTools()};te.onclick=()=>{tool='eraser';refreshTools()};
+sl.type='range';sl.min=2;sl.max=30;sl.value=size;sl.style.width='110px';sl.oninput=()=>size=+sl.value;
+cl.onclick=()=>{doClear(me.id);me.host?bcast({t:'clear',id:me.id}):sendHost({t:'clear',id:me.id})};
+sv.onclick=()=>{const a=document.createElement('a');a.download='dibujo-'+Date.now()+'.png';a.href=c.toDataURL('image/png');a.click()};
+tools.append(tp,te,sl,cl,sv);
+function refreshTools(){
+  [...tools.querySelectorAll('.sw')].forEach((b,i)=>b.classList.toggle('on',tool==='pen'&&PAL[i]===color));
+  tp.classList.toggle('on',tool==='pen');te.classList.toggle('on',tool==='eraser');
+}
+refreshTools();
+
+/* ratón / dedo en pantalla */
+const np=e=>{const r=c.getBoundingClientRect();return{x:Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y:Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))}};
+c.onpointerdown=e=>{
+  c.setPointerCapture(e.pointerId);const p=np(e);
+  if(selTarget)drag={x0:p.x,y0:p.y,x1:p.x,y1:p.y};else ptr={...p,down:true};
+};
+c.onpointermove=e=>{const p=np(e);if(drag){drag.x1=p.x;drag.y1=p.y}else if(ptr)ptr={...p,down:ptr.down}};
+c.onpointerup=()=>{
+  if(drag){
+    const a={x:Math.min(drag.x0,drag.x1),y:Math.min(drag.y0,drag.y1),w:Math.abs(drag.x1-drag.x0),h:Math.abs(drag.y1-drag.y0)};
+    if(a.w>.03&&a.h>.03)setArea(selTarget,a);
+    drag=null;selTarget=null;$('hint').textContent='';
+  }else if(ptr)ptr=null;
+};
+
+/* ---------- Cámara y mano ---------- */
+async function startCam(){
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+    v.srcObject=s;await v.play();camOn=true;
+  }catch(e){camOn=false;return}
+  try{
+    const B='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+    const M=await import(B+'/vision_bundle.mjs');
+    const fs=await M.FilesetResolver.forVisionTasks(B+'/wasm');
+    const opt=d=>({baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',delegate:d},runningMode:'VIDEO',numHands:1});
+    try{hl=await M.HandLandmarker.createFromOptions(fs,opt('GPU'))}catch(e){hl=await M.HandLandmarker.createFromOptions(fs,opt('CPU'))}
+  }catch(e){hl=null}
+}
+function trackHand(res,k){
+  if(!res.landmarks||!res.landmarks.length){if(++lostN>4)hand=null;return}
+  lostN=0;const L=res.landmarks[0];
+  const d=(a,b)=>Math.hypot(L[a].x-L[b].x,L[a].y-L[b].y);
+  const nx=1-((L[8].x*k.vw-k.sx)/k.sw), ny=(L[8].y*k.vh-k.sy)/k.sh;
+  sm=sm?{x:sm.x+(nx-sm.x)*.55,y:sm.y+(ny-sm.y)*.55}:{x:nx,y:ny};
+  hand={x:sm.x,y:sm.y,draw:d(8,0)>d(6,0)*1.1}; // índice extendido = escribe; puño = pausa
+}
+const canDraw=(x,y)=>{const p=pl(me.id);return !!p&&p.can&&inArea(p.area,x,y)};
+
+/* ---------- Bucle principal ---------- */
+function loop(){
+  requestAnimationFrame(loop);
+  if(!started)return;
+  ctx.fillStyle='#14161b';ctx.fillRect(0,0,CW,CH);
+  if(camOn&&v.readyState>=2){
+    const vw=v.videoWidth,vh=v.videoHeight;let sw=vw,sh=vh,sx=0,sy=0;
+    if(vw/vh>CW/CH){sw=vh*CW/CH;sx=(vw-sw)/2}else{sh=vw*CH/CW;sy=(vh-sh)/2}
+    ctx.save();ctx.translate(CW,0);ctx.scale(-1,1);ctx.drawImage(v,sx,sy,sw,sh,0,0,CW,CH);ctx.restore();
+    if(hl&&v.currentTime!==lastT){lastT=v.currentTime;try{trackHand(hl.detectForVideo(v,performance.now()),{vw,vh,sx,sy,sw,sh})}catch(e){}}
+  }else{ctx.fillStyle='#667';ctx.font='20px sans-serif';ctx.textAlign='center';ctx.fillText('Sin cámara · dibuja con el ratón o el dedo',CW/2,CH/2)}
+
+  // entrada: mano primero, si no ratón/dedo
+  let inp=null;
+  if(hand)inp={x:hand.x,y:hand.y,down:hand.draw};else if(ptr)inp={x:ptr.x,y:ptr.y,down:ptr.down};
+  if(selTarget)inp=null;
+  curInp=inp;
+  if(inp&&inp.down&&canDraw(inp.x,inp.y)){
+    const f=last&&Math.hypot(inp.x-last.x,inp.y-last.y)<.3?last:inp;
+    const s=[f.x,f.y,inp.x,inp.y,color,tool==='pen'?size:size*3,tool==='eraser'?1:0];
+    applySeg(me.id,s);outbox.push(s);last={x:inp.x,y:inp.y};
+  }else last=null;
+
+  for(const k in layers)ctx.drawImage(layers[k].cv,0,0);
+
+  // áreas asignadas
+  players.forEach(p=>{if(!p.area)return;const a=p.area;
+    ctx.save();ctx.strokeStyle=p.col;ctx.lineWidth=3;ctx.setLineDash([10,7]);ctx.strokeRect(a.x*CW,a.y*CH,a.w*CW,a.h*CH);
+    ctx.setLineDash([]);ctx.fillStyle=p.col;ctx.font='bold 14px sans-serif';ctx.textAlign='left';ctx.fillText(p.name,a.x*CW+6,a.y*CH+18);ctx.restore()});
+  if(drag){ctx.save();ctx.strokeStyle='#ffd60a';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.strokeRect(Math.min(drag.x0,drag.x1)*CW,Math.min(drag.y0,drag.y1)*CH,Math.abs(drag.x1-drag.x0)*CW,Math.abs(drag.y1-drag.y0)*CH);ctx.restore()}
+
+  // cursores
+  const now=Date.now();
+  for(const k in cursors){
+    const q=cursors[k],p=pl(k);if(!p||q.x<0||now-q.t>1000)continue;
+    dot(q.x*CW,q.y*CH,p.col,q.on,p.name);
+  }
+  if(inp){const ok=canDraw(inp.x,inp.y);dot(inp.x*CW,inp.y*CH,tool==='eraser'?'#fff':color,inp.down&&ok,null,tool==='eraser'?size*1.5:size/2+4)}
+
+  const p=pl(me.id);
+  st(!p?'':!p.can?'🔒 El anfitrión no te deja dibujar ahora':hand?(hand.draw?(canDraw(hand.x,hand.y)?'☝️ Dibujando':'⛔ Fuera de tu área'):'✊ Mano cerrada: no escribes'):camOn?(hl?'🖐 Enseña tu mano (índice extendido para dibujar)':'⏳ Cargando detector de manos… puedes usar el ratón'):'🖱 Dibuja con el ratón o el dedo');
+}
+function dot(x,y,col,on,name,r=8){
+  ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,7);
+  if(on){ctx.fillStyle=col;ctx.fill()}
+  ctx.lineWidth=2;ctx.strokeStyle=on?'#fff':col;ctx.stroke();
+  if(name){ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillStyle='#000';ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.strokeText(name,x,y-14);ctx.fillText(name,x,y-14)}
+  ctx.restore();
+}
+const st=s=>{if($('status').textContent!==s)$('status').textContent=s};
+loop();
+</script>
+</body>
+</html>

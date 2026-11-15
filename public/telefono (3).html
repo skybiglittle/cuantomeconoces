@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Teléfono</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#3b1d4e,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;-webkit-user-select:none;user-select:none}
+main{max-width:520px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(30px,8vw,44px);line-height:1.05;margin:6px 0 2px;letter-spacing:-.04em;background:linear-gradient(100deg,#fff,#7fe6d6 55%,#ffd166);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--m);margin:0 0 12px;font-size:14px}
+.hud{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font-weight:800;margin:6px 0}
+.hud small{display:block;font-size:11px;color:var(--m);font-weight:700;letter-spacing:.06em}.hud .n{font-size:26px;line-height:1}
+.belt{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--l);background:#070b18}
+canvas{display:block;width:100%;aspect-ratio:520/130}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px;background:#070b18dd}
+.ov h2{margin:0;font-size:clamp(22px,6vw,32px)}.ov p{margin:0;color:var(--m);font-size:14px}
+.hidden{display:none!important}.opt{display:flex;align-items:center;gap:10px;margin:12px 0 0}.opt label{font-size:13px;color:var(--m);white-space:nowrap}.opt input{flex:1;min-width:0;accent-color:#53dfca;height:32px}.opt input:focus-visible{outline:3px solid var(--y);outline-offset:2px}.opt output{min-width:3.2em;text-align:right;font-weight:800;color:var(--b)}.msg{margin:12px 0 0;background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:18px;padding:14px;text-align:center}.msg h2{margin:0 0 6px;font-size:22px}.msg p{margin:0 0 12px;color:var(--m);font-size:14px}
+.phone{margin:12px auto 0;width:min(100%,360px);background:linear-gradient(160deg,#1d2943,#0f1628);border:2px solid var(--l);border-radius:30px;padding:14px 14px 18px;box-shadow:0 0 30px #53dfca18}
+.phone.shake{animation:sh .25s}.phone.flash{border-color:var(--r)}
+@keyframes sh{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.disp{background:#04070f;border:1px solid var(--l);border-radius:14px;height:54px;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;font:700 28px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;color:var(--b);overflow:hidden;margin-bottom:12px;white-space:nowrap}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.k{font:inherit;font-size:28px;font-weight:800;color:var(--t);height:clamp(58px,15vw,72px);border-radius:50%;aspect-ratio:1;justify-self:center;width:clamp(58px,15vw,72px);cursor:pointer;background:#1a2540;border:2px solid var(--l);touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .05s,background .1s}
+.k:active,.k.dn{transform:scale(.92);background:#2a3a66;border-color:var(--b)}
+.k.dim{opacity:.35;cursor:default}
+.k:focus-visible,.btn:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:12px 20px;background:linear-gradient(100deg,#159b67,#20b982);color:#fff;font-weight:800}
+.note{text-align:center;color:var(--m);font-size:13px;margin:10px 0 0}
+@media (prefers-reduced-motion:reduce){.phone.shake{animation:none}}
+</style></head><body><main>
+<h1>Teléfono</h1><p class="sub">Marca los números en el orden en que salen de la cinta.</p>
+<div class="hud"><div><small>PUNTOS</small><span class="n" id="sc">0</span></div><div><small>RÉCORD</small><span class="n" id="bs">0</span></div><div><small>VELOCIDAD</small><span class="n" id="sp">×1.0</span></div><div style="text-align:right"><small>VIDAS</small><span class="n" id="lv">❤️❤️❤️</span></div></div>
+<div class="belt"><canvas id="cv" width="520" height="130"></canvas>
+</div>
+<div class="opt" id="opt"><label for="vs">Velocidad inicial</label><input type="range" id="vs" min="0.5" max="5" step="0.1" value="1"><output id="vo" for="vs">×1.0</output></div>
+<div class="msg" id="msg"><h2>📞 ¡A marcar!</h2><p>El número de la izquierda es el siguiente. Marca cada dígito en orden: al acertar desaparece. Cada vez va más rápido. Si te equivocas o un dígito llega al final, pierdes una vida (tienes 3).</p><button class="btn" id="go">Empezar</button></div>
+<div class="phone" id="ph"><div class="disp" id="ds">&nbsp;</div><div class="pad" id="pad"></div></div>
+<p class="note">También puedes usar el teclado numérico de tu ordenador.</p>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i),W=520,H=130,TS=64,GAP=78,cv=$('cv'),x=cv.getContext('2d');
+let tiles=[],score=0,lives=3,best=0,run=false,spd=90,last=0,off=0,dialed='',pops=[],ac=null,raf=0,flash=0;
+let mult=1,base=90;try{mult=+localStorage.getItem('tel_mult')||1}catch(e){}
+const setM=m=>{mult=Math.round(Math.min(5,Math.max(.5,m||1))*10)/10;base=90*mult;$('vs').value=String(mult);$('vo').textContent='×'+mult.toFixed(1)};setM(mult);
+const bk=()=>'tel_best_x'+mult.toFixed(1),loadBest=()=>{best=0;try{best=+localStorage.getItem(bk())||0}catch(e){}$('bs').textContent=best};loadBest();
+$('vs').oninput=()=>{setM(+$('vs').value);try{localStorage.setItem('tel_mult',String(mult))}catch(e){}loadBest()};
+const DT={1:[697,1209],2:[697,1336],3:[697,1477],4:[770,1209],5:[770,1336],6:[770,1477],7:[852,1209],8:[852,1336],9:[852,1477],0:[941,1336]};
+function tone(d,ok=true){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const f=ok?DT[d]:[160,170];f.forEach(h=>{const o=ac.createOscillator(),g=ac.createGain();o.type=ok?'sine':'sawtooth';o.frequency.value=h;g.gain.value=ok?.05:.06;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+(ok?.13:.35));o.stop(ac.currentTime+(ok?.13:.35))})}catch(e){}}
+const pad=$('pad');
+['1','2','3','4','5','6','7','8','9','*','0','#'].forEach(k=>{const b=document.createElement('button');b.className='k'+(/\d/.test(k)?'':' dim');b.textContent=k;b.setAttribute('aria-label',/\d/.test(k)?'Marcar '+k:'Tecla decorativa');if(/\d/.test(k)){b.dataset.k=k;b.addEventListener('pointerdown',e=>{e.preventDefault();press(+k)})}else b.disabled=true;pad.appendChild(b)});
+const hearts=()=>$('lv').textContent=lives>0?'❤️'.repeat(lives):'💀';
+function spawn(){const lastX=tiles.length?tiles[tiles.length-1].x:W-GAP;tiles.push({d:Math.random()*10|0,x:lastX+GAP})}
+function start(){tiles=[];pops=[];score=0;lives=3;setM(+$('vs').value);spd=base;dialed='';off=0;flash=0;let X=W*.55;while(X<W+GAP){tiles.push({d:Math.random()*10|0,x:X});X+=GAP}
+ $('sc').textContent=0;$('sp').textContent='×'+mult.toFixed(1);$('ds').innerHTML='&nbsp;';hearts();$('msg').classList.add('hidden');$('opt').classList.add('hidden');run=true;last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+function hit(){const ph=$('ph');ph.classList.remove('shake');void ph.offsetWidth;ph.classList.add('shake','flash');setTimeout(()=>ph.classList.remove('flash'),250);flash=1;try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
+function lose(){lives--;hearts();hit();if(lives<=0)over()}
+function press(d){if(!run)return;const t=tiles[0];if(!t)return;
+ const k=pad.querySelector('[data-k="'+d+'"]');if(k){k.classList.add('dn');setTimeout(()=>k.classList.remove('dn'),90)}
+ if(t.d===d){tone(d);tiles.shift();score++;dialed=(dialed+d).slice(-10);$('ds').textContent=dialed;$('sc').textContent=score;
+  for(let i=0;i<10;i++){const a=Math.random()*6.283,s=60+Math.random()*160;pops.push({x:t.x+TS/2,y:H/2,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.45})}
+  spd=Math.min(Math.max(520,base*2.5),base*(1+score*.0378));$('sp').textContent='×'+(spd/90).toFixed(1)}
+ else{tone(0,false);lose()}}
+function over(){run=false;tone(0,false);const rec=score>best;if(rec){best=score;try{localStorage.setItem(bk(),String(best))}catch(e){}}$('bs').textContent=best;
+ $('msg').innerHTML='<h2>'+(rec&&score>0?'🏆 ¡Nuevo récord!':'📵 Línea cortada')+'</h2><p>Has marcado <b>'+score+'</b> dígitos · Récord: '+best+'</p><button class="btn" id="go">Jugar otra vez</button>';$('msg').classList.remove('hidden');$('opt').classList.remove('hidden');$('go').onclick=start}
+function loop(t){if(!run)return;const dt=Math.min(.05,(t-last)/1000||0);last=t;off=(off+spd*dt)%40;
+ for(const q of tiles)q.x-=spd*dt;
+ while(tiles.length&&tiles[tiles.length-1].x<W+GAP)spawn();
+ if(tiles[0]&&tiles[0].x<-6){tiles.shift();lose()}
+ draw(dt);raf=requestAnimationFrame(loop)}
+function rr(X,Y,w,h,r){x.beginPath();x.roundRect?x.roundRect(X,Y,w,h,r):x.rect(X,Y,w,h)}
+function draw(dt){x.clearRect(0,0,W,H);x.fillStyle=flash>0?'#2a0d18':'#0a1020';x.fillRect(0,0,W,H);flash=Math.max(0,flash-dt*4);
+ x.fillStyle='#10192e';x.fillRect(0,H/2-46,W,92);x.fillStyle='rgba(83,223,202,.10)';for(let i=-1;i<W/40+2;i++)x.fillRect(i*40-off,H/2+40,22,5),x.fillRect(i*40-off,H/2-45,22,5);
+ x.strokeStyle='rgba(83,223,202,.45)';x.lineWidth=2;x.beginPath();x.moveTo(0,H/2-46);x.lineTo(W,H/2-46);x.moveTo(0,H/2+46);x.lineTo(W,H/2+46);x.stroke();
+ x.fillStyle='rgba(255,90,110,.18)';x.fillRect(0,H/2-46,10,92);
+ tiles.forEach((q,i)=>{if(q.x>W+TS)return;const first=i===0,Y=H/2-TS/2;x.save();x.shadowColor=first?'#ffd166':'#53dfca';x.shadowBlur=first?24:10;
+  x.fillStyle=first?'#3a2f10':'#10263a';x.strokeStyle=first?'#ffd166':'#53dfca';x.lineWidth=first?4:2.5;rr(q.x,Y,TS,TS,16);x.fill();x.stroke();x.shadowBlur=0;
+  x.fillStyle=first?'#ffd166':'#e8fffb';x.font='800 40px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(q.d,q.x+TS/2,Y+TS/2+3);x.restore()});
+ if(tiles[0]){x.fillStyle='#ffd166';x.font='700 12px system-ui';x.textAlign='left';x.fillText('SIGUIENTE ▸',Math.max(4,tiles[0].x),14)}
+ for(const p of pops){p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=dt;x.globalAlpha=Math.max(0,p.l/.45);x.fillStyle='#ffd166';x.fillRect(p.x,p.y,4,4)}x.globalAlpha=1;pops=pops.filter(p=>p.l>0)}
+$('go').onclick=start;
+addEventListener('keydown',e=>{if(e.repeat)return;if(/^[0-9]$/.test(e.key)){press(+e.key)}else if(/^Numpad[0-9]$/.test(e.code)){press(+e.code.slice(6))}else if((e.key==='Enter'||e.key===' ')&&!run&&document.activeElement.tagName!=='BUTTON'){const g=$('go');if(g)start()}});
+draw(0);
+})();
+</script></body></html>

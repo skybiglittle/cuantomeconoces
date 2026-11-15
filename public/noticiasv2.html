@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Noticia del día</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f6;--surface:#fff;--ink:#14213d;--muted:#55607a;--accent:#d62839;--accent-ink:#fff;--line:#d3d9e6;
+--head:'Bricolage Grotesque',system-ui,sans-serif;--body:'Figtree',system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1424;--surface:#16203a;--ink:#e8edf8;--muted:#9aa7c4;--accent:#ff5a68;--accent-ink:#1a0508;--line:#27345a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1424;--surface:#16203a;--ink:#e8edf8;--muted:#9aa7c4;--accent:#ff5a68;--accent-ink:#1a0508;--line:#27345a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:var(--head);font-size:1.9rem;margin:8px 0 2px;letter-spacing:-.01em}
+.date{color:var(--muted);margin:0 0 16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chips button{font:inherit;font-size:.9rem;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:20px;min-height:200px}
+.cat{font-weight:600;color:var(--accent);font-size:.9rem;margin-bottom:6px}
+.card h2{font-family:var(--head);font-size:1.4rem;line-height:1.25;margin:0 0 10px}
+.card p{margin:0 0 12px}
+.card a{color:var(--muted);font-size:.9rem}
+.bars{display:flex;gap:4px;align-items:flex-end;height:22px;margin-bottom:10px;visibility:hidden}
+.bars.on{visibility:visible}
+.bars i{width:5px;background:var(--accent);border-radius:3px;height:6px;animation:b 0.9s ease-in-out infinite}
+.bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.45s}.bars i:nth-child(5){animation-delay:.6s}
+@keyframes b{0%,100%{height:5px}50%{height:22px}}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.btn{font:inherit;font-weight:600;border-radius:999px;padding:13px 22px;border:0;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.alt[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.btn:focus-visible,.chips button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+label{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:8px}
+.status{font-size:.9rem;color:var(--accent);min-height:1.4em;margin:12px 0 0}
+.note{font-size:.8rem;color:var(--muted);margin-top:20px}
+.bigbtns{display:none;gap:12px;margin-top:16px}
+.bigbtns .btn{flex:1;font-size:1.6rem;padding:28px 10px;border-radius:24px}
+.timer{display:none;font-family:var(--head);font-size:2.2rem;text-align:center;margin-top:14px;color:var(--accent)}
+body.m-coche .bigbtns,body.m-cocina .bigbtns{display:flex}
+body.m-coche #chips,body.m-coche .row,body.m-coche .note,body.m-cocina .row,body.m-cocina .note{display:none}
+body.m-coche .card h2,body.m-cocina .card h2{font-size:2.1rem}
+body.m-coche .card p,body.m-cocina .card p{font-size:1.4rem}
+body.m-coche .cat,body.m-cocina .cat{font-size:1.2rem}
+body.m-coche .status,body.m-cocina .status{font-size:1.15rem}
+body.m-coche{--bg:#000;--surface:#0b0b0b;--ink:#fff;--muted:#d5dbea;--line:#3a3a3a;--accent:#ffd60a;--accent-ink:#000}
+body.m-cocina{--accent:#e8590c;--accent-ink:#fff}
+@media (prefers-reduced-motion:reduce){.bars i{animation:none;height:14px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Noticia del día</h1>
+<p class="date" id="date"></p>
+<div class="chips" id="modes" role="group" aria-label="Modo"></div>
+
+<div class="chips" id="chips" role="group" aria-label="Categoría"></div>
+
+<div class="card" aria-live="polite">
+<div class="bars" id="bars"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="cat" id="cat">Elige una categoría y pulsa el botón</div>
+<h2 id="title">Te leeré una noticia en voz alta</h2>
+<p id="sum">Busco titulares de actualidad en medios y los narro con la voz de tu dispositivo.</p>
+<a id="src" href="#" target="_blank" rel="noopener" hidden>Leer la noticia completa</a>
+</div>
+
+<div class="bigbtns"><button class="btn" id="bnext">Siguiente</button><button class="btn alt" id="bstop">Parar</button></div>
+<div class="timer" id="timer" aria-live="polite"></div>
+
+<div class="row">
+<button class="btn" id="tell">🎙️ Dime una noticia</button>
+<button class="btn alt" id="batch">Resumen (5 noticias)</button>
+<button class="btn alt" id="mic" aria-pressed="false">🎧 Hablar con la app</button>
+<button class="btn alt" id="stop">Parar</button>
+<label>Velocidad <input type="range" id="rate" min="0.7" max="1.3" step="0.1" value="1"></label>
+</div>
+
+<p class="status" id="status" aria-live="polite"></p>
+<p class="note">Los titulares se cargan en directo desde El País y necesitan conexión a internet. Si no se pueden cargar, te cuento un dato curioso para no dejarte sin nada. La voz depende de las voces en español de tu dispositivo.</p>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const BASE="https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/";
+const CATS={todas:["Todas",null],ciencia:["Ciencia",BASE+"ciencia/portada"],tecnologia:["Tecnología",BASE+"tecnologia/portada"],deportes:["Deportes",BASE+"deportes/portada"],cultura:["Cultura",BASE+"cultura/portada"],economia:["Economía",BASE+"economia/portada"],mundo:["Mundo",BASE+"internacional/portada"]};
+const FALLBACK={
+ciencia:[["Los pulpos tienen tres corazones","Dos bombean sangre a las branquias y uno al resto del cuerpo. Cuando el pulpo nada, el corazón principal se detiene, por eso prefiere arrastrarse."]],
+tecnologia:[["El primer correo electrónico se envió en 1971","Ray Tomlinson eligió el símbolo arroba para separar el nombre del usuario del equipo. Hoy se envían cientos de miles de millones de correos al día."]],
+deportes:[["El maratón mide 42 kilómetros y 195 metros por un capricho real","En los Juegos de Londres de 1908 se alargó el recorrido para que la salida quedara frente al palco real."]],
+cultura:[["El Quijote es una de las obras más traducidas de la historia","Desde su publicación en 1605 ha sido traducido a decenas de idiomas y sigue reeditándose cada año."]],
+economia:[["Las monedas más antiguas tienen más de 2.600 años","Aparecieron en el reino de Lidia, en la actual Turquía, hechas de electro, una aleación natural de oro y plata."]],
+mundo:[["Hay países con más de un huso horario oficial","Francia, gracias a sus territorios de ultramar, es el país con más husos horarios del mundo."]]};
+let cur="todas",cache={},seen=new Set(),speaking=false;
+
+$("date").textContent=new Date().toLocaleDateString("es",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+for(const k in CATS){const b=document.createElement("button");b.textContent=CATS[k][0];b.dataset.k=k;b.setAttribute("aria-pressed",k===cur);
+b.onclick=()=>setCat(k);$("chips").appendChild(b)}
+function setCat(k){cur=k;document.querySelectorAll("#chips button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.k===k))}
+
+const clean=h=>{const d=document.createElement("div");d.innerHTML=h||"";return (d.textContent||"").replace(/\s+/g," ").trim()};
+const cut=(s,n)=>s.length>n?s.slice(0,s.lastIndexOf(" ",n))+"…":s;
+
+async function fetchFeed(url){
+try{const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(url));const j=await r.json();
+if(j.status==="ok"&&j.items&&j.items.length)return j.items.map(i=>({title:clean(i.title),sum:clean(i.description),link:i.link}))}catch(e){}
+try{const r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));const x=new DOMParser().parseFromString(await r.text(),"text/xml");
+const it=[...x.querySelectorAll("item")].map(i=>({title:clean(i.querySelector("title")?.textContent),sum:clean(i.querySelector("description")?.textContent),link:i.querySelector("link")?.textContent}));
+if(it.length)return it}catch(e){}
+return null}
+
+async function getItems(k){if(cache[k])return cache[k];const f=await fetchFeed(CATS[k][1]);if(f)cache[k]=f;return f}
+
+async function pick(){
+const keys=cur==="todas"?Object.keys(CATS).filter(k=>k!=="todas").sort(()=>Math.random()-.5):[cur];
+for(const k of keys){const items=await getItems(k);
+if(items){const fresh=items.filter(i=>i.title&&!seen.has(i.link))||[];const pool=fresh.length?fresh:items;const it=pool[Math.floor(Math.random()*pool.length)];seen.add(it.link);
+return{cat:CATS[k][0],title:it.title,sum:cut(it.sum,300),link:it.link,live:true}}}
+const k=keys[0],f=FALLBACK[k]||FALLBACK.ciencia,x=f[Math.floor(Math.random()*f.length)];
+return{cat:CATS[k]?CATS[k][0]:"Curiosidad",title:x[0],sum:x[1],link:null,live:false}}
+
+function voice(){const v=speechSynthesis.getVoices();return v.find(x=>/^es-(ES|MX|US)/i.test(x.lang))||v.find(x=>x.lang.toLowerCase().startsWith("es"))||null}
+let run=0,talking=false,wantMic=false,rec=null;
+function speak(text){return new Promise(res=>{
+if(!("speechSynthesis" in window)){res();return}
+speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="es-ES";const v=voice();if(v)u.voice=v;u.rate=parseFloat($("rate").value);
+u.onstart=()=>{talking=true;$("bars").classList.add("on");if(rec)try{rec.stop()}catch(e){}};
+u.onend=u.onerror=()=>{talking=false;$("bars").classList.remove("on");res();resumeMic()};
+speechSynthesis.speak(u)})}
+
+async function tellOne(id,prefix){
+$("cat").textContent="Buscando…";$("title").textContent="Un momento";$("sum").textContent="";$("src").hidden=true;
+const n=await pick();if(id!==run)return;
+$("cat").textContent=n.live?n.cat:n.cat+" · dato curioso (sin conexión)";$("title").textContent=n.title;$("sum").textContent=n.sum;
+if(n.link){$("src").href=n.link;$("src").hidden=false}
+lastText=(prefix||"")+(n.live?"Noticia de "+n.cat+". ":"Dato curioso de "+n.cat+". ")+n.title+". "+n.sum;await speak(lastText)}
+
+function stopAll(){run++;speechSynthesis.cancel();talking=false;$("bars").classList.remove("on");$("status").textContent=wantMic?"Escuchando…":""}
+async function tellNow(){stopAll();const id=run;$("status").textContent="";await tellOne(id)}
+async function tellBatch(){stopAll();const id=run,N=5;
+for(let i=1;i<=N;i++){if(id!==run)return;$("status").textContent="Resumen: noticia "+i+" de "+N;await tellOne(id,"Noticia "+i+". ")}
+if(id===run){$("status").textContent="Resumen terminado";await speak("Eso es todo por ahora.")}}
+$("tell").onclick=tellNow;$("batch").onclick=tellBatch;$("stop").onclick=stopAll;
+
+// Control por voz
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const norm=t=>t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function command(t){t=norm(t);
+if(/modo coche/.test(t)){setMode("coche");return}
+if(/modo cocina/.test(t)){setMode("cocina");return}
+if(/modo normal/.test(t)){setMode("normal");return}
+if(/cancel\w*.*temporizador|temporizador.*cancel/.test(t)){clearInterval(tmr);$("timer").style.display="none";speak("Temporizador cancelado");return}
+const tm=t.match(/temporizador.*?(\d+|un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|quince|veinte|treinta)\s*(minuto|segundo)/);
+if(tm){const n=NUM[tm[1]]||parseInt(tm[1]);startTimer(tm[2]==="segundo"?n:n*60,n,tm[2]);return}
+if(/repite|otra vez/.test(t)&&lastText){speak(lastText);return}
+if(/mas despacio/.test(t)){$("rate").value=Math.max(.7,+$("rate").value-.1);speak("Más despacio");return}
+if(/mas rapido|mas deprisa/.test(t)){$("rate").value=Math.min(1.3,+$("rate").value+.1);speak("Más rápido");return}
+if(/\b(para|parar|calla|silencio|basta)\b/.test(t)){stopAll();return}
+for(const k in CATS){if(k!=="todas"&&t.includes(k.replace("tecnologia","tecnolog"))){setCat(k);go();return}}
+if(t.includes("internacional")){setCat("mundo");go();return}
+if(/resumen|varias|cinco/.test(t)){tellBatch();return}
+if(/\b(todas|cualquiera|sorprendeme)\b/.test(t)){setCat("todas");go();return}
+if(/\b(otra|siguiente|dime|noticia|cuentame)\b/.test(t)){go();return}
+$("status").textContent="No te he entendido. Prueba: “ciencia”, “resumen”, “otra” o “para”."}
+function resumeMic(){if(wantMic&&rec&&!talking)try{rec.start();$("status").textContent="Escuchando… di “ciencia”, “resumen”, “otra” o “para”"}catch(e){}}
+$("mic").onclick=()=>{
+if(!SR){$("status").textContent="Tu navegador no admite reconocimiento de voz. Prueba con Chrome, Edge o Safari.";return}
+wantMic=!wantMic;$("mic").setAttribute("aria-pressed",wantMic);
+if(!wantMic){if(rec)try{rec.stop()}catch(e){}$("status").textContent="Micrófono apagado";return}
+if(!rec){rec=new SR();rec.lang="es-ES";rec.continuous=false;rec.interimResults=false;
+rec.onresult=e=>command(e.results[e.results.length-1][0].transcript);
+rec.onend=()=>{if(wantMic&&!talking)setTimeout(resumeMic,300)};
+rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){wantMic=false;$("mic").setAttribute("aria-pressed","false");$("status").textContent="Permite el micrófono en tu navegador para hablar con la app."}}}
+resumeMic()};
+
+// Modos coche y cocina
+let mode="normal",lastText="",wake=null,tmr=null;
+const NUM={un:1,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,quince:15,veinte:20,treinta:30};
+const MODES={normal:"Normal",coche:"🚗 Coche",cocina:"🍳 Cocina"};
+for(const k in MODES){const b=document.createElement("button");b.textContent=MODES[k];b.dataset.k=k;b.setAttribute("aria-pressed",k===mode);b.onclick=()=>setMode(k);$("modes").appendChild(b)}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function go(){mode==="coche"?loop():tellNow()}
+async function loop(){stopAll();const id=run;
+while(id===run){await tellOne(id);if(id!==run)break;
+$("status").textContent="Siguiente noticia en 5 segundos. Di “para” o una categoría.";
+for(let i=0;i<50&&id===run;i++)await sleep(100)}}
+async function setMode(k){stopAll();mode=k;document.body.className=k==="normal"?"":"m-"+k;
+document.querySelectorAll("#modes button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.k===k));
+try{if(k!=="normal"){if(!wake&&navigator.wakeLock)wake=await navigator.wakeLock.request("screen")}else if(wake){await wake.release();wake=null}}catch(e){}
+if(k!=="normal"&&!wantMic)$("mic").click();
+if(k==="normal"&&wantMic)$("mic").click();
+if(k==="coche"){$("status").textContent="Modo coche: déjalo preparado antes de conducir y usa solo la voz.";loop()}
+if(k==="cocina"){$("status").textContent="Modo cocina: di “otra”, “repite” o “temporizador cinco minutos”.";speak("Modo cocina. Di otra para una noticia, o temporizador cinco minutos.")}}
+$("bnext").onclick=go;$("bstop").onclick=stopAll;
+
+// Temporizador de cocina
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(d=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.25,a.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d+.3);o.start(a.currentTime+d);o.stop(a.currentTime+d+.3)})}catch(e){}}
+function startTimer(sec,n,unit){clearInterval(tmr);let left=sec;
+const show=()=>{$("timer").textContent="⏱ "+String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0")};show();$("timer").style.display="block";
+tmr=setInterval(()=>{left--;if(left<=0){clearInterval(tmr);$("timer").textContent="⏱ ¡Listo!";beep();speak("El temporizador ha terminado")}else show()},1000);
+speak("Temporizador de "+n+(unit==="segundo"?" segundos":" minutos"))}
+</script>
+</body>
+</html>

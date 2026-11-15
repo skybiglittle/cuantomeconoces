@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caza de gratitud</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2ea;--surface:#fbfcf8;--ink:#233327;--muted:#596b5c;--accent:#b7791f;--accent-ink:#fff;--line:#d3dccc;--glow:#e8b931;
+--head:'Bricolage Grotesque',system-ui,sans-serif;--body:'Figtree',system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a14;--surface:#17261d;--ink:#e9f1e3;--muted:#9fb5a2;--accent:#f0c24b;--accent-ink:#1b1403;--line:#2a3e30;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a14;--surface:#17261d;--ink:#e9f1e3;--muted:#9fb5a2;--accent:#f0c24b;--accent-ink:#1b1403;--line:#2a3e30;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:var(--head);font-size:1.9rem;margin:8px 0 4px;letter-spacing:-.01em}
+h2{font-family:var(--head);font-size:1.15rem;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 18px}
+.panel{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+label{display:block;font-size:.9rem;color:var(--muted);margin:10px 0 4px}
+input{width:100%;font:inherit;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+input:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{font:inherit;font-weight:600;border-radius:999px;padding:12px 20px;border:0;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.stage{position:relative;aspect-ratio:4/3;border-radius:22px;overflow:hidden;background:#07110b;border:1.5px solid var(--line)}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.5}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}
+.hint{position:absolute;left:0;right:0;bottom:10px;text-align:center;color:#e9f1e3;font-size:.85rem;padding:0 12px;pointer-events:none}
+.jar{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.jar li{display:flex;gap:10px;align-items:center;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.jar li::before{content:"✨"}
+.hidden{display:none}
+.note{font-size:.8rem;color:var(--muted);margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<h1>Caza de gratitud</h1>
+<p class="sub">Escribe cosas buenas de tu día. Se convertirán en luciérnagas: atrápalas moviendo la mano frente a la cámara. El vídeo se procesa solo en tu dispositivo.</p>
+
+<section class="panel" id="setup">
+<h2>¿Qué ha ido bien hoy?</h2>
+<label for="g1">Cosa buena 1</label><input id="g1" maxlength="46" placeholder="Ej.: me tomé un café tranquilo">
+<label for="g2">Cosa buena 2</label><input id="g2" maxlength="46" placeholder="Ej.: me llamó una amiga">
+<label for="g3">Cosa buena 3</label><input id="g3" maxlength="46" placeholder="Ej.: terminé una tarea pendiente">
+<div class="row"><button class="btn" id="go">Soltar luciérnagas</button></div>
+</section>
+
+<section id="play" class="hidden">
+<div class="stage" id="stage">
+<video id="vid" playsinline muted></video>
+<canvas id="cv"></canvas>
+<div class="hint" id="hint">Mueve la mano sobre una luciérnaga para atraparla. También puedes tocarla.</div>
+</div>
+<div class="row"><button class="btn alt" id="cam">Activar cámara</button><button class="btn alt" id="back">Cambiar mis frases</button></div>
+<div class="panel"><h2 id="jarTitle">Tu frasco de gratitud (0)</h2><ul class="jar" id="jar"></ul><p id="done" class="hidden"></p></div>
+</section>
+
+<p class="note">Una pausa de gratitud al día ayuda a notar lo positivo, pero no sustituye la atención de un profesional si lo necesitas.</p>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const vid=$("vid"),cv=$("cv"),c=cv.getContext("2d");
+let flies=[],caught=0,stream=null,prev=null,timer=null,running=false,last=0;
+const W=64,H=48,mc=document.createElement("canvas");mc.width=W;mc.height=H;const mx=mc.getContext("2d",{willReadFrequently:true});
+
+function resize(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;c.setTransform(d,0,0,d,0,0)}
+window.addEventListener("resize",resize);
+
+$("go").onclick=()=>{
+const t=["g1","g2","g3"].map(i=>$(i).value.trim()).filter(Boolean);
+if(!t.length){$("g1").focus();$("g1").placeholder="Escribe al menos una cosa buena";return}
+$("setup").classList.add("hidden");$("play").classList.remove("hidden");resize();
+flies=t.map((s,i)=>({text:s,x:.2+.3*i+Math.random()*.1,y:.25+Math.random()*.4,vx:(Math.random()-.5)*.08,vy:(Math.random()-.5)*.08,ph:Math.random()*6,prog:0,done:false,fade:1}));
+caught=0;$("jar").innerHTML="";$("done").classList.add("hidden");updJar();
+running=true;last=performance.now();requestAnimationFrame(loop)};
+$("back").onclick=()=>{running=false;$("play").classList.add("hidden");$("setup").classList.remove("hidden")};
+
+function wrap(s,max){return s.length>max?s.slice(0,max-1)+"…":s}
+function catchFly(f){if(f.done)return;f.done=true;caught++;
+const li=document.createElement("li");li.textContent=f.text;$("jar").appendChild(li);updJar();
+if(caught===flies.length){$("done").textContent="¡Las atrapaste todas! Esto es lo bueno que sostiene tu día. Respira hondo y quédate un momento con ello 🌿";$("done").classList.remove("hidden");$("hint").textContent="Bien hecho. Puedes cambiar tus frases y repetir."}}
+function updJar(){$("jarTitle").textContent="Tu frasco de gratitud ("+caught+")"}
+
+function loop(t){if(!running)return;const dt=Math.min(.05,(t-last)/1000);last=t;
+const w=cv.clientWidth,h=cv.clientHeight;c.clearRect(0,0,w,h);
+for(const f of flies){
+if(f.done){f.fade=Math.max(0,f.fade-dt*1.2);}
+f.ph+=dt*2;f.vx+=Math.cos(f.ph*1.3)*dt*.06;f.vy+=Math.sin(f.ph)*dt*.06;
+const sp=Math.hypot(f.vx,f.vy);if(sp>.1){f.vx*=.1/sp;f.vy*=.1/sp}
+f.x+=f.vx*dt*(f.done?0:1);f.y+=f.vy*dt*(f.done?0:1);
+if(f.x<.1||f.x>.9)f.vx*=-1;if(f.y<.14||f.y>.8)f.vy*=-1;
+f.x=Math.min(.92,Math.max(.08,f.x));f.y=Math.min(.84,Math.max(.12,f.y));
+if(f.fade<=0)continue;
+const px=f.x*w,py=f.y*h,r=(18+f.prog*14)*(1+.12*Math.sin(f.ph*3)),a=f.fade;
+const g=c.createRadialGradient(px,py,0,px,py,r*2.4);
+g.addColorStop(0,`rgba(255,236,150,${.95*a})`);g.addColorStop(.35,`rgba(240,194,75,${.5*a})`);g.addColorStop(1,"rgba(240,194,75,0)");
+c.fillStyle=g;c.beginPath();c.arc(px,py,r*2.4,0,7);c.fill();
+c.fillStyle=`rgba(255,250,215,${a})`;c.beginPath();c.arc(px,py,4.5,0,7);c.fill();
+c.font="600 12px Figtree,system-ui,sans-serif";c.textAlign="center";
+const label=wrap(f.text,26),tw=c.measureText(label).width+16,lx=Math.min(w-tw/2-4,Math.max(tw/2+4,px)),ly=py+r+16;
+c.fillStyle=`rgba(7,17,11,${.6*a})`;c.beginPath();c.roundRect?c.roundRect(lx-tw/2,ly-13,tw,20,10):c.rect(lx-tw/2,ly-13,tw,20);c.fill();
+c.fillStyle=`rgba(244,247,236,${a})`;c.fillText(label,lx,ly+1)}
+requestAnimationFrame(loop)}
+
+cv.addEventListener("pointerdown",e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+for(const f of flies)if(!f.done&&Math.hypot((f.x-x)*r.width,(f.y-y)*r.height)<38){catchFly(f);break}});
+
+async function startCam(){
+try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});
+vid.srcObject=stream;await vid.play();$("cam").textContent="Apagar cámara";timer=setInterval(analyze,100)}
+catch(e){$("hint").textContent="No pude acceder a la cámara. Revisa los permisos o toca las luciérnagas."}}
+function stopCam(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;clearInterval(timer);prev=null;vid.srcObject=null;$("cam").textContent="Activar cámara"}
+$("cam").onclick=()=>stream?stopCam():startCam();
+
+function analyze(){
+if(vid.readyState<2||!running)return;mx.drawImage(vid,0,0,W,H);const d=mx.getImageData(0,0,W,H).data;
+const g=new Uint8Array(W*H);for(let i=0;i<g.length;i++)g[i]=(d[i*4]+d[i*4+1]+d[i*4+2])/3;
+if(prev){for(const f of flies){if(f.done)continue;
+// la imagen está en espejo: x visual -> x crudo invertido
+const cx=Math.round((1-f.x)*W),cy=Math.round(f.y*H);let n=0,m=0;
+for(let y=cy-5;y<=cy+5;y++)for(let x=cx-5;x<=cx+5;x++){if(x<0||y<0||x>=W||y>=H)continue;n++;if(Math.abs(g[y*W+x]-prev[y*W+x])>28)m++}
+if(n&&m/n>.22)f.prog+=.34;else f.prog=Math.max(0,f.prog-.12);
+if(f.prog>=1)catchFly(f)}}
+prev=g}
+</script>
+</body>
+</html>

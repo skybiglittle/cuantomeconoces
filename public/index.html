@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Top juegos</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--tx:#241f2e;--mut:#7b7388;--bd:#eadfd2;--ac:#e8a317;--ac2:#7c4dff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15121b;--card:#201b29;--tx:#f4effa;--mut:#a89fb6;--bd:#342c40}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:22px 16px 48px}
+h1{font-size:34px;margin:6px 0 4px}
+h1 span{color:var(--ac)}
+.mut{color:var(--mut)}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;margin:14px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:12px}
+a.g{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;transition:transform .15s,border-color .15s;animation:rise .3s ease both}
+a.g:hover,a.g:focus-visible{transform:translateY(-3px);border-color:var(--ac);outline:none}
+.st{color:var(--ac);letter-spacing:.12em;font-size:15px;min-height:22px}
+.nm{font-weight:700;font-size:18px;line-height:1.25;margin:4px 0}
+.fl{font-size:12px;color:var(--mut);overflow-wrap:anywhere}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-top:14px}
+code{background:rgba(124,77,255,.12);padding:1px 6px;border-radius:6px;font-size:13px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main>
+<h1><span>☆</span> Top juegos</h1>
+<p class="mut" id="sub">Buscando juegos…</p>
+<input id="q" type="search" placeholder="Buscar un juego…" autocomplete="off" hidden>
+<div class="grid" id="grid"></div>
+<div class="box" id="empty" hidden></div>
+<script>
+(()=>{'use strict';
+/* Si no tienes el endpoint /api/topjuegos, la página prueba estos archivos de public. Añade aquí los tuyos. */
+const KNOWN=['index.html','debate.html','mimica.html','escenas.html','dixit.html','pasapalabra.html','cifrasyletras.html','verdad.html','impostor.html','nohacer.html','tabu.html','laberinto.html','filtros.html','puzle.html','boompasar.html','precio justo.html','misiones.html','concept.html'];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dec=s=>{const t=document.createElement('textarea');t.innerHTML=s;return t.value};
+const SELF='topjuegos.html';
+let ALL=[];
+
+async function fromApi(){
+ const r=await fetch('/api/topjuegos',{cache:'no-store'});
+ if(!r.ok)throw new Error('sin api');
+ const d=await r.json();
+ if(!Array.isArray(d))throw new Error('formato');
+ return d;
+}
+async function fromKnown(){
+ const res=await Promise.all(KNOWN.filter(f=>f!==SELF).map(async f=>{
+  try{
+   const r=await fetch(encodeURI(f),{cache:'no-store'});
+   if(!r.ok)return null;
+   const m=(await r.text()).match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+   const t=m?dec(m[1].trim()):'';
+   return t.includes('☆')?{file:f,title:t}:null;
+  }catch(e){return null}
+ }));
+ return res.filter(Boolean);
+}
+const prep=list=>list.filter(x=>x&&x.file&&String(x.file)!==SELF&&String(x.title||'').includes('☆')).map(x=>{
+ const t=dec(String(x.title));
+ return{file:String(x.file),stars:(t.match(/☆/g)||[]).length,name:t.replace(/☆/g,'').replace(/\s+/g,' ').trim()||String(x.file).replace(/\.html$/i,'')};
+}).sort((a,b)=>b.stars-a.stars||a.name.localeCompare(b.name,'es'));
+
+function draw(){
+ const v=($('q').value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const list=ALL.filter(g=>!v||(g.name+' '+g.file).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(v));
+ $('grid').innerHTML=list.map(g=>'<a class="g" href="'+esc(encodeURI(g.file))+'"><div class="st">'+'☆'.repeat(Math.min(g.stars,5))+'</div><div class="nm">'+esc(g.name)+'</div><div class="fl">'+esc(g.file)+'</div></a>').join('');
+ $('sub').textContent=ALL.length?(list.length===ALL.length?ALL.length+' juego'+(ALL.length===1?'':'s')+' con ☆ en el título':list.length+' de '+ALL.length+' juegos'):'';
+}
+(async()=>{
+ let list=[],src='';
+ try{list=await fromApi();src='servidor'}catch(e){list=await fromKnown();src='lista'}
+ ALL=prep(list);
+ if(ALL.length){$('q').hidden=false;draw();$('q').addEventListener('input',draw)}
+ else{
+  $('sub').textContent='No hay ningún juego con ☆ en el título.';
+  $('empty').hidden=false;
+  $('empty').innerHTML='<p><b>¿Cómo aparece un juego aquí?</b> Pon una ☆ en su <code>&lt;title&gt;</code>, por ejemplo <code>&lt;title&gt;☆ Dixit&lt;/title&gt;</code>. Más estrellas lo suben en la lista.</p>'+(src==='lista'?'<p class="mut">Esta página no encontró <code>/api/topjuegos</code>, así que solo ha revisado la lista de archivos del script. Añade ese endpoint en <code>server.js</code> para que detecte todos los HTML de <code>public</code> automáticamente.</p>':'');
+ }
+})();
+})();
+</script>
+</main>
+</body>
+</html>

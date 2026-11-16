@@ -6,9 +6,10 @@
 <title>Índice</title>
 <!-- no-menu -->
 <style>
-:root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--ac2:#7c4dff;--bd:#eadfe6;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--ac2:#7c4dff;--bd:#eadfe6;--ko:#d6453d;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root{--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:560px;margin:0 auto;padding:24px 16px 40px}
 h1{font-size:30px;line-height:1.15;margin:8px 0 4px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -18,6 +19,11 @@ a.it:hover,a.it:active{border-color:var(--ac)}
 a.it b{display:block;font-size:18px}
 a.it small{color:var(--mut)}
 .msg{color:var(--mut);text-align:center;padding:24px 0}
+.unlock{display:flex;gap:8px;margin-top:26px;justify-content:center}
+.unlock input{width:130px;padding:9px 12px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;text-align:center}
+.unlock input.bad{border-color:var(--ko)}
+.unlock button{padding:9px 14px;border-radius:12px;border:1.5px solid var(--bd);background:transparent;color:var(--mut);font:inherit;cursor:pointer}
+.unlock button:hover{border-color:var(--ac);color:var(--tx)}
 </style>
 </head>
 <body>
@@ -25,28 +31,67 @@ a.it small{color:var(--mut)}
   <h1>Índice</h1>
   <p class="sub" id="sub">Cargando…</p>
   <div id="list"></div>
+  <form class="unlock" id="form" autocomplete="off">
+    <input id="code" type="password" inputmode="numeric" maxlength="8" placeholder="Código" aria-label="Código">
+    <button type="submit" id="go">Ver todos</button>
+  </form>
+  <div class="unlock" id="relock" hidden>
+    <button type="button" id="hide">Volver a las ☆</button>
+  </div>
 </main>
 <script>
 (function(){
+  var CODE='1999',KEY='indice_todos';
   var list=document.getElementById('list'),sub=document.getElementById('sub');
+  var form=document.getElementById('form'),input=document.getElementById('code');
+  var relock=document.getElementById('relock'),hide=document.getElementById('hide');
+  var items=[],all=false;
+  try{all=sessionStorage.getItem(KEY)==='1'}catch(e){}
+
   function here(href){
     var h=decodeURIComponent(href),p=location.pathname;
     return h===p||h.replace(/\.html?$/,'')===p||(p==='/'&&h==='/indice.html');
   }
-  fetch('/_games',{cache:'no-store'}).then(function(r){
-    if(!r.ok)throw new Error('http '+r.status);return r.json();
-  }).then(function(items){
-    items=items.filter(function(g){return !here(g.href)});
-    sub.textContent=items.length?items.length+' página'+(items.length>1?'s':'')+' en public':'';
-    if(!items.length){list.innerHTML='<p class="msg">No hay más archivos .html en public.</p>';return}
-    items.forEach(function(g){
+  function render(){
+    var shown=items.filter(function(g){
+      return !here(g.href)&&(all||String(g.title||'').indexOf('☆')>-1);
+    });
+    list.innerHTML='';
+    form.hidden=all;relock.hidden=!all;
+    if(!shown.length){
+      sub.textContent='';
+      list.innerHTML='<p class="msg">'+(all?'No hay más archivos .html en public.':'No hay ninguna página con ☆ en el título.')+'</p>';
+      return;
+    }
+    sub.textContent=shown.length+' página'+(shown.length>1?'s':'')+(all?' en public':' con ☆');
+    shown.forEach(function(g){
       var a=document.createElement('a'),b=document.createElement('b'),s=document.createElement('small');
       a.className='it';a.href=g.href;
       b.textContent=g.title;s.textContent=decodeURIComponent(g.href).replace(/^\//,'');
       a.appendChild(b);a.appendChild(s);list.appendChild(a);
     });
+  }
+  function setAll(v){
+    all=v;
+    try{sessionStorage.setItem(KEY,v?'1':'0')}catch(e){}
+    render();
+  }
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(input.value.trim()===CODE){input.value='';input.classList.remove('bad');setAll(true)}
+    else{input.classList.add('bad');input.value='';input.focus()}
+  });
+  input.addEventListener('input',function(){input.classList.remove('bad')});
+  hide.addEventListener('click',function(){setAll(false)});
+
+  fetch('/_games',{cache:'no-store'}).then(function(r){
+    if(!r.ok)throw new Error('http '+r.status);return r.json();
+  }).then(function(data){
+    items=data;render();
   }).catch(function(){
     sub.textContent='';
+    form.hidden=true;relock.hidden=true;
     list.innerHTML='<p class="msg">No se pudo cargar la lista. Comprueba que el servidor está activo.</p>';
   });
 })();

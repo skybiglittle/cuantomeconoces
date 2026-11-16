@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>☆Imágenes - ¿Qué te inspira esta imagen?</title>
+<style>
+:root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--ac2:#7c4dff;--ok:#1f9d63;--ko:#d6453d;--bd:#eadfe6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}
+:root[data-theme="dark"]{--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:30px;line-height:1.15;margin:8px 0 6px;background:linear-gradient(90deg,var(--ac),var(--ac2),var(--ac));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{margin:0 0 8px;font-size:22px}
+p{margin:0 0 12px}
+.mut{color:var(--mut)}
+.center{text-align:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:20px;margin:14px 0;animation:rise .35s ease both}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut);gap:8px}
+.kick{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ac);font-weight:700;margin-bottom:4px}
+.q{font-size:20px;font-weight:650;line-height:1.3;margin:0 0 14px}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;padding:14px;border:0;border-radius:14px;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff;font-weight:700;margin-top:10px;transition:transform .15s}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sec{background:transparent;color:var(--tx);border:1.5px solid var(--bd)}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;padding:0;font-size:14px}
+input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;margin:6px 0 10px}
+.or{text-align:center;color:var(--mut);font-size:13px;margin:14px 0 4px}
+.opt{display:block;width:100%;text-align:left;padding:14px 16px;margin:8px 0;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);transition:border-color .15s}
+.opt:hover{border-color:var(--ac)}
+.opt.mine{border-color:var(--ac);background:rgba(224,69,123,.12);font-weight:700}
+.opt[disabled]{opacity:.7;cursor:default}
+.seg{display:flex;gap:8px;margin-top:6px}
+.seg button{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx)}
+.seg button.on{border-color:var(--ac);background:rgba(224,69,123,.12);font-weight:700}
+.tbar{height:7px;border-radius:7px;background:var(--bd);overflow:hidden;margin:6px 0 10px}
+.tbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#1f9d63,#ffb020);transition:width .5s linear}
+.pl{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;padding:4px 12px 4px 4px;border:1px solid var(--bd);border-radius:99px;font-size:14px}
+.av{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font:700 12px/1 system-ui;font-style:normal;margin-right:8px;flex:none}
+.pill .av{width:22px;height:22px;font-size:11px;margin-right:6px}
+ul{list-style:none;padding:0;margin:0}
+li.rk{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid var(--bd);background:var(--card);font-size:15px}
+li.rk span:first-child{display:flex;align-items:center}
+li.rk .sc{font-weight:800;font-size:18px}
+li.rk .dl{color:var(--ok);font-size:13px;font-weight:700;margin-left:8px}
+.note{padding:8px 10px;border-radius:10px;background:rgba(124,77,255,.12);font-size:14px;margin:10px 0 0}
+.gold{text-align:center;font-weight:700;padding:6px;border-radius:12px;color:#7a5200;background:linear-gradient(90deg,#ffe08a,#fff3c4,#ffe08a);margin:10px 0}
+.card.win{border-color:#e8b923;box-shadow:0 0 0 2px rgba(232,185,35,.25)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.mg .opt{padding:6px;margin:0}
+.mg img{display:block;width:100%;height:120px;object-fit:cover;border-radius:9px;background:#eee}
+.mg small{display:block;color:var(--mut);font-size:11px;margin-top:4px;line-height:1.2}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:14px}
+.pod{flex:1;max-width:120px;text-align:center;font-size:14px}
+.pod span{display:block;color:var(--mut)}
+.pod .blk{height:var(--h);margin-top:6px;border-radius:12px 12px 0 0;background:linear-gradient(180deg,var(--ac),var(--ac2));display:flex;justify-content:center;padding-top:8px;font-size:28px;transform-origin:bottom;animation:grow .8s cubic-bezier(.2,.9,.3,1.1) both;animation-delay:var(--d)}
+.dots i{display:inline-block;width:6px;height:6px;margin-left:5px;border-radius:50%;background:var(--ac);animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+.cf{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;animation:fall linear both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+@keyframes grow{from{transform:scaleY(0)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// =====================================================================
+//  🖼️ ¿QUÉ TE INSPIRA ESTA IMAGEN?
+//  Una foto de Wikimedia Commons + una pregunta creativa. Todos responden,
+//  se vota la respuesta más ingeniosa (en anónimo) y se suman puntos.
+//  Funciona sin base de datos: las preguntas y los temas van dentro del archivo.
+//  · Con el servidor del juego: salas por WebSocket (móviles distintos).
+//  · Sin servidor: modo pruebas entre pestañas del mismo navegador.
+// =====================================================================
+var app=document.getElementById('app');
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function ea(t){return esc(t).replace(/"/g,'&quot;')}
+function $(i){return document.getElementById(i)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+function hue(n){var h=0;n=String(n);for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return h}
+function av(n){return '<i class="av" style="background:hsl('+hue(n)+',62%,46%)">'+esc((String(n).trim().charAt(0)||'?').toUpperCase())+'</i>'}
+var RED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function confetti(){
+  if(RED)return;
+  var box=document.createElement('div');box.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;overflow:hidden;z-index:50';
+  var cols=['#e0457b','#7c4dff','#1f9d63','#ffb020','#2bb3ff'];
+  for(var i=0;i<46;i++){var c=document.createElement('i');c.className='cf';c.style.left=Math.random()*100+'%';c.style.background=cols[i%5];c.style.animationDuration=(1.8+Math.random()*1.6)+'s';c.style.animationDelay=(Math.random()*.5)+'s';box.appendChild(c)}
+  document.body.appendChild(box);setTimeout(function(){box.remove()},4200);
+}
+
+// ---------- Conexión: WebSocket (servidor del juego) o pestañas del navegador (pruebas) ----------
+function makeWsRoom(name){
+  return new Promise(function(resolve,reject){
+    var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+    var ws=null,id=null,pres={},arr=[],subs=[],done=false,closed=false,retry=0,cid=Math.random().toString(36).slice(2);
+    var room={
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}
+    };
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      try{ws=new WebSocket(url)}catch(e){done=true;reject({code:'nows'});return}
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello'){id=m.id}
+        else if(m.t==='peers'){
+          arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});
+          if(!done){done=true;resolve(room)}
+          subs.slice().forEach(function(f){f()});
+        }else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}
+      };
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();
+    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},6000);
+  });
+}
+function makeBcRoom(name){
+  return new Promise(function(resolve){
+    var ch=new BroadcastChannel(name),id='p'+Date.now()+Math.floor(Math.random()*10),pres={},others={},subs=[],arr=[];
+    function build(){var a=[{peer:id,isMe:true,presence:pres}];Object.keys(others).forEach(function(k){a.push({peer:k,isMe:false,presence:others[k].p||{}})});return a}
+    function emit(){arr=build();subs.slice().forEach(function(f){f()})}
+    function send(){try{ch.postMessage({id:id,p:pres})}catch(e){}}
+    ch.onmessage=function(e){var m=e.data;if(!m||!m.id||m.id===id)return;
+      if(m.bye)delete others[m.id];else{var nw=!others[m.id];others[m.id]={p:m.p,t:Date.now()};if(nw)send()}
+      emit()};
+    var timer=setInterval(function(){send();var now=Date.now(),g=false;Object.keys(others).forEach(function(k){if(now-others[k].t>6000){delete others[k];g=true}});if(g)emit()},1500);
+    resolve({
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send();emit();return Promise.resolve()},
+      leave:function(){try{ch.postMessage({id:id,bye:1})}catch(e){}clearInterval(timer);ch.close();return Promise.resolve()}
+    });
+    arr=build();send();
+  });
+}
+function joinRoom(name){
+  var viaTabs=function(){if(typeof BroadcastChannel==='undefined')return Promise.reject({code:'noroom'});return makeBcRoom(name).then(function(r){return{room:r,bc:true}})};
+  if(location.protocol==='file:'||!location.host)return viaTabs();
+  return makeWsRoom(name).then(function(r){return{room:r,bc:false}}).catch(function(e){if(e&&e.code==='room_full')throw e;return viaTabs()});
+}
+
+// ---------- Temas de búsqueda en Wikimedia ----------
+var TTOPICS=['abandoned buildings interior','abandoned amusement parks','abandoned hospitals','abandoned factories','abandoned hotels','underground tunnels','mysterious old buildings','secret rooms','strange staircases','hidden courtyards','old castles interior','forgotten railway stations','empty shopping malls','unusual museums','old prison cells','abandoned swimming pools',
+'surreal photography','absurd everyday situations','weird photography','surreal objects','funny unusual situations','strange public art','unexpected street scenes','surreal installations','strange perspective photography','optical illusions photography','unusual art installations','funny sculptures','weird public decorations',
+'unusual inventions','strange gadgets','antique objects collection','vintage household objects','obsolete technology','strange mechanical devices','unusual tools','curious kitchen utensils','old scientific instruments','vintage toys collection','unusual clocks','antique telephones','old cameras collection','strange furniture','unusual lamps','old vending machines','unusual locks and keys','weird everyday objects',
+'strange statues','unusual monuments','grotesque sculptures','giant sculptures','kinetic art','unusual fountains','strange architectural details','weird buildings','colorful unusual architecture','miniature architecture','fantasy architecture','unusual bridges','eccentric garden decorations',
+'unusual animal behavior','funny animal photography','strange looking animals','unusual insects macro photography','exotic birds','unusual marine creatures','animals in unexpected places','funny pet expressions',
+'unusual food presentation','strange food combinations','funny food shapes','colorful desserts','traditional food markets','unusual fruit varieties','giant food displays','vintage restaurant interiors',
+'unusual vehicles','vintage public transport','strange bicycles','unusual trains','old machinery','eccentric cars','unusual boats','vintage aircraft','weird transport inventions','unusual mobile homes',
+'unusual costumes','eccentric fashion','historical fashion','strange uniforms','vintage advertisements','old shop displays','unusual shop windows','funny street signs','strange warning signs','unusual street furniture','traditional festivals costumes','unusual market stalls','street performers',
+'science museum exhibits','vintage laboratory equipment','unusual optical instruments','anatomical models','historical medical instruments','microscope photography','unusual fossils','strange geological formations',
+'miniature worlds','dollhouses interiors','miniature model trains','toy collections','unusual collections','taxidermy museum','vintage postcards collection','antique shop interiors','curiosity cabinets','miniature dioramas',
+'strange urban scenes','unusual street decorations','colorful urban details','unexpected urban objects','curious shop interiors','unusual public spaces','strange parking situations','unusual balconies','peculiar doorways','weird urban design'];
+
+// ---------- Preguntas genéricas (valen para cualquier foto) ----------
+var TQ=['Ponle un título a esta imagen digno de una película de Oscar.','Describe esta imagen en tres palabras.','Ponle un nombre como si fuera una obra de arte carísima de un museo.','Si esta imagen fuera la portada de un libro, ¿cómo se titularía?','¿Cómo se llamaría un grupo de música cuya portada de disco fuera esta imagen?','Si esta imagen fuera una marca, ¿cómo se llamaría y cuál sería su eslogan?',
+'¿Qué ha pasado justo antes de que se hiciera esta foto?','¿Qué pasará cinco minutos después? Cuanto más inesperado, mejor.','Cuenta la historia de esta imagen en dos frases.','Inventa la leyenda de esta imagen como si fuera un cuento de abuelos.','Si esta imagen fuera el inicio de una película de terror cutre, ¿cuál sería la primera frase?','Si esta imagen fuera el final de una película, ¿qué pasaría en la escena siguiente?',
+'Escribe la reseña de 1 estrella (muy exagerada) de esta imagen.','Escribe el titular de periódico más sensacionalista para esta imagen.','Inventa la excusa más absurda para explicar por qué aparece esto en la foto.','Si esta imagen fuera un mensaje de WhatsApp de tu madre, ¿qué diría?','¿Qué diría tu abuela al verla? Sé fiel a su estilo.','¿Qué animal pegaría con esta imagen y por qué?','Descríbela como un crítico de arte pedante y exagerado.','Escribe el anuncio de televisión de esta imagen con eslogan incluido.','Si esta imagen fuera una norma de la comunidad de vecinos, ¿qué prohibiría?','¿Qué dirías de esta imagen en tu perfil de una app de citas?',
+'¿Qué detalle crees que casi nadie notaría al mirarla?','Si pudieras añadir una sola cosa a la imagen para mejorarla (o empeorarla), ¿qué sería?','Si esta imagen pudiera hablar, ¿qué sería lo primero que diría?','¿Qué sonido imaginas que acompañaría a esta imagen?','¿Qué olor crees que tendría si pudieras olerla?','¿Qué canción pondrías de banda sonora? Cuanto más inesperada, mejor.','Si esta imagen fuera un sabor de helado, ¿cuál sería?','Si esta imagen fuera una persona, ¿qué trabajo tendría y cómo sería su personalidad?','¿Qué superpoder le darías a esta imagen?',
+'¿Qué sería lo primero que harías si te teletransportaras a esta imagen?','¿A quién de este grupo le regalarías esta imagen y por qué?','¿Qué recuerdo de tu vida te trae esta imagen (real o inventado)?','Si tuvieras que colgarla en tu casa, ¿en qué habitación irá y por qué?','Si esta imagen apareciera en tu galería del móvil, ¿qué habría pasado esa noche?','Si fuera el fondo de pantalla de alguien, ¿qué dice eso de esa persona?','Descríbela sin usar la letra A (o como mínimo, ¡inténtalo!).',
+'Inventa el peor título posible para esta imagen.','¿Qué es lo más sospechoso de esta imagen?','Explica esta imagen como si estuvieras dando una rueda de prensa.','¿Qué delito absurdo podría haberse cometido aquí?','¿Qué titular pondría un periódico dentro de 100 años?','Inventa un rumor completamente falso sobre esta imagen.','¿Qué explicación daría alguien que claramente está mintiendo?','Si esta imagen fuera una prueba judicial, ¿de qué se acusaría a alguien?','¿Qué es lo más vergonzoso que podría haber ocurrido justo después?','Ponle un nombre de película de serie B.','¿Qué frase diría alguien intentando hacerse el interesante al verla?','¿Cómo describirías esta imagen para que pareciera mucho más importante de lo que es?','¿Qué teoría conspirativa podría surgir a partir de esta imagen?','¿Qué sería lo más ridículo que podría pasar a continuación?',
+'Si esta imagen tuviera un secreto, ¿cuál sería?','¿Qué cambiaría si esta imagen apareciera en un sueño?','Si pudieras viajar al pasado o al futuro de esta imagen, ¿a qué momento irías?','¿Qué objeto completamente inesperado encajaría perfectamente aquí?','Si esta imagen fuera el título de un capítulo de una serie, ¿cuál sería?','¿Qué personaje ficticio encajaría en esta imagen?','¿Qué pasaría si todo lo que aparece en la imagen cobrara vida?','Inventa una historia de tres frases inspirada en esta imagen.','¿Qué pregunta le harías a quien creó esta imagen?','Si esta imagen fuera una asignatura escolar, ¿cómo se llamaría?','¿Qué elemento de ciencia ficción introducirías en esta imagen?','Si esta imagen fuera una pista de un escape room, ¿qué misterio habría que resolver?',
+'¿Qué tipo de persona tendría esta imagen como favorita?','¿Qué tres palabras describen mejor esta imagen?','¿Qué nombre le pondrías si fuera tuya?','¿Qué persona de tu entorno disfrutaría más viendo esto?','¿Qué puntuación del 1 al 10 le darías y qué habría que cambiar para un 10?','¿Qué crees que pensaría de esta imagen alguien completamente diferente a ti?','¿Qué consejo le darías a alguien relacionado con esta imagen?','¿Qué detalle defenderías para convencer a los demás de que es una obra maestra?',
+'¿En qué género cinematográfico encajaría esta imagen?','¿Qué actor o actriz elegirías para protagonizar una película inspirada en ella?','¿Qué nombre tendría el documental sobre esta imagen?','¿Qué personaje de dibujos animados podría aparecer aquí sin desentonar?','¿Qué frase épica diría el protagonista de esta imagen?','Si fuera el cartel de una película, ¿cuál sería su eslogan?','¿Qué giro inesperado tendría la historia detrás de esta imagen?','¿Qué canción sería completamente inapropiada pero divertidísima como banda sonora?',
+'Describe esta imagen utilizando solamente cinco palabras.','Ponle un pie de foto que consiga más risas.','Describe esta imagen como si fueras un guía turístico.','Explícala utilizando únicamente preguntas.','Inventa un refrán que tenga que ver con esta imagen.','Descríbela como si estuvieras vendiéndola por televisión.','Resume lo que ves en un mensaje de máximo 10 palabras.','Inventa una palabra nueva que defina esta imagen y explica su significado.','Convierte esta imagen en el comienzo de un cuento infantil.','Descríbela como si fueras un narrador de un partido de fútbol.',
+'¿Esta imagen merece estar en un museo? Defiende tu respuesta.','¿Pagarías dinero por tener esta imagen en tu casa? ¿Cuánto?','¿Qué elemento de esta imagen generaría más discusión en un grupo de WhatsApp?','¿Qué sería peor: que esta imagen se hiciera viral o que nadie la entendiera?'];
+var TWORDS=['calcetín','pepino','abuela','nevera','dragón','chancla','jubilado','pizza','tractor','wifi','fantasma','croqueta','sofá','mochila','paraguas','dinosaurio','lunes','gimnasio','pirata','bocadillo','ascensor','robot','sombrero','tortilla','cactus','playa','mudanza','karaoke','ninja','helado','vecino','selfie','pato','espagueti','examen','resaca','cohete','bufanda','siesta','pijama','jirafa','factura','mariachi','hámster','churro','taxi','cumpleaños','espejo','tiburón','zapatilla'];
+
+// ---------- Estado ----------
+var T=null,TR=null,tTimer=null,OMSG='',VOTE_MS=25000;
+function tNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function tHas(s){return !!(T&&T.word)&&tNorm(s).indexOf(tNorm(T.word))>-1}
+function nextFrom(list,used,keep){var pool=list.filter(function(x){return used.indexOf(x)<0});if(!pool.length)pool=list;var v=pick(pool);used.push(v);if(used.length>keep)used.shift();return v}
+function tPeers(){return TR?TR.peers().filter(function(p){return p.presence&&p.presence.tm===1}):[]}
+function tActive(){var ps=tPeers();return T.ph==='lobby'?ps:ps.filter(function(x){return T.ro.indexOf(x.presence.k)>-1})}
+function tSubs(){return tActive().filter(function(x){return x.presence.pr===T.round&&String(x.presence.x||'').trim()})}
+function nameOf(k){return (T.nm&&T.nm[k])||'Jugador'}
+function isLastRound(){return T.rounds>0&&T.rn+1>=T.rounds}
+function tPub(){
+  if(!TR||!T)return;
+  var p={n:T.name,k:T.me,tm:1,pr:T.round,x:T.sub||'',v:T.vote||''};
+  if(T.host){p.th=1;p.ph=T.ph;p.r=T.round;p.rn=T.rn;p.ro=T.ro;p.tot=T.totals;p.nm=T.nm;p.img=T.img;p.q=T.q;p.w=T.word;p.dl=T.deadline;p.err=T.err||'';p.rounds=T.rounds;p.wt=T.wt;p.res=T.res}
+  else{p.th=null;p.ph=null;p.r=null;p.rn=null;p.ro=null;p.tot=null;p.nm=null;p.img=null;p.q=null;p.w=null;p.dl=null;p.err=null;p.rounds=null;p.wt=null;p.res=null}
+  TR.presence(p).catch(function(){});
+}
+function tStart(create){
+  var nm=($('tn')&&$('tn').value||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador');
+  var code=create?newCode():($('tc')&&$('tc').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!code){OMSG='Escribe el código de la sala.';home();return}
+  OMSG='';
+  T={code:code,me:Math.random().toString(36).slice(2,8),name:nm,host:!!create,ph:'lobby',round:-1,rn:-1,ro:[],totals:{},nm:{},img:null,q:'',word:'',sub:'',vote:'',deadline:0,err:'',res:null,rounds:8,wt:45000,usedQ:[],usedW:[],seen:[],localRound:-99,rk:'',rh:'',lp:'',cf:'',bc:false,nh:0,sq:'',sres:null,soff:0,serr:'',sbusy:false};
+  tTimer=setInterval(tTick,500);tRender();
+  joinRoom('cmt-'+code).then(function(j){TR=j.room;T.bc=j.bc;T.rk='';TR.onPeers(tSync);tPub();tSync()}).catch(function(e){tLeave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala.')});
+}
+function tLeave(msg){if(TR){TR.leave().catch(function(){});TR=null}if(tTimer){clearInterval(tTimer);tTimer=null}T=null;OMSG=msg||'';home()}
+function tSync(){
+  if(!T||!TR)return;
+  if(!T.host){
+    var hp=null;tPeers().forEach(function(x){if(x.presence.th===1)hp=x.presence});
+    if(hp){
+      T.nh=0;T.ph=hp.ph||'lobby';T.round=hp.r===undefined||hp.r===null?-1:hp.r;T.rn=hp.rn===undefined||hp.rn===null?-1:hp.rn;T.ro=hp.ro||[];T.totals=hp.tot||{};T.nm=hp.nm||{};T.img=hp.img||null;T.q=hp.q||'';T.word=hp.w||'';T.deadline=hp.dl||0;T.err=hp.err||'';T.rounds=hp.rounds===undefined||hp.rounds===null?8:hp.rounds;T.wt=hp.wt||45000;T.res=hp.res||null;
+      if(T.localRound!==T.round){T.localRound=T.round;T.sub='';T.vote='';tPub()}
+    }else T.nh=T.nh||Date.now();
+  }
+  tRender();
+}
+
+// ---------- Fotos de Wikimedia ----------
+function tClean(s){return String(s||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim().slice(0,180)}
+var BADIMG=/(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|war photograph|violent|murder|injury|death)/i;
+function tCand(pg){
+  var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{};
+  return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:ii.thumbmime||ii.mime||'',w:ii.width||0,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value)),desc:tClean((ex.ImageDescription&&ex.ImageDescription.value)||(ex.ObjectName&&ex.ObjectName.value)),idx:pg.index||0};
+}
+function tOk(x){return x.url&&x.page&&x.license&&/^image\/(jpeg|png|webp|gif)$/i.test(x.mime)&&!BADIMG.test(x.title+' '+x.desc)}
+async function tQuery(term,random){
+  var o={action:'query',format:'json',generator:'search',gsrnamespace:'6',gsrlimit:'30',gsrsearch:'filetype:bitmap '+term,prop:'imageinfo',iiprop:'url|mime|size|extmetadata',iiurlwidth:'1000',iiextmetadatafilter:'LicenseShortName|Artist|Credit|ImageDescription|ObjectName',origin:'*'};
+  if(random)o.gsrsort='user_random';
+  var r=await fetch('https://commons.wikimedia.org/w/api.php?'+new URLSearchParams(o).toString(),{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error('No se pudo consultar Wikimedia Commons.');
+  var d=await r.json();
+  return Object.keys((d.query&&d.query.pages)||{}).map(function(k){return tCand(d.query.pages[k])}).sort(function(a,b){return a.idx-b.idx});
+}
+async function tFetchRandom(){
+  for(var i=0;i<3;i++){
+    var l=(await tQuery(pick(TTOPICS),true)).filter(function(x){return tOk(x)&&x.w>=500});
+    var f=l.filter(function(x){return T.seen.indexOf(x.title)<0});if(f.length)l=f;
+    if(l.length)return pick(l);
+  }
+  throw new Error('No se han encontrado fotografías adecuadas. Prueba otra vez.');
+}
+function tDoSearch(){
+  if(!T||!T.host||T.ph!=='pick'||T.sbusy)return;
+  var term=(T.sq||'').trim();
+  if(term.length<2){T.serr='Escribe al menos 2 letras.';T.rk='';tRender();return}
+  T.sbusy=true;T.serr='';T.rk='';tRender();
+  tQuery(term,false).then(function(l){
+    if(!T||T.ph!=='pick')return;
+    T.sres=l.filter(tOk);T.soff=0;T.sbusy=false;T.serr=T.sres.length?'':'No hay fotos para esa búsqueda. Prueba con otras palabras (en inglés suele dar más resultados).';T.rk='';tRender();
+  }).catch(function(e){if(!T||T.ph!=='pick')return;T.sbusy=false;T.serr=(e&&e.message)||'No se pudo buscar.';T.rk='';tRender()});
+}
+
+// ---------- Rondas (anfitrión) ----------
+function tResetRound(real){
+  T.round++;if(real)T.rn++;T.sub='';T.vote='';T.res=null;T.err='';T.img=null;
+  T.word=nextFrom(TWORDS,T.usedW,20);T.q=nextFrom(TQ,T.usedQ,40);T.localRound=T.round;
+}
+function tRoundRandom(real){
+  if(!T||!T.host)return;
+  tResetRound(real);T.ph='loading';T.deadline=0;tPub();tSync();
+  var my=T.round;
+  tFetchRandom().then(function(img){
+    if(!T||!T.host||T.round!==my||T.ph!=='loading')return;
+    T.img=img;T.seen.push(img.title);if(T.seen.length>12)T.seen.shift();T.ph='write';T.deadline=Date.now()+T.wt;tPub();tSync();
+  }).catch(function(e){if(!T||!T.host||T.round!==my)return;T.err=(e&&e.message)||'No se pudo cargar la fotografía.';T.ph='error';tPub();tSync()});
+}
+function tEnterPick(){if(!T||!T.host)return;T.ph='pick';T.sres=null;T.soff=0;T.serr='';T.sbusy=false;T.deadline=0;tPub();tSync()}
+function tPickImg(i){
+  var img=T.sres&&T.sres[T.soff+i];if(!img||!T.host||T.ph!=='pick')return;
+  tResetRound(true);T.img=img;T.seen.push(img.title);T.sres=null;T.ph='write';T.deadline=Date.now()+T.wt;tPub();tSync();
+}
+function tBegin(pickMode){
+  var ps=tPeers();if(ps.length<2)return;
+  T.ro=ps.map(function(x){return x.presence.k});T.totals={};T.nm={};ps.forEach(function(x){T.totals[x.presence.k]=0;T.nm[x.presence.k]=x.presence.n});
+  if(pickMode){tEnterPick()}else tRoundRandom(true);
+}
+function tSubmit(){
+  if(!T||T.ph!=='write'||T.sub)return;
+  var el=$('tcaption'),v=(el&&el.value||'').trim();
+  if(v.length<4){var m=$('terr');if(m)m.textContent='Escribe una respuesta de al menos 4 caracteres.';return}
+  T.sub=v.slice(0,180);tPub();tRender();
+}
+function tVote(k){
+  if(!T||T.ph!=='vote'||T.vote||k===T.me)return;
+  if(!tSubs().some(function(x){return x.presence.k===k}))return;
+  T.vote=k;tPub();tRender();
+}
+function tTally(){
+  var ps=tActive(),subs=tSubs(),cnt={},d={};
+  subs.forEach(function(x){cnt[x.presence.k]=0});
+  ps.forEach(function(x){var p=x.presence;if(p.pr===T.round&&p.v&&p.v!==p.k&&cnt[p.v]!==undefined)cnt[p.v]++});
+  var max=0;Object.keys(cnt).forEach(function(k){if(cnt[k]>max)max=cnt[k]});
+  var win=max>0?Object.keys(cnt).filter(function(k){return cnt[k]===max}):[],wb=[],mult=isLastRound()?2:1;
+  Object.keys(cnt).forEach(function(k){d[k]=cnt[k]*2});
+  ps.forEach(function(x){var p=x.presence;if(p.pr===T.round&&p.v&&win.indexOf(p.v)>-1)d[p.k]=(d[p.k]||0)+1});
+  subs.forEach(function(x){var k=x.presence.k;if(win.indexOf(k)>-1&&tHas(x.presence.x)){d[k]+=1;wb.push(k)}});
+  Object.keys(d).forEach(function(k){d[k]*=mult;T.totals[k]=(T.totals[k]||0)+d[k]});
+  ps.forEach(function(x){T.nm[x.presence.k]=x.presence.n});
+  T.res={r:T.round,mult:mult,win:win,wb:wb,d:d,items:subs.map(function(x){return{k:x.presence.k,x:x.presence.x,c:cnt[x.presence.k]}}).sort(function(a,b){return b.c-a.c})};
+}
+function tTick(){
+  if(!T||!TR)return;
+  var now=Date.now(),bar=$('ttbar');
+  if(bar&&(T.ph==='write'||T.ph==='vote')){var dur=T.ph==='write'?T.wt:VOTE_MS;bar.style.width=Math.max(0,Math.min(100,(T.deadline-now)/dur*100))+'%'}
+  var st=$('tstatus');
+  if(st&&T.ph==='write')st.textContent='Han enviado '+tSubs().length+' de '+tActive().length+' respuestas.';
+  if(st&&T.ph==='vote'){var el=tVoters();st.textContent='Han votado '+el.filter(function(x){return x.presence.pr===T.round&&x.presence.v}).length+' de '+el.length+' jugadores.'}
+  if(!T.host){if(T.nh&&now-T.nh>15000)tRender();return}
+  if(T.ph==='write'){
+    var ps=tActive(),sn=tSubs().length;
+    if(ps.length&&((sn===ps.length&&sn>=2)||now>=T.deadline)){
+      if(sn>=2){T.ph='vote';T.deadline=now+VOTE_MS}else{tTally();T.ph='reveal';T.deadline=0}
+      tPub();tSync();
+    }
+  }else if(T.ph==='vote'){
+    var el2=tVoters(),voted=el2.filter(function(x){return x.presence.pr===T.round&&x.presence.v}).length;
+    if((el2.length&&voted>=el2.length)||now>=T.deadline){tTally();T.ph='reveal';T.deadline=0;tPub();tSync()}
+  }
+}
+function tVoters(){var subs=tSubs();return tActive().filter(function(x){return subs.some(function(y){return y.presence.k!==x.presence.k})})}
+
+// ---------- Vistas ----------
+function paint(key,html){
+  if(T.rk===key&&T.rh===html)return;
+  var ae=document.activeElement,aid=(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')&&ae.id)||'',pos=aid?ae.selectionStart:0;
+  var cap=$('tcaption'),capv=cap?cap.value:null;
+  var ph=key.split('|')[0],scroll=T.lp!==ph;T.lp=ph;
+  T.rk=key;T.rh=html;app.innerHTML=html;
+  if(capv!==null&&$('tcaption'))$('tcaption').value=capv;
+  if($('tsq'))$('tsq').value=T.sq||'';
+  if(aid&&$(aid)){$(aid).focus();try{$(aid).setSelectionRange(pos,pos)}catch(e){}}
+  if(scroll)window.scrollTo(0,0);
+  if(html.indexOf('data-confetti')>-1&&T.cf!==key){T.cf=key;confetti()}
+}
+function warn(){return(!T.host&&T.nh&&Date.now()-T.nh>15000)?'<p class="center" style="color:var(--ko)">⚠️ El anfitrión se ha desconectado.</p>':''}
+function setSeg(key,opts,cur,dis){return '<div class="seg">'+opts.map(function(o){return '<button data-ts="'+key+'" data-v="'+o[0]+'"'+(String(cur)===String(o[0])?' class="on"':'')+(dis?' disabled':'')+'>'+o[1]+'</button>'}).join('')+'</div>'}
+function rankHtml(){
+  var d=(T.res&&T.res.d)||{};
+  return T.ro.slice().sort(function(a,b){return (T.totals[b]||0)-(T.totals[a]||0)}).map(function(k,i){
+    return '<li class="rk"><span>'+av(nameOf(k))+'<b>'+(i+1)+'. '+esc(nameOf(k))+(k===T.me?' (tú)':'')+'</b>'+(T.ph==='reveal'&&d[k]?'<span class="dl">+'+d[k]+'</span>':'')+'</span><span class="sc">'+(T.totals[k]||0)+'</span></li>';
+  }).join('');
+}
+function imageCard(allowChange){
+  if(!T.img)return'';
+  var i=T.img;
+  return '<div class="card center"><img src="'+ea(i.url)+'" alt="Fotografía para responder una pregunta creativa" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:340px;object-fit:contain;border-radius:12px;background:#eee" onerror="this.style.display=\'none\'"><p class="mut" style="font-size:11px;margin:8px 0 0">Imagen: <a href="'+ea(i.page)+'" target="_blank" rel="noopener">'+esc((i.title||'Fotografía').replace(/^File:/,''))+'</a> · '+esc(i.author||'Autor no indicado')+' · '+esc(i.license||'Licencia no indicada')+'</p>'
+   +(T.word?'<p class="note">🧩 Palabra obligada: <b>'+esc(T.word)+'</b> · si la usas y tu respuesta es la más votada, +1 punto</p>':'')
+   +(allowChange&&T.host?'<p style="margin:8px 0 0"><button class="link" data-ta="skip">🔄 Otra foto</button> · <button class="link" data-ta="skipq">💬 Otra pregunta</button></p>':'')+'</div>';
+}
+function tRender(){
+  if(!T)return;
+  var all=tPeers(),w=warn();
+  var top='<div class="top"><span>🖼️ Sala '+esc(T.code.toUpperCase())+(T.ph==='lobby'||T.ph==='end'||T.rn<0?'':' · Ronda '+(T.rn+1)+(T.rounds>0?'/'+T.rounds:''))+(T.bc?' · 🧪 pruebas':'')+'</span><button class="link" data-ta="leave">Salir</button></div>';
+  var timer='<div class="tbar"><i id="ttbar"></i></div>',fin=T.ph!=='lobby'&&!T.ro.length?false:true;
+  if(T.ph!=='lobby'&&T.ro.indexOf(T.me)<0){paint('locked','<h1>¿Qué te inspira esta imagen?</h1><div class="card center"><h2>La partida ya ha empezado</h2><p class="mut">Esta sala no admite jugadores nuevos durante la partida. Sal y únete a otra sala.</p><button class="btn sec" data-ta="leave">Salir</button></div>');return}
+  var gold=isLastRound()?'<div class="gold">✨ ¡Última ronda! Los puntos valen el doble</div>':'';
+  if(T.ph==='lobby'){
+    var pills=all.map(function(x){return '<span class="pill">'+av(x.presence.n)+esc(x.presence.n)+(x.presence.th===1?' 👑':'')+(x.isMe?' (tú)':'')+'</span>'}).join('');
+    var set=T.host?'<div class="kick" style="margin-top:14px">Rondas</div>'+setSeg('rounds',[[5,'5'],[8,'8'],[12,'12'],[0,'Sin límite']],T.rounds)+'<div class="kick" style="margin-top:14px">Tiempo para responder</div>'+setSeg('wt',[[30000,'30 s'],[45000,'45 s'],[60000,'60 s']],T.wt):'<p class="mut" style="font-size:14px;margin:12px 0 0">'+(T.rounds>0?T.rounds+' rondas':'Sin límite de rondas')+' · '+Math.round(T.wt/1000)+' s para responder</p>';
+    paint('lobby|'+all.length+T.rounds+T.wt+T.bc,'<h1>¿Qué te inspira esta imagen?</h1>'+top+'<div class="card center"><div class="kick">Sala de imágenes</div><h2>Código: <span style="letter-spacing:.12em">'+esc(T.code.toUpperCase())+'</span></h2><p class="mut">Todos veréis la misma fotografía y una pregunta creativa. Responded con ingenio, votad en anónimo la mejor respuesta y sumad puntos. Cada ronda hay una palabra obligada que da +1 si la usas y ganas.</p></div><div class="card"><div class="kick">Jugadores ('+all.length+')</div><div class="pl">'+pills+'</div>'+set+'</div>'
+     +(T.host?'<button class="btn" data-ta="start"'+(all.length<2?' disabled':'')+'>🎲 Empezar con foto al azar</button><button class="btn sec" data-ta="startpick"'+(all.length<2?' disabled':'')+'>🔎 Empezar eligiendo la foto yo</button>'+(all.length<3?'<p class="mut center" style="font-size:13px;margin:8px 0 0">Con 2 jugadores funciona, pero es más divertido con 3 o más.</p>':''):'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+w);
+  }else if(T.ph==='pick'){
+    if(!T.host){paint('pickw','<div class="card center"><h2>El anfitrión está eligiendo la foto 🔎</h2><p class="mut">Enseguida empieza la ronda.</p><span class="dots"><i></i><i></i><i></i></span></div>'+w);return}
+    var vis=(T.sres||[]).slice(T.soff,T.soff+6);
+    var grid=vis.length?'<div class="mg">'+vis.map(function(x,i){return '<button class="opt" data-tpick="'+i+'"><img src="'+ea(x.url)+'" alt="" referrerpolicy="no-referrer"><small>'+esc((x.title||'').replace(/^File:/,'').slice(0,60))+' · '+esc(x.license)+'</small></button>'}).join('')+'</div>'+((T.sres||[]).length>6?'<button class="btn sec" data-ta="more">🔄 Ver otras 6</button>':''):'';
+    paint('pick|'+(T.sbusy?'b':'i')+'|'+T.soff+'|'+(T.serr||'')+'|'+(T.sres?T.sres.length:'n'),top+'<div class="card"><div class="kick">🔎 Elegir la foto</div><p class="mut" style="font-size:14px">Escribe una o varias palabras (en inglés suele dar más resultados) y toca la foto que quieras jugar.</p><input id="tsq" maxlength="60" placeholder="Ej: castle, vintage car, cat" autocomplete="off"><button class="btn" data-ta="search"'+(T.sbusy?' disabled':'')+'>'+(T.sbusy?'Buscando…':'🔍 Buscar')+'</button>'+(T.serr?'<p style="color:var(--ko);font-size:14px;margin:10px 0 0">'+esc(T.serr)+'</p>':'')+grid+'</div><button class="btn sec" data-ta="pickrandom">🎲 Mejor una al azar</button>'+(T.rn>=0?'<button class="btn sec" data-ta="pickback">← Volver</button>':'')+w);
+  }else if(T.ph==='loading'){
+    paint('loading|'+T.round,top+'<div class="card center"><h2>Buscando una fotografía…</h2><p class="mut">Consultando Wikimedia Commons.</p><span class="dots"><i></i><i></i><i></i></span></div>'+w);
+  }else if(T.ph==='error'){
+    paint('error',top+'<div class="card center"><h2>No se pudo cargar la imagen</h2><p class="mut">'+esc(T.err||'Inténtalo de nuevo.')+'</p>'+(T.host?'<button class="btn" data-ta="skip">Buscar otra imagen</button>':'<p class="mut">El anfitrión puede volver a intentarlo.</p>')+'</div>'+w);
+  }else if(T.ph==='write'){
+    if(T.sub)paint('write|sent|'+T.round,top+timer+imageCard(true)+'<div class="card center"><h2>¡Respuesta enviada! ✨</h2><p class="mut" id="tstatus">Esperando a los demás…</p><span class="dots"><i></i><i></i><i></i></span></div>'+w);
+    else paint('write|'+T.round+'|'+T.q,top+timer+gold+imageCard(true)+'<div class="card"><div class="kick">'+esc(T.q)+'</div><textarea id="tcaption" maxlength="180" rows="3" placeholder="Escribe tu respuesta…"></textarea><p id="terr" class="mut" style="font-size:12px;margin:0"></p><p class="mut" id="tstatus" style="font-size:13px"></p><button class="btn" data-ta="submit">Enviar respuesta</button></div>'+w);
+  }else if(T.ph==='vote'){
+    var subs=tSubs().filter(function(x){return x.presence.k!==T.me}).sort(function(a,b){return hue(a.presence.k+T.round)-hue(b.presence.k+T.round)});
+    var opts=subs.map(function(x){return '<button class="opt'+(T.vote===x.presence.k?' mine':'')+'" data-tvote="'+esc(x.presence.k)+'"'+(T.vote?' disabled':'')+'>'+esc(x.presence.x)+'</button>'}).join('');
+    paint('vote|'+T.round+'|'+(T.vote||'')+'|'+subs.length,top+timer+imageCard(false)+'<div class="card"><div class="kick">Votación anónima</div><p class="q">'+esc(T.q)+'</p><p class="mut">¿Qué respuesta te parece más ingeniosa?</p>'+(T.vote?'<p class="mut">Tu voto está registrado. Esperando a los demás…</p>':(opts||'<p class="mut">No hay respuestas de otros jugadores para votar.</p>'))+'<p class="mut" id="tstatus" style="font-size:13px"></p></div>'+w);
+  }else if(T.ph==='reveal'){
+    var R=T.res&&T.res.r===T.round?T.res:{items:[],win:[],wb:[],d:{},mult:1},items=R.items;
+    var cards=items.length?items.map(function(it,i){var win=R.win.indexOf(it.k)>-1;return '<div class="card'+(win?' win':'')+'"><div class="kick">'+(win?'🏆 Más votado':'Respuesta '+(i+1))+' · '+it.c+' voto'+(it.c===1?'':'s')+(R.wb.indexOf(it.k)>-1?' · 🧩 +1 por la palabra':'')+'</div><p class="q">«'+esc(it.x)+'»</p><p class="mut" style="margin:0">'+av(nameOf(it.k))+esc(nameOf(it.k))+(R.d[it.k]?' · <b>+'+R.d[it.k]+' pts</b>':'')+'</p></div>'}).join(''):'<div class="card center"><p class="mut" style="margin:0">Esta ronda no ha habido suficientes respuestas. ¡Sin puntos!</p></div>';
+    var last=isLastRound();
+    paint('reveal|'+T.round+'|'+items.length+'|'+T.rounds,top+imageCard(false)+'<div class="card"><div class="kick">'+esc(T.q)+'</div><p class="mut" style="margin:0">Estas eran vuestras respuestas'+(R.mult>1?' · puntos x2':'')+'</p></div><div'+(R.win.length?' data-confetti="1"':'')+'>'+cards+'</div><div class="card"><div class="kick">Clasificación</div><ul>'+rankHtml()+'</ul></div>'
+     +(T.host?(last?'<button class="btn" data-ta="finish">🏁 Ver clasificación final</button>':'<button class="btn" data-ta="continue">🎲 Siguiente ronda (foto al azar)</button><button class="btn sec" data-ta="pickstart">🔎 Elegir la siguiente foto yo</button><button class="btn sec" data-ta="finish">🏁 Terminar y ver clasificación final</button>'):'<p class="mut center">Esperando al anfitrión…</p>')+w);
+  }else{
+    var r=T.ro.slice().sort(function(a,b){return (T.totals[b]||0)-(T.totals[a]||0)});
+    var pod=[1,0,2].filter(function(i){return r[i]}).map(function(i){return '<div class="pod"><div>'+av(nameOf(r[i]))+'</div><b>'+esc(nameOf(r[i]))+'</b><span>'+(T.totals[r[i]]||0)+' pts</span><div class="blk" style="--h:'+[130,100,76][i]+'px;--d:'+(300+(2-i)*250)+'ms">'+['🥇','🥈','🥉'][i]+'</div></div>'}).join('');
+    paint('end','<h1>¡Fin de la partida!</h1><div class="card center" data-confetti="1"><div class="kick">Mente más creativa</div><h2>'+esc(r[0]?nameOf(r[0]):'—')+'</h2><div class="podium">'+pod+'</div></div><div class="card"><div class="kick">Clasificación final</div><ul>'+rankHtml()+'</ul></div>'+(T.host?'<button class="btn" data-ta="again">Jugar otra vez</button>':'')+'<button class="btn sec" data-ta="leave">Salir</button>');
+  }
+}
+function home(){
+  var msg=OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'';
+  app.innerHTML='<h1>¿Qué te inspira esta imagen?</h1><div class="card"><div class="kick">🖼️ Juego de imaginación · 2 o más jugadores</div><p class="mut" style="font-size:14px">Aparece una fotografía y una pregunta creativa relacionada con ella. Cada jugador responde, después votáis en anónimo la respuesta más ingeniosa y sumáis puntos. El anfitrión puede dejar la foto al azar o buscarla él mismo en Wikimedia.</p></div>'
+  +'<div class="card"><label>Tu nombre<input id="tn" maxlength="20" placeholder="Nombre"></label><button class="btn" data-ta="tcreate">Crear sala</button><div class="or">o únete a una sala</div><input id="tc" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-ta="tjoin">Unirme a una sala</button>'+msg+'</div>'
+  +'<p class="mut center" style="font-size:12px">Sin servidor del juego, las salas funcionan igualmente entre pestañas del mismo navegador (modo pruebas).</p>';
+}
+
+// ---------- Eventos ----------
+app.addEventListener('click',function(e){
+  var b=e.target.closest('[data-ta]'),a=b&&b.getAttribute('data-ta');
+  if(a==='tcreate'){tStart(true);return}
+  if(a==='tjoin'){tStart(false);return}
+  if(!T)return;
+  var st=e.target.closest('[data-ts]');
+  if(st){if(T.host&&T.ph==='lobby'){var k=st.getAttribute('data-ts'),v=+st.getAttribute('data-v');if(k==='rounds')T.rounds=v;else T.wt=v;T.rk='';tPub();tRender()}return}
+  var pk=e.target.closest('[data-tpick]');if(pk){tPickImg(+pk.getAttribute('data-tpick'));return}
+  var vt=e.target.closest('[data-tvote]');if(vt&&!vt.disabled){tVote(vt.getAttribute('data-tvote'));return}
+  if(!a)return;
+  if(a==='leave')tLeave();
+  else if(a==='start'&&T.host&&T.ph==='lobby')tBegin(false);
+  else if(a==='startpick'&&T.host&&T.ph==='lobby')tBegin(true);
+  else if(a==='submit')tSubmit();
+  else if(a==='continue'&&T.host&&T.ph==='reveal')tRoundRandom(true);
+  else if(a==='pickstart'&&T.host&&T.ph==='reveal')tEnterPick();
+  else if(a==='skip'&&T.host&&(T.ph==='write'||T.ph==='vote'||T.ph==='error'))tRoundRandom(false);
+  else if(a==='skipq'&&T.host&&T.ph==='write'){T.q=nextFrom(TQ,T.usedQ,40);T.round++;T.localRound=T.round;T.sub='';T.vote='';T.deadline=Date.now()+T.wt;tPub();tSync()}
+  else if(a==='finish'&&T.host&&T.ph==='reveal'){T.ph='end';tPub();tSync()}
+  else if(a==='again'&&T.host&&T.ph==='end'){T.ph='lobby';T.round++;T.rn=-1;T.res=null;T.img=null;T.sub='';T.vote='';T.ro=[];T.totals={};T.localRound=T.round;T.rk='';tPub();tSync()}
+  else if(a==='search')tDoSearch();
+  else if(a==='more'&&T.host&&T.sres){T.soff=T.soff+6>=T.sres.length?0:T.soff+6;tRender()}
+  else if(a==='pickrandom'&&T.host&&T.ph==='pick')tRoundRandom(true);
+  else if(a==='pickback'&&T.host&&T.ph==='pick'){T.ph='reveal';tPub();tSync()}
+});
+app.addEventListener('input',function(e){
+  if(e.target.id==='tsq'&&T)T.sq=e.target.value;
+  if(e.target.id==='tcaption'){var bt=document.querySelector('[data-ta="submit"]');if(bt)bt.textContent='Enviar respuesta ('+e.target.value.length+'/180)'}
+});
+app.addEventListener('keydown',function(e){if(e.target.id==='tsq'&&e.key==='Enter'){e.preventDefault();tDoSearch()}});
+home();
+</script>
+</body>
+</html>

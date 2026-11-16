@@ -55,23 +55,25 @@ async function fromKnown(){
   try{
    const r=await fetch(encodeURI(f),{cache:'no-store'});
    if(!r.ok)return null;
-   const m=(await r.text()).match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+   const txt=await r.text();
+   const m=txt.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
    const t=m?dec(m[1].trim()):'';
-   return t.includes('☆')?{file:f,title:t}:null;
+   const n=(txt.match(/☆/g)||[]).length;
+   return n?{file:f,title:t,stars:n}:null;
   }catch(e){return null}
  }));
  return res.filter(Boolean);
 }
-const prep=list=>list.filter(x=>x&&x.file&&String(x.file)!==SELF&&String(x.title||'').includes('☆')).map(x=>{
- const t=dec(String(x.title));
- return{file:String(x.file),stars:(t.match(/☆/g)||[]).length,name:t.replace(/☆/g,'').replace(/\s+/g,' ').trim()||String(x.file).replace(/\.html$/i,'')};
+const prep=list=>list.filter(x=>x&&x.file&&String(x.file)!==SELF&&(Number(x.stars)>0||String(x.title||'').includes('☆'))).map(x=>{
+ const t=dec(String(x.title||''));
+ return{file:String(x.file),stars:Math.min(5,Number(x.stars)||(t.match(/☆/g)||[]).length||1),name:t.replace(/☆/g,'').replace(/\s+/g,' ').trim()||String(x.file).replace(/\.html$/i,'')};
 }).sort((a,b)=>b.stars-a.stars||a.name.localeCompare(b.name,'es'));
 
 function draw(){
  const v=($('q').value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
  const list=ALL.filter(g=>!v||(g.name+' '+g.file).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(v));
  $('grid').innerHTML=list.map(g=>'<a class="g" href="'+esc(encodeURI(g.file))+'"><div class="st">'+'☆'.repeat(Math.min(g.stars,5))+'</div><div class="nm">'+esc(g.name)+'</div><div class="fl">'+esc(g.file)+'</div></a>').join('');
- $('sub').textContent=ALL.length?(list.length===ALL.length?ALL.length+' juego'+(ALL.length===1?'':'s')+' con ☆ en el título':list.length+' de '+ALL.length+' juegos'):'';
+ $('sub').textContent=ALL.length?(list.length===ALL.length?ALL.length+' juego'+(ALL.length===1?'':'s')+' con ☆ en el documento':list.length+' de '+ALL.length+' juegos'):'';
 }
 (async()=>{
  let list=[],src='';
@@ -79,9 +81,9 @@ function draw(){
  ALL=prep(list);
  if(ALL.length){$('q').hidden=false;draw();$('q').addEventListener('input',draw)}
  else{
-  $('sub').textContent='No hay ningún juego con ☆ en el título.';
+  $('sub').textContent='No hay ningún juego con ☆ en el documento.';
   $('empty').hidden=false;
-  $('empty').innerHTML='<p><b>¿Cómo aparece un juego aquí?</b> Pon una ☆ en su <code>&lt;title&gt;</code>, por ejemplo <code>&lt;title&gt;☆ Dixit&lt;/title&gt;</code>. Más estrellas lo suben en la lista.</p>'+(src==='lista'?'<p class="mut">Esta página no encontró <code>/api/topjuegos</code>, así que solo ha revisado la lista de archivos del script. Añade ese endpoint en <code>server.js</code> para que detecte todos los HTML de <code>public</code> automáticamente.</p>':'');
+  $('empty').innerHTML='<p><b>¿Cómo aparece un juego aquí?</b> Pon una ☆ en cualquier parte de su HTML, por ejemplo en un comentario <code>&lt;!-- ☆ --&gt;</code> o en el título. Cuantas más ☆ tenga (hasta 5), más arriba aparece.</p>'+(src==='lista'?'<p class="mut">Esta página no encontró <code>/api/topjuegos</code>, así que solo ha revisado la lista de archivos del script. Añade ese endpoint en <code>server.js</code> para que detecte todos los HTML de <code>public</code> automáticamente.</p>':'');
  }
 })();
 })();

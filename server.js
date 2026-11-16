@@ -16,7 +16,7 @@ const MAX_PLAYERS = 200;
 const MAX_GROUP = 200;
 const MAX_TITLE_PLAYERS = 30;
 const MAX_PRESENCE_BYTES = 16384;
-
+const SHOW_MENU = false; // pon true para que vuelva a aparecer el botón 🎮
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.htm': 'text/html; charset=utf-8',
@@ -87,7 +87,9 @@ const MENU_SNIPPET = '<script>(function(){if(window.__gm)return;window.__gm=1;'
   + 'document.body.appendChild(p);document.body.appendChild(b)})();</script>';
 
 function injectMenu(html) {
-  if (html.includes('<!-- no-menu -->')) return html;
+  if (!SHOW_MENU || html.includes('<!-- no-menu -->')) return html;
+
+  
   const i = html.toLowerCase().lastIndexOf('</body>');
   return i === -1 ? html + MENU_SNIPPET : html.slice(0, i) + MENU_SNIPPET + html.slice(i);
 }

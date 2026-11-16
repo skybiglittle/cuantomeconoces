@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Foto censurada. PENDIENTE AÑADIR BUSCADOR MANUAL.</title>
+<title>Foto censurada</title>
 <style>
 :root{--bg:#faf7f5;--card:#fff;--tx:#2a2230;--mut:#7a7083;--ac:#e0457b;--ac2:#7c4dff;--ok:#1f9d63;--ko:#d6453d;--bd:#eadfe6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17131c;--card:#221c2b;--tx:#f3eef7;--mut:#a99fb5;--bd:#352c40}}
@@ -59,6 +59,10 @@ li.rk .sc{font-weight:800;font-size:18px}
 .grid button{padding:16px 8px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);font-weight:700;font-size:17px}
 .grid button:active{border-color:var(--ac)}
 .grid button[disabled]{opacity:.4}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.mth{padding:0;border:2px solid var(--bd);border-radius:10px;overflow:hidden;background:#111;aspect-ratio:1}
+.mth img{width:100%;height:100%;object-fit:cover;display:block}
+.mth:active{border-color:var(--ac)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -67,11 +71,11 @@ li.rk .sc{font-weight:800;font-size:18px}
 <script>
 // =====================================================================
 //  📸 FOTO CENSURADA
-//  La foto (Wikimedia Commons) empieza muy ampliada, desenfocada o tapada por
+//  La foto (Wikimedia Commons) empieza muy ampliada, desenfocada, pixelada o tapada por
 //  una ventana y se va revelando. Quien crea que sabe qué es pulsa "¡Lo sé!", la partida se
 //  pausa y el anfitrión juzga. Cuanto antes aciertes, más puntos.
-//  · Un dispositivo: funciona solo, sin servidor.
-//  · Online: usa la misma sala por WebSocket que el resto del juego.
+//  NOVEDADES: buscador manual de fotos, efecto píxeles, pistas de letras, rachas,
+//  última foto x2 y sonidos.
 // =====================================================================
 var app=document.getElementById('app');
 window.addEventListener('error',function(e){var d=document.getElementById('errbox');if(!d){d=document.createElement('div');d.id='errbox';d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#d6453d;color:#fff;padding:8px 12px;border-radius:10px;font-size:13px';document.body.appendChild(d)}d.textContent='Error: '+(e.message||'desconocido')});
@@ -82,6 +86,22 @@ function newCode(){var c='abcdefghjkmnpqrstuvwxyz23456789',s='';for(var i=0;i<5;
 function hue(n){var h=0;n=String(n);for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%360;return h}
 function av(n){return '<i class="av" style="background:hsl('+hue(n)+',62%,46%)">'+esc((String(n).trim().charAt(0)||'?').toUpperCase())+'</i>'}
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
+
+// ---------- Sonidos ----------
+var AC=null;
+function beep(f,d,t){
+  if(Z&&Z.mute)return;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}
+}
+function fxSound(){
+  var key=H.ph+(H.buz||'')+(H.last&&H.last.ok?'y':'n')+H.r,old=Z.sk;
+  if(old===key)return;Z.sk=key;if(old===undefined)return;
+  if(H.ph==='judge'){beep(520,.15);setTimeout(function(){beep(520,.15)},180);try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
+  else if(H.ph==='reveal'){
+    if(H.last&&H.last.ok){beep(523,.12);setTimeout(function(){beep(659,.12)},130);setTimeout(function(){beep(784,.25)},260)}
+    else beep(180,.4,'sawtooth');
+  }
+}
 
 // ---------- Sala online (mismo protocolo que el juego principal) ----------
 function makeWsRoom(){
@@ -134,7 +154,7 @@ function near(g,t){g=nz(g);t=nz(t);if(!g||!t)return false;if(g===t)return true;i
 // ---------- Estado ----------
 // Z = estado local de este dispositivo. H = estado de la partida (lo manda el anfitrión).
 var Z=null,H=null,IMG=null,IMGU='',OFF=document.createElement('canvas'),CANBLUR=(function(){try{return 'filter' in CanvasRenderingContext2D.prototype}catch(e){return false}})(),GRACE=8000;
-function newH(){return{v:1,ph:'lobby',r:-1,tot:10,theme:'mezcla',fx:'mix',dur:45000,free:'',img:null,ans:'',ansEn:'',kind:'zoom',cx:.5,cy:.5,run:false,el:0,buz:null,lock:[],sc:{},last:null,seen:[],used:[],err:''}}
+function newH(){return{v:1,ph:'lobby',r:-1,tot:10,theme:'mezcla',fx:'mix',dur:45000,free:'',img:null,ans:'',ansEn:'',kind:'zoom',cx:.5,cy:.5,run:false,el:0,buz:null,lock:[],sc:{},last:null,seen:[],used:[],err:'',queue:[],st:null}}
 function peers(){return NR?NR.peers().filter(function(p){return p.presence&&p.presence.cz}).map(function(p){return{id:p.peer,me:p.isMe,p:p.presence}}):[]}
 function pidN(x){return parseInt(String(x.id).slice(1))||0}
 function players(){
@@ -145,7 +165,8 @@ function players(){
 function nameOf(k){var a=players();for(var i=0;i<a.length;i++)if(a[i].k===k)return a[i].n;return '?'}
 function elapsed(){if(!H)return 0;return H.run?Math.max(0,Date.now()-Z.base):H.el}
 function lvl(){return Math.min(1,elapsed()/H.dur)}
-function pubPoints(lv){return 1+Math.round(3*(1-lv))}
+function isLast(){return !!H&&H.tot>1&&H.r+1>=H.tot}
+function pubPoints(lv){return (isLast()?2:1)*(1+Math.round(3*(1-lv)))}
 function pub(){
   if(!NR||!Z)return;
   var p={n:Z.name,k:Z.me,cz:1,bz:Z.bz||null,g:Z.g||null};
@@ -157,9 +178,10 @@ function hostSet(c){Object.assign(H,c);H.v=(H.v||0)+1;Z.base=Date.now()-(H.el||0
 // ---------- Wikimedia ----------
 function tClean(s){return String(s||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim().slice(0,180)}
 var BAD=/\b(nude|nudity|erotic|sexual|weapon|firearm|blood|corpse|gore|violent|murder|injury|death|logo|flag|diagram|poster|stamp|drawing|painting|engraving|illustration|scan|book|cover)\b|map of|coat of arms/i;
+var BADM=/\b(nude|nudity|erotic|sexual|gore|corpse|murder)\b/i;
 function cand(pg){
   var ii=(pg.imageinfo||[])[0]||{},ex=ii.extmetadata||{};
-  return{title:pg.title||'',url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:ii.thumbmime||ii.mime||'',w:ii.width||0,h:ii.height||0,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value))};
+  return{title:pg.title||'',idx:pg.index||0,url:ii.thumburl||ii.url||'',page:ii.descriptionurl||'',mime:ii.thumbmime||ii.mime||'',w:ii.width||0,h:ii.height||0,license:tClean(ex.LicenseShortName&&ex.LicenseShortName.value),author:tClean((ex.Artist&&ex.Artist.value)||(ex.Credit&&ex.Credit.value))};
 }
 async function fetchImg(term){
   var q=new URLSearchParams({action:'query',format:'json',generator:'search',gsrnamespace:'6',gsrlimit:'30',gsrsort:'user_random',gsrsearch:'filetype:bitmap '+term,prop:'imageinfo',iiprop:'url|mime|size|extmetadata',iiurlwidth:'1200',iiextmetadatafilter:'LicenseShortName|Artist|Credit',origin:'*'});
@@ -171,6 +193,15 @@ async function fetchImg(term){
   if(!c.length)throw new Error('No se han encontrado fotos para «'+term+'». Prueba con otras palabras.');
   return pick(c);
 }
+// Búsqueda manual: devuelve una página de resultados ordenados por relevancia
+async function searchImgs(term,off){
+  var q=new URLSearchParams({action:'query',format:'json',generator:'search',gsrnamespace:'6',gsrlimit:'12',gsroffset:String(off||0),gsrsearch:'filetype:bitmap '+term,prop:'imageinfo',iiprop:'url|mime|size|extmetadata',iiurlwidth:'1200',iiextmetadatafilter:'LicenseShortName|Artist|Credit',origin:'*'});
+  var r=await fetch('https://commons.wikimedia.org/w/api.php?'+q.toString(),{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error('No se pudo consultar Wikimedia Commons.');
+  var data=await r.json(),pages=Object.keys((data.query&&data.query.pages)||{}).map(function(k){return data.query.pages[k]});
+  var list=pages.map(cand).sort(function(a,b){return a.idx-b.idx}).filter(function(x){return x.url&&x.page&&/^image\/(jpeg|png|webp)$/i.test(x.mime)&&x.w>=500&&x.h>=350&&!BADM.test(x.title)});
+  return{list:list,next:(data.continue&&data.continue.gsroffset)||((off||0)+12),more:!!data.continue};
+}
 function pickTarget(){
   var free=(H.free||'').trim();
   if(free)return{en:free,es:free};
@@ -178,7 +209,14 @@ function pickTarget(){
   var pool=TH[key].p.filter(function(x){return used.indexOf(x[1])<0});if(!pool.length)pool=TH[key].p;
   var t=pick(pool);return{en:t[0],es:t[1]};
 }
+function pickKind(){return H.fx==='mix'?pick(['zoom','blur','win','pix']):H.fx}
 async function prepRound(){
+  // Primero las fotos que el anfitrión ha elegido a mano
+  if(H.queue&&H.queue.length){
+    var qi=H.queue.shift();
+    hostSet({ph:'ready',img:qi.img,ans:qi.ans,ansEn:qi.ans,kind:pickKind(),cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,buz:null,lock:[],last:null,err:'',run:false,el:0});
+    return;
+  }
   hostSet({ph:'prep',img:null,buz:null,lock:[],last:null,err:'',run:false,el:0});
   var rid=H.v,tries=(H.free||'').trim()?1:4,lastErr=null;
   for(var i=0;i<tries;i++){
@@ -186,8 +224,7 @@ async function prepRound(){
     try{
       var img=await fetchImg(t.en);
       if(!Z||!Z.host)return;
-      var kind=H.fx==='mix'?pick(['zoom','blur','win']):(H.fx==='pix'?'zoom':H.fx);
-      hostSet({ph:'ready',img:{url:img.url,page:img.page,title:(img.title||'').slice(0,80),author:(img.author||'').slice(0,60),license:(img.license||'').slice(0,30)},ans:t.es,ansEn:t.en,kind:kind,cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,seen:(H.seen||[]).concat([img.title]).slice(-10),used:(H.used||[]).concat([t.es]).slice(-10),run:false,el:0});
+      hostSet({ph:'ready',img:{url:img.url,page:img.page,title:(img.title||'').slice(0,80),author:(img.author||'').slice(0,60),license:(img.license||'').slice(0,30)},ans:t.es,ansEn:t.en,kind:pickKind(),cx:.25+Math.random()*.5,cy:.25+Math.random()*.5,seen:(H.seen||[]).concat([img.title]).slice(-10),used:(H.used||[]).concat([t.es]).slice(-10),run:false,el:0});
       return;
     }catch(e){lastErr=e}
   }
@@ -196,17 +233,60 @@ async function prepRound(){
 }
 function nextRound(){if(!Z||!Z.host)return;H.r++;prepRound()}
 
+// ---------- Buscador manual ----------
+function MS(){return Z.ms||(Z.ms={q:'',a:'',res:[],busy:false,err:'',note:'',off:0,more:false})}
+async function msearch(more){
+  if(!Z||!Z.host)return;
+  var m=MS(),q=(m.q||'').trim();
+  if(q.length<2){m.err='Escribe qué quieres buscar.';render();return}
+  if(!more){m.res=[];m.off=0;m.note=''}
+  m.busy=true;m.err='';render();
+  try{
+    var r=await searchImgs(q,m.off);
+    if(!Z)return;
+    m.res=m.res.concat(r.list);m.off=r.next;m.more=r.more;
+    if(!m.res.length)m.err='No hay fotos para «'+q+'». Prueba con otras palabras (en inglés suele ir mejor).';
+  }catch(e){m.err=(e&&e.message)||'No se pudo buscar.'}
+  m.busy=false;render();
+}
+function applyManual(i){
+  if(!Z||!Z.host)return;
+  var m=MS(),c=m.res[i];if(!c)return;
+  var ans=((m.a||'').trim()||(m.q||'').trim()).slice(0,40),
+      img={url:c.url,page:c.page,title:(c.title||'').slice(0,80),author:(c.author||'').slice(0,60),license:(c.license||'').slice(0,30)};
+  if(H.ph==='ready'){
+    m.note='✅ Foto cambiada. Respuesta: «'+ans+'».';
+    hostSet({img:img,ans:ans,ansEn:ans,seen:(H.seen||[]).concat([c.title]).slice(-10)});
+  }else{
+    m.note='✅ «'+ans+'» añadida a la cola ('+((H.queue||[]).length+1)+').';
+    hostSet({queue:(H.queue||[]).concat([{img:img,ans:ans}]).slice(0,15)});
+  }
+}
+function manualBox(){
+  var m=MS(),lobby=H.ph==='lobby',q=H.queue||[];
+  var h='<div class="card"><div class="kick">🔎 Buscador manual (Wikimedia Commons)</div><p class="mut" style="font-size:13px;margin:0 0 6px">'+(lobby?'Busca una foto y tócala: se añade a la cola y saldrá antes que las automáticas.':'Busca una foto y tócala para sustituir la actual.')+'</p>';
+  if(lobby&&q.length)h+='<p class="note" style="margin:0 0 8px">📋 '+q.length+' foto'+(q.length>1?'s':'')+' en cola: '+q.map(function(x){return esc(x.ans)}).join(', ')+' · <button class="link" data-a="qclear">vaciar</button></p>';
+  h+='<input id="mq" maxlength="60" placeholder="Qué buscar (en inglés suele ir mejor)" value="'+ea(m.q)+'"><input id="ma" maxlength="40" placeholder="Respuesta a adivinar (vacío = lo buscado)" value="'+ea(m.a)+'"><button class="btn sec" data-a="msearch"'+(m.busy?' disabled':'')+'>'+(m.busy?'Buscando…':'🔍 Buscar fotos')+'</button>';
+  if(m.err)h+='<p style="color:var(--ko);font-size:14px;margin:10px 0 0">'+esc(m.err)+'</p>';
+  if(m.note)h+='<p class="note">'+esc(m.note)+'</p>';
+  if(m.res.length)h+='<div class="mgrid">'+m.res.map(function(c,i){return '<button class="mth" data-mp="'+i+'" title="'+ea((c.title||'').replace(/^File:/,''))+'"><img loading="lazy" referrerpolicy="no-referrer" alt="" src="'+ea(c.url)+'"></button>'}).join('')+'</div>'+(m.more&&!m.busy?'<button class="btn sec" data-a="mmore">Más resultados</button>':'');
+  return h+'</div>';
+}
+
 // ---------- Lógica de la ronda (anfitrión) ----------
 function startJudge(k){if(!Z.host||H.ph!=='play'||H.buz)return;if(H.lock.indexOf(k)>-1)return;hostSet({ph:'judge',run:false,el:elapsed(),buz:k})}
-function doReveal(last){hostSet({ph:'reveal',run:false,el:elapsed(),buz:null,last:last||{ok:false}})}
+function doReveal(last){hostSet({ph:'reveal',run:false,el:elapsed(),buz:null,st:null,last:last||{ok:false}})}
 function judge(ok){
   if(!Z.host||H.ph!=='judge')return;
   var k=H.buz,lv=Math.min(1,H.el/H.dur),sc=Object.assign({},H.sc);
-  if(ok){var pts=pubPoints(lv);sc[k]=(sc[k]||0)+pts;hostSet({ph:'reveal',run:false,sc:sc,buz:null,last:{ok:true,k:k,pts:pts}})}
-  else{
+  if(ok){
+    var n=(H.st&&H.st.k===k)?H.st.n+1:1,pts=pubPoints(lv)+(n>=2?1:0);
+    sc[k]=(sc[k]||0)+pts;
+    hostSet({ph:'reveal',run:false,sc:sc,buz:null,st:{k:k,n:n},last:{ok:true,k:k,pts:pts,n:n}});
+  }else{
     sc[k]=(sc[k]||0)-1;var lock=H.lock.concat([k]);
     var left=players().filter(function(p){return lock.indexOf(p.k)<0}).length;
-    if(!left)hostSet({ph:'reveal',run:false,sc:sc,lock:lock,buz:null,last:{ok:false,k:k,pen:true}});
+    if(!left)hostSet({ph:'reveal',run:false,sc:sc,lock:lock,buz:null,st:null,last:{ok:false,k:k,pen:true}});
     else hostSet({ph:'play',run:true,sc:sc,lock:lock,buz:null,last:{ok:false,k:k,pen:true,mid:true}});
   }
 }
@@ -248,7 +328,11 @@ function drawCv(){
   var cw=cv.width,ch=cv.height,x=cv.getContext('2d'),full=(H.ph==='reveal'||H.ph==='end'),lv=full?1:lvl();
   x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
   if(full||lv>=1){x.drawImage(IMG,0,0,cw,ch);return}
-  if(H.kind==='blur'){
+  if(H.kind==='pix'){
+    var pc=Math.max(4,Math.round(4*Math.pow(75,lv))),pw=pc,ph2=Math.max(1,Math.round(pc*ih/iw));
+    OFF.width=pw;OFF.height=ph2;OFF.getContext('2d').drawImage(IMG,0,0,pw,ph2);
+    x.imageSmoothingEnabled=false;x.drawImage(OFF,0,0,pw,ph2,0,0,cw,ch);x.imageSmoothingEnabled=true;
+  }else if(H.kind==='blur'){
     var r=Math.pow(1-lv,1.4)*60*(cw/900);
     if(CANBLUR){var m=Math.ceil(r*2)+2;x.fillStyle='#111';x.fillRect(0,0,cw,ch);x.filter='blur('+r.toFixed(1)+'px)';x.drawImage(IMG,-m,-m,cw+2*m,ch+2*m);x.filter='none'}
     else{var c=Math.max(4,Math.round(4*Math.pow(75,lv))),w=c,h=Math.max(1,Math.round(c*ih/iw));OFF.width=w;OFF.height=h;OFF.getContext('2d').drawImage(IMG,0,0,w,h);x.drawImage(OFF,0,0,w,h,0,0,cw,ch)}
@@ -260,12 +344,19 @@ function drawCv(){
     x.drawImage(IMG,sx,sy,sw,sh,0,0,cw,ch);
   }
 }
+// Pista de letras: a partir de la mitad del tiempo; con el 80 % enseña la inicial
+function hintTxt(lv){
+  var a=String(H.ans||'');
+  return a.split('').map(function(c,i){return c===' '?'/':(i===0&&lv>=.8?c.toUpperCase():'_')}).join(' ');
+}
 function loop(){
   if(Z&&H){
     drawCv();
-    var pb=document.getElementById('pb'),pv=document.getElementById('pv');
+    var pb=document.getElementById('pb'),pv=document.getElementById('pv'),ht=document.getElementById('hint');
     if(pb&&(H.ph==='play'||H.ph==='judge')){var lv=lvl();pb.style.width=(lv*100)+'%';
-      if(pv)pv.textContent=H.ph==='judge'?'⏸ Pausado · vale +'+pubPoints(lv)+' si aciertas':'Vale +'+pubPoints(lv)+' pts ahora · cuanto antes aciertes, más puntos'}
+      if(pv)pv.textContent=H.ph==='judge'?'⏸ Pausado · vale +'+pubPoints(lv)+' si aciertas':'Vale +'+pubPoints(lv)+' pts ahora · cuanto antes aciertes, más puntos';
+      if(ht)ht.textContent=lv>=.5?'💡 Pista: '+hintTxt(lv):'';
+    }
   }
   requestAnimationFrame(loop);
 }
@@ -273,16 +364,17 @@ requestAnimationFrame(loop);
 
 // ---------- Vistas ----------
 function paint(html){
-  var fe=document.activeElement&&document.activeElement.id==='gin';
+  var ae=document.activeElement,aid=(ae&&ae.tagName==='INPUT'&&ae.id)||'',pos=aid?ae.selectionStart:0;
   if(Z&&Z.lh===html)return;
   if(Z)Z.lh=html;
   app.innerHTML=html;drawCv();
-  var t=document.getElementById('gin');if(t){if(Z&&Z.gt!=null)t.value=Z.gt;if(fe)t.focus()}
+  var t=document.getElementById('gin');if(t&&Z&&Z.gt!=null)t.value=Z.gt;
+  if(aid){var el=document.getElementById(aid);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(e){}}}
 }
 function hdr(){
   var info=Z.mode==='online'?'Sala '+esc(Z.code.toUpperCase()):'Un dispositivo';
   var rd=H&&H.r>=0&&H.ph!=='lobby'&&H.ph!=='end'?' · Foto '+(H.r+1)+'/'+H.tot:'';
-  return '<div class="top"><span>📸 '+info+rd+'</span><button class="link" data-a="leave">Salir</button></div>';
+  return '<div class="top"><span>📸 '+info+rd+'</span><span><button class="link" data-a="mute" aria-label="Sonido">'+(Z.mute?'🔇':'🔊')+'</button> · <button class="link" data-a="leave">Salir</button></span></div>';
 }
 function warn(){return(Z&&!Z.host&&Z.nh&&Date.now()-Z.nh>15000)?'<p class="center" style="color:var(--ko)">⚠️ El anfitrión se ha desconectado.</p>':''}
 function board(){
@@ -294,6 +386,7 @@ function render(){
   if(!Z)return;
   if(!H){paint(hdr()+'<div class="card center"><h2>Conectando…</h2><p class="mut">Buscando la sala '+esc(Z.code.toUpperCase())+'.</p><span class="dots"><i></i><i></i><i></i></span></div>');return}
   if(H.img)loadImg(H.img.url);
+  fxSound();
   var ph=H.ph;
   if(ph==='lobby')vLobby();
   else if(ph==='prep')paint(hdr()+'<div class="card center"><h2>Buscando una foto…</h2><p class="mut">Consultando Wikimedia Commons.</p><span class="dots"><i></i><i></i><i></i></span></div>'+warn());
@@ -307,19 +400,21 @@ function vLobby(){
   var pills=pl.map(function(x){return '<span class="pill">'+av(x.n)+esc(x.n)+(x.me?' (tú)':'')+'</span>'}).join('')||'<span class="mut" style="font-size:14px">Aún no se ha unido nadie…</span>';
   var themes=[['mezcla','🎲 Mezcla']].concat(THEME_KEYS.map(function(k){return [k,TH[k].n]}));
   var set=host?'<div class="kick" style="margin-top:14px">Tema</div>'+setSeg('theme',themes,H.theme)
-    +'<div class="kick" style="margin-top:14px">…o busca tú un tema libre (opcional)</div><input id="free" maxlength="40" placeholder="Ej: castle, vintage car, cat (en inglés suele ir mejor)" value="'+ea(H.free)+'"><p class="mut" style="font-size:12px;margin:-4px 0 0">Si escribes algo aquí, se usa en lugar del tema. Esa palabra será la respuesta.</p>'
-    +'<div class="kick" style="margin-top:14px">Efecto</div>'+setSeg('fx',[['mix','Mezcla'],['zoom','Alejando'],['blur','Desenfoque'],['win','Ventana']],H.fx)
+    +'<div class="kick" style="margin-top:14px">…o escribe un tema libre (opcional)</div><input id="free" maxlength="40" placeholder="Ej: castle, vintage car, cat (en inglés suele ir mejor)" value="'+ea(H.free)+'"><p class="mut" style="font-size:12px;margin:-4px 0 0">Si escribes algo aquí, se usa en lugar del tema. Esa palabra será la respuesta.</p>'
+    +'<div class="kick" style="margin-top:14px">Efecto</div>'+setSeg('fx',[['mix','Mezcla'],['zoom','Alejando'],['blur','Desenfoque'],['win','Ventana'],['pix','Píxeles']],H.fx)
     +'<div class="kick" style="margin-top:14px">Tiempo hasta verla entera</div>'+setSeg('dur',[[30000,'30 s'],[45000,'45 s'],[60000,'60 s']],H.dur)
     +'<div class="kick" style="margin-top:14px">Fotos por partida</div>'+setSeg('tot',[[5,'5'],[10,'10'],[15,'15']],H.tot)
+    +'<p class="mut" style="font-size:12px;margin:12px 0 0">Extras: pista de letras a mitad de tiempo · rachas (+1 al acertar seguidas) · la última foto vale el doble.</p>'
     :'<p class="mut" style="font-size:14px;margin:12px 0 0">El anfitrión está preparando la partida…</p>';
   var head=Z.mode==='online'?'<div class="card center"><div class="kick">Sala de foto censurada</div><h2>Código: <span style="letter-spacing:.12em">'+esc(Z.code.toUpperCase())+'</span></h2><p class="mut">Pasa este código. Cada jugador pulsa "¡Lo sé!" en su móvil; el anfitrión (que no juega) presenta la foto en su pantalla y juzga las respuestas.</p></div>':'<div class="card center"><div class="kick">Un dispositivo</div><h2>Todos miran esta pantalla</h2><p class="mut">Cada jugador tiene su botón. Quien pulse primero responde en voz alta y tú decides si acierta.</p></div>';
   paint('<h1>Foto censurada</h1>'+hdr()+head+'<div class="card"><div class="kick">Jugadores ('+pl.length+')</div><div class="pl">'+pills+'</div>'+set+'</div>'
+    +(host?manualBox():'')
     +(host?'<button class="btn" data-a="start"'+(pl.length<min?' disabled':'')+'>Empezar partida</button>':'<p class="mut center">Esperando al anfitrión<span class="dots"><i></i><i></i><i></i></span></p>')+warn());
 }
 function vReady(){
   if(!Z.host){paint(hdr()+'<div class="card center"><h2>Preparando la foto…</h2><p class="mut">Mira la pantalla del anfitrión. Enseguida empieza.</p><span class="dots"><i></i><i></i><i></i></span></div>'+board()+warn());return}
-  paint(hdr()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+({zoom:'alejando',blur:'desenfoque',win:'ventana'}[H.kind]||'')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto.</p></div>'
-    +'<button class="btn" data-a="begin">▶ Empezar a revelar</button><button class="btn sec" data-a="other">🔄 Otra foto</button>'+board());
+  paint(hdr()+'<div class="card center"><div class="kick">Vista previa (solo tú la ves)</div><img src="'+ea(H.img.url)+'" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:12px;background:#111"><p style="margin:10px 0 0">🔑 Respuesta: <b>'+esc(H.ans)+'</b> · efecto: '+({zoom:'alejando',blur:'desenfoque',win:'ventana',pix:'píxeles'}[H.kind]||'')+'</p><p class="mut" style="font-size:12px;margin:4px 0 0">¿No se parece a «'+esc(H.ans)+'»? Cambia la foto o búscala tú.</p></div>'
+    +'<button class="btn" data-a="begin">▶ Empezar a revelar</button><button class="btn sec" data-a="other">🔄 Otra foto al azar</button>'+manualBox()+board());
 }
 function vError(){
   paint(hdr()+'<div class="card center"><h2>No se pudo cargar la foto</h2><p class="mut">'+esc(H.err||'Inténtalo de nuevo.')+'</p>'+(Z.host?'<button class="btn" data-a="retry">Buscar otra</button>':'<p class="mut">El anfitrión puede volver a intentarlo.</p>')+'</div>'+warn());
@@ -327,7 +422,7 @@ function vError(){
 function banner(){
   var l=H.last;if(!l)return '';
   if(H.ph==='reveal'){
-    if(l.ok)return '<div class="pts up">+'+l.pts+'</div><p class="center"><b>'+esc(nameOf(l.k))+'</b> lo ha sabido 🎉</p>';
+    if(l.ok)return '<div class="pts up">+'+l.pts+'</div><p class="center"><b>'+esc(nameOf(l.k))+'</b> lo ha sabido 🎉</p>'+(l.n>=2?'<p class="note center">🔥 Racha de '+l.n+' aciertos seguidos (+1 bonus)</p>':'');
     return '<div class="pts">😶</div><p class="center">'+(l.pen?'Nadie ha acertado.':l.timeout?'Se acabó el tiempo: nadie lo ha sabido.':'Nadie lo ha sabido.')+'</p>';
   }
   if(l.mid)return '<p class="note center">❌ '+esc(nameOf(l.k))+' ha fallado (−1) y no puede volver a intentarlo en esta foto.</p>';
@@ -335,13 +430,13 @@ function banner(){
 }
 function vPlay(){
   var ph=H.ph,host=Z.host,me=Z.me,local=Z.mode==='local',reveal=ph==='reveal',judging=ph==='judge';
-  var prog=reveal?'':'<div class="tbar"><i id="pb"></i></div><p class="center mut" id="pv" style="font-size:14px;margin:0"></p>';
+  var prog=reveal?'':'<div class="tbar"><i id="pb"></i></div><p class="center mut" id="pv" style="font-size:14px;margin:0"></p><p class="center" id="hint" style="margin:6px 0 0;font-size:15px;letter-spacing:.08em;min-height:22px"></p>'+(isLast()?'<p class="note center">🔥 ¡Última foto! Los puntos valen el doble</p>':'');
   var attr=reveal?'<p class="mut" style="font-size:11px;margin:8px 0 0">Imagen: <a href="'+ea(H.img.page)+'" target="_blank" rel="noopener">'+esc((H.img.title||'Fotografía').replace(/^File:/,''))+'</a> · '+esc(H.img.author||'Autor no indicado')+' · '+esc(H.img.license||'Licencia no indicada')+'</p>':'';
   var cv='<div class="card center" style="padding:10px"><canvas id="cv" class="cv" width="800" height="600"></canvas>'+attr+(reveal?'<h2 style="margin:12px 0 0">'+esc(H.ans)+'</h2>':'')+'</div>';
   var act='';
   if(reveal){
     act=banner();
-    if(host){var last=H.r+1>=H.tot;act+=last?'<button class="btn" data-a="finish">Ver resultado final</button>':'<button class="btn" data-a="next">Siguiente foto ➜</button><button class="btn sec" data-a="finish">🏁 Terminar partida</button>'}
+    if(host){var last=H.r+1>=H.tot;act+=last?'<button class="btn" data-a="finish">Ver resultado final</button>':'<button class="btn" data-a="next">Siguiente foto ➜</button><button class="btn sec" data-a="finish">🏁 Terminar partida</button>'+((H.queue&&H.queue.length)?'<p class="mut center" style="font-size:13px;margin:8px 0 0">📋 Siguiente: foto elegida a mano ('+esc(H.queue[0].ans)+')</p>':'')}
     else act+='<p class="mut center">Esperando al anfitrión…</p>';
   }else if(host){
     var key='<p class="note">🔑 Respuesta: <b>'+esc(H.ans)+'</b></p>';
@@ -371,7 +466,7 @@ function vEnd(){
 function home(){
   Z=null;H=null;
   var msg=OMSG?'<p style="color:var(--ko);font-size:14px">'+esc(OMSG)+'</p>':'';
-  app.innerHTML='<h1>Foto censurada</h1><div class="card"><div class="kick">📸 La foto se va revelando</div><p class="mut" style="font-size:14px">Una fotografía de Wikimedia empieza muy ampliada, muy desenfocada o tapada por una ventana diminuta, y se va revelando poco a poco. Pulsa «¡Lo sé!» antes que los demás: cuanto más borrosa esté, más puntos ganas. Pero si fallas, pierdes uno y te quedas fuera de esa foto.</p></div>'
+  app.innerHTML='<h1>Foto censurada</h1><div class="card"><div class="kick">📸 La foto se va revelando</div><p class="mut" style="font-size:14px">Una fotografía de Wikimedia empieza muy ampliada, desenfocada, pixelada o tapada por una ventana diminuta, y se va revelando poco a poco. Pulsa «¡Lo sé!» antes que los demás: cuanto más borrosa esté, más puntos ganas. Pero si fallas, pierdes uno y te quedas fuera de esa foto. Y puedes elegir tú las fotos con el buscador manual.</p></div>'
   +'<div class="card"><div class="kick">Un solo dispositivo</div><p class="mut" style="font-size:14px">Todos miráis la misma pantalla y respondéis en voz alta. Funciona sin servidor.</p><label>Jugadores (separados por comas)<input id="ln" maxlength="120" placeholder="Ana, Luis, Marta"></label><button class="btn" data-a="local">Empezar</button></div>'
   +'<div class="card"><div class="kick">Online · cada uno en su móvil</div><p class="mut" style="font-size:14px">El anfitrión presenta y juzga; los demás pulsan desde su móvil. Necesita el servidor del juego.</p><label>Tu nombre<input id="nm" maxlength="20" placeholder="Nombre"></label><button class="btn" data-a="create">Crear sala</button><div class="or">o únete a una sala</div><input id="cd" maxlength="8" placeholder="Código de sala (ej: k7f3m)" autocapitalize="none"><button class="btn sec" data-a="join">Unirme</button>'+msg+'</div>';
 }
@@ -383,14 +478,14 @@ function startOnline(create){
   var name=(val('nm')||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador'),code=create?newCode():(val('cd')||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   if(!code){OMSG='Escribe el código de la sala.';home();return}
   OMSG='';
-  Z={mode:'online',code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,base:0,bz:null,g:null,gt:'',lh:'',nh:0};
+  Z={mode:'online',code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,base:0,bz:null,g:null,gt:'',lh:'',nh:0,mute:false};
   H=create?newH():null;render();
   RM.join('cmg-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala (¿está el servidor activo?).')});
 }
 function startLocal(){
   var names=(val('ln')||'').split(',').map(function(s){return s.trim().slice(0,20)}).filter(Boolean).slice(0,8);
   if(!names.length){OMSG='';names=['Jugador 1','Jugador 2']}
-  Z={mode:'local',code:'',me:'host',name:'Anfitrión',host:true,base:0,bz:null,g:null,gt:'',lh:'',nh:0,players:names.map(function(n,i){return{k:'p'+i,n:n}})};
+  Z={mode:'local',code:'',me:'host',name:'Anfitrión',host:true,base:0,bz:null,g:null,gt:'',lh:'',nh:0,mute:false,players:names.map(function(n,i){return{k:'p'+i,n:n}})};
   H=newH();render();
 }
 
@@ -400,6 +495,8 @@ app.addEventListener('click',function(e){
   if(s){if(Z&&Z.host&&H.ph==='lobby'&&!s.disabled){var k=s.getAttribute('data-set'),v=s.getAttribute('data-v'),c={};c[k]=(k==='dur'||k==='tot')?+v:v;hostSet(c)}return}
   var pb=e.target.closest('[data-pb]');
   if(pb){if(Z&&Z.host&&Z.mode==='local')startJudge(pb.getAttribute('data-pb'));return}
+  var mp=e.target.closest('[data-mp]');
+  if(mp){applyManual(+mp.getAttribute('data-mp'));return}
   var b=e.target.closest('[data-a]');if(!b)return;
   var a=b.getAttribute('data-a');
   if(a==='create')startOnline(true);
@@ -407,7 +504,11 @@ app.addEventListener('click',function(e){
   else if(a==='local')startLocal();
   else if(a==='leave')leave();
   else if(!Z)return;
-  else if(a==='start'&&Z.host&&H.ph==='lobby'){if(!players().length)return;H.sc={};H.r=-1;H.seen=[];H.used=[];nextRound()}
+  else if(a==='mute'){Z.mute=!Z.mute;Z.lh='';render()}
+  else if(a==='msearch')msearch(false);
+  else if(a==='mmore')msearch(true);
+  else if(a==='qclear'&&Z.host){MS().note='';hostSet({queue:[]})}
+  else if(a==='start'&&Z.host&&H.ph==='lobby'){if(!players().length)return;H.sc={};H.r=-1;H.seen=[];H.used=[];H.st=null;nextRound()}
   else if(a==='begin'&&Z.host&&H.ph==='ready')hostSet({ph:'play',run:true,el:0,lock:[],buz:null,last:null});
   else if(a==='other'&&Z.host&&H.ph==='ready')prepRound();
   else if(a==='retry'&&Z.host)prepRound();
@@ -416,7 +517,7 @@ app.addEventListener('click',function(e){
   else if(a==='skip'&&Z.host&&H.ph==='play')doReveal({ok:false});
   else if(a==='next'&&Z.host&&H.ph==='reveal')nextRound();
   else if(a==='finish'&&Z.host)hostSet({ph:'end',run:false,buz:null});
-  else if(a==='again'&&Z.host)hostSet({ph:'lobby',r:-1,sc:{},img:null,last:null,lock:[],buz:null,run:false,el:0});
+  else if(a==='again'&&Z.host)hostSet({ph:'lobby',r:-1,sc:{},img:null,last:null,lock:[],buz:null,run:false,el:0,queue:[],st:null});
   else if(a==='buzz'){
     if(Z.host||!H||H.ph!=='play'||H.lock.indexOf(Z.me)>-1||(Z.bz&&Z.bz.r===H.r))return;
     Z.bz={r:H.r,t:Date.now()};Z.g=null;Z.gt='';pub();render();
@@ -427,14 +528,18 @@ app.addEventListener('click',function(e){
   }
 });
 app.addEventListener('input',function(e){
-  if(e.target.id==='gin'&&Z)Z.gt=e.target.value;
-  if(e.target.id==='free'&&Z&&Z.host&&H)H.free=e.target.value;
+  var id=e.target.id;
+  if(id==='gin'&&Z)Z.gt=e.target.value;
+  if(id==='free'&&Z&&Z.host&&H)H.free=e.target.value;
+  if(id==='mq'&&Z)MS().q=e.target.value;
+  if(id==='ma'&&Z)MS().a=e.target.value;
 });
 app.addEventListener('change',function(e){
   if(e.target.id==='free'&&Z&&Z.host&&H&&H.ph==='lobby')hostSet({free:e.target.value.trim().slice(0,40)});
 });
 app.addEventListener('keydown',function(e){
   if(e.target.id==='gin'&&e.key==='Enter'){e.preventDefault();var b=document.querySelector('[data-a="send"]');if(b)b.click()}
+  if((e.target.id==='mq'||e.target.id==='ma')&&e.key==='Enter'){e.preventDefault();msearch(false)}
 });
 home();
 </script>

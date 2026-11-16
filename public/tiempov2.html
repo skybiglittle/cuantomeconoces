@@ -19,7 +19,7 @@ main{max-width:560px;margin:0 auto;padding:14px 14px 40px}
 .bar button:active{transform:scale(.97)}
 .sug{display:flex;flex-direction:column;gap:6px;margin:-4px 0 12px}
 .sug button{text-align:left}
-button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 .hero{border-radius:24px;padding:22px 20px;color:#fff;background:var(--sky,linear-gradient(160deg,#3b8cf0,#8fc8ff));box-shadow:0 10px 30px #0003}
 .hero .pl{font-size:15px;opacity:.9}
 .hero .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
@@ -34,9 +34,13 @@ h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)
 .card .big{font-size:34px;line-height:1.1}
 .card .s{font-size:14px;color:var(--mut)}
 .card .s b{color:var(--ink)}
+.hour-note{font-size:13px;color:var(--mut);margin:0 4px 8px}
+.hour-day{font-size:13px;font-weight:700;margin:10px 4px 6px}
 .hours{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
-.h{flex:none;width:62px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;font-size:14px}
+.h{flex:none;width:68px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;font-size:14px}
+.h.now{border:2px solid var(--ac)}
 .h .e{font-size:24px;display:block}.h small{color:var(--mut);display:block;font-size:12px}
+.h .rain{font-size:12px;color:var(--ac)}
 .day{display:grid;grid-template-columns:78px 30px 44px 1fr;align-items:center;gap:8px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:15px}
 .day:last-child{border:0}
 .day .e{font-size:24px}.day .r{color:var(--ac);font-size:13px}
@@ -48,6 +52,20 @@ h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)
 .msg button{margin-top:12px;padding:10px 18px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;cursor:pointer}
 .src{font-size:12px;color:var(--mut);text-align:center;margin-top:18px}
 .src a{color:inherit}
+/* Aviso de lluvia y voz */
+.alert{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-size:15px}
+.alert.wet{border-color:var(--ac)}
+.alert span{flex:1}
+.alert button,.vbtns button{padding:10px 14px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.vbtns{display:flex;gap:8px;margin-top:6px}
+.vbtns button{flex:1}
+.vbtns .stop{background:var(--bar);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chips button{padding:8px 12px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.chips button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.vrow{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mut);margin-bottom:12px}
+.vrow select{padding:7px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+#vs{font-size:13px;color:var(--mut);margin-top:8px;min-height:18px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -82,8 +100,120 @@ function hm(iso){return iso.slice(11,16)}
 function fmtDate(iso){return new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'})}
 function saveLoc(l){try{localStorage.setItem('tiempo-loc',JSON.stringify(l))}catch(e){}}
 function loadLoc(){try{return JSON.parse(localStorage.getItem('tiempo-loc'))}catch(e){return null}}
+
+/* ===== VOZ ===== */
+var W=null; /* último dato cargado: {loc,d,from} */
+var VS={days:{0:true},modes:{res:true,llu:true,hor:false},step:3};
+var synth=window.speechSynthesis,voice=null,tok=0;
+function pickVoice(){if(!synth)return;var v=synth.getVoices();voice=v.filter(function(x){return/^es-ES/i.test(x.lang)})[0]||v.filter(function(x){return/^es/i.test(x.lang)})[0]||null}
+if(synth){pickVoice();synth.onvoiceschanged=pickVoice}
+function setStatus(t){var e=$('vs');if(e)e.textContent=t||''}
+function stopVoice(){tok++;if(synth)synth.cancel();setStatus('')}
+function say(list){
+  if(!synth){setStatus('Tu navegador no admite voz.');return}
+  list=list.filter(Boolean);if(!list.length)return;
+  tok++;var my=tok,k=0;synth.cancel();
+  function next(){
+    if(my!==tok)return;
+    if(k>=list.length){setStatus('');return}
+    setStatus('🔊 Hablando… ('+(k+1)+'/'+list.length+')');
+    var u=new SpeechSynthesisUtterance(list[k++]);
+    u.lang='es-ES';if(voice)u.voice=voice;u.rate=.98;
+    u.onend=next;u.onerror=function(){if(my===tok)setStatus('')};
+    synth.speak(u);
+  }
+  next();
+}
+function tt(n){n=r(n);return n<0?'menos '+Math.abs(n):String(n)}
+function dayHours(i){ /* índices horarios de un día (hoy: desde ahora) */
+  var H=W.d.hourly,date=W.d.daily.time[i],out=[];
+  for(var k=(i===0?W.from:0);k<H.time.length;k++){if(H.time[k].slice(0,10)===date)out.push(k)}
+  return out;
+}
+function rainRanges(idx,withDay){ /* franjas con probabilidad >= 50 % */
+  var H=W.d.hourly,res=[],a=null,prev=null,mx=0,today=H.time[W.from].slice(0,10);
+  function close(){
+    if(a===null)return;
+    var s=+H.time[a].slice(11,13),e=(+H.time[prev].slice(11,13)+1)%24;
+    var lab=withDay?(H.time[a].slice(0,10)===today?'hoy ':'mañana '):'';
+    res.push(lab+'de las '+s+' a las '+e+' horas, con hasta un '+mx+' por ciento');
+    a=null;mx=0;
+  }
+  idx.forEach(function(k){
+    var p=H.precipitation_probability[k]||0;
+    if(p>=50){if(a===null||k!==prev+1){close();a=k;mx=0}prev=k;mx=Math.max(mx,p)}else close();
+  });
+  close();return res;
+}
+function rainText(i){
+  var n=dayName(W.d.daily.time[i],i),rg=rainRanges(dayHours(i),false);
+  var pm=W.d.daily.precipitation_probability_max[i];
+  if(!rg.length)return n+': no se espera lluvia importante'+(pm!=null?'. La probabilidad máxima es del '+pm+' por ciento':'')+'.';
+  return n+': aviso de lluvia. Se espera lluvia '+rg.join(', y ')+'.';
+}
+function sumText(i){
+  var D=W.d.daily,n=dayName(D.time[i],i),pm=D.precipitation_probability_max[i];
+  return n+': '+wc(D.weather_code[i],true)[0]+'. Máxima de '+tt(D.temperature_2m_max[i])+' grados y mínima de '+tt(D.temperature_2m_min[i])+'. '
+   +(pm!=null?'Probabilidad de lluvia del '+pm+' por ciento'+(D.precipitation_sum[i]>0?', unos '+D.precipitation_sum[i]+' milímetros':'')+'. ':'')
+   +'Viento de hasta '+r(D.wind_speed_10m_max[i])+' kilómetros por hora. Índice UV '+r(D.uv_index_max[i])+'.';
+}
+function hourTexts(i){
+  var H=W.d.hourly,idx=dayHours(i),out=[],n=dayName(W.d.daily.time[i],i);
+  out.push(n+', por horas.');
+  for(var j=0;j<idx.length;j+=VS.step){
+    var k=idx[j],p=H.precipitation_probability[k]||0,hh=+H.time[k].slice(11,13);
+    out.push((j===0&&i===0?'Ahora':'A las '+hh+' horas')+': '+wc(H.weather_code[k],H.is_day[k]===1)[0]+', '+tt(H.temperature_2m[k])+' grados'+(p>=30?', lluvia '+p+' por ciento':'')+'.');
+  }
+  return out;
+}
+function soonRain(){ /* próximas 24 h */
+  var idx=[];for(var k=W.from;k<Math.min(W.from+24,W.d.hourly.time.length);k++)idx.push(k);
+  return rainRanges(idx,true);
+}
+function soonText(){
+  var rg=soonRain();
+  return rg.length?'Aviso de lluvia en '+W.loc.name+': se espera lluvia '+rg.join(', y ')+'. Lleva paraguas.':'No se espera lluvia importante en las próximas 24 horas en '+W.loc.name+'.';
+}
+function listen(){
+  if(!W)return;
+  var days=Object.keys(VS.days).filter(function(k){return VS.days[k]}).map(Number).sort(function(a,b){return a-b});
+  if(!days.length){setStatus('Elige al menos un día.');return}
+  if(!VS.modes.res&&!VS.modes.llu&&!VS.modes.hor){setStatus('Elige qué quieres oír.');return}
+  var list=['El tiempo en '+W.loc.name+'.'];
+  days.forEach(function(i){
+    if(VS.modes.res)list.push(sumText(i));
+    if(VS.modes.llu)list.push(rainText(i));
+    if(VS.modes.hor)list=list.concat(hourTexts(i));
+  });
+  say(list);
+}
+function voicePanel(){
+  var D=W.d.daily,h='<h2>🔊 Escuchar el tiempo</h2><div class="card"><div class="s">Días (puedes elegir varios)</div><div class="chips" id="vd">';
+  for(var i=0;i<D.time.length;i++)h+='<button type="button" data-d="'+i+'" aria-pressed="'+(!!VS.days[i])+'" class="'+(VS.days[i]?'on':'')+'">'+dayName(D.time[i],i)+'</button>';
+  h+='</div><div class="s">Qué quieres oír</div><div class="chips" id="vm">';
+  [['res','Resumen del día'],['hor','Por horas'],['llu','Aviso de lluvia']].forEach(function(m){
+    h+='<button type="button" data-m="'+m[0]+'" aria-pressed="'+(!!VS.modes[m[0]])+'" class="'+(VS.modes[m[0]]?'on':'')+'">'+m[1]+'</button>';
+  });
+  h+='</div><div class="vrow"><label for="vstep">Por horas: una cada</label><select id="vstep">';
+  [1,2,3].forEach(function(n){h+='<option value="'+n+'"'+(VS.step===n?' selected':'')+'>'+n+(n===1?' hora':' horas')+'</option>'});
+  h+='</select></div><div class="vbtns"><button type="button" id="vgo">▶ Escuchar</button><button type="button" class="stop" id="vstop">⏹ Parar</button></div><div id="vs" aria-live="polite"></div></div>';
+  return h;
+}
+function alertBox(){
+  var rg=soonRain(),wet=rg.length>0;
+  return '<div class="alert'+(wet?' wet':'')+'"><span>'+(wet?'☔ <b>Lluvia prevista</b> '+esc(rg.join(', y ')):'🌤️ Sin lluvia prevista en las próximas 24 h')+'</span><button type="button" id="va" aria-label="Escuchar aviso">🔊</button></div>';
+}
+function bindVoice(){
+  [].forEach.call($('vd').querySelectorAll('button'),function(b){b.onclick=function(){var i=+b.getAttribute('data-d');VS.days[i]=!VS.days[i];b.classList.toggle('on',VS.days[i]);b.setAttribute('aria-pressed',VS.days[i])}});
+  [].forEach.call($('vm').querySelectorAll('button'),function(b){b.onclick=function(){var m=b.getAttribute('data-m');VS.modes[m]=!VS.modes[m];b.classList.toggle('on',VS.modes[m]);b.setAttribute('aria-pressed',VS.modes[m])}});
+  $('vstep').onchange=function(){VS.step=+this.value};
+  $('vgo').onclick=listen;$('vstop').onclick=stopVoice;
+  $('va').onclick=function(){say([soonText()])};
+}
+
 /* --- Datos: Open-Meteo (gratis, sin clave) --- */
 function getWeather(loc){
+  stopVoice();
   $('out').innerHTML='<div class="msg">Cargando el tiempo en '+esc(loc.name)+'…</div>';
   var u='https://api.open-meteo.com/v1/forecast?latitude='+loc.lat+'&longitude='+loc.lon
    +'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day'
@@ -96,17 +226,20 @@ function getWeather(loc){
 }
 function show(loc,d){
   var c=d.current,day=c.is_day===1,w=wc(c.weather_code,day),D=d.daily,H=d.hourly;
+  var from=H.time.findIndex(function(t){return t.slice(0,13)>=c.time.slice(0,13)});if(from<0)from=0;
+  W={loc:loc,d:d,from:from};
   var gmin=Math.min.apply(null,D.temperature_2m_min),gmax=Math.max.apply(null,D.temperature_2m_max),span=Math.max(gmax-gmin,1);
   var h='<div class="hero" style="--sky:'+sky(c.weather_code,day)+'"><div class="pl">📍 '+esc(loc.name)+'</div><div class="row"><div class="t">'+r(c.temperature_2m)+'°</div><div class="e">'+w[1]+'</div></div><div class="d">'+w[0]+'</div><div class="m"><span>Sensación '+r(c.apparent_temperature)+'°</span><span>💧 '+c.relative_humidity_2m+'%</span><span>💨 '+r(c.wind_speed_10m)+' km/h</span></div></div>';
+  h+=alertBox();
+  h+=voicePanel();
   function card(i){return '<div class="card"><div class="n">'+dayName(D.time[i],i)+'</div><div class="big">'+wc(D.weather_code[i],true)[1]+' '+r(D.temperature_2m_max[i])+'° <span class="s">/ '+r(D.temperature_2m_min[i])+'°</span></div><div class="s">'+wc(D.weather_code[i],true)[0]+'</div><div class="s" style="margin-top:6px">☔ <b>'+(D.precipitation_probability_max[i]==null?'—':D.precipitation_probability_max[i]+'%')+'</b> · '+D.precipitation_sum[i]+' mm<br>💨 '+r(D.wind_speed_10m_max[i])+' km/h · UV '+r(D.uv_index_max[i])+'<br>🌅 '+hm(D.sunrise[i])+' · 🌇 '+hm(D.sunset[i])+'</div></div>'}
   h+='<h2>Hoy y mañana</h2><div class="two">'+card(0)+card(1)+'</div>';
-  var from=H.time.findIndex(function(t){return t.slice(0,13)>=c.time.slice(0,13)});if(from<0)from=0;
-  var end=Math.min(from+48,H.time.length),lastDay='';
+  var end=Math.min(from+48,H.time.length),lastDay='',dayLabel;
   h+='<h2>Previsión por horas</h2><div class="hour-note">Desliza horizontalmente para ver las próximas 48 horas. La hora actual aparece resaltada.</div><div class="hours">';
   for(var i=from;i<end;i++){
     var hour=H.time[i].slice(11,13),date=H.time[i].slice(0,10);
     if(date!==lastDay){
-      dayLabel=date===H.time[from].slice(0,10)?'Hoy':(function(){var z=new Date(date+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long'});return z.charAt(0).toUpperCase()+z.slice(1)})() ;
+      dayLabel=date===H.time[from].slice(0,10)?'Hoy':(function(){var z=new Date(date+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long'});return z.charAt(0).toUpperCase()+z.slice(1)})();
       h+='</div><div class="hour-day">'+dayLabel+' · '+fmtDate(date)+'</div><div class="hours">';
       lastDay=date;
     }
@@ -122,6 +255,7 @@ function show(loc,d){
   }
   h+='</div><div class="src">Datos: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Actualizado '+c.time.slice(11,16)+'</div>';
   $('out').innerHTML=h;
+  bindVoice();
 }
 /* --- Ubicación --- */
 function placeName(lat,lon){

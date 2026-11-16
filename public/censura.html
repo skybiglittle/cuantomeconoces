@@ -130,10 +130,42 @@ function makeWsRoom(){
       ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
     }
     open();
-    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},70000);
+    setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},6000);
   })}};
 }
 var RM=makeWsRoom(),NR=null,OMSG='';
+
+// ---------- Sala de pruebas sin servidor: conecta pestañas del mismo navegador ----------
+function makeBcRoom(name){
+  return new Promise(function(resolve){
+    var ch=new BroadcastChannel('cmg-'+name),id='p'+Date.now()+Math.floor(Math.random()*10),pres={},others={},subs=[],arr=[],timer=null;
+    function build(){
+      var a=[{peer:id,isMe:true,sameTab:true,kind:'viewer',guest:false,by:null,presence:pres,updatedAt:Date.now()}];
+      Object.keys(others).forEach(function(k){a.push({peer:k,isMe:false,sameTab:false,kind:'viewer',guest:false,by:null,presence:others[k].p||{},updatedAt:others[k].t})});
+      return a;
+    }
+    function emit(){arr=build();subs.slice().forEach(function(f){f({peers:arr})})}
+    function send(){try{ch.postMessage({id:id,p:pres})}catch(e){}}
+    ch.onmessage=function(e){
+      var m=e.data;if(!m||!m.id||m.id===id)return;
+      if(m.bye){delete others[m.id]}
+      else{var isNew=!others[m.id];others[m.id]={p:m.p,t:Date.now()};if(isNew)send()}
+      emit();
+    };
+    timer=setInterval(function(){
+      send();var now=Date.now(),gone=false;
+      Object.keys(others).forEach(function(k){if(now-others[k].t>6000){delete others[k];gone=true}});
+      if(gone)emit();
+    },1500);
+    var room={
+      peers:function(){return arr},
+      onPeers:function(fn){subs.push(fn);return function(){subs=subs.filter(function(x){return x!==fn})}},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send();emit();return Promise.resolve()},
+      leave:function(){try{ch.postMessage({id:id,bye:1})}catch(e){}clearInterval(timer);ch.close();return Promise.resolve()}
+    };
+    arr=build();send();resolve(room);
+  });
+}
 
 // ---------- Temas: [búsqueda en Wikimedia (inglés), respuesta en español] ----------
 var TH={
@@ -372,7 +404,7 @@ function paint(html){
   if(aid){var el=document.getElementById(aid);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(e){}}}
 }
 function hdr(){
-  var info=Z.mode==='online'?'Sala '+esc(Z.code.toUpperCase()):'Un dispositivo';
+  var info=Z.mode==='online'?'Sala '+esc(Z.code.toUpperCase())+(Z.bc?' · 🧪 modo pruebas (solo pestañas de este navegador)':''):'Un dispositivo';
   var rd=H&&H.r>=0&&H.ph!=='lobby'&&H.ph!=='end'?' · Foto '+(H.r+1)+'/'+H.tot:'';
   return '<div class="top"><span>📸 '+info+rd+'</span><span><button class="link" data-a="mute" aria-label="Sonido">'+(Z.mute?'🔇':'🔊')+'</button> · <button class="link" data-a="leave">Salir</button></span></div>';
 }
@@ -480,7 +512,18 @@ function startOnline(create){
   OMSG='';
   Z={mode:'online',code:code,me:Math.random().toString(36).slice(2,8),name:name,host:!!create,base:0,bz:null,g:null,gt:'',lh:'',nh:0,mute:false};
   H=create?newH():null;render();
-  RM.join('cmg-'+code).then(function(r){NR=r;NR.onPeers(sync);pub();sync()}).catch(function(e){leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala (¿está el servidor activo?).')});
+  function use(r,bc){if(!Z||NR){try{r.leave()}catch(x){}return}NR=r;Z.bc=bc;Z.lh='';NR.onPeers(sync);pub();sync()}
+  function viaTabs(){
+    if(typeof BroadcastChannel==='undefined'){leave('No se pudo entrar en la sala (¿está el servidor activo?).');return}
+    makeBcRoom('cmg-'+code).then(function(r){use(r,true)});
+  }
+  // Sin servidor (archivo abierto directamente o sin WebSocket): modo pruebas entre pestañas
+  if(location.protocol==='file:'||!location.host){viaTabs();return}
+  RM.join('cmg-'+code).then(function(r){use(r,false)}).catch(function(e){
+    if(!Z)return;
+    if(e&&e.code==='room_full'){leave('La sala está llena.');return}
+    viaTabs();
+  });
 }
 function startLocal(){
   var names=(val('ln')||'').split(',').map(function(s){return s.trim().slice(0,20)}).filter(Boolean).slice(0,8);

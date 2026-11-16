@@ -1,1 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pasapalabra</title>
+<style>
+:root{--bg:#0f1a3a;--card:#16254f;--tx:#f3f6ff;--mut:#9fb0de;--bd:#2a3c75;--ac:#ffc83d;--blue:#2f55c4;--ok:#22b36b;--ko:#e0454f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef2ff;--card:#fff;--tx:#14204a;--mut:#5a6b9c;--bd:#cfd8f5}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#1d3277 0,var(--bg) 60%);background-attachment:fixed;color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+main{max-width:620px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:34px;margin:6px 0;letter-spacing:.04em;color:var(--ac)}
+h2{font-size:20px;margin:0 0 8px}
+p{margin:0 0 10px}.mut{color:var(--mut)}.center{text-align:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 0}
+.top{display:flex;justify-content:space-between;font-size:14px;color:var(--mut)}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;padding:13px;border:0;border-radius:13px;background:var(--ac);color:#1b1500;font-weight:800;margin-top:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sec{background:transparent;color:var(--tx);border:1.5px solid var(--bd)}
+.link{background:none;border:0;color:var(--mut);text-decoration:underline;padding:0;font-size:14px}
+input,select{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd);background:rgba(255,255,255,.06);color:var(--tx);font:inherit;margin:6px 0 8px}
+.code{font-size:32px;font-weight:800;letter-spacing:.2em;text-align:center;color:var(--ac)}
+.pl{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;margin:7px 0;border:1px solid var(--bd);font-size:15px}
+.pl.cur{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;background:rgba(255,200,61,.18);color:var(--ac);margin-left:6px}
+.dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:5px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--blue)}
+.dots i.o,.lt.o{background:var(--ok)}.dots i.x,.lt.x{background:var(--ko)}
+.rs{position:relative;width:min(100%,340px);aspect-ratio:1;margin:6px auto}
+.lt{position:absolute;width:11%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:clamp(11px,3.4vw,15px);background:var(--blue);color:#fff;transform:translate(-50%,-50%);transition:background .25s}
+.lt.cu{outline:3px solid var(--ac);outline-offset:2px;transform:translate(-50%,-50%) scale(1.15);z-index:2}
+.mid{position:absolute;inset:20%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.clk{font-size:38px;font-weight:800;color:var(--ac);font-variant-numeric:tabular-nums}
+.q .mode{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ac);font-weight:700}
+.q .def{font-size:19px;line-height:1.35;margin:4px 0 6px}
+.feed div{font-size:14px;padding:2px 0}
+.ok{color:var(--ok)}.ko{color:var(--ko)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+</style>
+</head>
+<body>
+<main><div id="app"></div></main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const KEY=(()=>{let k=sessionStorage.getItem('pp_key');if(!k){k=Math.random().toString(36).slice(2,9);sessionStorage.setItem('pp_key',k)}return k})();
+const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+function lev(a,b){const m=[];for(let i=0;i<=a.length;i++){m[i]=[i];}for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+const okAns=(a,w)=>{a=norm(a);w=norm(w);return a.length>0&&(a===w||(w.length>=7&&lev(a,w)<=1))};
+
+/* ===== Banco de preguntas: palabra|definición ===== */
+const LET='ABCDEFGHIJLMNÑOPQRSTUVXYZ'.split('');
+const CONT={'Ñ':1,'X':1};
+const BK={
+A:`abuelo|Padre de uno de tus padres.
+almohada|Cojín donde apoyas la cabeza al dormir.
+avestruz|Ave corredora más grande del mundo, que no puede volar.
+aeropuerto|Lugar donde despegan y aterrizan los aviones.
+armario|Mueble con puertas donde se guarda la ropa.`,
+B:`ballena|Mamífero marino enorme que respira por un orificio en el lomo.
+biblioteca|Lugar donde se guardan y se prestan libros.
+bufanda|Prenda larga que se enrolla al cuello para abrigarse.
+burbuja|Esfera de aire dentro de un líquido o de jabón.
+bicicleta|Vehículo de dos ruedas que se mueve pedaleando.`,
+C:`camello|Animal del desierto con una o dos jorobas.
+cocodrilo|Reptil grande de río, con mandíbulas largas y dientes afilados.
+cebolla|Hortaliza que hace llorar al cortarla.
+castillo|Edificio fortificado con torres y murallas, propio de la Edad Media.
+cartero|Persona que reparte las cartas a domicilio.`,
+D:`delfín|Mamífero marino muy inteligente que emite chasquidos.
+dentista|Médico que cuida y arregla los dientes.
+desierto|Lugar árido, de arena, donde llueve muy poco.
+diccionario|Libro donde se explican las palabras por orden alfabético.
+dragón|Animal fabuloso que echa fuego por la boca.`,
+E:`elefante|Mayor mamífero terrestre, con trompa y colmillos.
+escalera|Sucesión de peldaños para subir o bajar.
+espejo|Superficie que refleja tu imagen.
+estrella|Cuerpo celeste que brilla con luz propia.
+escuela|Centro donde van los niños a aprender.`,
+F:`fantasma|Espíritu de un muerto que se aparece a los vivos.
+farmacia|Establecimiento donde se venden medicinas.
+fresa|Fruta pequeña, roja y con semillas por fuera.
+frontera|Línea que separa dos países.
+fútbol|Deporte en el que dos equipos intentan meter un balón en la portería con los pies.`,
+G:`gato|Felino doméstico que maúlla.
+guitarra|Instrumento musical de seis cuerdas con caja de resonancia.
+gorila|Primate africano de gran tamaño y brazos fuertes.
+globo|Bolsa de goma que se infla con aire o gas y flota.
+galleta|Dulce seco y crujiente hecho de harina, que se moja en leche.`,
+H:`helado|Postre frío y cremoso que se toma en cucurucho.
+hospital|Centro donde se atiende y se ingresa a los enfermos.
+hormiga|Insecto diminuto que vive en colonias y lleva comida al hormiguero.
+huevo|Lo que pone la gallina y se come frito o cocido.
+herrero|Persona que trabaja el hierro en una fragua.`,
+I:`isla|Porción de tierra rodeada de agua por todas partes.
+iglesia|Templo cristiano.
+imán|Cuerpo que atrae el hierro.
+invierno|Estación más fría del año.
+insecto|Animal invertebrado de seis patas, como la mosca o la abeja.`,
+J:`jirafa|Animal de cuello larguísimo.
+jardín|Terreno donde se cultivan plantas y flores.
+jabón|Producto que se usa para lavarse las manos.
+jugador|Persona que participa en un juego o deporte.
+jamón|Pata de cerdo curada, típica de España.`,
+L:`león|Felino de gran tamaño; el macho tiene melena.
+libro|Conjunto de hojas impresas y encuadernadas.
+luna|Satélite natural de la Tierra.
+lavadora|Electrodoméstico que limpia la ropa.
+linterna|Aparato portátil que da luz con pilas.`,
+M:`mariposa|Insecto de alas grandes y coloridas que antes fue oruga.
+montaña|Gran elevación natural del terreno.
+microondas|Electrodoméstico que calienta la comida rápidamente.
+mochila|Bolsa que se lleva a la espalda.
+murciélago|Mamífero volador nocturno que duerme colgado cabeza abajo.`,
+N:`naranja|Fruta cítrica de la que se hace zumo.
+nube|Masa de vapor de agua que flota en el cielo.
+nieve|Agua helada que cae en copos blancos.
+noche|Período del día en que no hay luz solar.
+nariz|Órgano del olfato, situado en medio de la cara.`,
+Ñ:`España|País europeo cuya capital es Madrid.
+otoño|Estación entre el verano y el invierno, cuando caen las hojas.
+pañuelo|Trozo de tela o papel para sonarse la nariz.
+cabaña|Casa pequeña y rústica en el campo.
+araña|Animal de ocho patas que teje telas.`,
+O:`oso|Animal grande y peludo que hiberna en invierno.
+ojo|Órgano de la vista.
+oveja|Animal que da lana.
+ordenador|Máquina electrónica para procesar datos, con pantalla y teclado.
+orquesta|Conjunto de músicos que tocan instrumentos juntos.`,
+P:`pingüino|Ave que no vuela, camina erguida y vive en zonas polares.
+pelota|Esfera que se usa para jugar.
+paraguas|Objeto para protegerse de la lluvia.
+panadero|Persona que hace y vende pan.
+playa|Zona de arena junto al mar.`,
+Q:`queso|Alimento sólido hecho de leche cuajada.
+química|Ciencia que estudia la composición de la materia.
+quirófano|Sala donde se hacen las operaciones.
+quince|Número que sigue al catorce.
+quiosco|Pequeño puesto en la calle donde se venden periódicos.`,
+R:`ratón|Pequeño roedor; también se usa para mover el cursor del ordenador.
+reloj|Aparato que mide el tiempo.
+río|Corriente de agua que desemboca en el mar.
+robot|Máquina programable que hace tareas de forma automática.
+radio|Aparato que capta emisoras para escuchar música y noticias.`,
+S:`sol|Estrella alrededor de la cual gira la Tierra.
+serpiente|Reptil sin patas que se arrastra.
+semáforo|Aparato con luz roja, ámbar y verde para regular el tráfico.
+sombrero|Prenda para cubrir la cabeza.
+sandía|Fruta grande, verde por fuera y roja por dentro, con pepitas negras.`,
+T:`tortuga|Reptil lento con un caparazón.
+tiburón|Pez depredador de grandes dientes y aleta dorsal.
+teléfono|Aparato para hablar con alguien a distancia.
+tenedor|Cubierto con púas para pinchar la comida.
+tren|Vehículo que circula sobre raíles.`,
+U:`uva|Fruto de la vid con el que se hace el vino.
+universo|Conjunto de todo lo que existe: galaxias, estrellas y planetas.
+unicornio|Caballo fabuloso con un cuerno en la frente.
+uña|Lámina dura que protege la punta de los dedos.
+urgencias|Servicio hospitalario que atiende casos graves e inmediatos.`,
+V:`vaca|Animal que da leche y dice «muu».
+volcán|Montaña que puede expulsar lava y ceniza.
+ventana|Abertura en la pared para que entre luz y aire.
+violín|Instrumento de cuerda frotada que se toca con arco.
+vampiro|Ser de leyenda que se alimenta de sangre.`,
+X:`taxi|Coche con conductor que te lleva adonde le pidas a cambio de dinero.
+examen|Prueba para comprobar lo que sabe un alumno.
+saxofón|Instrumento de viento de metal, con boquilla de caña y forma curvada.
+texto|Conjunto de palabras escritas.
+boxeo|Deporte de combate en el que se pelea con guantes.`,
+Y:`yate|Barco de lujo para recreo.
+yogur|Lácteo cremoso fermentado, que se toma con cuchara.
+yema|Parte amarilla del huevo.
+yoyó|Juguete que sube y baja por un cordel.
+yeso|Material blanco en polvo que se usa en la construcción y para escayolas.`,
+Z:`zapato|Calzado que cubre el pie.
+zanahoria|Hortaliza naranja que comen los conejos.
+zorro|Animal astuto de cola larga y espesa, de la familia de los cánidos.
+zumo|Líquido que se saca exprimiendo frutas.
+zoológico|Parque donde se exhiben animales salvajes.`};
+const BANK={};LET.forEach(l=>{BANK[l]=BK[l].split('\n').map(x=>{const i=x.indexOf('|');return[x.slice(0,i),x.slice(i+1)]})});
+const MAXP=5;
+
+/* ===== Salas (misma abstracción que usan tus otros juegos) ===== */
+function makeWsRoom(){
+ const url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+ return{join:name=>new Promise((resolve,reject)=>{
+  let ws=null,id=null,pres={},arr=[],subs=[],done=false,closed=false,retry=0;const cid=Math.random().toString(36).slice(2);
+  const room={
+   peers:()=>arr,
+   onPeers:fn=>{subs.push(fn);return()=>{subs=subs.filter(x=>x!==fn)}},
+   presence:p=>{Object.keys(p).forEach(k=>{if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p});return Promise.resolve()},
+   leave:()=>{closed=true;try{ws.close()}catch(e){}return Promise.resolve()}
+  };
+  function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+  function open(){
+   ws=new WebSocket(url);
+   ws.onopen=()=>{retry=0;send({t:'join',room:name,cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
+    if(m.t==='hello'){id=m.id}
+    else if(m.t==='peers'){
+     arr=m.peers.map(q=>({peer:q.id,isMe:q.id===id,presence:q.p||{}}));
+     if(!done){done=true;resolve(room)}
+     subs.slice().forEach(f=>f({peers:arr}));
+    }else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}
+   };
+   ws.onclose=()=>{if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+  }
+  open();
+  setTimeout(()=>{if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},70000);
+ })};
+}
+const RM=makeWsRoom();
+
+/* ===== Estado ===== */
+let G=null,R=null,tmr=null,MSG='';
+const newCode=()=>{const c='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return s};
+const players=()=>R?R.peers().filter(p=>p.presence&&p.presence.xm===1):[];
+const by=k=>players().find(p=>p.presence.k===k);
+const nm=k=>(by(k)&&by(k).presence.n)||G.names[k]||'Jugador';
+function pub(extra){if(R&&G)R.presence(Object.assign({n:G.name,k:KEY,xm:1},extra)).catch(()=>{})}
+function hp(){if(!G||!G.host)return;pub({xh:1,hph:G.ph,hro:G.ro,hturn:G.turn,hpas:G.pas,htm:G.tm,hgid:G.gid})}
+const pend=(ps,from)=>{for(let s=0;s<25;s++){const i=(from+s)%25;if(ps[i]==='p')return i}return -1};
+const view=k=>{ // datos de un jugador: yo desde el estado local, el resto desde su presencia
+ if(k===KEY&&G.my)return G.my;
+ const p=by(k);if(!p||p.presence.pg!==G.gid)return{ps:'p'.repeat(25),pi:0,pl:G.tm*1000,pa:0,done:0};
+ const x=p.presence;return{ps:x.ps||'p'.repeat(25),pi:x.pi||0,pl:x.pl==null?G.tm*1000:x.pl,pa:x.pa||0,done:x.pdone===1?1:0};
+};
+const remain=k=>{const v=view(k);if(k===KEY)return v.pl;const r=G.seen[k];if(!r||G.turn!==k||G.ph!=='play')return v.pl;return Math.max(0,r.v-(Date.now()-r.t))};
+
+/* ===== Lógica del anfitrión ===== */
+function startGame(){
+ const ps=players();if(ps.length<2||ps.length>MAXP)return;
+ G.ro=shuffle(ps.map(p=>p.presence.k));
+ G.tm=Number(($('tm')||{}).value)||150;
+ G.pas={};G.ro.forEach(k=>{G.pas[k]=[]});
+ for(let l=0;l<25;l++){const perm=shuffle([0,1,2,3,4]);G.ro.forEach((k,j)=>{G.pas[k][l]=perm[j]})}
+ G.gid=Math.random().toString(36).slice(2,8);G.turn=G.ro[0];G.seenA={};G.ph='play';hp();sync();
+}
+function fin(k){const p=by(k);return!p||p.presence.pg!==G.gid||p.presence.pdone===1}
+function advance(){
+ const N=G.ro.length,idx=G.ro.indexOf(G.turn);
+ for(let s=1;s<=N;s++){const k=G.ro[(idx+s)%N];if(by(k)&&!fin(k)){G.turn=k;hp();render();return}}
+ G.ph='end';hp();render();
+}
+function loop(){
+ if(!G||!G.host||G.ph!=='play')return;
+ const alive=G.ro.filter(k=>by(k));
+ if(!alive.length||alive.every(k=>{const p=by(k).presence;return p.pg===G.gid&&p.pdone===1})){G.ph='end';hp();render();return}
+ const cur=by(G.turn);
+ if(!cur||(cur.presence.pg===G.gid&&cur.presence.pdone===1)){advance();return}
+ const pa=cur.presence.pg===G.gid?(cur.presence.pa||0):0;
+ if(pa>(G.seenA[G.turn]||0)){G.seenA[G.turn]=pa;advance()}
+}
+
+/* ===== Acciones del jugador ===== */
+function initMine(){
+ G.my={ps:'p'.repeat(25),pi:0,pl:G.tm*1000,pa:0,done:0};G.localGid=G.gid;G.feed=[];G.seen={};G.pe={};G.draft='';G.lastTick=Date.now();
+ pub({pg:G.gid,ps:G.my.ps,pi:0,pl:G.my.pl,pa:0,pdone:0,pm:null,pe:0});
+}
+function pubMine(msg,endTurn){
+ const m=G.my;if(msg){G.mypeN=(G.mypeN||0)+1}
+ if(endTurn)m.pa++;
+ pub({pg:G.gid,ps:m.ps,pi:m.pi,pl:Math.round(m.pl),pa:m.pa,pdone:m.done?1:0,pm:msg||null,pe:G.mypeN||0});
+ if(msg)addFeed(KEY,msg);
+}
+function addFeed(k,msg){G.feed.unshift({k,msg});G.feed=G.feed.slice(0,6)}
+function curQ(k){const v=view(k),li=v.pi;const e=BANK[LET[li]][(G.pas[k]||[])[li]||0];return{li,l:LET[li],w:e[0],d:e[1]}}
+function answer(val,pass){
+ if(!G||G.ph!=='play'||G.turn!==KEY||G.my.done)return;
+ const m=G.my,q=curQ(KEY),ps=m.ps.split('');
+ let endT=false,msg='';
+ if(pass){m.pi=pend(ps,q.li+1);endT=true;msg='⏭ '+q.l+': pasapalabra'}
+ else if(okAns(val,q.w)){ps[q.li]='o';m.ps=ps.join('');const n=pend(ps,q.li+1);if(n<0)m.done=1;else m.pi=n;msg='✅ '+q.l+': acierto'}
+ else{ps[q.li]='x';m.ps=ps.join('');const n=pend(ps,q.li+1);if(n<0)m.done=1;else m.pi=n;endT=true;msg='❌ '+q.l+': era «'+q.w+'»'}
+ if(pass&&m.pi<0)m.pi=q.li;
+ if(m.done)endT=true;
+ G.draft='';pubMine(msg,endT);G.lastSig='';render();
+}
+function tick(){
+ if(!G)return;const now=Date.now(),dt=now-G.lastTick;G.lastTick=now;
+ if(G.host)loop();
+ if(G.ph==='play'&&G.turn===KEY&&G.my&&!G.my.done){
+  G.my.pl-=dt;G.pubT=(G.pubT||0)+dt;
+  if(G.my.pl<=0){G.my.pl=0;G.my.done=1;pubMine('⏰ Tiempo agotado',true);G.lastSig='';render();return}
+  if(G.pubT>=2000){G.pubT=0;pub({pl:Math.round(G.my.pl)})}
+ }
+ if(!G.host&&G.noHost&&G.ph!=='lobby'&&now-G.noHost>20000){leave('El anfitrión se ha desconectado.');return}
+ const fmt=ms=>{const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+ const c=$('clk');if(c)c.textContent=fmt(remain(G.turn));
+ G.ro.forEach(k=>{const e=$('t_'+k);if(e)e.textContent=fmt(remain(k))});
+}
+
+/* ===== Conexión ===== */
+function start(create){
+ const name=(($('nm')||{}).value||'').trim().slice(0,20)||(create?'Anfitrión':'Jugador');
+ const code=create?newCode():((($('cd')||{}).value)||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+ if(!code){MSG='Escribe el código de la sala.';home();return}
+ G={code,name,host:!!create,ph:'lobby',ro:[],turn:'',pas:{},tm:150,gid:'',names:{},my:null,localGid:'',feed:[],seen:{},pe:{},seenA:{},draft:'',lastSig:'',noHost:0,lastTick:Date.now()};
+ MSG='';render();
+ RM.join('cmp-'+code).then(r=>{R=r;R.onPeers(sync);pub(G.host?{xh:1}:{});sync()})
+  .catch(e=>leave(e&&e.code==='room_full'?'La sala está llena (límite del servidor).':'No se pudo entrar en la sala.'));
+ tmr=setInterval(tick,500);
+}
+function leave(msg){if(R){R.leave().catch(()=>{});R=null}if(tmr){clearInterval(tmr);tmr=null}G=null;MSG=msg||'';home()}
+function sync(){
+ if(!G||!R)return;
+ players().forEach(p=>{const x=p.presence;if(x.n)G.names[x.k]=x.n;
+  if(x.pe!==undefined&&G.pe[x.k]!==x.pe){if(G.pe[x.k]!==undefined&&x.k!==KEY&&x.pm)addFeed(x.k,x.pm);G.pe[x.k]=x.pe}
+  if(x.k!==KEY&&x.pl!=null){const r=G.seen[x.k];if(!r||r.raw!==x.pl){G.seen[x.k]={raw:x.pl,v:x.pl,t:Date.now()}}}});
+ if(!G.host){
+  const h=players().find(p=>p.presence.xh===1);
+  if(h){const x=h.presence;G.noHost=0;G.ph=x.hph||'lobby';G.ro=x.hro||[];G.turn=x.hturn||'';G.pas=x.hpas||{};G.tm=x.htm||150;G.gid=x.hgid||''}
+  else G.noHost=G.noHost||Date.now();
+ }
+ if(G.gid&&G.ph==='play'&&G.localGid!==G.gid&&G.ro.includes(KEY))initMine();
+ if(G.ph==='lobby'&&G.localGid){G.localGid='';G.my=null}
+ loop();render();
+}
+
+/* ===== Interfaz ===== */
+const app=$('app');
+function paint(html,sig){if(G&&sig===G.lastSig)return;if(G)G.lastSig=sig;app.innerHTML=html;const i=$('ans');if(i&&G){i.value=G.draft||'';if(G.turn===KEY)i.focus()}}
+function home(){
+ const v=k=>(($(k)||{}).value||'');const n=v('nm'),c=v('cd');
+ app.innerHTML='<h1>PASAPALABRA</h1><p class="mut">Completa el rosco antes de que se agote tu tiempo. Si fallas o dices «pasapalabra», pasa el turno al rival.</p><div class="card"><h2>Crear una sala</h2><input id="nm" maxlength="20" placeholder="Tu nombre"><button class="btn" data-a="create">Crear sala</button><hr style="border:0;border-top:1px solid var(--bd);margin:16px 0"><h2>Unirse</h2><input id="cd" maxlength="5" placeholder="Código" autocomplete="off"><button class="btn sec" data-a="join">Entrar</button>'+(MSG?'<p class="ko" style="margin-top:10px">'+esc(MSG)+'</p>':'')+'</div><p class="mut" style="font-size:13px">De 2 a '+MAXP+' jugadores, cada uno desde su dispositivo.</p>';
+ if($('nm'))$('nm').value=n;if($('cd'))$('cd').value=c;
+}
+function rosco(k){
+ const v=view(k),cur=v.done?-1:v.pi;
+ let h='<div class="rs">';
+ for(let i=0;i<25;i++){const a=(-90+i*360/25)*Math.PI/180,c=v.ps[i];h+='<div class="lt'+(c==='o'?' o':c==='x'?' x':'')+(i===cur?' cu':'')+'" style="left:'+(50+42*Math.cos(a)).toFixed(2)+'%;top:'+(50+42*Math.sin(a)).toFixed(2)+'%">'+LET[i]+'</div>'}
+ return h+'<div class="mid"><div class="mut" style="font-size:13px">'+esc(nm(k))+'</div><div class="clk" id="clk">0:00</div></div></div>';
+}
+const dots=ps=>'<div class="dots">'+ps.split('').map(c=>'<i class="'+(c==='o'?'o':c==='x'?'x':'')+'"></i>').join('')+'</div>';
+function stats(k){const v=view(k);return{o:(v.ps.match(/o/g)||[]).length,x:(v.ps.match(/x/g)||[]).length,v}}
+function render(){
+ if(!G){home();return}
+ const ps=players(),host=ps.find(p=>p.presence.xh===1);
+ const top='<div class="top"><span>Sala <b>'+esc(G.code.toUpperCase())+'</b></span><button class="link" data-a="leave">Salir</button></div>';
+ let html='<h1>PASAPALABRA</h1>'+top,sig;
+ const names=ps.map(p=>p.presence.k+(p.presence.n||'')).join();
+ if(G.ph==='lobby'){
+  sig='L|'+names+'|'+(host?1:0);
+  html+='<div class="card"><div class="code">'+esc(G.code.toUpperCase())+'</div><p class="mut center">Pasa este código a los demás.</p></div><div class="card"><h2>Jugadores ('+ps.length+')</h2>'+ps.map(p=>'<div class="pl"><span>'+esc(p.presence.n||'Jugador')+(p.presence.xh===1?'<span class="tag">anfitrión</span>':'')+(p.presence.k===KEY?'<span class="tag">tú</span>':'')+'</span></div>').join('')+(G.host?'<label class="mut" style="font-size:13px">Tiempo por jugador</label><select id="tm"><option value="120">2 minutos</option><option value="150" selected>2 min 30 s</option><option value="180">3 minutos</option></select><button class="btn" data-a="start"'+(ps.length<2||ps.length>MAXP?' disabled':'')+'>Empezar partida</button>'+(ps.length<2?'<p class="mut" style="margin-top:8px">Hacen falta al menos 2 jugadores.</p>':ps.length>MAXP?'<p class="ko" style="margin-top:8px">Máximo '+MAXP+' jugadores.</p>':''):'<p class="mut" style="margin-top:10px">'+(host?'Esperando a que el anfitrión empiece…':'Buscando al anfitrión…')+'</p>')+'</div>';
+ }else if(G.ph==='play'){
+  const mine=G.turn===KEY&&G.my&&!G.my.done,hv=view(G.turn),q=G.ro.includes(G.turn)?curQ(G.turn):null;
+  sig=['P',G.turn,G.gid,names,G.ro.map(k=>{const v=view(k);return v.ps+v.pi+v.done}).join(),mine,G.feed.length+(G.feed[0]?G.feed[0].msg:'')].join('|');
+  html+='<div class="card center"><div class="mut">Turno de <b style="color:var(--ac)">'+esc(nm(G.turn))+(G.turn===KEY?' (tú)':'')+'</b></div>'+rosco(G.turn)+'</div>';
+  if(q&&!hv.done)html+='<div class="card q"><div class="mode">'+(CONT[q.l]?'Contiene la '+q.l:'Empieza por '+q.l)+'</div><div class="def">'+esc(q.d)+'</div>'+(mine?'<input id="ans" autocomplete="off" autocapitalize="off" placeholder="Tu respuesta…"><div class="row"><button class="btn" data-a="ok">Responder</button><button class="btn sec" data-a="pass">Pasapalabra</button></div>':'<p class="mut" style="margin:0">'+(G.my&&G.my.done?'Tu rosco ha terminado. Espera a los demás.':'Esperando respuesta de '+esc(nm(G.turn))+'…')+'</p>')+'</div>';
+  html+='<div class="card feed"><h2>Últimas jugadas</h2>'+(G.feed.length?G.feed.map(f=>'<div><b>'+esc(nm(f.k))+'</b> · '+esc(f.msg)+'</div>').join(''):'<p class="mut" style="margin:0">Aún no hay jugadas.</p>')+'</div>';
+  html+='<div class="card"><h2>Marcador</h2>'+G.ro.map(k=>{const s=stats(k);return'<div class="pl'+(k===G.turn?' cur':'')+'" style="flex-wrap:wrap"><span><b>'+esc(nm(k))+'</b>'+(by(k)?'':' <span class="mut">(desconectado)</span>')+'</span><span><span class="ok">'+s.o+' ✓</span> · <span class="ko">'+s.x+' ✗</span> · <span id="t_'+k+'">0:00</span></span><div style="width:100%">'+dots(s.v.ps)+'</div></div>'}).join('')+'</div>';
+ }else{
+  const rk=G.ro.map(k=>({k,...stats(k)})).sort((a,b)=>b.o-a.o||a.x-b.x||b.v.pl-a.v.pl);
+  sig='E|'+rk.map(r=>r.k+r.o+r.x).join();
+  html+='<div class="card center"><div style="font-size:54px">🏆</div><h2>'+esc(rk.length?nm(rk[0].k):'Fin')+' gana</h2></div><div class="card"><h2>Clasificación</h2>'+rk.map((r,i)=>'<div class="pl" style="flex-wrap:wrap"><span>'+(i+1)+'. <b>'+esc(nm(r.k))+'</b></span><span><span class="ok">'+r.o+' ✓</span> · <span class="ko">'+r.x+' ✗</span> · '+Math.ceil(r.v.pl/1000)+' s</span><div style="width:100%">'+dots(r.v.ps)+'</div></div>').join('')+(G.host?'<button class="btn" data-a="again">Volver a la sala</button>':'<p class="mut" style="margin-top:10px">El anfitrión puede volver a la sala.</p>')+'</div>';
+ }
+ paint(html,sig);
+}
+
+/* ===== Eventos ===== */
+app.addEventListener('input',e=>{if(e.target.id==='ans'&&G)G.draft=e.target.value});
+app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='ans'&&G){e.preventDefault();const v=e.target.value;if(v.trim())answer(v,false)}});
+app.addEventListener('click',e=>{
+ const a=e.target.closest('[data-a]');if(!a)return;
+ const x=a.dataset.a;
+ if(x==='create')start(true);
+ else if(x==='join')start(false);
+ else if(x==='leave')leave();
+ else if(x==='start'&&G&&G.host)startGame();
+ else if(x==='ok'&&G){const v=($('ans')||{}).value||'';if(v.trim())answer(v,false)}
+ else if(x==='pass'&&G)answer('',true);
+ else if(x==='again'&&G&&G.host){G.ph='lobby';G.ro=[];G.turn='';G.gid='';G.pas={};G.my=null;G.localGid='';pub({pg:null,ps:null,pi:null,pl:null,pa:null,pdone:null,pm:null,pe:null});hp();render()}
+});
+home();
+})();
+</script>
+</body>
+</html>
 

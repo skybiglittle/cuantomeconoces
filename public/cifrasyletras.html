@@ -22,7 +22,8 @@ input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(-
 .tile{min-width:44px;height:54px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;background:#fffaf0;color:#1b1b2f;border-radius:10px;font-size:26px;font-weight:900;border:0;font-family:inherit;cursor:pointer;box-shadow:0 3px 0 #c9bfa6;transition:transform .1s}.tile:active{transform:translateY(2px);box-shadow:none}
 .tile.big{background:#ffd166;box-shadow:0 3px 0 #c49a1a}
 .tile.res{background:#b6efe6;box-shadow:0 3px 0 #4aa89a}.tile.best{background:#9ff0b8;box-shadow:0 3px 0 #2ea45f}
-.tile.sel{outline:3px solid var(--a);transform:translateY(-4px)}.tile:disabled{opacity:.6;cursor:default}
+.tile.sel{outline:3px solid var(--a);transform:translateY(-4px)}.tile:disabled{opacity:.6;cursor:default}.tile.ans{background:#ffe8a3;box-shadow:0 3px 0 #c49a1a}
+.slot{min-height:76px;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;align-items:center;padding:10px;border:2px dashed var(--l);border-radius:16px;margin:12px 0;background:#0f172a66}
 .target{font-size:clamp(46px,14vw,84px);font-weight:950;text-align:center;color:var(--y);line-height:1.1;margin:6px 0}
 .ops{display:flex;gap:6px;margin:8px 0}.ops .btn{flex:1;padding:10px 0;font-size:20px}.ops .btn.on{outline:2px solid var(--y);background:#3a4a70}
 .hist{font-size:14px;color:var(--m);margin:6px 0;min-height:20px}.hist div{padding:2px 0}
@@ -162,8 +163,25 @@ function tileClick(id){if(L.done)return;const t=L.pool.find(x=>x.id===id);if(!t)
 function opClick(o){if(L.done)return;if(L.sel===null)return drawC('Primero toca un número.');L.op=L.op===o?null:o;drawC()}
 function undoC(){if(L.done||!L.snaps.length)return;const s=L.snaps.pop();L.pool=s.p;L.hist=s.h;L.sel=null;L.op=null;drawC()}
 
+/* ---------- LETRAS: fichas que suben a la zona de respuesta ---------- */
+const lWord=()=>(L.ans||[]).map(x=>x.c).join('');
+function drawW(){const ap=$('ap');if(!ap)return;const d=L.done?' disabled':'';
+ ap.innerHTML=L.ans.length?L.ans.map(x=>'<button class="tile ans" data-id="'+x.id+'"'+d+'>'+x.c+'</button>').join(''):'<span class="small">Tus letras aparecerán aquí…</span>';
+ $('tl').innerHTML=L.lp.map(x=>'<button class="tile" data-id="'+x.id+'"'+d+'>'+x.c+'</button>').join('');
+ const fb=$('fb');if(fb){const w=lWord();fb.textContent=w?(checkWord(w,S.lt)||dictErr(w)||'✓ Válida: '+w.length+' letras'):''}}
+function lPick(id){if(L.done)return;const i=L.lp.findIndex(x=>x.id===id);if(i<0)return;L.ans=L.ans.concat(L.lp[i]);L.lp=L.lp.filter((_,k)=>k!==i);drawW()}
+function lBack(id){if(L.done)return;const i=L.ans.findIndex(x=>x.id===id);if(i<0)return;L.lp=L.lp.concat(L.ans[i]);L.ans=L.ans.filter((_,k)=>k!==i);drawW()}
+function lShuf(){if(L.done)return;L.lp=shuf(L.lp);drawW()}
+function lClr(){if(L.done)return;L.lp=L.lp.concat(L.ans);L.ans=[];drawW()}
+addEventListener('keydown',e=>{if(!S||S.tp!=='L'||S.ph!=='play'||L.done||!L.lp||!$('ap')||e.ctrlKey||e.metaKey||e.altKey)return;
+ const el=document.activeElement;if(el&&/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName))return;
+ if(e.key==='Backspace'){e.preventDefault();const x=L.ans[L.ans.length-1];if(x)lBack(x.id)}
+ else if(e.key==='Enter'){e.preventDefault();submit()}
+ else if(e.key===' '){e.preventDefault();lShuf()}
+ else if(e.key.length===1){const n=normW(e.key);if(!n)return;const x=L.lp.find(t=>t.c===n);if(x)lPick(x.id)}});
+
 function submit(auto){let t;
- if(S.tp==='L'){const el=$('wi');if(!el)return;t=el.value.trim()}
+ if(S.tp==='L'){if(!L.ans)return;t=L.ans.map(x=>x.c).join('').toLowerCase()}
  else{const b=bestTile();if(!b){if(!auto&&$('fb'))$('fb').textContent='Haz al menos una operación.';return}t=b.e.replace(/^\((.*)\)$/,'$1')}
  if(!t)return;
  const e=S.tp==='L'?(checkWord(t,S.lt)||dictErr(t)):evalExpr(t,S.nums).err;if(e){if(!auto&&$('fb'))$('fb').textContent=e;return}
@@ -191,10 +209,13 @@ if(!me){g.innerHTML='<div class="notice">Hay una partida en marcha. Entrarás en
 if(S.ph==='check'){g.innerHTML=head(rn+' · REVISIÓN')+'<h2>¿Existen estas palabras?</h2><p class="m">Marca con 🚩 las que no existan. Si la mayoría del resto del grupo la marca, no puntúa.</p><div class="tiles">'+S.lt.map(c=>'<span class="tile">'+c+'</span>').join('')+'</div>'+S.words.map(x=>'<div class="card"><div class="hd"><span>'+nm(x.k)+'</span>'+(x.k===K?'<span>Tu palabra</span>':'<button class="fl" data-k="'+esc(x.k)+'">🚩 No existe</button>')+'</div><div class="w">'+esc(x.w.toUpperCase())+'</div><div class="small">'+normW(x.w).length+' letras</div></div>').join('')+(L.done?'<div class="notice good">✓ Listo. Esperando al resto…</div>':'<button class="btn g full" id="rd">Continuar</button>')+'<p class="small" id="cnt"></p>';
 g.querySelectorAll('.fl').forEach(b=>b.onclick=()=>{const k=b.dataset.k;L.fl[k]=!L.fl[k];b.classList.toggle('on',!!L.fl[k]);pub({d:{r:S.n,fl:L.fl,rd:L.done?1:0}})});
 if(!L.done)$('rd').onclick=()=>{L.done=1;pub({d:{r:S.n,fl:L.fl,rd:1}});rend()};upd();return}
-if(S.tp==='L'){g.innerHTML=head(rn)+'<h2>Forma la palabra más larga</h2><p class="m">Toca las letras o escribe. Cada letra solo se puede usar las veces que aparece.</p><div class="tiles" id="tl">'+S.lt.map(c=>'<button class="tile" data-c="'+c+'">'+c+'</button>').join('')+'</div>'+
-(L.done?'<div class="notice good">✓ Palabra enviada. Esperando al resto…</div>':'<input id="wi" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tu palabra…"><p class="small" id="fb"></p><button class="btn g full" id="sb">Enviar palabra</button>')+'<p class="small" id="cnt"></p>';
-if(!L.done){const wi=$('wi'),chk=()=>{const t=wi.value.trim();$('fb').textContent=t?(checkWord(t,S.lt)||dictErr(t)||'✓ Válida: '+normW(t).length+' letras'):''};wi.oninput=chk;wi.onkeydown=e=>{if(e.key==='Enter')submit()};
-$('tl').onclick=e=>{const b=e.target.closest('[data-c]');if(b){wi.value+=b.dataset.c.toLowerCase();chk()}};$('sb').onclick=()=>submit()}}
+if(S.tp==='L'){if(!L.lp){L.lp=S.lt.map((c,i)=>({id:i,c}));L.ans=[]}
+g.innerHTML=head(rn)+'<h2>Forma la palabra más larga</h2><p class="m">Toca las letras o escribe con el teclado: suben a tu palabra. Toca una letra de tu palabra (o pulsa Borrar) para devolverla. La barra espaciadora baraja.</p><div class="slot" id="ap"></div><div class="tiles" id="tl"></div>'+
+(L.done?'<div class="notice good">✓ Palabra enviada. Esperando al resto…</div>':'<div class="row"><button class="btn s" id="shf">🔀 Barajar</button><button class="btn s" id="clr">Borrar todo</button></div><p class="small" id="fb"></p><button class="btn g full" id="sb">Enviar palabra</button>')+'<p class="small" id="cnt"></p>';
+$('tl').onclick=e=>{const b=e.target.closest('[data-id]');if(b)lPick(+b.dataset.id)};
+$('ap').onclick=e=>{const b=e.target.closest('[data-id]');if(b)lBack(+b.dataset.id)};
+if(!L.done){$('shf').onclick=lShuf;$('clr').onclick=lClr;$('sb').onclick=()=>submit()}
+drawW()}
 else{if(!L.pool)initC();
 g.innerHTML=head(rn)+'<h2>Llega al número objetivo</h2><div class="target">'+S.target+'</div><p class="m">Toca un número, una operación y otro número. El resultado se convierte en una ficha nueva (verde) que puedes seguir usando. Puedes hacer varias operaciones a la vez con fichas distintas.</p><div class="tiles" id="tl"></div>'+
 (L.done?'<div class="notice good">✓ Operación enviada. Esperando al resto…</div><div class="hist" id="hs"></div>':'<div class="ops" id="op">'+['+','−','×','÷'].map(o=>'<button class="btn s" data-o="'+o+'">'+o+'</button>').join('')+'</div><div class="hist" id="hs"></div><p class="small" id="fb"></p><div class="row"><button class="btn s" id="un">↶ Deshacer</button><button class="btn s" id="rs">Reiniciar</button></div><button class="btn g full" id="sb">Enviar mi mejor resultado</button>')+'<p class="small" id="cnt"></p>';

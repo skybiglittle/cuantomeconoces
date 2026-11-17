@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Profundidad · 200 preguntas para conocernos mejor</title>
+<style>
+:root{--bg1:#1b1233;--bg2:#0d1226;--card:#fbf6ea;--cardink:#241a33;--ink:#f4f1fb;--sub:#a79fc2;--line:rgba(255,255,255,.16);--acc:#ffb86b;--cat:#ffb86b;
+ padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: light){:root{--bg1:#f6ecdc;--bg2:#efe3f3;--card:#ffffff;--cardink:#2a2038;--ink:#2a2038;--sub:#6e6585;--line:rgba(42,32,56,.18)}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;}
+body{background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+main{max-width:640px;margin:0 auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+header{text-align:center}
+h1{margin:6px 0 2px;font:700 clamp(30px,8vw,44px) Georgia,"Times New Roman",serif;letter-spacing:.01em}
+header p{margin:0;color:var(--sub);font-size:15px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:44px;padding:0 16px;border-radius:22px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:600 15px inherit;font-family:inherit;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--cat);border-color:var(--cat);color:#1d1428}
+#stage{perspective:1200px;flex:1;display:flex;align-items:center;min-height:300px}
+#card{width:100%;min-height:300px;background:var(--card);color:var(--cardink);border-radius:26px;padding:26px 24px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 18px 50px rgba(0,0,0,.35);border-top:8px solid var(--cat);cursor:pointer;position:relative}
+#card.flip{animation:flip .5s ease}
+@keyframes flip{from{transform:rotateY(80deg);opacity:.2}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){#card.flip{animation:none}}
+#tag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--cat);filter:brightness(.75)}
+#q{font:600 clamp(24px,6.4vw,34px)/1.28 Georgia,"Times New Roman",serif;margin:18px 0;text-wrap:balance}
+#turn{min-height:22px;font-size:15px;font-weight:700;color:var(--sub)}
+#num{position:absolute;right:20px;top:18px;font-size:13px;color:var(--sub)}
+.row{display:flex;gap:10px}
+.btn{min-height:56px;border-radius:16px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:700 17px inherit;font-family:inherit;cursor:pointer;padding:0 18px}
+.btn:active{transform:scale(.97)}
+.btn.main{flex:1;background:var(--cat);border-color:var(--cat);color:#1d1428;font-size:19px}
+.btn.fav[aria-pressed="true"]{color:#ff5f87;border-color:#ff5f87}
+.sm{min-height:48px;font-size:15px}
+details{border:1.5px solid var(--line);border-radius:16px;padding:0 14px}
+summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-weight:700;font-size:15px;color:var(--sub)}
+.pl{display:flex;gap:10px;padding-bottom:14px;flex-wrap:wrap}
+.pl input{flex:1;min-width:120px;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:0 12px;font:16px inherit;font-family:inherit}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%) translateY(30px);opacity:0;background:var(--ink);color:var(--bg2);padding:12px 18px;border-radius:14px;font-weight:700;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Profundidad</h1>
+    <p>200 preguntas para conocernos mejor</p>
+  </header>
+  <div class="chips" id="chips" role="group" aria-label="Categorías"></div>
+  <div id="stage">
+    <div id="card" tabindex="0" aria-live="polite">
+      <div><span id="tag"></span><span id="num"></span></div>
+      <div id="q"></div>
+      <div id="turn"></div>
+    </div>
+  </div>
+  <div class="row">
+    <button class="btn sm" id="prev" aria-label="Pregunta anterior">←</button>
+    <button class="btn main" id="next">Siguiente pregunta</button>
+    <button class="btn fav sm" id="fav" aria-pressed="false" aria-label="Guardar como favorita">♥</button>
+  </div>
+  <div class="row">
+    <button class="btn sm" id="copy" style="flex:1">Copiar pregunta</button>
+    <button class="btn sm" id="shuf" style="flex:1">Mezclar</button>
+  </div>
+  <details>
+    <summary>Jugadores (opcional: turnos)</summary>
+    <div class="pl">
+      <input id="p1" placeholder="Nombre 1" maxlength="20" autocomplete="off">
+      <input id="p2" placeholder="Nombre 2" maxlength="20" autocomplete="off">
+    </div>
+  </details>
+</main>
+<div id="toast" role="status"></div>
+<script>
+(function(){
+'use strict';
+var CATS=[
+ {id:'rec',n:'Recuerdos y raíces',c:'#ffb86b',q:[
+  '¿Cuál es el recuerdo más feliz de tu infancia?',
+  '¿Qué olor, canción o sabor te devuelve de golpe a otra época?',
+  '¿Qué te enseñaron tus padres o cuidadores, sin querer, que aún llevas contigo?',
+  '¿Qué momento de tu vida te cambió más de lo que imaginabas en su momento?',
+  '¿Cómo eras de niño o niña y en qué sigues siendo igual?',
+  '¿Qué te hubiera gustado que alguien te explicara antes de cumplir los 18?',
+  '¿Hay algún lugar al que no puedes volver y echas mucho de menos?',
+  '¿Cuál fue el mejor consejo que has recibido y quién te lo dio?',
+  '¿Qué tradición familiar te gustaría conservar siempre?',
+  '¿Qué parte de tu historia te cuesta contar?',
+  '¿Quién fue la primera persona que te hizo sentir comprendido o comprendida?',
+  '¿Qué error del pasado te enseñó más de lo que esperabas?',
+  '¿Qué te daba miedo de pequeño y qué sientes ahora al recordarlo?',
+  '¿Qué objeto guardas por su valor sentimental y qué historia tiene?',
+  '¿Qué decisión tomaste que, mirando atrás, fue más valiente de lo que parecía?',
+  '¿Qué etapa de tu vida volverías a vivir y por qué?',
+  '¿Qué momento de tu adolescencia te marcó más?',
+  '¿Cuál es la lección más dura que te ha dado la vida hasta ahora?',
+  '¿De qué te sientes orgulloso u orgullosa que casi nadie sabe?',
+  '¿Qué persona del pasado te gustaría volver a ver, aunque sea una vez?',
+  '¿Qué abuelo, abuela o persona mayor te dejó huella y qué aprendiste de ella?',
+  '¿Qué juego o afición de tu infancia te gustaría recuperar?',
+  '¿Cuándo sentiste por primera vez que ya eras adulto o adulta?',
+  '¿Qué casa o habitación de tu pasado recuerdas con más cariño?',
+  '¿Qué frase que oíste de pequeño todavía resuena en tu cabeza?',
+  '¿Qué momento de tu vida te gustaría haber guardado en vídeo?',
+  '¿Qué cambio de rumbo te sorprendió y acabó saliendo bien?',
+  '¿Qué comida te recuerda a alguien que quieres?',
+  '¿Cuándo sentiste por primera vez que alguien confiaba en ti?',
+  '¿Qué día de tu vida repetirías sin cambiar nada?',
+  '¿Qué te prometiste de joven y has cumplido, o no?',
+  '¿Qué te hizo madurar de golpe?']},
+ {id:'sue',n:'Sueños y miedos',c:'#8fb8ff',q:[
+  '¿Qué sueño tienes guardado porque crees que es demasiado grande?',
+  '¿A qué le tienes más miedo y de dónde crees que viene?',
+  'Si supieras que no puedes fallar, ¿qué intentarías?',
+  '¿Qué te quita el sueño por las noches?',
+  '¿Qué te da más vergüenza admitir que deseas?',
+  '¿Qué harías si nadie te juzgara durante un año?',
+  '¿Qué parte de ti te gustaría que los demás vieran más?',
+  '¿Cuándo fue la última vez que saliste de tu zona de confort?',
+  '¿Qué es lo que más temes perder?',
+  '¿Qué te hace sentir pequeño y qué te hace sentir capaz de todo?',
+  '¿Qué te frena más: el miedo al fracaso o el miedo al cambio?',
+  '¿Qué habilidad te encantaría tener y por qué todavía no la has desarrollado?',
+  '¿Cómo sería para ti un día perfecto de principio a fin?',
+  '¿Qué harías hoy mismo si supieras que va a salir bien?',
+  '¿A qué has renunciado y todavía te duele un poco?',
+  '¿Qué pensamiento se repite en tu cabeza cuando estás a solas?',
+  '¿Qué situación te hace sentir más vulnerable?',
+  '¿Qué te gustaría haber hecho ya a estas alturas de tu vida?',
+  '¿Qué sueño pequeño te haría muy feliz si se cumpliera mañana?',
+  '¿Cómo te imaginas tu versión más libre?',
+  '¿Qué te da miedo que descubran de ti si te conocen demasiado?',
+  '¿Qué harías si supieras que nadie va a recordar lo que hagas?',
+  '¿Qué te daría paz mental si lo resolvieras?',
+  '¿A qué le has estado dando vueltas durante demasiado tiempo?',
+  '¿Qué te hace sentir que no llegas, aunque hagas mucho?',
+  '¿Qué sueño de la infancia sigue vivo dentro de ti?',
+  '¿Qué aventura te daría miedo y ganas a partes iguales?',
+  '¿Qué cosa te gustaría dejar de postergar?',
+  '¿Cuándo te sientes más inseguro y qué te ayuda a calmarte?',
+  '¿Qué te gustaría atreverte a decirle a alguien?',
+  '¿Qué meta te haría sentir que todo ha valido la pena?',
+  '¿Qué harías si tu mayor miedo desapareciera mañana?']},
+ {id:'val',n:'Valores y creencias',c:'#9be3a8',q:[
+  '¿Qué valor consideras innegociable?',
+  '¿En qué has cambiado de opinión en los últimos años?',
+  '¿Qué significa para ti tener éxito?',
+  '¿Qué crees que nos debemos las personas unas a otras?',
+  '¿Qué te parece más importante: ser feliz o tener razón?',
+  '¿Qué te enfada del mundo y cómo te gustaría cambiarlo?',
+  '¿Cuándo es más difícil ser honesto contigo mismo?',
+  '¿Qué es para ti la lealtad y hasta dónde llega?',
+  '¿Crees que las personas cambian de verdad? ¿Por qué?',
+  '¿Cómo describirías una buena vida?',
+  '¿Cuándo has tenido que elegir entre tus principios y lo cómodo?',
+  '¿Qué papel tiene el perdón en tu vida?',
+  '¿En qué momentos sientes que estás siendo fiel a quien eres?',
+  '¿Qué es lo que más valoras en una persona cuando la conoces?',
+  '¿Qué piensas del destino y de la suerte?',
+  '¿A qué cosa crees que se le da demasiada importancia?',
+  '¿De qué te gustaría que se hablara más en la sociedad?',
+  '¿Qué harías si descubrieras que algo en lo que creías era falso?',
+  '¿Qué te hace sentir que estás dejando huella?',
+  '¿Qué creencia heredada has decidido cuestionar?',
+  '¿Qué es para ti la honestidad y cuándo crees que puede doler demasiado?',
+  '¿Qué opinas de la envidia y cuándo la has sentido tú?',
+  '¿Qué te hace sentir que algo es injusto?',
+  '¿Preferirías ser admirado o ser querido, y por qué?',
+  '¿Qué debería enseñarse en las escuelas y no se enseña?',
+  '¿Cuándo es mejor callar y cuándo hablar?',
+  '¿Qué cosa material te costaría mucho dejar atrás?',
+  '¿Qué piensas sobre el dinero y la felicidad?',
+  '¿Cuándo has sentido que valía la pena defender algo?',
+  '¿Qué hace falta para volver a confiar en alguien?',
+  '¿Qué te gustaría que las próximas generaciones aprendieran de ti?',
+  '¿Qué es para ti la libertad?']},
+ {id:'rel',n:'Relaciones y cariño',c:'#ff9fbd',q:[
+  '¿Qué es lo que más necesitas de una persona cercana?',
+  '¿Cómo sabes que alguien te quiere de verdad?',
+  '¿Cuál es tu forma favorita de dar cariño y de recibirlo?',
+  '¿Qué te cuesta pedir a los demás?',
+  '¿Qué es lo primero que notas en las personas?',
+  '¿Qué situación te hace sentir más cerca de alguien?',
+  '¿Qué has aprendido de tus relaciones pasadas?',
+  '¿Cómo te comportas cuando estás herido?',
+  '¿Qué te hace sentir seguro en una relación?',
+  '¿Qué no soportarías que te ocultaran?',
+  '¿Qué te gustaría que supiera de ti alguien a quien quieres y todavía no lo sabe?',
+  '¿Qué te hace reír hasta que te duele la tripa?',
+  '¿Cómo discutes y cómo te gustaría hacerlo?',
+  '¿Qué es lo más bonito que alguien ha hecho por ti?',
+  '¿Qué te ha costado perdonar a alguien?',
+  '¿Qué amistad ha sido clave en tu vida y por qué?',
+  '¿Cómo quieres que te recuerden las personas que quieres?',
+  '¿Qué haces cuando alguien que quieres está pasando un mal momento?',
+  '¿Qué necesitas para abrirte con alguien?',
+  '¿Qué significa para ti compartir la vida con otra persona?',
+  '¿Qué detalle pequeño te hace sentir querido?',
+  '¿Qué te gustaría que te preguntaran más a menudo?',
+  '¿Cuándo te sientes más cerca de alguien sin decir nada?',
+  '¿Qué hábito de otra persona te enternece?',
+  '¿Qué significa para ti estar presente de verdad?',
+  '¿Qué harías para arreglar una relación que valoras pero está rota?',
+  '¿Qué te hace falta escuchar de alguien importante?',
+  '¿Cómo demuestras que alguien te importa?',
+  '¿En qué relación sientes que das más de lo que recibes?',
+  '¿Cuándo sentiste que alguien te entendía sin explicar nada?',
+  '¿Qué te gustaría agradecer a alguien y todavía no lo has hecho?',
+  '¿Qué parte de ti es más difícil de querer, y quién la quiere igual?']},
+ {id:'fut',n:'Vida y futuro',c:'#c9a6ff',q:[
+  '¿Qué te gustaría que tu yo del futuro te agradeciera?',
+  '¿Qué harías con una semana libre sin ninguna obligación?',
+  '¿En qué momento del día te sientes más tú?',
+  '¿Qué hábito pequeño cambiaría tu vida si lo mantuvieras?',
+  '¿Qué te llena de energía y qué te la roba?',
+  '¿Dónde te ves viviendo dentro de diez años y con quién?',
+  '¿Qué harías distinto si empezaras tu vida de nuevo?',
+  '¿Qué te gustaría aprender antes de que acabe este año?',
+  '¿Qué le dirías a tu yo de hace cinco años?',
+  '¿Qué te hace sentir agradecido hoy?',
+  '¿Qué te gustaría que dijeran de ti dentro de cincuenta años?',
+  '¿Qué viaje o experiencia te gustaría vivir al menos una vez?',
+  '¿Cómo te cuidas cuando estás agotado?',
+  '¿Qué proyecto o idea te ilusiona de verdad ahora mismo?',
+  '¿Qué harías si tuvieras todo el tiempo y el dinero que necesitaras?',
+  '¿Qué cambio pequeño te gustaría empezar esta semana?',
+  '¿Qué significa para ti descansar de verdad?',
+  '¿Qué te gustaría que nunca cambiara en tu vida?',
+  '¿Qué pregunta te gustaría que alguien te hiciera de verdad?',
+  '¿Qué te llevarías de esta conversación para recordarla?',
+  '¿Qué te gustaría construir a lo largo de tu vida?',
+  '¿Qué cosa simple te da más calma?',
+  '¿Cómo sería tu casa ideal y quién estaría en ella?',
+  '¿Qué tendrías que soltar para avanzar?',
+  '¿Qué te gustaría hacer una vez al año para siempre?',
+  '¿Cuál es la mejor decisión que podrías tomar este mes?',
+  '¿Qué haces cuando sientes que has perdido el rumbo?',
+  '¿Qué rutina de tu día te hace más feliz?',
+  '¿Qué te gustaría haber dicho o hecho cuando tengas ochenta años?',
+  '¿Qué aprendizaje de este año te llevarías al siguiente?',
+  '¿Qué consejo te darías si hoy empezaras una nueva etapa?',
+  '¿Qué te hace sentir vivo?']},
+ {id:'emo',n:'Emociones y mente',c:'#7fd8d8',q:[
+  '¿Qué emoción te cuesta más expresar?',
+  '¿Qué haces cuando estás enfadado y qué te gustaría hacer en cambio?',
+  '¿Cuándo fue la última vez que lloraste y qué lo provocó?',
+  '¿Qué te hace sentir orgulloso de ti mismo?',
+  '¿Qué crítica hacia ti te duele más, venga de quien venga?',
+  '¿Qué te dices a ti mismo cuando algo sale mal?',
+  '¿Qué te hace perder la noción del tiempo?',
+  '¿Qué pasa en tu cuerpo cuando estás nervioso?',
+  '¿Qué te hace sentir en paz?',
+  '¿Qué emoción tienes más presente últimamente?',
+  '¿Qué parte de ti sigues tratando con demasiada dureza?',
+  '¿Qué te ayuda cuando todo parece demasiado?',
+  '¿Cómo sabes que necesitas parar?',
+  '¿Qué te hace sentir que perteneces a un lugar?',
+  '¿Qué cosas haces solo para aparentar?',
+  '¿Cuándo te has sentido solo rodeado de gente?',
+  '¿Qué te da alegría sin que nadie lo sepa?',
+  '¿Qué te gustaría que alguien notara aunque no lo digas?',
+  '¿Qué te ayuda a empezar de nuevo?',
+  '¿Qué harías si te quisieras un poco más?']},
+ {id:'ima',n:'Imaginación y mundo',c:'#f5e27a',q:[
+  'Si pudieras cenar con cualquier persona, viva o no, ¿con quién sería y qué le preguntarías?',
+  '¿Qué superpoder cotidiano elegirías y para qué lo usarías?',
+  'Si pudieras viajar al pasado un día, ¿adónde irías?',
+  'Si pudieras conocer una verdad sobre el universo, ¿cuál elegirías?',
+  '¿Qué cambiarías del mundo si tuvieras un solo deseo?',
+  '¿Qué libro, película o serie te ha cambiado la forma de pensar?',
+  '¿Qué invento te gustaría que existiera ya?',
+  'Si tu vida fuera un libro, ¿cómo se titularía el capítulo actual?',
+  '¿Qué harías con veinticuatro horas libres y sin consecuencias?',
+  '¿Qué animal te representa y por qué?',
+  '¿Qué lugar del mundo te llama más y qué crees que encontrarías?',
+  '¿Qué tipo de música sería la banda sonora de tu vida y por qué?',
+  '¿Con qué personaje de ficción te identificas y qué parte de él es tuya?',
+  '¿En qué otra época te habría gustado vivir?',
+  'Si pudieras dominar al instante un idioma o un instrumento, ¿cuál elegirías?',
+  '¿Qué le preguntarías a tu yo de dentro de veinte años?',
+  '¿Qué crees que pasa después de la vida, o qué te gustaría que pasara?',
+  '¿Qué costumbre rara tienes que casi nadie conoce?',
+  'Si pudieras dejar un mensaje en una cápsula del tiempo, ¿qué diría?',
+  '¿Qué te gustaría preguntarle a alguien que ya no está?']}
+];
+var ALL=[];CATS.forEach(function(c,ci){c.q.forEach(function(t,i){ALL.push({id:c.id+i,t:t,c:ci});});});
+
+var $=function(i){return document.getElementById(i);};
+var sel='all',deck=[],pos=-1,hist=[],favs={},turn=0,toastT;
+try{favs=JSON.parse(localStorage.getItem('prof-fav')||'{}')||{};}catch(e){favs={};}
+function saveFavs(){try{localStorage.setItem('prof-fav',JSON.stringify(favs));}catch(e){}}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function pool(){
+  if(sel==='fav')return ALL.filter(function(x){return favs[x.id];});
+  if(sel==='all')return ALL;
+  return ALL.filter(function(x){return CATS[x.c].id===sel;});
+}
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on');},2200);}
+function names(){return [$('p1').value.trim(),$('p2').value.trim()].filter(Boolean);}
+
+function buildChips(){
+  var box=$('chips');box.innerHTML='';
+  var opts=[{id:'all',n:'Todas ('+ALL.length+')',c:'#ffb86b'}].concat(CATS.map(function(c){return {id:c.id,n:c.n,c:c.c};}),[{id:'fav',n:'♥ Favoritas',c:'#ff5f87'}]);
+  opts.forEach(function(o){
+    var b=document.createElement('button');b.className='chip';b.textContent=o.n;b.setAttribute('aria-pressed',String(sel===o.id));
+    b.addEventListener('click',function(){sel=o.id;document.documentElement.style.setProperty('--cat',o.c);buildChips();newDeck(true);});
+    box.appendChild(b);
+  });
+}
+function newDeck(show){deck=shuffle(pool());pos=-1;hist=[];if(show)next(true);}
+function render(skipAnim){
+  var item=deck[pos],card=$('card');
+  if(!item){
+    $('tag').textContent='';$('num').textContent='';
+    $('q').textContent=sel==='fav'?'Todavía no tienes favoritas. Toca ♥ en las preguntas que quieras guardar.':'Sin preguntas.';
+    $('turn').textContent='';$('fav').setAttribute('aria-pressed','false');return;
+  }
+  var c=CATS[item.c];
+  document.documentElement.style.setProperty('--cat',sel==='all'||sel==='fav'?c.c:CATS.filter(function(x){return x.id===sel;})[0].c);
+  $('tag').textContent=c.n;$('num').textContent=(pos+1)+' / '+deck.length;$('q').textContent=item.t;
+  var n=names();$('turn').textContent=n.length?'Responde: '+n[turn%n.length]:'';
+  $('fav').setAttribute('aria-pressed',String(!!favs[item.id]));
+  if(!skipAnim){card.classList.remove('flip');void card.offsetWidth;card.classList.add('flip');}
+}
+function next(first){
+  if(!deck.length){render(true);return;}
+  if(pos>=0&&!first)turn++;
+  pos++;
+  if(pos>=deck.length){deck=shuffle(pool());pos=0;toast('¡Has recorrido todas! Se vuelven a mezclar.');}
+  hist.push(pos);render();
+}
+function prev(){if(pos>0){pos--;if(turn>0)turn--;render();}}
+function toggleFav(){var it=deck[pos];if(!it)return;if(favs[it.id])delete favs[it.id];else favs[it.id]=1;saveFavs();$('fav').setAttribute('aria-pressed',String(!!favs[it.id]));toast(favs[it.id]?'Guardada en favoritas':'Quitada de favoritas');}
+function copyQ(){
+  var it=deck[pos];if(!it)return;
+  try{navigator.clipboard.writeText(it.t).then(function(){toast('Pregunta copiada');},function(){toast('No se pudo copiar');});}catch(e){toast('No se pudo copiar');}
+}
+
+$('next').addEventListener('click',function(){next();});
+$('prev').addEventListener('click',prev);
+$('card').addEventListener('click',function(){next();});
+$('fav').addEventListener('click',toggleFav);
+$('copy').addEventListener('click',copyQ);
+$('shuf').addEventListener('click',function(){newDeck(true);toast('Preguntas mezcladas');});
+$('p1').addEventListener('input',function(){render(true);});
+$('p2').addEventListener('input',function(){render(true);});
+addEventListener('keydown',function(e){
+  if(e.target&&e.target.tagName==='INPUT')return;
+  if(e.code==='ArrowRight'||e.code==='Space'){e.preventDefault();next();}
+  else if(e.code==='ArrowLeft'){prev();}
+  else if(e.key==='f'||e.key==='F'){toggleFav();}
+});
+buildChips();newDeck(true);
+})();
+</script>
+</body>
+</html>

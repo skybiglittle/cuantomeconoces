@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>8 vasos al día</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--card:#161f38;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--b:#4cc9f0;--g:#39d98a;--y:#ffd166}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.4 system-ui,-apple-system,sans-serif;min-height:100vh}
+main{max-width:520px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom))}
+h1{margin:6px 0 0;font-size:26px}.sub{color:var(--m);font-size:14px;text-transform:capitalize}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.streak{background:var(--card);border:1px solid var(--l);border-radius:99px;padding:6px 12px;font-weight:800;white-space:nowrap}
+#stage{position:relative;height:300px;border-radius:22px;overflow:hidden;margin:14px 0 6px;border:1px solid var(--l)}
+.sname{text-align:center;color:var(--m);font-size:13px;font-weight:700}
+.it{position:absolute;translate:-50% 0;line-height:1;user-select:none;transition:left .6s,bottom .6s}
+.pud{position:absolute;left:50%;translate:-50% 0;bottom:6%;height:22px;background:#4cc9f0aa;border-radius:50%;transition:width .6s}
+.water{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#4cc9f0cc,#1d6fa5);transition:height .8s}
+.ground{position:absolute;left:0;right:0;bottom:0;height:16%;background:#6b4a2b}
+.lane{position:absolute;left:0;right:0;height:1px;background:#ffffff40}
+.bob{animation:bob 1.6s ease-in-out infinite}.swim{animation:swim 2.4s ease-in-out infinite alternate}.walk{animation:swim 3s ease-in-out infinite alternate}
+.spin{animation:spin 8s linear infinite}.blink{animation:blink .7s steps(2) infinite}.pop{animation:pop .5s}.fall{animation:fall 1.2s linear infinite}.rise{animation:rise 3s linear infinite}.dance{animation:dance .5s ease-in-out infinite alternate}
+@keyframes bob{50%{transform:translateY(-8px)}}@keyframes swim{to{transform:translateX(18px)}}@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{50%{opacity:.2}}@keyframes pop{from{transform:scale(0)}60%{transform:scale(1.3)}}
+@keyframes fall{from{transform:translateY(-60px);opacity:1}to{transform:translateY(40px);opacity:0}}@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-120px);opacity:0}}
+@keyframes dance{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-10px)}}
+#msg{text-align:center;font-weight:800;font-size:18px;min-height:28px;margin:8px 0}
+#gl{display:flex;justify-content:center;gap:6px;margin:8px 0 14px}
+.g{font-size:26px;width:38px;height:44px;border-radius:12px;background:var(--card);border:1px solid var(--l);display:flex;align-items:center;justify-content:center;filter:grayscale(1) opacity(.45);transition:.3s}
+.g.on{filter:none;border-color:var(--b);transform:translateY(-3px)}
+.row{display:flex;gap:10px}.btn{font:inherit;font-weight:900;border:0;border-radius:16px;cursor:pointer;color:#06222b}
+#glup{flex:1;font-size:22px;padding:16px;background:linear-gradient(100deg,var(--b),#7bf1d3)}#glup:active{transform:scale(.97)}#glup:disabled{background:linear-gradient(100deg,#159b67,#20b982);color:#fff}
+#un{padding:0 18px;background:var(--card);color:var(--t);border:1px solid var(--l);font-size:20px}
+h3{margin:22px 0 8px;font-size:15px;color:var(--m)}
+#cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.c{aspect-ratio:1;border-radius:9px;background:var(--card);border:1px solid var(--l);font-size:11px;color:var(--m);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.c i{position:absolute;left:0;right:0;bottom:0;background:#4cc9f055}.c b{position:relative}.c.full{background:#159b67;color:#fff;border-color:#39d98a}.c.today{outline:2px solid var(--y)}
+#conf{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}#conf span{position:absolute;top:-40px;font-size:28px;animation:cf 2.6s linear forwards}
+@keyframes cf{to{transform:translateY(110vh) rotate(540deg)}}
+</style></head><body><main>
+<div class="top"><div><h1>💧 8 vasos al día</h1><div class="sub" id="date"></div></div><div class="streak" id="streak"></div></div>
+<div id="stage"></div><div class="sname" id="sname"></div>
+<div id="msg"></div><div id="gl"></div>
+<div class="row"><button class="btn" id="un" aria-label="Quitar un vaso">−</button><button class="btn" id="glup">¡Glup! 🥛</button></div>
+<h3>Últimos 28 días</h3><div id="cal"></div>
+<div id="conf"></div>
+</main>
+<script>
+(()=>{'use strict';
+const $=i=>document.getElementById(i);
+const E=(e,x,y,s,a='')=>`<span class="it ${a}" style="left:${x}%;bottom:${y}%;font-size:${s}px">${e}</span>`;
+const R=(n,f)=>Array.from({length:Math.max(0,n)},(_,i)=>f(i)).join('');
+const key=d=>d.toLocaleDateString('sv');
+let D={};try{D=JSON.parse(localStorage.getItem('beber8')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('beber8',JSON.stringify(D))}catch(e){}};
+
+// 7 escenas: cada una recibe p = vasos bebidos hoy (0-8)
+const SC=[
+{n:'🏜️ El desierto que florece',bg:'linear-gradient(#8fd3ff 0 55%,#f4d58d 55%)',f:p=>E('☀️',85,78,50,'spin')+(p>=2?`<div class="pud" style="width:${p*9}%"></div>`:'')+E('🌵',50,30,56+p*5,'bob')+R(p,i=>E('🌸',[20,75,35,62,88,8,48,92][i],[18,16,10,22,30,26,6,8][i],26,'pop'))+(p>=4?E('🐪',18,34,64,'walk'):'')+(p>=8?E('🌈',50,40,150,'pop'):'')},
+{n:'🐠 La pecera sedienta',bg:'linear-gradient(#0e2a47,#0b1830)',f:p=>`<div class="water" style="height:${12+p*9}%"></div>`+R(6,i=>p>=i+2?E(['🐟','🐠','🐡','🦈','🐙','🦀'][i],[25,70,45,15,80,55][i],[10,25,40,18,52,33][i],34,'swim'):'')+[[1,12],[3,50],[5,88]].map(([k,x])=>p>=k?E('🌿',x,6,34,'pop'):'').join('')+(p>=1?E('🫧',30,12,22,'rise')+E('🫧',70,10,22,'rise'):'')+(p>=8?E('🎉',50,80,50,'bob')+E('🪩',20,84,40,'spin'):'')},
+{n:'🌱 La planta que crece',bg:'linear-gradient(#bde8ff,#e9f9d0)',f:p=>`<div class="ground"></div>`+E(p<3?'🌱':p<6?'🌿':p<8?'🌻':'🍎',50,13,40+p*14,p>=8?'bob':'')+(p>0?E('💧',50,60,26,'fall'):'')+(p>=5?E('🐝',25,50,30,'swim')+E('🐝',75,60,30,'swim'):'')+(p>=8?E('🎉',20,60,44,'bob')+E('🎉',80,60,44,'bob'):'')},
+{n:'🤖 El robot sediento',bg:'linear-gradient(#2a1650,#120a26)',f:p=>E('🤖',50,22,110,p>=8?'dance':'bob')+R(8-p,i=>E('⚡',[30,70,40,60,25,75,35,65][i],[55,60,70,45,40,35,30,50][i],28,'blink'))+(p<4?E('💨',62,68,40,'blink'):'')+(p>=3?E('🔧',22,12,36):'')+(p>=6?E('🎶',80,55,36,'bob'):'')+(p>=8?E('🪩',50,82,50,'spin')+E('🕺',18,12,56,'dance')+E('💃',82,12,56,'dance'):'')},
+{n:'🌋 El volcán que se apaga',bg:'linear-gradient(#ff9e6d,#ffd9a0 70%,#7fd1e8 70%)',f:p=>E(p>=8?'🏝️':'🌋',50,14,150,'bob')+R(8-p,i=>E('🔥',[38,62,46,54,30,70,42,58][i],[70,70,80,78,60,60,66,62][i],26,'blink'))+(p>=1&&p<8?E('♨️',50,92,30,'rise'):'')+(p>=4?E('🌴',15,16,50,'bob'):'')+(p>=6?E('🌴',85,16,50,'bob'):'')+(p>=7?E('🐚',30,6,26,'pop'):'')+(p>=8?E('🌈',50,55,130,'pop'):'')},
+{n:'🦆 La carrera de patos',bg:'linear-gradient(#5bc0eb,#1d6fa5)',f:p=>R(2,i=>`<div class="lane" style="bottom:${30+i*30}%"></div>`)+E('🏁',94,10,46)+E('🐤',6+p*9,62,34,'bob')+E('🦆',6+p*11,36,48,'bob')+E('🐤',6+p*8,10,34,'bob')+(p>=8?E('🏆',50,78,52,'pop')+E('🎉',20,78,40,'bob')+E('🎉',80,78,40,'bob'):'')},
+{n:'🐱 El gato en el baño',bg:'linear-gradient(#e8f4ff,#c9e3f5)',f:p=>E('🛁',50,4,150)+E(p<3?'😾':p<6?'🙀':p<8?'😼':'😻',50,32,100+p*2,p>=8?'dance':'bob')+R(p,i=>E('💦',[20,80,30,70,15,85,40,60][i],[40,45,70,65,20,25,78,80][i],26,'pop'))+(p>=3?E('🧼',78,10,30,'bob'):'')+(p>=5?E('🫧',25,50,26,'rise')+E('🫧',75,40,26,'rise'):'')+(p>=6?E('🦆',22,12,36,'swim'):'')+(p>=8?E('🎉',15,75,44,'bob')+E('🎉',85,75,44,'bob'):'')}
+];
+const MSG=['¡Primer glup! 💧','Dos. Empiezas a brillar ✨','Tres. Tu cuerpo dice gracias','Cuatro: ¡mitad del camino!','Cinco. Imparable 🚀','Seis. Casi eres un pez 🐟','Siete. ¡Solo uno más!','¡OCHO! ¡Día completado! 🏆'];
+
+let today=key(new Date());
+const sceneIdx=k=>Math.floor(Date.parse(k+'T00:00:00Z')/864e5)%7;
+const gl=$('gl');gl.innerHTML=Array.from({length:8},()=>'<div class="g">💧</div>').join('');
+
+function beep(f){try{const a=beep.a||(beep.a=new(window.AudioContext||window.webkitAudioContext)()),o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
+ o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.8,t+.12);g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g);g.connect(a.destination);o.start();o.stop(t+.2)}catch(e){}}
+function confetti(){const c=$('conf');c.innerHTML=R(28,i=>`<span style="left:${Math.random()*100}%;animation-delay:${Math.random()*.8}s">${['🎉','💧','⭐','🥳','💙'][i%5]}</span>`);setTimeout(()=>c.innerHTML='',3600)}
+function streak(){let s=0,d=new Date();if((D[key(d)]||0)<8)d.setDate(d.getDate()-1);while((D[key(d)]||0)>=8){s++;d.setDate(d.getDate()-1)}return s}
+
+function render(msgIdx){
+ const n=D[today]||0,sc=SC[sceneIdx(today)];
+ $('stage').style.background=sc.bg;$('stage').innerHTML=sc.f(n);$('sname').textContent=sc.n+' · '+n+'/8';
+ [...gl.children].forEach((g,i)=>g.classList.toggle('on',i<n));
+ $('msg').textContent=msgIdx!=null?MSG[msgIdx]:n>=8?MSG[7]:n?MSG[n-1]:'Toca «¡Glup!» cada vez que bebas un vaso';
+ const b=$('glup');b.disabled=n>=8;b.textContent=n>=8?'¡Hecho por hoy! ✅':'¡Glup! 🥛';
+ $('un').disabled=n<=0;
+ const s=streak();$('streak').textContent='🔥 '+s+(s===1?' día':' días');
+ $('date').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+ const cal=$('cal');cal.innerHTML='';
+ for(let i=27;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=key(d),v=D[k]||0,c=document.createElement('div');
+  c.className='c'+(v>=8?' full':'')+(i===0?' today':'');c.title=v+'/8';
+  c.innerHTML=(v&&v<8?'<i style="height:'+v/8*100+'%"></i>':'')+'<b>'+(v>=8?'✓':d.getDate())+'</b>';cal.appendChild(c)}
+}
+$('glup').onclick=()=>{const n=D[today]||0;if(n>=8)return;D[today]=n+1;save();beep(380+n*60);if(navigator.vibrate)navigator.vibrate(n===7?[80,60,80,60,200]:40);render(n);if(n===7){confetti();beep(900)}};
+$('un').onclick=()=>{const n=D[today]||0;if(n<=0)return;D[today]=n-1;if(!D[today])delete D[today];save();render()};
+setInterval(()=>{const k=key(new Date());if(k!==today){today=k;render()}},30000);
+render();
+})();
+</script></body></html>

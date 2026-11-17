@@ -1,9 +1,8 @@
-//CORREGIR, SE DEBEN PODER HACER CUENTAS INDIVIDUALE
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b1020">
-<title>Cifras y Letras</title>
+<title>☆Cifras y Letras</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff758f}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#1d3a4d,transparent 42%),radial-gradient(ellipse at 100% 25%,#3a2a4d,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
@@ -20,9 +19,13 @@ input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(-
 .code{font-size:32px;letter-spacing:.18em;font-weight:900;text-align:center;color:var(--y)}.small{font-size:13px;color:var(--m)}
 .notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}.notice.good{background:#102b25;border-color:#226448;color:#a8f0ca}.notice.bad{background:#332719;border-color:#74542a;color:#ffe0a3}
 .tiles{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:12px 0}
-.tile{min-width:44px;height:54px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;background:#fffaf0;color:#1b1b2f;border-radius:10px;font-size:26px;font-weight:900;border:0;font-family:inherit;cursor:pointer;box-shadow:0 3px 0 #c9bfa6}.tile:active{transform:translateY(2px);box-shadow:none}
-.tile.big{background:#ffd166;box-shadow:0 3px 0 #c49a1a}.target{font-size:clamp(46px,14vw,84px);font-weight:950;text-align:center;color:var(--y);line-height:1.1;margin:6px 0}
-.ops{display:flex;gap:6px;margin:8px 0}.ops .btn{flex:1;padding:10px 0;font-size:20px}
+.tile{min-width:44px;height:54px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;background:#fffaf0;color:#1b1b2f;border-radius:10px;font-size:26px;font-weight:900;border:0;font-family:inherit;cursor:pointer;box-shadow:0 3px 0 #c9bfa6;transition:transform .1s}.tile:active{transform:translateY(2px);box-shadow:none}
+.tile.big{background:#ffd166;box-shadow:0 3px 0 #c49a1a}
+.tile.res{background:#b6efe6;box-shadow:0 3px 0 #4aa89a}.tile.best{background:#9ff0b8;box-shadow:0 3px 0 #2ea45f}
+.tile.sel{outline:3px solid var(--a);transform:translateY(-4px)}.tile:disabled{opacity:.6;cursor:default}
+.target{font-size:clamp(46px,14vw,84px);font-weight:950;text-align:center;color:var(--y);line-height:1.1;margin:6px 0}
+.ops{display:flex;gap:6px;margin:8px 0}.ops .btn{flex:1;padding:10px 0;font-size:20px}.ops .btn.on{outline:2px solid var(--y);background:#3a4a70}
+.hist{font-size:14px;color:var(--m);margin:6px 0;min-height:20px}.hist div{padding:2px 0}
 .card{background:#101a2e;border:1px solid var(--l);border-radius:15px;padding:12px 14px;margin:9px 0;overflow-wrap:anywhere}.card.win{border-color:var(--g)}.card.no{opacity:.55}.hd{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;color:var(--b)}
 .w{font-size:22px;font-weight:850;letter-spacing:.06em;margin:4px 0}
 .meter{height:9px;background:#303b55;border-radius:99px;overflow:hidden;margin:8px 0 14px}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--b),var(--a));transition:width 1s linear}
@@ -39,7 +42,7 @@ input,select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(-
 <div class="row"><div><div class="small">CÓDIGO DE SALA</div><div class="code" id="cl">-----</div></div><div><button class="btn s full" id="cp" style="margin:0">Copiar código</button><div class="small" id="hl" style="margin-top:6px"></div></div></div>
 <h3>Jugadores conectados</h3><div id="lp" class="pls"></div><p class="small ds"></p>
 <label for="rounds">Rondas (alternan letras y cifras)</label><select id="rounds"><option value="4">4 rondas</option><option value="6" selected>6 rondas</option><option value="8">8 rondas</option><option value="10">10 rondas</option></select>
-<div class="notice"><b>Letras:</b> con 10 letras forma la palabra más larga (1 punto por letra, 20 si usas las 10). Las palabras se validan solas con el diccionario; si no está cargado, el grupo las revisa con banderas 🚩 (si la mayoría marca una, no puntúa).<br><b>Cifras:</b> con 6 números y + − × ÷ llega al número objetivo. Exacto 10 pts, a 5 o menos 7 pts, a 10 o menos 5 pts. Se comprueba solo.</div>
+<div class="notice"><b>Letras:</b> con 10 letras forma la palabra más larga (1 punto por letra, 20 si usas las 10). Las palabras se validan solas con el diccionario; si no está cargado, el grupo las revisa con banderas 🚩 (si la mayoría marca una, no puntúa).<br><b>Cifras:</b> con 6 números y + − × ÷ llega al número objetivo. Cada resultado se convierte en un número nuevo que puedes seguir usando, y puedes hacer varias operaciones en paralelo. Exacto 10 pts, a 5 o menos 7 pts, a 10 o menos 5 pts. Se comprueba solo.</div>
 <div class="row"><button class="btn g" id="st">Empezar partida</button><button class="btn gh" id="lv">Salir</button></div><p id="lm" class="small"></p></section>
 <section id="game" class="panel hidden"></section>
 </main>
@@ -54,7 +57,7 @@ const normW=w=>{const s=String(w).toUpperCase().replace(/Ñ/g,'#').normalize('NF
 function checkWord(w,letters){const n=normW(w);if(!n)return'Solo letras (sin Ñ ni símbolos).';if(n.length<2)return'Mínimo 2 letras.';const pool=letters.slice();for(const c of n){const k=pool.indexOf(c);if(k<0)return'No puedes usar «'+c+'»: no está o ya la has gastado.';pool.splice(k,1)}return''}
 // NO SE USA. AL FINAL LO TENGO EN OTRA CARPETA const DICT_URL=['diccionario.txt','palabras.txt','dic.txt']; // archivo de palabras (una por línea) junto a este HTML
 const DICT_URL=['diccionario/español.txt']; // archivo de palabras (una por línea)
-      
+
 const DICT=new Set();let DREADY=0;
 const setDstat=t=>document.querySelectorAll('.ds').forEach(e=>e.textContent=t);
 const inDict=w=>{const n=normW(w);return!!n&&DICT.has(n.toLowerCase())};
@@ -121,7 +124,7 @@ function endPlay(){if(S.tp==='L'){const it=S.pl.filter(p=>dd(p).ok&&dd(p).w&&!ch
  S.words=shuf(it);if(it.length<2){const pts={};it.forEach(x=>pts[x.k]=x.w.length);return finishL(pts)}
  S.ph='check';S.n++;S.dl=Date.now()+TK*1000;pubS()}
 else{const items=[],pts={};S.pl.forEach(p=>{const d=dd(p);if(!d.ok||!d.e)return items.push({k:p.k,e:'',err:'Sin respuesta',p:0});const r=evalExpr(d.e,S.nums);
- if(r.err)return items.push({k:p.k,e:String(d.e).slice(0,60),err:r.err,p:0});const df=Math.abs(r.v-S.target),pt=df===0?10:df<=5?7:df<=10?5:0;pts[p.k]=pt;items.push({k:p.k,e:String(d.e).slice(0,60),v:r.v,df,p:pt})});
+ if(r.err)return items.push({k:p.k,e:String(d.e).slice(0,200),err:r.err,p:0});const df=Math.abs(r.v-S.target),pt=df===0?10:df<=5?7:df<=10?5:0;pts[p.k]=pt;items.push({k:p.k,e:String(d.e).slice(0,200),v:r.v,df,p:pt})});
  S.res={items:items.sort((a,b)=>b.p-a.p),best:solve(S.nums,S.target)};addPts(pts);S.ph='result';S.dl=0;pubS()}}
 function finishL(pts,items){S.res={bw:S.bw||null,items:items||S.words.map(x=>({k:x.k,w:x.w,len:x.w.length,p:pts[x.k]||0,rej:0}))};addPts(pts);S.ph='result';S.dl=0;pubS()}
 function endCheck(){const need=Math.floor((S.pl.length-1)/2)+1,pts={},items=S.words.map(x=>{const f=S.pl.filter(p=>p.k!==x.k&&(dd(p).fl||{})[x.k]).length,rej=f>=need,len=normW(x.w).length;
@@ -133,9 +136,38 @@ function upd(){if(!S||!S.dl||(S.ph!=='play'&&S.ph!=='check'))return;const tot=S.
 if(t)t.textContent=s+' s';if(b)b.style.width=s/tot*100+'%';
 if(c){const a=S.pl.filter(p=>on(p.k));c.textContent='Listos: '+a.filter(p=>S.ph==='play'?dd(p).ok:dd(p).rd).length+' de '+a.length}
 if(S.ph==='play'&&s<=0&&!L.done&&!L.auto&&S.pl.some(p=>p.k===K)){L.auto=1;submit(true)}}
-function submit(auto){const el=$(S.tp==='L'?'wi':'ei');if(!el)return;const t=el.value.trim();if(!t)return;
-const e=S.tp==='L'?(checkWord(t,S.lt)||dictErr(t)):evalExpr(t,S.nums).err;if(e){if(!auto)$('fb').textContent=e;return}
-L.done=1;pub({d:S.tp==='L'?{r:S.n,w:t,ok:1}:{r:S.n,e:t,ok:1}});rend()}
+
+/* ---------- CIFRAS: tablero con resultados intermedios ---------- */
+// L.pool = fichas {id,v,e,r}; r=1 si es un resultado. L.sel/L.op = selección actual. L.snaps = historial para deshacer.
+const bestTile=()=>{let b=null;for(const x of L.pool||[])if(x.r&&(!b||Math.abs(x.v-S.target)<Math.abs(b.v-S.target)))b=x;return b};
+function initC(){L.pool=S.nums.map((v,i)=>({id:i,v,e:String(v)}));L.sel=null;L.op=null;L.snaps=[];L.hist=[];L.nid=100}
+function combine(a,b,o){if((o==='−'||o==='÷')&&a.v<b.v)[a,b]=[b,a];let v;
+ if(o==='+')v=a.v+b.v;else if(o==='×')v=a.v*b.v;
+ else if(o==='−'){v=a.v-b.v;if(v<=0)return'La resta tiene que dar un número positivo.'}
+ else{if(a.v%b.v)return'La división tiene que ser exacta.';v=a.v/b.v}
+ L.snaps.push({p:L.pool,h:L.hist});
+ L.pool=L.pool.filter(x=>x.id!==a.id&&x.id!==b.id).concat({id:L.nid++,v,r:1,e:'('+a.e+' '+o+' '+b.e+')'});
+ L.hist=L.hist.concat(a.v+' '+o+' '+b.v+' = '+v);L.sel=null;L.op=null;return''}
+function drawC(err){const tl=$('tl');if(!tl)return;const b=bestTile();
+ tl.innerHTML=L.pool.map(x=>'<button class="tile'+(x.v>10&&!x.r?' big':'')+(x.r?' res':'')+(L.sel===x.id?' sel':'')+(b&&b.id===x.id?' best':'')+'" data-id="'+x.id+'"'+(L.done?' disabled':'')+'>'+x.v+'</button>').join('');
+ const hs=$('hs');if(hs)hs.innerHTML=L.hist.map(h=>'<div>'+esc(h)+'</div>').join('');
+ document.querySelectorAll('#op [data-o]').forEach(e=>e.classList.toggle('on',e.dataset.o===L.op));
+ const fb=$('fb');if(fb){const df=b&&Math.abs(b.v-S.target);
+  fb.textContent=err||(L.sel===null?(b?'Más cercano: '+b.v+(df?' (a '+df+' del objetivo)':' ¡exacto!'):'Toca un número para empezar.'):!L.op?'Ahora elige una operación.':'Ahora toca el segundo número.')}}
+function tileClick(id){if(L.done)return;const t=L.pool.find(x=>x.id===id);if(!t)return;
+ if(L.sel===null){L.sel=id;return drawC()}
+ if(!L.op){L.sel=L.sel===id?null:id;return drawC()}
+ if(id===L.sel){L.sel=null;L.op=null;return drawC()}
+ const e=combine(L.pool.find(x=>x.id===L.sel),t,L.op);drawC(e)}
+function opClick(o){if(L.done)return;if(L.sel===null)return drawC('Primero toca un número.');L.op=L.op===o?null:o;drawC()}
+function undoC(){if(L.done||!L.snaps.length)return;const s=L.snaps.pop();L.pool=s.p;L.hist=s.h;L.sel=null;L.op=null;drawC()}
+
+function submit(auto){let t;
+ if(S.tp==='L'){const el=$('wi');if(!el)return;t=el.value.trim()}
+ else{const b=bestTile();if(!b){if(!auto&&$('fb'))$('fb').textContent='Haz al menos una operación.';return}t=b.e.replace(/^\((.*)\)$/,'$1')}
+ if(!t)return;
+ const e=S.tp==='L'?(checkWord(t,S.lt)||dictErr(t)):evalExpr(t,S.nums).err;if(e){if(!auto&&$('fb'))$('fb').textContent=e;return}
+ L.done=1;pub({d:S.tp==='L'?{r:S.n,w:t,ok:1}:{r:S.n,e:t,ok:1}});rend();if(S.tp==='C')drawC()}
 function rLobby(){const ps=roster(),hk=(peers.find(p=>p.h&&p.s)||{}).k;$('cl').textContent=code;
 $('lp').innerHTML=ps.map(p=>'<span class="pl'+(p.k===K?' me':'')+'">'+esc(p.n)+(p.k===hk?' 👑':'')+(p.k===K?' (tú)':'')+'</span>').join('');
 $('hl').textContent=!S?'Conectando…':H?'Eres el anfitrión':'Esperando al anfitrión';
@@ -163,11 +195,12 @@ if(S.tp==='L'){g.innerHTML=head(rn)+'<h2>Forma la palabra más larga</h2><p clas
 (L.done?'<div class="notice good">✓ Palabra enviada. Esperando al resto…</div>':'<input id="wi" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tu palabra…"><p class="small" id="fb"></p><button class="btn g full" id="sb">Enviar palabra</button>')+'<p class="small" id="cnt"></p>';
 if(!L.done){const wi=$('wi'),chk=()=>{const t=wi.value.trim();$('fb').textContent=t?(checkWord(t,S.lt)||dictErr(t)||'✓ Válida: '+normW(t).length+' letras'):''};wi.oninput=chk;wi.onkeydown=e=>{if(e.key==='Enter')submit()};
 $('tl').onclick=e=>{const b=e.target.closest('[data-c]');if(b){wi.value+=b.dataset.c.toLowerCase();chk()}};$('sb').onclick=()=>submit()}}
-else{g.innerHTML=head(rn)+'<h2>Llega al número objetivo</h2><div class="target">'+S.target+'</div><div class="tiles" id="tl">'+S.nums.map(n=>'<button class="tile'+(n>10?' big':'')+'" data-c="'+n+'">'+n+'</button>').join('')+'</div>'+
-(L.done?'<div class="notice good">✓ Operación enviada. Esperando al resto…</div>':'<div class="ops" id="op">'+['+','−','×','÷','(',')','⌫'].map(o=>'<button class="btn s" data-o="'+o+'">'+o+'</button>').join('')+'</div><input id="ei" maxlength="60" autocomplete="off" spellcheck="false" placeholder="Ej.: (100 + 7) × 8 − 3"><p class="small" id="fb"></p><button class="btn g full" id="sb">Enviar operación</button>')+'<p class="small" id="cnt"></p>';
-if(!L.done){const ei=$('ei'),chk=()=>{const t=ei.value.trim();if(!t){$('fb').textContent='';return}const r=evalExpr(t,S.nums);$('fb').textContent=r.err?r.err:'= '+r.v+(r.v===S.target?' ¡exacto!':' (a '+Math.abs(r.v-S.target)+' del objetivo)')};
-ei.oninput=chk;ei.onkeydown=e=>{if(e.key==='Enter')submit()};$('tl').onclick=e=>{const b=e.target.closest('[data-c]');if(b){ei.value+=(ei.value&&/\d$/.test(ei.value)?' ':'')+b.dataset.c;chk()}};
-$('op').onclick=e=>{const b=e.target.closest('[data-o]');if(!b)return;ei.value=b.dataset.o==='⌫'?ei.value.slice(0,-1):ei.value+' '+b.dataset.o+' ';chk()};$('sb').onclick=()=>submit()}}
+else{if(!L.pool)initC();
+g.innerHTML=head(rn)+'<h2>Llega al número objetivo</h2><div class="target">'+S.target+'</div><p class="m">Toca un número, una operación y otro número. El resultado se convierte en una ficha nueva (verde) que puedes seguir usando. Puedes hacer varias operaciones a la vez con fichas distintas.</p><div class="tiles" id="tl"></div>'+
+(L.done?'<div class="notice good">✓ Operación enviada. Esperando al resto…</div><div class="hist" id="hs"></div>':'<div class="ops" id="op">'+['+','−','×','÷'].map(o=>'<button class="btn s" data-o="'+o+'">'+o+'</button>').join('')+'</div><div class="hist" id="hs"></div><p class="small" id="fb"></p><div class="row"><button class="btn s" id="un">↶ Deshacer</button><button class="btn s" id="rs">Reiniciar</button></div><button class="btn g full" id="sb">Enviar mi mejor resultado</button>')+'<p class="small" id="cnt"></p>';
+$('tl').onclick=e=>{const b=e.target.closest('[data-id]');if(b)tileClick(+b.dataset.id)};
+if(!L.done){$('op').onclick=e=>{const b=e.target.closest('[data-o]');if(b)opClick(b.dataset.o)};$('un').onclick=undoC;$('rs').onclick=()=>{if(L.snaps.length){L.snaps.push({p:L.pool,h:L.hist});initC.keep=1}const sn=L.snaps;initC();L.snaps=sn;drawC()};$('sb').onclick=()=>submit()}
+drawC()}
 upd()}
 $('cb').onclick=()=>start(true);$('jn').onclick=()=>start(false);$('sj').onclick=()=>$('jb').classList.toggle('hidden');
 $('rc').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
@@ -176,4 +209,3 @@ $('st').onclick=startGame;$('rounds').onchange=()=>{if(H){S.max=+$('rounds').val
 loadDict();setInterval(()=>{hostTick();upd()},1000);addEventListener('beforeunload',()=>{if(ws)ws.leave()});
 })();
 </script></body></html>
-

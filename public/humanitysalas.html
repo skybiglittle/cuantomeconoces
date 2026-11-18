@@ -692,9 +692,19 @@ const hostP=()=>{const x=peers().find(y=>y.p.h===1);return x&&x.p};
 const H=()=>G.host?G.hs:(hostP()||{}).hs;
 const valid=(s,h)=>s&&s.g===h.g&&s.r===h.r;
 const nm=k=>{const p=byk()[k];return p?E(p.n):'?'};
-const pk=b=>Math.min(3,Math.max(1,(b.match(/___/g)||[]).length));
+const pk=b=>Math.min(3,Math.max(1,(b.match(/_{3,}/g)||[]).length));
+
+  
 const black=h=>{const a=BASE_B.concat(h.cc.b||[]);return a[h.bd[(h.r-1)%h.bd.length]%a.length]};
-function fillB(b,cs){let i=0,s=E(b).replace(/___/g,()=>`<u>${E(cs[i++]??'___')}</u>`);if(cs.length&&!i)s+=`<br><u>${E(cs.join(' / '))}</u>`;return s}
+
+  
+function fillB(b,cs){
+  let i=0;
+  let s=E(b).replace(/_{3,}/g,()=>{
+    return `<u>${E(cs[i++]??'___')}</u>`;
+  });
+  return s;
+}
 const bc=(b,cs=[])=>`<div class="c k">${fillB(b,cs)}</div>`;
 const sb=h=>`<div class="sc">${peers().map(x=>`<span class="${x.me?'me':''}">${x.p.k===h.cz?'⚖ ':''}${E(x.p.n)}: ${h.sc[x.p.k]||0}</span>`).join('')}</div>`;
 

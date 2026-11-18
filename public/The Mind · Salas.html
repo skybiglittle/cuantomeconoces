@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Mind · Salas</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f4ee;--fg:#1d1b18;--card:#fff;--ac:#5b3fd1;--acfg:#fff;--mut:#7a746a;--bad:#d1384f;--line:#ddd7ca;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14121c;--fg:#f1eefc;--card:#221f30;--ac:#9d86ff;--acfg:#14121c;--mut:#a39db6;--bad:#ff6b81;--line:#38334a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14121c;--fg:#f1eefc;--card:#221f30;--ac:#9d86ff;--acfg:#14121c;--mut:#a39db6;--bad:#ff6b81;--line:#38334a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px}
+h1{font-size:28px;margin:8px 0 4px}
+.m{color:var(--mut)}
+input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);margin:6px 0}
+button{font:inherit;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.p{background:var(--ac);color:var(--acfg);border-color:var(--ac);font-weight:600}
+button.big{width:100%;padding:18px;font-size:18px;margin-top:10px}
+button:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.bar{display:flex;justify-content:space-between;align-items:center;font-weight:600;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:14px;margin:3px 3px 0 0}
+.pile{min-height:110px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;background:var(--card);border:1px dashed var(--line);border-radius:16px;margin:12px 0;padding:10px}
+.cd{min-width:44px;text-align:center;padding:10px 6px;border-radius:10px;border:1px solid var(--line);font-weight:700;background:var(--bg)}
+.cd.last{font-size:44px;padding:14px 20px;background:var(--ac);color:var(--acfg);border-color:var(--ac)}
+.hand{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+.hand .cd{font-size:28px;min-width:64px;padding:16px 8px;background:var(--card)}
+.hand .cd.low{border:2px solid var(--ac)}
+.log{text-align:center;min-height:24px;margin:6px 0}
+.bad{color:var(--bad)}
+.code{font-size:22px;letter-spacing:4px;font-weight:800}
+</style></head>
+<body><main>
+<section id="home">
+  <h1>🧠 The Mind</h1>
+  <p class="m">Juego cooperativo: jugad las cartas en orden ascendente sin hablar. Cada uno ve solo su mano.</p>
+  <input id="nm" maxlength="12" placeholder="Tu nombre">
+  <button class="p big" data-a="create">Crear sala</button>
+  <p class="m" style="text-align:center">o</p>
+  <div class="row"><input id="cd" maxlength="4" placeholder="Código" style="text-transform:uppercase"><button data-a="join" style="flex:0 0 auto">Unirme</button></div>
+  <p id="err" class="bad"></p>
+</section>
+<section id="game" hidden>
+  <div class="bar"><span>Sala <span id="code" class="code"></span></span><span id="stats"></span></div>
+  <div id="body"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let room=null,isHost=false,G=null,S=null,name="",code="",tries=0,timers=[];
+const meId=()=>{const p=room&&room.peers().find(x=>x.sameTab);return p&&p.peer};
+const MAXL={2:12,3:10,4:8};
+
+// ---------- host (autoridad de la partida) ----------
+const bc=()=>{if(G)room.emit("s",G)};
+function deal(){
+  const ids=Object.keys(G.names);let deck=[];for(let i=1;i<=100;i++)deck.push(i);
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
+  G.hands={};ids.forEach(id=>{G.hands[id]=deck.splice(0,G.level).sort((a,b)=>a-b)});
+  G.pile=[];G.votes={};G.phase="play";G.log="Nivel "+G.level+": ¡silencio y concentración!";
+}
+function after(){
+  if(G.lives<=0){G.phase="lose";G.log="Sin vidas. Vuestras mentes no estaban conectadas…";return}
+  if(Object.values(G.hands).every(h=>!h.length)){
+    if(G.level>=G.max){G.phase="win";G.log="¡Mente colmena conseguida!";return}
+    G.level++;G.phase="between";G.log="¡Nivel superado!";
+    if([3,6,9].includes(G.level)){G.lives++;G.log+=" +1 ❤️"}
+    if([2,5,8].includes(G.level)){G.stars++;G.log+=" +1 ⭐"}
+  }
+}
+function play(p){
+  const h=G.hands[p];if(G.phase!=="play"||!h||!h.length)return;
+  const c=h.shift(),low=[];
+  for(const id in G.hands){const a=G.hands[id];while(a.length&&a[0]<c)low.push(a.shift())}
+  low.sort((a,b)=>a-b);G.pile.push(...low,c);G.pile=G.pile.slice(-10);G.votes={};
+  if(low.length){G.lives--;G.log="¡Os habéis pisado! −1 ❤️ (cartas más bajas reveladas)"}else G.log="";
+  after();
+}
+function ninja(p){
+  if(G.phase!=="play"||G.stars<1||!G.hands[p]||!G.hands[p].length)return;
+  G.votes[p]=1;
+  const need=Object.keys(G.hands).filter(id=>G.hands[id].length);
+  if(need.every(id=>G.votes[id])){
+    const out=[];need.forEach(id=>out.push(G.hands[id].shift()));
+    out.sort((a,b)=>a-b);G.pile.push(...out);G.pile=G.pile.slice(-10);G.stars--;G.votes={};
+    G.log="⭐ Ninja usada: todos descartan su carta más baja";after();
+  }
+}
+function onC(m){
+  if(!isHost||!G)return;const d=m.data||{},p=m.peer;
+  if(d.t==="hi"){
+    if(isHost&&m.sameTab&&!G.host)G.host=p;
+    if(G.names[p]||(G.phase==="lobby"&&Object.keys(G.names).length<4))G.names[p]=String(d.n||"Jugador").slice(0,12);
+  }else if(!G.names[p])return;
+  else if(d.t==="play")play(p);
+  else if(d.t==="ninja")ninja(p);
+  else if(d.t==="go"&&p===G.host){
+    if(G.phase==="lobby"){const n=Object.keys(G.names).length;if(n<2)return;G.max=MAXL[n];G.lives=n;G.stars=1;G.level=1;deal()}
+    else if(G.phase==="between")deal();
+    else if(G.phase==="win"||G.phase==="lose"){G.phase="lobby";G.level=1;G.hands={};G.pile=[];G.log=""}
+  }
+  bc();
+}
+
+// ---------- cliente ----------
+function onS(m){const d=m.data;if(d&&d.code===code){S=d;render()}}
+async function enter(c,host){
+  name=($("nm").value||"Jugador").trim().slice(0,12);code=c;isHost=host;
+  if(!window.claude||!claude.use){$("err").textContent="Este juego necesita abrirse en claude.ai con sesión iniciada.";return}
+  $("err").textContent="Conectando…";
+  const R=await claude.use("room");
+  if(!R){$("err").textContent="No se pudo conectar a la sala. Abre el enlace en claude.ai con sesión iniciada.";return}
+  try{room=await R.join("mind-"+c)}catch(e){$("err").textContent="No se pudo abrir la sala ("+(e.code||"error")+").";return}
+  if(host)G={code:c,phase:"lobby",level:1,max:12,lives:0,stars:0,pile:[],hands:{},names:{},votes:{},log:"",host:null};
+  room.on("c",onC);room.on("s",onS);
+  room.onPeers(ch=>{if(isHost&&ch.joined.length)bc()});
+  render();
+  room.emit("hi",{n:name});
+  timers.push(setInterval(()=>{
+    if(isHost)bc();
+    else if(!S||(S.phase==="lobby"&&!S.names[meId()])){room.emit("hi",{n:name});if(++tries>4&&!S)fail()}
+  },3000));
+}
+function fail(){timers.forEach(clearInterval);room.leave();room=null;S=null;$("err").textContent="No encuentro esa sala. Revisa el código.";render()}
+const num=h=>h.map(c=>'<span class="cd">'+c+"</span>").join("");
+function render(){
+  $("home").hidden=!!room;$("game").hidden=!room;if(!room)return;
+  $("code").textContent=code.toUpperCase();
+  const s=S;
+  if(!s){$("body").innerHTML='<p class="m">Conectando con la sala…</p>';return}
+  const id=meId(),hand=(s.hands&&s.hands[id])||[],ids=Object.keys(s.names),imHost=id&&id===s.host,inGame=!!s.names[id];
+  $("stats").textContent=s.phase==="lobby"?"":"❤️ "+s.lives+"  ⭐ "+s.stars+"  Nivel "+s.level+"/"+s.max;
+  let h='<div>'+ids.map(p=>'<span class="chip">'+esc(s.names[p])+(p===id?" (tú)":"")+(s.phase==="play"?" · "+((s.hands[p]||[]).length)+" 🂠":"")+(s.votes&&s.votes[p]?" ⭐✓":"")+"</span>").join("")+"</div>";
+  if(s.phase==="lobby"){
+    h+='<p class="m">Comparte el código <b>'+code.toUpperCase()+"</b> con tus amigos. Hacen falta de 2 a 4 jugadores. Nada de hablar durante la partida.</p>";
+    h+=imHost?'<button class="p big" data-a="go"'+(ids.length<2?" disabled":"")+">Empezar ("+ids.length+" jugador"+(ids.length==1?"":"es")+")</button>":'<p class="m">Esperando a que el anfitrión empiece…</p>';
+  }else{
+    h+='<div class="pile">'+(s.pile.length?s.pile.slice(0,-1).map(c=>'<span class="cd">'+c+"</span>").join("")+'<span class="cd last">'+s.pile[s.pile.length-1]+"</span>":'<span class="m">Aún no hay cartas en la mesa</span>')+"</div>";
+    h+='<div class="log'+(/pisado/.test(s.log)?" bad":"")+'">'+esc(s.log||"")+"</div>";
+    if(s.phase==="play"){
+      h+=inGame?'<div class="hand">'+(hand.length?hand.map((c,i)=>'<span class="cd'+(i?"":" low")+'">'+c+"</span>").join(""):'<span class="m">Sin cartas: ¡a esperar!</span>')+"</div>":'<p class="m">Eres espectador en esta partida.</p>';
+      h+='<button class="p big" data-a="play"'+(hand.length?"":" disabled")+">Jugar mi carta más baja</button>";
+      h+='<button class="big" data-a="ninja"'+((s.stars<1||!hand.length||(s.votes&&s.votes[id]))?" disabled":"")+">⭐ Estrella ninja"+(s.votes&&s.votes[id]?" (votada)":"")+"</button>";
+    }else{
+      if(s.phase==="win")h+='<h2 style="text-align:center">🎉 ¡Victoria!</h2>';
+      if(s.phase==="lose")h+='<h2 style="text-align:center" class="bad">💀 Derrota</h2>';
+      h+=imHost?'<button class="p big" data-a="go">'+(s.phase==="between"?"Empezar nivel "+s.level:"Volver a la sala")+"</button>":'<p class="m" style="text-align:center">Esperando al anfitrión…</p>';
+    }
+  }
+  $("body").innerHTML=h;
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+  if(a==="create"){const ch="abcdefghjkmnpqrstuvwxyz";let c="";for(let i=0;i<4;i++)c+=ch[Math.floor(Math.random()*ch.length)];enter(c,true)}
+  else if(a==="join"){const c=$("cd").value.trim().toLowerCase();if(c.length!==4){$("err").textContent="El código tiene 4 letras.";return}enter(c,false)}
+  else if(room&&a==="play")room.emit("c",{t:"play"});
+  else if(room&&a==="ninja")room.emit("c",{t:"ninja"});
+  else if(room&&a==="go")room.emit("c",{t:"go"});
+});
+</script></body></html>

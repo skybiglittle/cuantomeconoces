@@ -4,6 +4,7 @@ S.g.rd=-1; S.g.rounds=['hidden']; nextRound()   // letra oculta
 S.g.rd=-1; S.g.rounds=['bote'];   nextRound()   // bote
 S.g.rd=-1; S.g.rounds=['final'];  nextRound()   // final
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -198,7 +199,7 @@ header{background:linear-gradient(180deg,#2a1a6e,#150c3d);border-bottom:3px soli
 
 <div id="howModal" class="modal hidden"><div class="card">
   <h2>¿Cómo se juega?</h2>
-  <p style="font-size:14px;margin:0">Cada uno juega por su cuenta. Se juegan varias rondas y la <b>ronda final</b>, y gana quien más dinero guarde.<br><br>
+  <p style="font-size:14px;margin:0">Cada uno juega por su cuenta. Se juegan varias rondas y la <b>ronda final</b>, y gana quien más dinero guarde. El anfitrión puede elegir qué rondas se juegan (⚙️ Elegir rondas).<br><br>
   <b>Tu turno:</b> gira la rueda y di una <b>consonante</b>. Si está en el panel, ganas el valor del gajo <b>por cada vez que sale</b>. Si no está, pasas el turno. Las <b>vocales se compran</b> (250). Puedes <b>resolver</b> cuando quieras: si aciertas, <b>guardas el dinero de la ronda</b>; los demás pierden el suyo.<br><br>
   <b>Gajos:</b> 💰 dinero · 💥 Quiebra (pierdes lo de la ronda) · ⏭ Pierde turno · 🃏 Comodín (te salva una vez de una quiebra, un pierde turno o una letra fallada) · ✖2 duplica tu dinero de la ronda pero pasas el turno · ½ lo reduce a la mitad y pasas el turno · 🚫 Robaturnos (el siguiente pierde su turno) · 🦹 Ladrón (robas el dinero de la ronda del que más tiene) · 🎁 Vocal gratis.<br><br>
   <b>Rondas especiales:</b> ⚡ <b>Prueba de velocidad</b>: las letras aparecen solas, el premio baja con cada una y gana quien pulse y acierte primero. 🔍 <b>Letra oculta</b>: hay una consonante secreta; quien la nombre gana un <b>Supercomodín</b>. 💎 <b>Panel del bote</b>: +2000 extra para quien lo resuelva.<br><br>
@@ -284,7 +285,7 @@ function vib(m){try{if(navigator.vibrate&&!S.muted)navigator.vibrate(m)}catch(e)
 
 /* ---------- Estado ---------- */
 var S={view:'home',code:'',host:false,room:null,peers:[],g:null,name:ls('rl-name')||'',online:true,busy:false,err:'',muted:ls('rl-mute')==='1',
-  cfg:{len:'n',tt:45},ac:null,ak:0,hk:{},rx:null,rxs:{},rt:0,tb:0,tk:'',tick5:-1,wrot:0,wn:0,prevBd:'',fsel:{},keyKey:'',resKey:'',pz:null,lastMsg:''};
+  cfg:{len:'n',tt:45,sel:{speed:1,panel:1,hidden:1,bote:1,final:1},rep:1},ac:null,ak:0,hk:{},rx:null,rxs:{},rt:0,tb:0,tk:'',tick5:-1,wrot:0,wn:0,prevBd:'',fsel:{},keyKey:'',resKey:'',pz:null,lastMsg:''};
 function players(){return S.peers.filter(function(p){return p.presence&&p.presence.u&&p.presence.n}).map(function(p){var x=p.presence;return{u:x.u,n:x.n,h:x.h===1,me:x.u===uid,p:x}}).sort(function(a,b){return a.u<b.u?-1:1})}
 function pname(u){var a=players();for(var i=0;i<a.length;i++)if(a[i].u===u)return a[i].n;return '?'}
 function G(){if(S.host)return S.g;var h=S.peers.filter(function(p){return p.presence&&p.presence.h===1&&p.presence.g})[0];return h?h.presence.g:null}
@@ -318,10 +319,24 @@ function nextPlayer(from){
   if(g.sk&&nx===g.sk){g.sk='';nx=od[(od.indexOf(nx)+1)%od.length]}
   return nx;
 }
+/* Rondas personalizadas: el anfitrión elige qué tipos jugar y cuántas veces repetirlos */
+var ORDER=['speed','panel','hidden','bote'];
+function customRounds(){
+  var sel=S.cfg.sel||{},out=[],rep=S.cfg.rep||1;
+  for(var r=0;r<rep;r++)ORDER.forEach(function(k){if(sel[k])out.push(k)});
+  if(sel.final)out.push('final');
+  return out;
+}
+function customHtml(){
+  var T=[['speed','⚡ Velocidad'],['panel','🎡 Panel normal'],['hidden','🔍 Letra oculta'],['bote','💎 Bote'],['final','🏁 Final']];
+  return '<label>Qué rondas quieres jugar</label><div class="seg">'+T.map(function(t){return '<button data-sel="'+t[0]+'"'+(S.cfg.sel[t[0]]?' class="on"':'')+'>'+t[1]+'</button>'}).join('')+'</div><label>Repetir las rondas</label>'+segHtml('rep',[[1,'×1'],[2,'×2'],[3,'×3'],[5,'×5']],S.cfg.rep)+'<p class="small" style="margin:8px 0 0">Total: '+customRounds().length+' ronda(s). La final, si la eliges, va siempre al final.</p>';
+}
+function syncCfg(){var g=S.g;g.len=S.cfg.len;g.tt=S.cfg.tt;g.rounds=S.cfg.len==='x'?customRounds():[];pub();renderAll()}
 function startGame(){
   var g=S.g;if(!S.host)return;var ps=players();if(ps.length<2)return toast('Hace falta al menos 2 jugadores.');
+  if(S.cfg.len==='x'&&!customRounds().length)return toast('Elige al menos un tipo de ronda.');
   g.id=Date.now();g.len=S.cfg.len;g.tt=S.cfg.tt;g.od=ps.map(function(p){return p.u});g.bk={};g.pm={};g.cm={};g.sc={};g.od.forEach(function(u){g.bk[u]=0;g.pm[u]=0;g.cm[u]=0;g.sc[u]=false});
-  g.rounds=g.len==='c'?['speed','panel','final']:g.len==='l'?['speed','panel','hidden','panel','bote','final']:['speed','panel','hidden','bote','final'];
+  g.rounds=g.len==='x'?customRounds():g.len==='c'?['speed','panel','final']:g.len==='l'?['speed','panel','hidden','panel','bote','final']:['speed','panel','hidden','bote','final'];
   g.rd=-1;g.st0='';g.last=null;S.usedPz={};S.hk={};
   nextRound();
 }
@@ -497,7 +512,7 @@ async function enter(code,host){
   try{
     var room=await RM.join(ROOM_PREFIX+code.toLowerCase(),uid);
     S.room=room;S.code=code;S.host=host;S.view='room';S.peers=room.peers();S.ac=null;S.tk='';S.hk={};S.prevBd='';S.usedPz={};
-    if(host){var g=null;try{g=JSON.parse(ls('rl-g-'+code))}catch(e){}S.g=g||newG();if(S.g.st==='lobby'){S.cfg={len:S.g.len,tt:S.g.tt}}}else S.g=null;
+    if(host){var g=null;try{g=JSON.parse(ls('rl-g-'+code))}catch(e){}S.g=g||newG();if(S.g.st==='lobby'){S.cfg.len=S.g.len;S.cfg.tt=S.g.tt}}else S.g=null;
     room.onPeers(function(arr){S.peers=arr;onPeers()});
     room.onStatus(function(ok){S.online=ok;if(ok)pub();renderAll()});
     ls('rl-last',JSON.stringify({code:code,host:host}));
@@ -579,12 +594,12 @@ function renderLobby(g){
   if(!g){h+='<div class="card center"><h2>Conectando…</h2><p class="sub">Esperando al anfitrión. Comprueba que el código es correcto.</p></div>';$('lobby').innerHTML=h;return}
   h+='<div class="card"><div class="kick">Concursantes ('+ps.length+')</div>'+ps.map(function(p){return'<div class="pl">'+avHtml(p.n)+'<span>'+esc(p.n)+(p.me?' <span class="me">(tú)</span>':'')+(p.h?' 👑':'')+'</span></div>'}).join('')+'</div>';
   if(S.host){
-    h+='<div class="card"><div class="kick">Partida</div><label style="margin-top:0">Duración</label>'+segHtml('len',[['c','Corta · 1 panel'],['n','Normal · 3 paneles'],['l','Larga · 4 paneles']],S.cfg.len)
+    h+='<div class="card"><div class="kick">Partida</div><label style="margin-top:0">Duración</label>'+segHtml('len',[['c','Corta · 1 panel'],['n','Normal · 3 paneles'],['l','Larga · 4 paneles'],['x','⚙️ Elegir rondas']],S.cfg.len)+(S.cfg.len==='x'?customHtml():'')
       +'<label>Tiempo por acción</label>'+segHtml('tt',[[0,'Sin límite'],[30,'30 s'],[45,'45 s'],[60,'60 s']],S.cfg.tt)
-      +'<p class="small" style="margin:10px 0 0">Siempre empieza con la ⚡ prueba de velocidad y termina con la 🏁 ronda final.</p></div>';
+      +(S.cfg.len==='x'?'':'<p class="small" style="margin:10px 0 0">Siempre empieza con la ⚡ prueba de velocidad y termina con la 🏁 ronda final.</p>')+'</div>';
     h+='<button class="btn" data-a="start"'+(ps.length>=2?'':' disabled')+'>▶ ¡A jugar! ('+ps.length+')</button>';
     if(ps.length<2)h+='<p class="small center">Hacen falta al menos 2 jugadores.</p>';
-  }else h+='<p class="sub center">Esperando a que el anfitrión empiece <span class="small">· '+(g.len==='c'?'partida corta':g.len==='l'?'partida larga':'partida normal')+'</span></p>';
+  }else h+='<p class="sub center">Esperando a que el anfitrión empiece <span class="small">· '+(g.len==='x'?'rondas: '+(g.rounds||[]).map(function(r){return RTAG[r]}).join(' · '):g.len==='c'?'partida corta':g.len==='l'?'partida larga':'partida normal')+'</span></p>';
   $('lobby').innerHTML=h;
 }
 var RTAG={speed:'⚡ Velocidad',panel:'🎡 Panel',hidden:'🔍 Letra oculta',bote:'💎 Panel del bote',final:'🏁 Ronda final'};
@@ -690,7 +705,9 @@ function sendAnswer(){var g=G();if(!g)return;var v=($('ansIn').value||'').trim()
 document.addEventListener('click',function(e){
   var rx=e.target.closest('[data-rx]');if(rx){react(rx.getAttribute('data-rx'));return}
   var cf=e.target.closest('[data-cfg]');
-  if(cf&&S.host&&S.g&&S.g.st==='lobby'){var k=cf.getAttribute('data-cfg'),v=cf.getAttribute('data-v');S.cfg[k]=k==='len'?v:+v;S.g.len=S.cfg.len;S.g.tt=S.cfg.tt;pub();renderAll();return}
+  if(cf&&S.host&&S.g&&S.g.st==='lobby'){var k=cf.getAttribute('data-cfg'),v=cf.getAttribute('data-v');S.cfg[k]=k==='len'?v:+v;syncCfg();return}
+  var sl=e.target.closest('[data-sel]');
+  if(sl&&S.host&&S.g&&S.g.st==='lobby'){var k2=sl.getAttribute('data-sel');S.cfg.sel[k2]=S.cfg.sel[k2]?0:1;syncCfg();return}
   var kb=e.target.closest('[data-k]');
   if(kb&&!kb.disabled){var g=G(),L=kb.getAttribute('data-k');
     if(g&&g.st==='fpick'&&g.fin===uid){var need=3+(g.sc[uid]?1:0),isV=VOW.indexOf(L)>-1;if(S.fsel[L])delete S.fsel[L];else{var sel=Object.keys(S.fsel),nc=sel.filter(function(c){return CONS.indexOf(c)>-1}).length,nv=sel.filter(function(c){return VOW.indexOf(c)>-1}).length;if(isV&&nv>=1){sel.forEach(function(c){if(VOW.indexOf(c)>-1)delete S.fsel[c]})}if(!isV&&nc>=need)return;S.fsel[L]=1}S.keyKey='';renderAll()}
@@ -726,3 +743,5 @@ renderAll();
 </script>
 </body>
 </html>
+
+

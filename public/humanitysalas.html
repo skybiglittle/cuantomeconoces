@@ -1013,10 +1013,10 @@ const black=h=>{const a=BASE_B.concat(h.cc.b||[]);return a[h.bd[(h.r-1)%h.bd.len
 
   
 function fillB(b,cs){
-  let i=0;
-  let s=E(b).replace(/_{3,}/g,()=>{
-    return `<u>${E(cs[i++]??'___')}</u>`;
-  });
+  let i=0,had=false;
+  let s=E(b).replace(/_{3,}/g,()=>{had=true;return `<u>${E(cs[i++]??'___')}</u>`});
+  // Cartas negras que son preguntas (sin hueco): la respuesta se muestra debajo
+  if(!had&&cs.length)s+=`<br><u>${cs.map(E).join(' / ')}</u>`;
   return s;
 }
 const bc=(b,cs=[])=>`<div class="c k">${fillB(b,cs)}</div>`;
@@ -1024,7 +1024,7 @@ const sb=h=>`<div class="sc">${peers().map(x=>`<span class="${x.me?'me':''}">${x
 
 function pub(){
  if(!NR||!G)return;
- NR.presence({rm:1,n:G.name,k:G.me,s:G.sub,pk:G.pk,h:G.host?1:null,hs:G.host?G.hs:null}).catch(()=>{});
+ NR.presence({rm:1,n:G.name,k:G.me,s:G.sub,pk:G.pk,rt:G.rt||null,h:G.host?1:null,hs:G.host?G.hs:null}).catch(()=>{});
 }
 function home(){
  app.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Juego de cartas. Cada uno juega desde su móvil.</p>
@@ -1110,8 +1110,11 @@ function mine(h){
 }
 function judge(h){
  const by=byk();
- if(G.jo.r!==h.r||G.jo.g!==h.g)G.jo={r:h.r,g:h.g,ks:sh(h.o.filter(k=>k!==h.cz&&by[k]&&valid(by[k].s,h)))};
- const ks=G.jo.ks.filter(k=>by[k]&&by[k].s);
+ // La lista se recalcula en cada pintado y conserva el orden sorteado
+ const valids=h.o.filter(k=>k!==h.cz&&by[k]&&valid(by[k].s,h));
+ if(G.jo.r!==h.r||G.jo.g!==h.g)G.jo={r:h.r,g:h.g,ks:[]};
+ G.jo.ks=G.jo.ks.filter(k=>valids.includes(k)).concat(sh(valids.filter(k=>!G.jo.ks.includes(k))));
+ const ks=G.jo.ks;
  return `<div class="box"><p class="mut">Elige la mejor respuesta</p><div class="hd" id="jd">${ks.map(k=>`<button class="c k${G.jsel===k?' on':''}" data-k="${k}">${fillB(black(h),by[k].s.c)}</button>`).join('')}</div><button class="go" id="pk" ${G.jsel?'':'disabled'}>Elegir ganador</button></div>`;
 }
 function result(h){
@@ -1126,6 +1129,153 @@ function wire(h){
  if($('hd')){const k=pk(black(h));$('hd').onclick=e=>{const b=e.target.closest('.w');if(!b)return;const i=+b.dataset.i,x=G.sel.indexOf(i);if(x>=0)G.sel.splice(x,1);else if(G.sel.length<k)G.sel.push(i);render()};$('ok').onclick=()=>send(h)}
  if($('jd')){$('jd').onclick=e=>{const b=e.target.closest('.k');if(!b)return;G.jsel=b.dataset.k;render()};$('pk').onclick=()=>pick(h)}
 }
+/* ===== Modo DUELO (2 jugadores): online en sala y local en un mismo móvil ===== */
+(()=>{
+const rid=()=>Math.random().toString(36).slice(2,6);
+const RT=[['😐','Sosa',0],['😄','Gracioso',1],['🤣','Genial',2]];
+const rateBtns=()=>RT.map(x=>`<button class="c k" data-v="${x[2]}" style="text-align:center;min-height:90px"><div style="font-size:2rem">${x[0]}</div>${x[1]} (+${x[2]})</button>`).join('');
+/* ---------- 2) DUELO ONLINE (2 jugadores en sala) ---------- */
+const _lobby=lobby;
+lobby=function(h){
+  let s=_lobby(h);
+  if(G.host){
+    const n=peers().length;
+    if(n===2)s=s.replace('id="st" disabled>Hacen falta 3 jugadores','id="st">⚔ ¡Empezar duelo (2 jugadores)!')
+      .replace('<button class="go" id="st"','<p class="mut">Con 2 jugadores se juega el <b>modo Duelo</b>: los dos respondéis a la vez y os valoráis de 0 a 2 puntos. La meta es el doble.</p><button class="go" id="st"');
+    else if(n<2)s=s.replace('Hacen falta 3 jugadores','Hacen falta 2 jugadores como mínimo');
+  }
+  return s;
+};
+
+const _start=startGame;
+startGame=function(){
+  const h=G.hs,ps=peers();
+  h.t0=h.t0||h.t;
+  if(ps.length===2){
+    h.mode='duel';h.t=h.t0*2;h.g=rid();h.o=ps.map(x=>x.p.k);h.cz=null;h.r=1;
+    h.cc={b:L(G.ct.b),w:L(G.ct.w)};h.bd=sh([...Array(BASE_B.length+h.cc.b.length).keys()]);
+    h.sc={};h.win=null;h.dr=null;h.ph='play';pub();sync();return;
+  }
+  h.mode='normal';h.t=h.t0;_start();
+};
+
+const _hl=hostLogic;
+hostLogic=function(){
+  const h=G.hs;
+  if(h.mode!=='duel'||h.ph==='lobby')return _hl();
+  const by=byk();
+  if(h.ph==='play'){
+    if(h.o.every(k=>by[k]&&valid(by[k].s,h))){h.ph='judge';pub()}
+  }else if(h.ph==='judge'){
+    const ok=k=>by[k]&&by[k].rt&&by[k].rt.g===h.g&&by[k].rt.r===h.r;
+    if(h.o.every(ok)){
+      const a=h.o[0],b=h.o[1],pa=by[b].rt.v,pb=by[a].rt.v; // cada uno recibe la nota que le da el otro
+      h.sc[a]=(h.sc[a]||0)+pa;h.sc[b]=(h.sc[b]||0)+pb;
+      h.dr=[{k:a,n:by[a].n,c:by[a].s.c,p:pa},{k:b,n:by[b].n,c:by[b].s.c,p:pb}];
+      h.ph=(h.sc[a]>=h.t||h.sc[b]>=h.t)?'end':'reveal';pub();
+    }
+  }
+};
+
+const _adv=adv;
+adv=function(){
+  const h=G.hs;
+  if(h.mode==='duel'){h.r++;h.ph='play';h.dr=null;pub();sync();return}
+  _adv();
+};
+
+const _render=render;
+render=function(){
+  const h=G&&NR&&H();
+  if(!h||h.mode!=='duel'||h.ph==='lobby')return _render();
+  const by=byk(),inGame=h.o.includes(G.me),opp=h.o.find(k=>k!==G.me);
+  G.lk='duel'+h.ph+h.r;
+  const top=`<p class="mut">Sala <b>${E(G.code)}</b> · ⚔ Duelo · meta ${h.t} puntos · <button class="s" id="lv" style="margin:0;padding:2px 8px">Salir</button></p>`;
+  let b;
+  if(!inGame)b=sb(h)+'<div class="box"><p class="mut">Hay un duelo en marcha. Esperas como espectador…</p></div>';
+  else if(h.ph==='play')b=sb(h)+mine(h);
+  else if(h.ph==='judge'){
+    if(G.rt&&G.rt.g===h.g&&G.rt.r===h.r)b=sb(h)+`<div class="box">${bc(black(h))}<h2>Valoración enviada ✓</h2><p class="mut">Esperando a ${nm(opp)}…</p></div>`;
+    else if(by[opp]&&by[opp].s&&valid(by[opp].s,h))b=sb(h)+`<div class="box"><p class="mut">Valora la respuesta de ${nm(opp)}</p>${bc(black(h),by[opp].s.c)}<div class="hd">${rateBtns()}</div></div>`;
+    else b=sb(h)+'<div class="box"><p class="mut">Cargando la respuesta del rival…</p></div>';
+  }else{
+    const d=h.dr||[],x=d[0],y=d[1],end=h.ph==='end';
+    let fin='';
+    if(x&&y){
+      const rw=x.p===y.p?'🤝 Empate en la ronda':'🏆 '+E((x.p>y.p?x:y).n)+' gana la ronda';
+      fin=end?(h.sc[x.k]===h.sc[y.k]?'🤝 ¡Empate final!':'🎉 '+E((h.sc[x.k]>h.sc[y.k]?x:y).n)+' gana el duelo'):rw;
+    }
+    b=sb(h)+d.map(r=>`<div class="box" style="margin-bottom:10px">${bc(black(h),r.c)}<h2>${E(r.n)}: +${r.p}</h2></div>`).join('')
+      +`<div class="box"><h2>${fin}</h2>${G.host?`<button class="go" id="${end?'ag':'nx'}">${end?'Nueva partida':'Siguiente ronda'}</button>`:'<p class="mut">Esperando al anfitrión…</p>'}</div>`;
+  }
+  app.innerHTML=top+b;
+  wire(h);
+  document.querySelectorAll('[data-v]').forEach(e=>e.onclick=()=>{G.rt={g:h.g,r:h.r,v:+e.dataset.v};pub();render()});
+};
+
+/* ---------- 3) DUELO LOCAL (mismo móvil, sin servidor) ---------- */
+let LD=null;
+const bl=()=>BASE_B[LD.bd[(LD.r-1)%LD.bd.length]];
+const ldTop=()=>`<p class="mut">⚔ Duelo local · Ronda ${LD.r} · ${E(LD.n[0])} ${LD.sc[0]} – ${LD.sc[1]} ${E(LD.n[1])} · meta ${LD.t} · <button class="s" id="lx" style="margin:0;padding:2px 8px">Salir</button></p>`;
+function ldShow(html){app.innerHTML=ldTop()+html;$('lx').onclick=()=>{LD=null;home()}}
+function ldHome(){
+  app.innerHTML=`<h1>Duelo local</h1><div class="box"><p class="mut">Dos jugadores, un solo móvil. Os lo pasáis para elegir y valorar en secreto. No necesita servidor.</p>
+  <input id="n1" placeholder="Jugador 1" maxlength="16"><input id="n2" placeholder="Jugador 2" maxlength="16">
+  <label>Puntos para ganar: <select id="tg2">${[6,10,14,20].map(v=>`<option ${v==10?'selected':''}>${v}</option>`).join('')}</select></label>
+  <p class="mut">Cada ronda: los dos respondéis y os valoráis de 0 a 2 puntos.</p>
+  <button class="go" id="gl">Empezar</button><button class="s" id="bk">← Volver</button></div>`;
+  $('bk').onclick=()=>home();
+  $('gl').onclick=()=>{
+    LD={n:[($('n1').value||'').trim().slice(0,16)||'Jugador 1',($('n2').value||'').trim().slice(0,16)||'Jugador 2'],sc:[0,0],r:1,t:+$('tg2').value,
+      bd:sh([...Array(BASE_B.length).keys()]),hand:[[],[]],sub:[null,null],rt:[0,0],sel:[]};
+    ldPass(0,'pick','Elige tu respuesta; el otro no debe mirar.');
+  };
+}
+function ldPass(p,next,txt){
+  ldShow(`<div class="box"><h2>📱 Pasa el móvil a ${E(LD.n[p])}</h2><p class="mut">${txt}</p><button class="go" id="gp">Soy ${E(LD.n[p])}</button></div>`);
+  $('gp').onclick=()=>{LD.sel=[];(next==='pick'?ldPick:ldRate)(p)};
+}
+function ldPick(p){
+  const b=bl(),k=pk(b),hd=LD.hand[p];
+  while(hd.length<10){const c=BASE_W[Math.random()*BASE_W.length|0];if(!hd.includes(c))hd.push(c)}
+  ldShow(`<div class="box">${bc(b)}<p class="mut">${E(LD.n[p])}, elige ${k} carta${k>1?'s (en orden)':''}</p><div class="hd" id="lh">${hd.map((w,i)=>{const j=LD.sel.indexOf(i);return `<button class="c w${j>=0?' on':''}" data-i="${i}" data-o="${j>=0?j+1:''}">${E(w)}</button>`}).join('')}</div><button class="go" id="lok" ${LD.sel.length!==k?'disabled':''}>Enviar</button></div>`);
+  $('lh').onclick=e=>{const x=e.target.closest('.w');if(!x)return;const i=+x.dataset.i,j=LD.sel.indexOf(i);if(j>=0)LD.sel.splice(j,1);else if(LD.sel.length<k)LD.sel.push(i);ldPick(p)};
+  $('lok').onclick=()=>{
+    LD.sub[p]=LD.sel.map(i=>hd[i]);LD.hand[p]=hd.filter((_,i)=>!LD.sel.includes(i));LD.sel=[];
+    if(p===0)ldPass(1,'pick','Elige tu respuesta; el otro no debe mirar.');
+    else ldPass(0,'rate','Valora la respuesta de '+LD.n[1]+'.');
+  };
+}
+function ldRate(p){
+  const o=1-p;
+  ldShow(`<div class="box"><p class="mut">${E(LD.n[p])}, valora la respuesta de ${E(LD.n[o])}</p>${bc(bl(),LD.sub[o])}<div class="hd">${rateBtns()}</div></div>`);
+  document.querySelectorAll('[data-v]').forEach(e=>e.onclick=()=>{
+    const v=+e.dataset.v;LD.sc[o]+=v;LD.rt[o]=v;
+    if(p===0)ldPass(1,'rate','Valora la respuesta de '+LD.n[0]+'.');else ldRes();
+  });
+}
+function ldRes(){
+  const end=LD.sc[0]>=LD.t||LD.sc[1]>=LD.t;
+  const w=LD.rt[0]===LD.rt[1]?'🤝 Empate en la ronda':'🏆 '+E(LD.n[LD.rt[0]>LD.rt[1]?0:1])+' gana la ronda';
+  const fin=LD.sc[0]===LD.sc[1]?'🤝 ¡Empate final!':'🎉 '+E(LD.n[LD.sc[0]>LD.sc[1]?0:1])+' gana el duelo';
+  ldShow([0,1].map(i=>`<div class="box" style="margin-bottom:10px">${bc(bl(),LD.sub[i])}<h2>${E(LD.n[i])}: +${LD.rt[i]}</h2></div>`).join('')
+    +`<div class="box"><h2>${end?fin:w}</h2><button class="go" id="gn">${end?'Nuevo duelo':'Siguiente ronda'}</button></div>`);
+  $('gn').onclick=()=>{if(end)ldHome();else{LD.r++;ldPass(0,'pick','Elige tu respuesta; el otro no debe mirar.')}};
+}
+
+// Botón en la pantalla de inicio
+const _home=home;
+home=function(){
+  _home();
+  const box=app.querySelector('.box');
+  if(box){
+    const bt=document.createElement('button');
+    bt.className='go';bt.textContent='🎮 Duelo local (2 jugadores, un solo móvil)';
+    bt.style.background='#e8b800';bt.style.color='#111';bt.onclick=ldHome;
+    box.appendChild(bt);
+  }
+};
+})();
 home();
 </script>
 </body>

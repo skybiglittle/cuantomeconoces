@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pilla el símbolo · multijugador con salas</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#141a2e;--bg2:#0b1020;--ink:#f3f5ff;--sub:#9aa4c4;--line:rgba(255,255,255,.16);--card:#fffdf6;--acc:#ffb347;--ok:#5ee0a0;--bad:#ff5f7a;
+ padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: light){:root{--bg:#f4efe3;--bg2:#e9e3f3;--ink:#241f35;--sub:#675f80;--line:rgba(36,31,53,.2);--card:#ffffff}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:linear-gradient(160deg,var(--bg),var(--bg2)) fixed;color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+main{max-width:520px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;gap:12px}
+section{display:none;flex-direction:column;gap:12px;flex:1}
+section.on{display:flex}
+h1{margin:8px 0 0;text-align:center;font-size:clamp(30px,9vw,44px);font-weight:900}
+h2{margin:0;text-align:center}
+.sub{color:var(--sub);text-align:center;margin:0;line-height:1.4}
+input:not([type=checkbox]),select{width:100%;min-height:54px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:0 16px;font:18px inherit;font-family:inherit;text-align:center}
+#code{text-transform:uppercase;letter-spacing:.3em;font-weight:800}
+.btn{min-height:56px;border-radius:16px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:800 18px inherit;font-family:inherit;cursor:pointer;padding:0 18px}
+.btn.main{background:var(--acc);border-color:var(--acc);color:#2a1c05}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4}
+#err{min-height:22px;text-align:center;color:var(--bad);font-weight:700}
+.room{text-align:center;font-size:clamp(40px,14vw,64px);font-weight:900;letter-spacing:.2em;color:var(--acc)}
+#plist{display:flex;flex-direction:column;gap:8px}
+.pl{display:flex;justify-content:space-between;padding:12px 16px;border:1.5px solid var(--line);border-radius:14px;font-weight:700}
+.score{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.chip{flex:none;padding:8px 12px;border-radius:14px;border:1.5px solid var(--line);font-weight:800;font-size:14px}
+.chip.me{border-color:var(--acc);color:var(--acc)}
+#msg{min-height:26px;text-align:center;font-weight:800}
+.boards{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;gap:6px}
+.card{--cw:min(78vw,34vh,330px);position:relative;width:var(--cw);height:var(--cw);border-radius:50%;background:var(--card);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.card.mine{outline:4px solid var(--acc);outline-offset:3px}
+.card.locked{filter:grayscale(1) brightness(.6);pointer-events:none}
+.sy{position:absolute;border:0;background:transparent;padding:0;font-size:calc(var(--cw)*.17*var(--k,1));line-height:1;cursor:pointer;touch-action:manipulation}
+.lab{font-size:12px;letter-spacing:.14em;color:var(--sub);text-align:center}
+.pile{text-align:center;color:var(--sub);font-size:14px}
+select option{color:#111}
+select{appearance:none;-webkit-appearance:none;text-align-last:center}
+#opts{display:flex;flex-direction:column;gap:8px}
+.chk{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:700}
+.chk input{width:24px;height:24px;accent-color:var(--acc)}
+.card.gold{box-shadow:0 0 0 6px #ffd24d,0 0 30px #ffd24d}
+.card.ice{box-shadow:0 0 0 6px #7fd8ff,0 0 30px #7fd8ff}
+#spb{min-height:20px;text-align:center;font-weight:800;font-size:14px}
+#timer{font-size:20px;font-weight:900;color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<section id="sMenu" class="on">
+  <h1>¡Pilla el símbolo!</h1>
+  <p class="sub">Cada dos cartas comparten exactamente un símbolo. Encuéntralo antes que los demás.</p>
+  <input id="name" placeholder="Tu nombre" maxlength="14" autocomplete="off">
+  <button class="btn main" id="bCreate">Crear sala</button>
+  <input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off">
+  <button class="btn" id="bJoin">Unirse a una sala</button>
+  <button class="btn" id="bSolo">Práctica sin conexión</button>
+  <div id="err"></div>
+</section>
+<section id="sLobby">
+  <h2>Sala</h2>
+  <div class="room" id="rcode"></div>
+  <p class="sub">Comparte este código. Los demás lo escriben en «Unirse a una sala».</p>
+  <div id="plist"></div>
+  <div id="opts">
+    <select id="mode"><option value="pozo">Modo: Pozo (clásico)</option><option value="torre">Modo: Torre (vacía tu montón)</option><option value="rel">Modo: Relámpago (60 s con rachas)</option></select>
+    <select id="size"><option value="5">Cartas normales (6 símbolos)</option><option value="3">Cartas fáciles (4 símbolos)</option></select>
+    <label class="chk"><input type="checkbox" id="optSp"> Cartas especiales (⭐ x3, ❄️ hielo)</label>
+    <label class="chk"><input type="checkbox" id="optPen"> Penalizar fallos (−1 punto)</label>
+  </div>
+  <p class="sub" id="modeDesc"></p>
+  <p class="sub" id="lobbyHint"></p>
+  <button class="btn main" id="bStart">Empezar partida</button>
+  <button class="btn" id="bLeave1">Salir</button>
+</section>
+<section id="sGame">
+  <div class="score" id="score"></div>
+  <div class="lab" id="timer"></div>
+  <div id="spb"></div>
+  <div id="msg"></div>
+  <div class="boards">
+    <div class="lab">CARTA DEL CENTRO</div><div id="center"></div>
+    <div class="lab">TU CARTA</div><div id="mine"></div>
+  </div>
+  <div class="pile" id="pile"></div>
+  <button class="btn" id="bLeave2">Salir</button>
+</section>
+<section id="sOver">
+  <h2 id="winner"></h2>
+  <div id="rank"></div>
+  <button class="btn main" id="bAgain">Jugar otra vez</button>
+  <p class="sub" id="waitHost"></p>
+  <button class="btn" id="bLeave3">Salir</button>
+</section>
+</main>
+<script>
+(function(){
+'use strict';
+var SY=['🍎','🚗','🌵','⭐','🐱','🎈','🔔','🍕','🌙','🔥','🎸','🐟','🌸','⚽','🍄','🎁','🐢','🦋','🍩','🚀','🌈','🍀','🎩','🐘','🍌','🧲','🔑','🐸','🌻','🥑','🐙'];
+var CARDS=[],PREFIX='pillasimbolo-',CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function build(n){var i,j,k,c=[],D=[];for(i=0;i<=n;i++)c.push(i);D.push(c);
+  for(j=0;j<n;j++){c=[0];for(k=0;k<n;k++)c.push(n+1+n*j+k);D.push(c);}
+  for(i=0;i<n;i++)for(j=0;j<n;j++){c=[i+1];for(k=0;k<n;k++)c.push(n+1+n*k+((i*k+j)%n));D.push(c);}
+  return D;}
+var DECKS={3:build(3),5:build(5)};CARDS=DECKS[5];
+function setDeck(n){CARDS=DECKS[n]||DECKS[5];}
+function common(a,b){var A=CARDS[a],B=CARDS[b];for(var i=0;i<A.length;i++)if(B.indexOf(A[i])>=0)return A[i];return -1;}
+function rnd(s){var x=Math.sin(s*9301+49297)*233280;return x-Math.floor(x);}
+function $(i){return document.getElementById(i);}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function show(id){['sMenu','sLobby','sGame','sOver'].forEach(function(s){$(s).classList.toggle('on',s===id);});}
+function err(m){$('err').textContent=m||'';}
+
+var endAt=0,role=null,peer=null,hostConn=null,myId='host',myName='',H=null,S=null,lockEnd=0;
+
+/* ---------- servidor (anfitrión) ---------- */
+function initHost(code){
+  H={code:code,st:'lobby',players:[{id:'host',name:myName,score:0,card:-1,lock:0,conn:null}],pile:[],center:-1,last:null,mode:'pozo',n:5,sp:true,pen:false,special:null,streak:0,lastW:null,end:0};
+}
+function snap(){
+  var now=Date.now(),cards={},locks={},piles={};
+  H.players.forEach(function(p){cards[p.id]=p.card;locks[p.id]=Math.max(0,p.lock-now);piles[p.id]=p.pile?p.pile.length+(p.card>=0?1:0):0;});
+  return {t:'s',st:H.st,code:H.code,players:H.players.map(function(p){return {id:p.id,name:p.name,score:p.score};}),center:H.center,cards:cards,locks:locks,piles:piles,pile:H.pile.length,last:H.last,mode:H.mode,n:H.n,opSp:H.sp,opPen:H.pen,spc:H.special,left:(H.mode==='rel'&&H.st==='play')?Math.max(0,H.end-now):0};
+}
+function broadcast(){var s=snap();H.players.forEach(function(p){if(p.conn&&p.conn.open)p.conn.send(s);});render(s);}
+function refill(){var used={};H.players.forEach(function(p){used[p.card]=1;});used[H.center]=1;H.pile=shuffle(CARDS.map(function(_,i){return i;}).filter(function(i){return !used[i];}));}
+function drawCenter(){
+  if(!H.pile.length&&H.mode==='rel')refill();
+  if(!H.pile.length){H.st='over';return;}
+  H.center=H.pile.pop();
+  H.special=(H.sp&&H.mode!=='torre'&&Math.random()<0.22)?(Math.random()<0.6?'gold':'ice'):null;
+}
+function startGame(){
+  setDeck(H.n);
+  var deck=shuffle(CARDS.map(function(_,i){return i;})),np=H.players.length;
+  var size=Math.max(1,Math.min(6,Math.floor((deck.length-1)/np)));
+  H.players.forEach(function(p){p.score=0;p.lock=0;if(H.mode==='torre'){p.pile=deck.splice(0,size);p.card=p.pile.pop();}else{p.pile=null;p.card=deck.pop();}});
+  H.pile=deck;H.last=null;H.streak=0;H.lastW=null;H.special=null;H.st='play';
+  if(H.mode==='rel')H.end=Date.now()+60000;
+  drawCenter();broadcast();
+}
+function handleTap(id,sym){
+  if(!H||H.st!=='play')return;
+  var p=H.players.filter(function(x){return x.id===id;})[0],now=Date.now();
+  if(!p||p.lock>now)return;
+  setDeck(H.n);
+  if(sym===common(H.center,p.card)){
+    var sp=H.special,pts=sp==='gold'?3:1;
+    if(H.mode==='torre'){
+      p.score++;H.center=p.card;H.special=null;
+      if(p.pile.length)p.card=p.pile.pop();else{p.card=-1;H.st='over';}
+    }else{
+      if(H.lastW===p.id)H.streak++;else H.streak=1;H.lastW=p.id;
+      p.score+=pts+(H.mode==='rel'?Math.min(H.streak-1,3):0);
+      p.card=H.center;drawCenter();
+    }
+    if(sp==='ice')H.players.forEach(function(q){if(q!==p)q.lock=now+2000;});
+    H.last={n:p.name,sym:sym,id:p.id,sp:sp,st:H.mode==='rel'?H.streak:0};
+  }else{
+    p.lock=now+1500;if(H.pen&&H.mode!=='torre')p.score=Math.max(0,p.score-1);
+    H.last={n:p.name,bad:1,id:p.id};
+  }
+  broadcast();
+}
+function setOpt(){
+  if(!H||role==='guest')return;
+  H.mode=$('mode').value;H.n=parseInt($('size').value,10);H.sp=$('optSp').checked;H.pen=$('optPen').checked;broadcast();
+}
+function removePlayer(id){
+  if(!H)return;H.players=H.players.filter(function(p){return p.id!==id;});
+  if(H.st==='play'&&H.players.length<1)H.st='lobby';
+  broadcast();
+}
+function hostMsg(conn,m){
+  if(m.t==='join'){
+    if(H.st!=='lobby'||H.players.length>=8){conn.send({t:'err',m:H.st!=='lobby'?'La partida ya ha empezado':'Sala llena (máx. 8)'});setTimeout(function(){conn.close();},300);return;}
+    H.players.push({id:conn.peer,name:String(m.name||'Jugador').slice(0,14),score:0,card:-1,lock:0,conn:conn});broadcast();
+  }else if(m.t==='tap')handleTap(conn.peer,m.sym);
+}
+function newCode(){var c='';for(var i=0;i<4;i++)c+=CH[Math.floor(Math.random()*CH.length)];return c;}
+function createRoom(tries){
+  if(typeof Peer==='undefined'){err('No se pudo cargar PeerJS. Revisa tu conexión.');return;}
+  var code=newCode();role='host';myId='host';
+  peer=new Peer(PREFIX+code);
+  peer.on('open',function(){initHost(code);show('sLobby');broadcast();});
+  peer.on('connection',function(conn){
+    conn.on('data',function(m){hostMsg(conn,m);});
+    conn.on('close',function(){removePlayer(conn.peer);});
+  });
+  peer.on('error',function(e){
+    if(e.type==='unavailable-id'&&tries<5){peer.destroy();createRoom(tries+1);}
+    else{err('No se pudo crear la sala ('+e.type+').');leave(true);}
+  });
+}
+function joinRoom(){
+  var code=$('code').value.trim().toUpperCase();
+  if(code.length!==4){err('Escribe el código de 4 letras.');return;}
+  if(typeof Peer==='undefined'){err('No se pudo cargar PeerJS. Revisa tu conexión.');return;}
+  role='guest';err('Conectando…');
+  peer=new Peer();
+  peer.on('open',function(id){
+    myId=id;hostConn=peer.connect(PREFIX+code,{reliable:true});
+    hostConn.on('open',function(){hostConn.send({t:'join',name:myName});});
+    hostConn.on('data',function(m){if(m.t==='s'){err('');render(m);}else if(m.t==='err'){err(m.m);leave(true);}});
+    hostConn.on('close',function(){err('La sala se ha cerrado.');leave(true);});
+  });
+  peer.on('error',function(e){err(e.type==='peer-unavailable'?'No existe esa sala.':'Error de conexión ('+e.type+').');leave(true);});
+}
+function solo(){role='solo';myId='host';peer=null;initHost('SOLO');broadcast();}
+function leave(keepErr){
+  try{if(peer)peer.destroy();}catch(e){}
+  peer=null;hostConn=null;H=null;S=null;role=null;lockEnd=0;if(!keepErr)err('');show('sMenu');
+}
+
+/* ---------- cliente / interfaz ---------- */
+function cardEl(idx,mine){
+  var d=document.createElement('div');d.className='card'+(mine?' mine':'');d.style.setProperty('--k',CARDS===DECKS[3]?1.3:1);
+  var a0=rnd(idx+1)*6.2832;
+  CARDS[idx].forEach(function(sy,i){
+    var b=document.createElement('button');b.className='sy';b.textContent=SY[sy];
+    var x=50,y=50;if(i>0){var a=a0+(i-1)*6.2832/(CARDS[idx].length-1);x=50+Math.cos(a)*31;y=50+Math.sin(a)*31;}
+    b.style.left=x+'%';b.style.top=y+'%';
+    b.style.transform='translate(-50%,-50%) rotate('+((rnd(idx*37+sy+3)-0.5)*100)+'deg) scale('+(0.8+rnd(idx*53+sy)*0.45)+')';
+    b.addEventListener('pointerdown',function(e){e.preventDefault();tap(sy);});
+    d.appendChild(b);
+  });
+  return d;
+}
+function tap(sy){
+  if(!S||S.st!=='play'||Date.now()<lockEnd)return;
+  if(role==='guest'){if(hostConn&&hostConn.open)hostConn.send({t:'tap',sym:sy});}
+  else handleTap('host',sy);
+}
+function render(s){
+  S=s;if(s.n)setDeck(s.n);
+  if(s.st==='lobby'){
+    show('sLobby');$('rcode').textContent=s.code;
+    var pl=$('plist');pl.innerHTML='';
+    s.players.forEach(function(p){var d=document.createElement('div');d.className='pl';var a=document.createElement('span');a.textContent=p.name+(p.id===myId?' (tú)':'');d.appendChild(a);if(p.id==='host'){var h=document.createElement('span');h.textContent='anfitrión';h.style.color='var(--sub)';d.appendChild(h);}pl.appendChild(d);});
+    var isHost=role!=='guest';$('bStart').style.display=isHost?'':'none';$('opts').style.display=isHost?'':'none';
+    if(isHost){$('mode').value=s.mode;$('size').value=String(s.n);$('optSp').checked=s.opSp;$('optPen').checked=s.opPen;}
+    var DS={pozo:'Pozo: se abre una carta en el centro. Quien encuentre antes el símbolo en común con la suya se la lleva. Gana quien más puntos tenga cuando se acaba el mazo.',torre:'Torre: cada uno tiene un montón de cartas. Si aciertas, tu carta pasa al centro y sacas la siguiente. Gana quien vacíe antes su montón.',rel:'Relámpago: 60 segundos con mazo infinito. Las rachas seguidas dan puntos extra.'},ex=[];
+    if(s.opSp&&s.mode!=='torre')ex.push('⭐ doradas x3 y ❄️ hielo');if(s.opPen&&s.mode!=='torre')ex.push('fallar resta 1 punto');
+    $('modeDesc').textContent=DS[s.mode]+(ex.length?' Extras: '+ex.join(', ')+'.':'')+(s.n===3?' Cartas fáciles.':'');
+    $('lobbyHint').textContent=isHost?(s.players.length<2?'Puedes empezar solo para practicar, o esperar a más jugadores.':s.players.length+' jugadores en la sala.'):'Esperando a que el anfitrión empiece…';
+  }else if(s.st==='play'){
+    show('sGame');
+    var sc=$('score');sc.innerHTML='';
+    s.players.forEach(function(p){var c=document.createElement('div');c.className='chip'+(p.id===myId?' me':'');c.textContent=p.name+': '+(s.mode==='torre'?s.piles[p.id]+' 🃏':p.score);sc.appendChild(c);});
+    var cen=$('center'),mi=$('mine');cen.innerHTML='';mi.innerHTML='';
+    var ce=cardEl(s.center,false);if(s.spc)ce.classList.add(s.spc==='gold'?'gold':'ice');cen.appendChild(ce);
+    $('spb').textContent=s.spc==='gold'?'⭐ Carta dorada: vale x3':s.spc==='ice'?'❄️ Carta de hielo: congela a los demás 2 s':'';
+    endAt=s.mode==='rel'?Date.now()+s.left:0;
+    var mc=cardEl(s.cards[myId],true);mi.appendChild(mc);
+    var l=s.locks[myId]||0;if(l>0){lockEnd=Date.now()+l;mc.classList.add('locked');}else lockEnd=0;
+    $('pile').textContent='Cartas en el mazo: '+s.pile;
+    var m=$('msg');
+    if(s.last){if(s.last.bad){m.textContent='❌ '+s.last.n+' falló';m.style.color='var(--bad)';}else{m.textContent='🎉 '+s.last.n+' acierta ('+SY[s.last.sym]+')'+(s.last.sp==='gold'?' · ⭐ x3':'')+(s.last.sp==='ice'?' · ❄️ ¡congela a los demás!':'')+(s.last.st>1?' · racha x'+s.last.st:'');m.style.color='var(--ok)';}}
+    else{m.textContent='¡Encuentra el símbolo en común!';m.style.color='var(--ink)';}
+  }else if(s.st==='over'){
+    show('sOver');
+    var r=s.players.slice().sort(function(a,b){return b.score-a.score;}),top=r[0];
+    $('winner').textContent='🏆 '+top.name+(r.length>1&&r[1].score===top.score?' (empate)':' gana')+' con '+top.score;
+    var box=$('rank');box.innerHTML='';
+    r.forEach(function(p,i){var d=document.createElement('div');d.className='pl';d.style.marginBottom='8px';var a=document.createElement('span');a.textContent=(i+1)+'. '+p.name+(p.id===myId?' (tú)':'');var b=document.createElement('span');b.textContent=p.score;d.appendChild(a);d.appendChild(b);box.appendChild(d);});
+    var isHost=role!=='guest';$('bAgain').style.display=isHost?'':'none';$('waitHost').textContent=isHost?'':'Esperando al anfitrión…';
+  }
+}
+setInterval(function(){
+  var m=document.querySelector('#mine .card');if(m&&Date.now()>=lockEnd)m.classList.remove('locked');
+  $('timer').textContent=(endAt&&S&&S.st==='play')?'⏱ '+Math.max(0,Math.ceil((endAt-Date.now())/1000))+' s':'';
+  if(H&&H.st==='play'&&H.mode==='rel'&&Date.now()>H.end){H.st='over';broadcast();}
+},120);
+['mode','size','optSp','optPen'].forEach(function(i){$(i).addEventListener('change',setOpt);});
+
+function needName(){myName=$('name').value.trim().slice(0,14)||'Jugador';try{localStorage.setItem('pilla-name',myName);}catch(e){}}
+$('bCreate').addEventListener('click',function(){needName();err('Creando sala…');createRoom(0);});
+$('bJoin').addEventListener('click',function(){needName();joinRoom();});
+$('bSolo').addEventListener('click',function(){needName();err('');solo();});
+$('bStart').addEventListener('click',startGame);
+$('bAgain').addEventListener('click',startGame);
+['bLeave1','bLeave2','bLeave3'].forEach(function(i){$(i).addEventListener('click',function(){leave();});});
+try{$('name').value=localStorage.getItem('pilla-name')||'';}catch(e){}
+})();
+</script>
+</body>
+</html>

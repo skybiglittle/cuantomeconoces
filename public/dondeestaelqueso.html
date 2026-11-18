@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>¿Dónde está el queso? · juego de observación</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#1a1530;--bg2:#0d0b1c;--ink:#f6f2ff;--sub:#a79fc7;--line:rgba(255,255,255,.18);--acc:#ffc93c;--bad:#ff5f7a;
+ padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: light){:root{--bg:#fff3d0;--bg2:#f3e6ff;--ink:#2a2038;--sub:#6a5f82;--line:rgba(42,32,56,.22)}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:none}
+section{position:fixed;inset:0;display:none;flex-direction:column;gap:12px;padding:18px 16px;max-width:520px;margin:0 auto;overflow:auto}
+section.on{display:flex}
+#sGame{max-width:none;padding:0}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+h1{margin:6px 0 0;text-align:center;font-size:clamp(28px,8vw,42px);font-weight:900}
+h2{margin:0;text-align:center}
+.sub{color:var(--sub);text-align:center;margin:0;line-height:1.4}
+input,select{width:100%;min-height:54px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:0 16px;font:18px inherit;font-family:inherit;text-align:center;text-align-last:center}
+select option{color:#111}
+#code{text-transform:uppercase;letter-spacing:.3em;font-weight:800}
+.btn{min-height:56px;border-radius:16px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:800 18px inherit;font-family:inherit;cursor:pointer;padding:0 18px}
+.btn.main{background:var(--acc);border-color:var(--acc);color:#2a1c05}
+.btn:active{transform:scale(.97)}
+#err{min-height:22px;text-align:center;color:var(--bad);font-weight:700}
+.room{text-align:center;font-size:clamp(40px,14vw,64px);font-weight:900;letter-spacing:.2em;color:var(--acc)}
+.pl{display:flex;justify-content:space-between;padding:12px 16px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;margin-bottom:8px}
+#leave{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);min-height:42px;font-size:14px;opacity:.85}
+</style>
+</head>
+<body>
+<section id="sMenu" class="on">
+  <h1>🧀 ¿Dónde está el queso?</h1>
+  <p class="sub">Sobre la mesa aparecen montones de piezas casi iguales. Encuentra antes que los demás la que te piden.</p>
+  <input id="name" placeholder="Tu nombre" maxlength="14" autocomplete="off">
+  <button class="btn main" id="bCreate">Crear sala</button>
+  <input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off">
+  <button class="btn" id="bJoin">Unirse a una sala</button>
+  <button class="btn" id="bSolo">Práctica sin conexión</button>
+  <div id="err"></div>
+</section>
+<section id="sLobby">
+  <h2>Sala</h2>
+  <div class="room" id="rcode"></div>
+  <p class="sub">Comparte el código. Los demás lo escriben en «Unirse a una sala».</p>
+  <div id="plist"></div>
+  <select id="rounds"><option value="6">6 rondas</option><option value="10" selected>10 rondas</option><option value="15">15 rondas</option></select>
+  <p class="sub" id="lobbyHint"></p>
+  <button class="btn main" id="bStart">Empezar partida</button>
+  <button class="btn" id="bLeave1">Salir</button>
+</section>
+<section id="sGame"><canvas id="cv"></canvas><button class="btn" id="leave">Salir</button></section>
+<section id="sOver">
+  <h2 id="winner"></h2>
+  <div id="rank"></div>
+  <button class="btn main" id="bAgain">Jugar otra vez</button>
+  <p class="sub" id="waitHost"></p>
+  <button class="btn" id="bLeave3">Salir</button>
+</section>
+<script>
+(function(){
+'use strict';
+var PREFIX='quesoojo-',CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',COLORS=['#ff6b6b','#4dd4ff','#ffd24d','#7dff8a','#c58bff','#ff9a4d','#ff7ac8','#9aa7ff'];
+var BASES=['🐭','🧀','🐹','🥖','🍎','🍇'],BADGES=['🎩','🕶️','⭐','❤️','🔥','🍀','🎈','🌈'];
+function $(i){return document.getElementById(i);}
+function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ---------- escena determinista: mismo seed = misma mesa en todos los móviles ---------- */
+function genScene(n,seed){
+  var R=rng(seed),all=[],b,g,i,j,t;
+  for(b=0;b<6;b++)for(g=0;g<8;g++)all.push([b,g]);
+  for(i=all.length-1;i>0;i--){j=Math.floor(R()*(i+1));t=all[i];all[i]=all[j];all[j]=t;}
+  var tg=all[0],rest=all.slice(1);
+  var same=rest.filter(function(c){return c[0]===tg[0]||c[1]===tg[1];}),oth=rest.filter(function(c){return c[0]!==tg[0]&&c[1]!==tg[1];});
+  var nn=Math.min(n,48),ns=Math.min(same.length,Math.round((nn-1)*0.55));
+  var pick=[tg].concat(same.slice(0,ns)).concat(oth.slice(0,nn-1-ns));
+  if(pick.length<nn)pick=pick.concat(same.slice(ns,ns+nn-pick.length));
+  for(i=pick.length-1;i>0;i--){j=Math.floor(R()*(i+1));t=pick[i];pick[i]=pick[j];pick[j]=t;}
+  var dmin=0.8/Math.sqrt(nn),pts=[],att,ok;
+  for(att=0;att<25;att++){
+    pts=[];ok=true;var m=dmin*0.5;
+    for(i=0;i<pick.length&&ok;i++){
+      var placed=false;
+      for(var k=0;k<200;k++){var x=m+R()*(1-2*m),y=m+R()*(1-2*m),good=true;
+        for(j=0;j<pts.length;j++){var dx=pts[j][0]-x,dy=pts[j][1]-y;if(dx*dx+dy*dy<dmin*dmin){good=false;break;}}
+        if(good){pts.push([x,y]);placed=true;break;}}
+      if(!placed)ok=false;
+    }
+    if(ok)break;dmin*=0.93;
+  }
+  var ti=0,pieces=pick.map(function(c,idx){if(c===tg)ti=idx;return {b:c[0],g:c[1],x:pts[idx]?pts[idx][0]:R(),y:pts[idx]?pts[idx][1]:R(),rot:(R()-0.5)*0.9,s:0.88+R()*0.22};});
+  return {pieces:pieces,ti:ti,dmin:dmin,t:tg};
+}
+
+var role=null,peer=null,hostConn=null,myId='host',myName='',H=null,S=null,G=null,lockEnd=0,flash=null,curRound=-1,recv=0,lastS=null;
+
+/* ---------- anfitrión ---------- */
+function initHost(code){H={code:code,st:'lobby',players:[{id:'host',name:myName,score:0,lock:0,conn:null}],round:0,rounds:10,seed:0,n:12,ti:-1,t0:0,next:0,last:null};}
+function snap(){
+  var now=Date.now(),locks={};H.players.forEach(function(p){locks[p.id]=Math.max(0,p.lock-now);});
+  return {t:'s',st:H.st,code:H.code,players:H.players.map(function(p,i){return {id:p.id,name:p.name,score:p.score,c:i};}),round:H.round,rounds:H.rounds,seed:H.seed,n:H.n,startIn:Math.max(0,H.t0-now),nextIn:Math.max(0,H.next-now),last:H.last,locks:locks,ti:(H.st==='round'||H.st==='over')?H.ti:-1};
+}
+function broadcast(){var s=snap();H.players.forEach(function(p){if(p.conn&&p.conn.open)p.conn.send(s);});render(s);}
+function startRound(){
+  H.round++;H.seed=Math.floor(Math.random()*1e9);H.n=Math.min(36,9+3*H.round);H.ti=genScene(H.n,H.seed).ti;
+  H.t0=Date.now()+3200;H.last=null;H.st='play';H.players.forEach(function(p){p.lock=0;});broadcast();
+}
+function startGame(){H.round=0;H.players.forEach(function(p){p.score=0;});startRound();}
+function endRound(){H.st=H.round>=H.rounds?'over':'round';H.next=Date.now()+3800;broadcast();}
+function hostTap(id,i){
+  if(!H||H.st!=='play'||Date.now()<H.t0)return;
+  var p=H.players.filter(function(x){return x.id===id;})[0],now=Date.now();if(!p||p.lock>now)return;
+  if(i===H.ti){var t=now-H.t0,pts=t<4000?2:1;p.score+=pts;H.last={name:p.name,id:p.id,time:t,pts:pts};endRound();}
+  else{p.lock=now+1500;broadcast();}
+}
+function removePlayer(id){if(!H)return;H.players=H.players.filter(function(p){return p.id!==id;});if(H.st==='lobby'||H.players.length)broadcast();}
+function hostMsg(conn,m){
+  if(m.t==='join'){
+    if(H.st!=='lobby'||H.players.length>=8){conn.send({t:'err',m:H.st!=='lobby'?'La partida ya ha empezado':'Sala llena (máx. 8)'});setTimeout(function(){conn.close();},300);return;}
+    H.players.push({id:conn.peer,name:String(m.name||'Jugador').slice(0,14),score:0,lock:0,conn:conn});broadcast();
+  }else if(m.t==='tap')hostTap(conn.peer,m.i|0);
+}
+setInterval(function(){
+  if(!H)return;var now=Date.now();
+  if(H.st==='play'&&now>H.t0+25000){H.last=null;endRound();}
+  else if(H.st==='round'&&now>H.next)startRound();
+},200);
+function newCode(){var c='';for(var i=0;i<4;i++)c+=CH[Math.floor(Math.random()*CH.length)];return c;}
+function err(m){$('err').textContent=m||'';}
+function createRoom(tries){
+  if(typeof Peer==='undefined'){err('No se pudo cargar PeerJS. Revisa tu conexión.');return;}
+  var code=newCode();role='host';myId='host';peer=new Peer(PREFIX+code);
+  peer.on('open',function(){initHost(code);show('sLobby');broadcast();});
+  peer.on('connection',function(conn){conn.on('data',function(m){hostMsg(conn,m);});conn.on('close',function(){removePlayer(conn.peer);});});
+  peer.on('error',function(e){if(e.type==='unavailable-id'&&tries<5){peer.destroy();createRoom(tries+1);}else{err('No se pudo crear la sala ('+e.type+').');leave(true);}});
+}
+function joinRoom(){
+  var code=$('code').value.trim().toUpperCase();
+  if(code.length!==4){err('Escribe el código de 4 letras.');return;}
+  if(typeof Peer==='undefined'){err('No se pudo cargar PeerJS. Revisa tu conexión.');return;}
+  role='guest';err('Conectando…');peer=new Peer();
+  peer.on('open',function(id){
+    myId=id;hostConn=peer.connect(PREFIX+code,{reliable:true});
+    hostConn.on('open',function(){hostConn.send({t:'join',name:myName});});
+    hostConn.on('data',function(m){if(m.t==='s'){err('');render(m);}else if(m.t==='err'){err(m.m);leave(true);}});
+    hostConn.on('close',function(){err('La sala se ha cerrado.');leave(true);});
+  });
+  peer.on('error',function(e){err(e.type==='peer-unavailable'?'No existe esa sala.':'Error de conexión ('+e.type+').');leave(true);});
+}
+function solo(){role='solo';myId='host';peer=null;initHost('SOLO');broadcast();}
+function leave(keepErr){try{if(peer)peer.destroy();}catch(e){}peer=null;hostConn=null;H=null;S=null;G=null;role=null;curRound=-1;if(!keepErr)err('');show('sMenu');}
+function show(id){['sMenu','sLobby','sGame','sOver'].forEach(function(s){$(s).classList.toggle('on',s===id);});if(id==='sGame')resize();}
+
+/* ---------- cliente ---------- */
+function render(s){
+  S=s;
+  if(s.st==='lobby'){
+    show('sLobby');$('rcode').textContent=s.code;var pl=$('plist');pl.innerHTML='';
+    s.players.forEach(function(p){var d=document.createElement('div');d.className='pl';var a=document.createElement('span');a.textContent='👀 '+p.name+(p.id===myId?' (tú)':'');d.appendChild(a);pl.appendChild(d);});
+    var isHost=role!=='guest';$('bStart').style.display=isHost?'':'none';$('rounds').style.display=isHost?'':'none';if(isHost)$('rounds').value=String(s.rounds);
+    $('lobbyHint').textContent=isHost?(s.players.length<2?'Puedes practicar solo o esperar a más jugadores.':s.players.length+' jugadores listos.'):'Esperando al anfitrión… ('+s.rounds+' rondas)';
+  }else if(s.st==='over'){
+    show('sOver');var r=s.players.slice().sort(function(a,b){return b.score-a.score;});
+    $('winner').textContent='🏆 '+r[0].name+(r.length>1&&r[1].score===r[0].score?' (empate)':' gana')+' con '+r[0].score;
+    var box=$('rank');box.innerHTML='';
+    r.forEach(function(p,i){var d=document.createElement('div');d.className='pl';var a=document.createElement('span');a.textContent=(i+1)+'. '+p.name+(p.id===myId?' (tú)':'');var b=document.createElement('span');b.textContent=p.score;d.appendChild(a);d.appendChild(b);box.appendChild(d);});
+    var isH=role!=='guest';$('bAgain').style.display=isH?'':'none';$('waitHost').textContent=isH?'':'Esperando al anfitrión…';
+  }else{
+    show('sGame');
+    if(s.round!==curRound){curRound=s.round;G={sc:genScene(s.n,s.seed),startAt:Date.now()+s.startIn};lockEnd=0;flash=null;}
+    var l=s.locks[myId]||0;lockEnd=l>0?Date.now()+l:0;
+  }
+}
+
+/* ---------- dibujo ---------- */
+var cv=$('cv'),ctx=cv.getContext('2d'),W=0,Hh=0,dpr=1,dark=true,BX=0,BY=0,BL=1;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;Hh=innerHeight;cv.width=W*dpr;cv.height=Hh*dpr;dark=matchMedia('(prefers-color-scheme: dark)').matches;}
+function text(t,x,y,size,col,al){ctx.font='800 '+size+'px "Trebuchet MS",system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.textAlign=al||'center';ctx.textBaseline='middle';ctx.fillStyle=col||'#fff';ctx.fillText(t,x,y);}
+function piece(p,x,y,fs,rot){ctx.save();ctx.translate(x,y);ctx.rotate(rot);text(BASES[p.b],0,0,fs);text(BADGES[p.g],fs*0.36,-fs*0.36,fs*0.52);ctx.restore();}
+function draw(now){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=dark?'#0d0b1c':'#2b2140';ctx.fillRect(0,0,W,Hh);
+  if(!G||!S)return;
+  var sc=G.sc,t=sc.t,i;
+  text('Ronda '+S.round+'/'+S.rounds,10,16,15,'#cfc6ee','left');
+  var cx0=10,cy0=42;
+  S.players.forEach(function(p){var tt=p.name+' '+p.score;ctx.font='700 14px "Trebuchet MS",system-ui,sans-serif';var tw=ctx.measureText(tt).width+24;if(cx0+tw>W-6){cx0=10;cy0+=24;}
+    ctx.fillStyle=COLORS[p.c%8];ctx.beginPath();ctx.arc(cx0+7,cy0,6,0,6.3);ctx.fill();text(tt,cx0+18,cy0,14,'#fff','left');cx0+=tw+6;});
+  // tarjeta con la pieza a buscar
+  var cy=cy0+54;ctx.fillStyle='rgba(255,255,255,.1)';ctx.beginPath();ctx.arc(W/2,cy,40,0,6.3);ctx.fill();
+  text('BUSCA',W/2-70,cy,13,'#ffc93c','right');piece({b:t[0],g:t[1]},W/2,cy,52,0);
+  // mesa
+  var top=cy+56;BL=Math.min(W-16,Hh-top-60);BX=(W-BL)/2;BY=top;
+  ctx.fillStyle=dark?'#241b3f':'#3a2d5c';ctx.strokeStyle='#6b5a99';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect?ctx.roundRect(BX,BY,BL,BL,18):ctx.rect(BX,BY,BL,BL);ctx.fill();ctx.stroke();
+  var reveal=S.st==='round'||S.st==='over',started=Date.now()>=G.startAt;
+  if(started||reveal)sc.pieces.forEach(function(p,k){
+    var X=BX+p.x*BL,Y=BY+p.y*BL,fs=sc.dmin*BL*0.88*p.s;
+    ctx.globalAlpha=reveal&&k!==sc.ti?0.3:1;piece(p,X,Y,fs,p.rot);ctx.globalAlpha=1;
+    if(reveal&&k===sc.ti){ctx.strokeStyle='#ffc93c';ctx.lineWidth=4;ctx.beginPath();ctx.arc(X,Y,fs*0.7,0,6.3);ctx.stroke();}
+  });
+  if(flash&&now<flash.until){ctx.strokeStyle='#ff5f7a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(flash.x,flash.y,26,0,6.3);ctx.stroke();text('✖',flash.x,flash.y,26,'#ff5f7a');}
+  if(S.st==='play'&&!started)text(String(Math.ceil((G.startAt-now)/1000)),W/2,BY+BL/2,90,'#ffc93c');
+  if(S.st==='play'&&now<lockEnd){ctx.fillStyle='rgba(8,6,20,.55)';ctx.fillRect(BX,BY,BL,BL);text('⛔ Fallaste · espera '+Math.ceil((lockEnd-now)/1000)+'s',W/2,BY+BL/2,22,'#ff5f7a');}
+  if(S.st==='round'){
+    var l=S.last;text(l?'🎯 '+l.name+' lo vio en '+(l.time/1000).toFixed(1)+' s (+'+l.pts+')':'⌛ Nadie lo encontró',W/2,BY+BL+22,17,'#ffc93c');
+  }
+}
+function loop(){var now=Date.now();if($('sGame').classList.contains('on'))draw(now);requestAnimationFrame(loop);}
+
+/* ---------- entrada ---------- */
+cv.addEventListener('pointerdown',function(e){
+  e.preventDefault();if(!S||S.st!=='play'||!G||Date.now()<G.startAt||Date.now()<lockEnd)return;
+  var r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,sc=G.sc,best=-1,bd=1e9;
+  sc.pieces.forEach(function(p,k){var dx=BX+p.x*BL-x,dy=BY+p.y*BL-y,d=dx*dx+dy*dy;if(d<bd){bd=d;best=k;}});
+  var lim=sc.dmin*BL*0.55;if(best<0||bd>lim*lim)return;
+  if(best!==sc.ti){lockEnd=Date.now()+1500;flash={x:x,y:y,until:Date.now()+500};}
+  if(role==='guest'){if(hostConn&&hostConn.open)hostConn.send({t:'tap',i:best});}else hostTap('host',best);
+},{passive:false});
+function needName(){myName=$('name').value.trim().slice(0,14)||'Jugador';try{localStorage.setItem('queso2-name',myName);}catch(e){}}
+$('bCreate').addEventListener('click',function(){needName();err('Creando sala…');createRoom(0);});
+$('bJoin').addEventListener('click',function(){needName();joinRoom();});
+$('bSolo').addEventListener('click',function(){needName();err('');solo();});
+$('bStart').addEventListener('click',function(){if(H){H.rounds=parseInt($('rounds').value,10);startGame();}});
+$('rounds').addEventListener('change',function(){if(H&&role!=='guest'){H.rounds=parseInt($('rounds').value,10);broadcast();}});
+$('bAgain').addEventListener('click',function(){if(H)startGame();});
+['bLeave1','leave','bLeave3'].forEach(function(i){$(i).addEventListener('click',function(){leave();});});
+addEventListener('resize',resize);
+document.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+try{$('name').value=localStorage.getItem('queso2-name')||'';}catch(e){}
+resize();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -1,162 +1,1235 @@
+```html
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8">
+<html lang="es">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b1020">
 <title>Simón dice</title>
+
 <style>
-:root{color-scheme:dark;--bg:#0b1020;--l:#2e3b59;--t:#f4f6ff;--m:#aab5d0;--a:#9b8cff;--b:#53dfca;--g:#39d98a;--y:#ffd166;--r:#ff5a6e}
+:root{
+  color-scheme:dark;
+  --bg:#0b1020;
+  --l:#2e3b59;
+  --t:#f4f6ff;
+  --m:#aab5d0;
+  --a:#9b8cff;
+  --b:#53dfca;
+  --g:#39d98a;
+  --y:#ffd166;
+  --r:#ff5a6e
+}
+
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#2d1d4e,transparent 42%),radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
-main{max-width:640px;margin:auto;padding:max(20px,env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom))}
-h1{font-size:clamp(34px,9vw,56px);line-height:1.02;margin:10px 0 6px;letter-spacing:-.05em;background:linear-gradient(100deg,#fff,#b9adff 55%,#53dfca);-webkit-background-clip:text;background-clip:text;color:transparent}
-h2{font-size:21px;margin:0 0 8px}h3{font-size:16px;margin:16px 0 6px}
-.m,.sub{color:var(--m)}.sub{margin:0 0 16px}.small{font-size:13px;color:var(--m)}
-.tag{display:inline-block;padding:4px 10px;border:1px solid var(--l);border-radius:99px;color:var(--m);font-size:12px;font-weight:700}
-.panel{background:linear-gradient(145deg,#1d2943f5,#121b2ff5);border:1px solid var(--l);border-radius:22px;padding:18px;margin:12px 0}
-.hidden{display:none!important}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
-label{display:block;font-size:13px;color:var(--m);margin:12px 0 5px}
-select{width:100%;border:1px solid var(--l);background:#0f172a;color:var(--t);border-radius:13px;padding:12px 14px;font:inherit;outline:none}
-select:focus-visible,.btn:focus-visible{outline:3px solid var(--y);outline-offset:2px}
-.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(100deg,var(--a),#668cff);color:#fff;font-weight:800}
-.btn.s{background:#263451;border:1px solid var(--l)}.btn.gh{background:transparent;border:1px solid var(--l)}
-.btn.g{background:linear-gradient(100deg,#159b67,#20b982)}
-.btn:disabled{opacity:.4;cursor:not-allowed}.full{width:100%;margin-top:12px}
-.notice{padding:11px 13px;border-radius:13px;background:#101a2e;border:1px solid var(--l);color:var(--m);margin:12px 0}
-.stats{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800}
-.stats .big{font-size:26px;letter-spacing:-.02em}
-.stats small{display:block;font-size:12px;color:var(--m);font-weight:700}
-.card{border-radius:22px;padding:22px 14px;text-align:center;border:3px solid var(--a);background:#1f1a45;min-height:210px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;transition:border-color .15s,background .15s}
-.card.ok{border-color:var(--g);background:#0f3326}
-.card.bad{border-color:var(--r);background:#3a1220}
-.card.pop{animation:pop .45s}
-@keyframes pop{0%{transform:scale(.93);filter:brightness(1.8)}60%{transform:scale(1.02)}100%{transform:none;filter:none}}
-.say{font-size:clamp(26px,7.4vw,40px);font-weight:950;line-height:1.12;letter-spacing:-.02em}
-.st{font-size:13px;color:var(--m);font-weight:700;min-height:20px}
-.meter{height:12px;background:#303b55;border-radius:99px;overflow:hidden;margin:12px 0}
-.meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--b),var(--y),var(--r))}
-.do{width:100%;font-size:24px;padding:22px 16px;border-radius:20px;margin-top:6px}
-.do:active:not(:disabled){transform:scale(.98)}
-.sc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--l)}.sc:last-child{border:0}
-@media (prefers-reduced-motion:reduce){.card.pop{animation:none}}
-</style></head><body><main>
-<header><span class="tag">🗣️ UN JUGADOR · CON VOZ</span><h1>Simón dice</h1><p class="sub">Escucha con atención. Haz lo que te pidan… pero solo si empieza con «Simón dice».</p></header>
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 15% 0,#2d1d4e,transparent 42%),
+    radial-gradient(ellipse at 100% 25%,#123c4b,transparent 36%),
+    var(--bg);
+  color:var(--t);
+  font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif
+}
+
+main{
+  max-width:640px;
+  margin:auto;
+  padding:max(20px,env(safe-area-inset-top))
+  14px
+  calc(36px + env(safe-area-inset-bottom))
+}
+
+h1{
+  font-size:clamp(34px,9vw,56px);
+  line-height:1.02;
+  margin:10px 0 6px;
+  letter-spacing:-.05em;
+  background:linear-gradient(100deg,#fff,#b9adff 55%,#53dfca);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent
+}
+
+h2{font-size:21px;margin:0 0 8px}
+h3{font-size:16px;margin:16px 0 6px}
+
+.m,.sub{color:var(--m)}
+.sub{margin:0 0 16px}
+.small{font-size:13px;color:var(--m)}
+
+.tag{
+  display:inline-block;
+  padding:4px 10px;
+  border:1px solid var(--l);
+  border-radius:99px;
+  color:var(--m);
+  font-size:12px;
+  font-weight:700
+}
+
+.panel{
+  background:linear-gradient(145deg,#1d2943f5,#121b2ff5);
+  border:1px solid var(--l);
+  border-radius:22px;
+  padding:18px;
+  margin:12px 0
+}
+
+.hidden{display:none!important}
+
+.row{display:flex;gap:10px}
+.row>*{flex:1;min-width:0}
+
+label{
+  display:block;
+  font-size:13px;
+  color:var(--m);
+  margin:12px 0 5px
+}
+
+select{
+  width:100%;
+  border:1px solid var(--l);
+  background:#0f172a;
+  color:var(--t);
+  border-radius:13px;
+  padding:12px 14px;
+  font:inherit;
+  outline:none
+}
+
+select:focus-visible,
+.btn:focus-visible{
+  outline:3px solid var(--y);
+  outline-offset:2px
+}
+
+.btn{
+  font:inherit;
+  cursor:pointer;
+  border:0;
+  border-radius:14px;
+  padding:13px 16px;
+  background:linear-gradient(100deg,var(--a),#668cff);
+  color:#fff;
+  font-weight:800
+}
+
+.btn.s{
+  background:#263451;
+  border:1px solid var(--l)
+}
+
+.btn.gh{
+  background:transparent;
+  border:1px solid var(--l)
+}
+
+.btn.g{
+  background:linear-gradient(100deg,#159b67,#20b982)
+}
+
+.btn:disabled{
+  opacity:.4;
+  cursor:not-allowed
+}
+
+.full{
+  width:100%;
+  margin-top:12px
+}
+
+.notice{
+  padding:11px 13px;
+  border-radius:13px;
+  background:#101a2e;
+  border:1px solid var(--l);
+  color:var(--m);
+  margin:12px 0
+}
+
+.stats{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  font-weight:800
+}
+
+.stats .big{
+  font-size:26px;
+  letter-spacing:-.02em
+}
+
+.stats small{
+  display:block;
+  font-size:12px;
+  color:var(--m);
+  font-weight:700
+}
+
+.card{
+  border-radius:22px;
+  padding:22px 14px;
+  text-align:center;
+  border:3px solid var(--a);
+  background:#1f1a45;
+  min-height:250px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  transition:border-color .15s,background .15s
+}
+
+.card.simon{
+  border-color:var(--g);
+  background:#103329
+}
+
+.card.no{
+  border-color:var(--r);
+  background:#351521
+}
+
+.card.wait{
+  border-color:var(--a);
+  background:#1f1a45
+}
+
+.card.pop{
+  animation:pop .45s
+}
+
+@keyframes pop{
+  0%{
+    transform:scale(.93);
+    filter:brightness(1.8)
+  }
+  60%{
+    transform:scale(1.02)
+  }
+  100%{
+    transform:none;
+    filter:none
+  }
+}
+
+.say{
+  font-size:clamp(26px,7.4vw,40px);
+  font-weight:950;
+  line-height:1.12;
+  letter-spacing:-.02em
+}
+
+.st{
+  font-size:15px;
+  color:var(--m);
+  font-weight:800;
+  min-height:22px
+}
+
+.meter{
+  height:12px;
+  background:#303b55;
+  border-radius:99px;
+  overflow:hidden;
+  margin:12px 0
+}
+
+.meter span{
+  display:block;
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,var(--b),var(--y),var(--r));
+  transition:width .05s linear
+}
+
+.count{
+  font-size:48px;
+  font-weight:950;
+  line-height:1;
+  min-height:55px
+}
+
+.sc{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid var(--l)
+}
+
+.sc:last-child{border:0}
+
+.nextInfo{
+  font-size:13px;
+  color:var(--m);
+  margin-top:8px
+}
+
+@media (prefers-reduced-motion:reduce){
+  .card.pop{animation:none}
+}
+</style>
+</head>
+
+<body>
+<main>
+
+<header>
+  <span class="tag">🗣️ PASADOR AUTOMÁTICO · CON VOZ</span>
+
+  <h1>Simón dice</h1>
+
+  <p class="sub">
+    Escucha con atención. Hazlo solo cuando empiece con
+    «Simón dice».
+  </p>
+</header>
+
 
 <section id="home" class="panel">
-<h2>Prepárate</h2>
-<div class="notice"><b>Cómo se juega:</b> una voz te dirá qué hacer (tócate la nariz, salta, aplaude…). Hazlo de verdad y pulsa <b>¡Lo hice!</b>. Si la orden empieza con «Simón dice», tienes que hacerla a tiempo. Si <b>no</b> lo dice, no hagas nada y espera. Cada vez va más rápido.</div>
-<div class="row"><div><label for="lives">Vidas</label><select id="lives"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option></select></div>
-<div><label for="mode">Modo</label><select id="mode"><option value="0" selected>Con texto</option><option value="1">Solo oído (texto oculto)</option></select></div></div>
-<label for="voice">Voz</label><select id="voice"><option>Cargando voces…</option></select>
-<p id="nov" class="notice hidden">Tu navegador no tiene voz sintetizada. Podrás jugar leyendo el texto en pantalla.</p>
-<div class="row" style="margin-top:12px"><button class="btn g" id="go">Empezar a jugar</button><button class="btn s" id="tv">Probar voz</button></div>
-<p class="small" id="bst" style="margin-top:12px"></p>
+
+  <h2>🎉 Prepárate</h2>
+
+  <div class="notice">
+    <b>Cómo se juega:</b>
+    el móvil será el presentador. Escucharás una orden y tendrás
+    unos segundos para reaccionar. Si empieza con
+    <b>«Simón dice»</b>, hazla. Si no lo dice, quédate quieto.
+    Después pasará automáticamente a la siguiente.
+  </div>
+
+  <div class="row">
+
+    <div>
+      <label for="speed">Velocidad</label>
+
+      <select id="speed">
+        <option value="slow">Tranquila</option>
+        <option value="normal" selected>Normal</option>
+        <option value="fast">Rápida</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="mode">Modo</label>
+
+      <select id="mode">
+        <option value="0" selected>Con texto</option>
+        <option value="1">Solo oído</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <label for="voice">Voz</label>
+
+  <select id="voice">
+    <option>Cargando voces…</option>
+  </select>
+
+  <p id="nov" class="notice hidden">
+    Tu navegador no tiene voz sintetizada.
+    Podrás jugar leyendo el texto en pantalla.
+  </p>
+
+
+  <div class="row" style="margin-top:12px">
+
+    <button class="btn g" id="go">
+      ▶️ Empezar
+    </button>
+
+    <button class="btn s" id="tv">
+      🔊 Probar voz
+    </button>
+
+  </div>
+
+  <p class="small" id="bst" style="margin-top:12px"></p>
+
 </section>
+
+
 
 <section id="game" class="hidden">
-<div class="panel" style="margin-top:0"><div class="stats"><div><small>RONDA</small><span class="big" id="rn">0</span></div><div><small>PUNTOS</small><span class="big" id="pt">0</span></div><div style="text-align:right"><small>VIDAS</small><span class="big" id="lv"></span></div></div></div>
-<div class="card" id="card"><div class="st" id="st"></div><div class="say" id="say"></div></div>
-<div class="meter"><span id="bar"></span></div>
-<button class="btn do" id="do" disabled>¡Lo hice!</button>
-<p class="small" style="text-align:center;margin-top:10px">También puedes pulsar la barra espaciadora.</p>
-<button class="btn gh full" id="quit">Terminar partida</button>
+
+  <div class="panel" style="margin-top:0">
+
+    <div class="stats">
+
+      <div>
+        <small>RONDA</small>
+        <span class="big" id="rn">0</span>
+      </div>
+
+      <div>
+        <small>ORDENES</small>
+        <span class="big" id="total">0</span>
+      </div>
+
+      <div style="text-align:right">
+        <small>RITMO</small>
+        <span class="big" id="tempo">1×</span>
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="card wait" id="card">
+
+    <div class="st" id="st">
+      Prepárate…
+    </div>
+
+    <div class="say" id="say">
+      🎤
+    </div>
+
+    <div class="count" id="count"></div>
+
+  </div>
+
+
+
+  <div class="meter">
+    <span id="bar"></span>
+  </div>
+
+
+
+  <p class="nextInfo" id="nextInfo" style="text-align:center">
+    La siguiente orden aparecerá automáticamente
+  </p>
+
+
+
+  <button class="btn gh full" id="quit">
+    Terminar partida
+  </button>
+
 </section>
 
+
+
 <section id="end" class="panel hidden"></section>
+
 </main>
+
+
+
 <script>
-(()=>{'use strict';
-const $=i=>document.getElementById(i),rnd=n=>Math.random()*n|0,pick=a=>a[rnd(a.length)];
-const ACC=['tócate la nariz','aplaude dos veces','salta una vez','levanta la mano derecha','levanta la mano izquierda','da una vuelta completa','tócate la cabeza','saca la lengua','cruza los brazos','ponte de pie','siéntate','tócate la oreja izquierda','tócate la oreja derecha','pon las manos en la cintura','agita las manos','pisa fuerte con el pie derecho','cierra los ojos','sonríe de oreja a oreja','toca el suelo con las manos','parpadea tres veces','haz como un pato','pon las manos en los hombros','da tres pasos hacia atrás','salta con un solo pie','tócate las rodillas'];
-const FAKE=['','','Ahora, ','El capitán dice, ','Simón pide, ','Simón ya dijo, '];
-const synth='speechSynthesis' in window?window.speechSynthesis:null;
-let voices=[],S=null,tk=null,best=0;
-try{best=+localStorage.getItem('simon_best')||0}catch(e){}
-const show=id=>['home','game','end'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
-const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-$('bst').textContent=best?'🏆 Tu mejor marca: '+best+' puntos':'';
+(()=>{
 
-/* ---------- sonido ---------- */
-let ac=null;
-function tone(f,d,v){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='sine';g.gain.value=v||.08;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+'use strict';
 
-/* ---------- voz ---------- */
-function loadVoices(){if(!synth){$('nov').classList.remove('hidden');$('voice').innerHTML='<option>No disponible</option>';$('voice').disabled=true;$('tv').disabled=true;return}
- voices=synth.getVoices().filter(v=>/^es/i.test(v.lang));
- const sel=$('voice'),prev=sel.value;
- if(!voices.length){sel.innerHTML='<option value="-1">Voz por defecto</option>';return}
- sel.innerHTML=voices.map((v,i)=>'<option value="'+i+'">'+v.name.replace(/[<>&]/g,'')+' ('+v.lang+')</option>').join('');
- const pref=voices.findIndex(v=>/es-(ES|MX|US)/i.test(v.lang)&&v.localService);
- sel.value=prev&&voices[+prev]?prev:String(pref>=0?pref:0)}
-loadVoices();if(synth)synth.onvoiceschanged=loadVoices;
 
-function speak(text,rate,done){let fin=false;const end=()=>{if(!fin){fin=true;clearTimeout(g);done&&done()}};
- const g=setTimeout(end,text.length*110/rate+2200);
- if(!synth){return}
- try{synth.cancel();const u=new SpeechSynthesisUtterance(text),v=voices[+$('voice').value];
-  u.lang=v?v.lang:'es-ES';if(v)u.voice=v;u.rate=rate;u.pitch=1;u.onend=end;u.onerror=end;synth.speak(u)}catch(e){end()}}
+/* =========================================================
+   UTILIDADES
+========================================================= */
 
-$('tv').onclick=()=>speak('Simón dice, toca tu nariz',1,null);
+const $=i=>document.getElementById(i);
 
-/* ---------- juego ---------- */
-function lives(){return S.lv>0?'❤️'.repeat(S.lv):'💀'}
-function hud(){$('rn').textContent=S.round;$('pt').textContent=S.pts;$('lv').textContent=lives()}
-function setCard(cls){const c=$('card');c.className='card'+(cls?' '+cls:'');void c.offsetWidth;c.classList.add('pop')}
+const rnd=n=>Math.random()*n|0;
 
-function start(){S={round:0,pts:0,lv:+$('lives').value,streak:0,phase:'idle',last:'',blind:$('mode').value==='1',id:0};
- if(synth)try{synth.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;synth.speak(u)}catch(e){}
- show('game');hud();setTimeout(next,500)}
+const pick=a=>a[rnd(a.length)];
 
-function next(){if(!S||S.lv<1)return;
- S.round++;S.id++;
- let a;do{a=pick(ACC)}while(a===S.last);S.last=a;
- const simon=Math.random()<.65;
- S.simon=simon;
- S.text=simon?'Simón dice, '+a:cap(pick(FAKE)+a).replace(/^, /,'');
- if(!simon&&S.text===cap(a))S.text=cap(a);
- S.phase='speaking';hud();setCard('');
- $('st').textContent=S.blind?'Escucha…':'Escuchando…';
- $('say').textContent=S.blind?'🔊':S.text+'.';
- $('bar').style.width='100%';$('do').disabled=false;
- const id=S.id,rate=Math.min(1.45,.95+S.round*.03);
- speak(S.text,rate,()=>{if(S&&S.id===id&&S.phase==='speaking')openWindow(id)});
- if(!synth)openWindow(id)}
 
-function openWindow(id){if(!S||S.id!==id)return;
- S.phase='window';
- const dur=Math.max(1.3,3.4-S.round*.1)*1000,t0=Date.now();
- $('st').textContent='¡Ya!';
- clearInterval(tk);
- tk=setInterval(()=>{const left=Math.max(0,dur-(Date.now()-t0));$('bar').style.width=left/dur*100+'%';
-  if(left<=0){clearInterval(tk);if(S&&S.id===id&&S.phase==='window')resolve(false,id)}},40)}
+/* =========================================================
+   ÓRDENES
+========================================================= */
 
-function tap(){if(!S||(S.phase!=='speaking'&&S.phase!=='window'))return;resolve(true,S.id)}
+const ACC=[
 
-function resolve(did,id){if(!S||S.id!==id)return;
- clearInterval(tk);S.phase='fb';$('do').disabled=true;
- if(synth)try{synth.cancel()}catch(e){}
- const good=did===S.simon;
- let why;
- if(good){S.streak++;const gain=10+Math.min(S.streak,10);S.pts+=gain;setCard('ok');tone(660,.25,.1);
-  why=S.simon?'✅ ¡Bien hecho! +'+gain:'✅ ¡Bien! No dijo «Simón dice». +'+gain}
- else{S.streak=0;S.lv--;setCard('bad');tone(180,.4,.12);try{navigator.vibrate&&navigator.vibrate(150)}catch(e){}
-  why=did?'❌ ¡No dijo «Simón dice»!':'❌ ¡Simón lo dijo y no lo hiciste!'}
- $('st').textContent=why;$('say').textContent=S.text+'.';hud();
- if(S.lv<1)setTimeout(end,1400);else setTimeout(next,1300)}
+'tócate la nariz',
+'aplaude dos veces',
+'salta una vez',
+'levanta la mano derecha',
+'levanta la mano izquierda',
+'da una vuelta completa',
+'tócate la cabeza',
+'saca la lengua',
+'cruza los brazos',
+'ponte de pie',
+'siéntate',
+'tócate la oreja izquierda',
+'tócate la oreja derecha',
+'pon las manos en la cintura',
+'agita las manos',
+'pisa fuerte con el pie derecho',
+'cierra los ojos',
+'sonríe de oreja a oreja',
+'toca el suelo con las manos',
+'parpadea tres veces',
+'haz como un pato',
+'pon las manos en los hombros',
+'da tres pasos hacia atrás',
+'salta con un solo pie',
+'tócate las rodillas',
 
-function end(){if(!S)return;clearInterval(tk);if(synth)try{synth.cancel()}catch(e){}
- const rec=S.pts>best;if(rec){best=S.pts;try{localStorage.setItem('simon_best',String(best))}catch(e){}}
- $('end').innerHTML='<span class="tag">FIN DE LA PARTIDA</span><h2 style="margin-top:10px">'+(rec&&S.pts>0?'🏆 ¡Nuevo récord!':S.pts>=100?'👏 ¡Gran partida!':'Se acabó el juego')+'</h2>'
- +'<div class="sc"><span>Rondas jugadas</span><strong>'+S.round+'</strong></div>'
- +'<div class="sc"><span>Puntos</span><strong>'+S.pts+'</strong></div>'
- +'<div class="sc"><span>Mejor marca</span><strong>'+best+'</strong></div>'
- +'<div class="row" style="margin-top:14px"><button class="btn g" id="again">Jugar otra vez</button><button class="btn gh" id="menu">Menú</button></div>';
- S=null;show('end');
- $('again').onclick=start;
- $('menu').onclick=()=>{$('bst').textContent=best?'🏆 Tu mejor marca: '+best+' puntos':'';show('home')}}
+/* Más órdenes para que tarde más en repetirse */
+
+'levanta los dos brazos',
+'da una palmada',
+'toca tu hombro derecho',
+'toca tu hombro izquierdo',
+'señala hacia arriba',
+'señala hacia abajo',
+'pon las manos detrás de la espalda',
+'cruza las piernas',
+'levanta un pie',
+'da dos pasos hacia delante',
+'da un paso hacia atrás',
+'gira la cabeza a la derecha',
+'gira la cabeza a la izquierda',
+'toca tu barbilla',
+'pon una mano sobre la cabeza',
+'pon las manos sobre la cabeza',
+'levanta ambos pulgares',
+'guiña un ojo',
+'pon cara de sorpresa',
+'pon cara seria',
+'pon las manos en las mejillas',
+'toca tu codo derecho',
+'toca tu codo izquierdo',
+'levanta el pulgar derecho',
+'levanta el pulgar izquierdo',
+'da dos palmadas',
+
+];
+
+
+/* =========================================================
+   FORMAS DE NO DECIR SIMÓN
+========================================================= */
+
+const FAKE=[
+
+'',
+'Ahora, ',
+'El capitán dice, ',
+'El profesor dice, ',
+'El vecino dice, ',
+'Tu amigo dice, ',
+'Atención, ',
+'Todo el mundo, ',
+'Rápido, ',
+'Vamos a ver, '
+
+];
+
+
+/* =========================================================
+   VOZ
+========================================================= */
+
+const synth='speechSynthesis' in window
+  ? window.speechSynthesis
+  : null;
+
+let voices=[];
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let S=null;
+let tk=null;
+let nextTimer=null;
+
+
+/* =========================================================
+   PANTALLAS
+========================================================= */
+
+const show=id=>{
+
+  ['home','game','end'].forEach(x=>{
+
+    $(x).classList.toggle(
+      'hidden',
+      x!==id
+    );
+
+  });
+
+};
+
+
+/* =========================================================
+   VOZ
+========================================================= */
+
+function loadVoices(){
+
+  if(!synth){
+
+    $('nov').classList.remove('hidden');
+
+    $('voice').innerHTML=
+      '<option>No disponible</option>';
+
+    $('voice').disabled=true;
+    $('tv').disabled=true;
+
+    return;
+  }
+
+
+  voices=synth
+    .getVoices()
+    .filter(v=>/^es/i.test(v.lang));
+
+
+  const sel=$('voice');
+  const prev=sel.value;
+
+
+  if(!voices.length){
+
+    sel.innerHTML=
+      '<option value="-1">Voz por defecto</option>';
+
+    return;
+  }
+
+
+  sel.innerHTML=voices.map((v,i)=>
+
+    '<option value="'+i+'">'+
+      v.name.replace(/[<>&]/g,'')+
+      ' ('+v.lang+')'+
+    '</option>'
+
+  ).join('');
+
+
+  const pref=voices.findIndex(v=>
+    /es-(ES|MX|US)/i.test(v.lang)
+    &&
+    v.localService
+  );
+
+
+  sel.value=
+    prev && voices[+prev]
+      ? prev
+      : String(pref>=0?pref:0);
+
+}
+
+
+loadVoices();
+
+if(synth)
+  synth.onvoiceschanged=loadVoices;
+
+
+
+function speak(text,rate,done){
+
+  let fin=false;
+
+  const end=()=>{
+
+    if(!fin){
+
+      fin=true;
+
+      clearTimeout(g);
+
+      done&&done();
+
+    }
+
+  };
+
+
+  const g=setTimeout(
+    end,
+    text.length*110/rate+2200
+  );
+
+
+  if(!synth){
+
+    end();
+    return;
+
+  }
+
+
+  try{
+
+    synth.cancel();
+
+
+    const u=
+      new SpeechSynthesisUtterance(text);
+
+
+    const v=
+      voices[+$('voice').value];
+
+
+    u.lang=v?v.lang:'es-ES';
+
+
+    if(v)
+      u.voice=v;
+
+
+    u.rate=rate;
+    u.pitch=1;
+
+
+    u.onend=end;
+    u.onerror=end;
+
+
+    synth.speak(u);
+
+  }catch(e){
+
+    end();
+
+  }
+
+}
+
+
+$('tv').onclick=()=>{
+
+  speak(
+    'Simón dice, toca tu nariz',
+    1,
+    null
+  );
+
+};
+
+
+/* =========================================================
+   RITMO
+========================================================= */
+
+function getSpeed(){
+
+  const mode=$('speed').value;
+
+
+  if(mode==='slow')
+    return .85;
+
+
+  if(mode==='fast')
+    return 1.25;
+
+
+  return 1;
+
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function hud(){
+
+  $('rn').textContent=S.round;
+
+  $('total').textContent=S.total;
+
+  const factor=
+    (1+Math.min(.8,S.round*.025))
+    *getSpeed();
+
+  $('tempo').textContent=
+    factor.toFixed(1)+'×';
+
+}
+
+
+/* =========================================================
+   ANIMACIÓN
+========================================================= */
+
+function setCard(cls){
+
+  const c=$('card');
+
+  c.className='card '+cls;
+
+  void c.offsetWidth;
+
+  c.classList.add('pop');
+
+}
+
+
+/* =========================================================
+   EMPEZAR
+========================================================= */
+
+function start(){
+
+  clearInterval(tk);
+  clearTimeout(nextTimer);
+
+
+  S={
+
+    round:0,
+
+    total:0,
+
+    phase:'idle',
+
+    last:'',
+
+    blind:$('mode').value==='1',
+
+    id:0
+
+  };
+
+
+  if(synth){
+
+    try{
+
+      synth.cancel();
+
+      const u=
+        new SpeechSynthesisUtterance(' ');
+
+      u.volume=0;
+
+      synth.speak(u);
+
+    }catch(e){}
+
+  }
+
+
+  show('game');
+
+  hud();
+
+
+  setTimeout(next,600);
+
+}
+
+
+/* =========================================================
+   SIGUIENTE ORDEN
+========================================================= */
+
+function next(){
+
+  if(!S)
+    return;
+
+
+  clearInterval(tk);
+  clearTimeout(nextTimer);
+
+
+  S.round++;
+  S.total++;
+  S.id++;
+
+
+  let a;
+
+
+  do{
+
+    a=pick(ACC);
+
+  }while(
+    a===S.last &&
+    ACC.length>1
+  );
+
+
+  S.last=a;
+
+
+  /*
+    65% de órdenes verdaderas.
+    35% de órdenes trampa.
+  */
+
+  const simon=
+    Math.random()<.65;
+
+
+  S.simon=simon;
+
+
+  if(simon){
+
+    S.text=
+      'Simón dice, '+a;
+
+  }else{
+
+    let prefix=
+      pick(FAKE);
+
+
+    /*
+      Evitamos que sea simplemente
+      la orden sin ningún prefijo.
+    */
+
+    if(prefix===''){
+
+      prefix=pick([
+        'Ahora, ',
+        'Atención, ',
+        'Rápido, ',
+        'Vamos, '
+      ]);
+
+    }
+
+
+    S.text=
+      prefix+
+      a;
+
+  }
+
+
+  S.phase='speaking';
+
+
+  hud();
+
+
+  setCard(
+    simon
+      ? 'simon'
+      : 'no'
+  );
+
+
+  $('st').textContent=
+    simon
+      ? '🟢 ¡HAZLO!'
+      : '🔴 ¡NO LO HAGAS!';
+
+
+  $('say').textContent=
+    S.blind
+      ? '🔊'
+      : S.text+'.';
+
+
+  $('count').textContent='';
+
+
+  $('bar').style.width='100%';
+
+
+  const id=S.id;
+
+
+  /*
+    La voz aumenta ligeramente
+    de velocidad con las rondas.
+  */
+
+  const rate=
+    Math.min(
+      1.5,
+      (.9+S.round*.025)
+      *getSpeed()
+    );
+
+
+  speak(
+    S.text,
+    rate,
+    ()=>{
+
+      if(
+        S &&
+        S.id===id
+      ){
+
+        openWindow(id);
+
+      }
+
+    }
+  );
+
+
+  /*
+    Si no hay voz, igualmente
+    continúa el juego.
+  */
+
+  if(!synth)
+    openWindow(id);
+
+}
+
+
+/* =========================================================
+   VENTANA DE REACCIÓN
+========================================================= */
+
+function openWindow(id){
+
+  if(
+    !S ||
+    S.id!==id
+  )
+    return;
+
+
+  S.phase='window';
+
+
+  /*
+    Duración inicial:
+    3.2 segundos
+
+    Va bajando progresivamente
+    hasta aproximadamente 1.4 segundos.
+  */
+
+  const base=
+    $('speed').value==='slow'
+      ? 3.5
+      : $('speed').value==='fast'
+        ? 2.5
+        : 3.1;
+
+
+  const dur=
+    Math.max(
+      1.35,
+      base-S.round*.045
+    )*1000;
+
+
+  const t0=Date.now();
+
+
+  $('st').textContent=
+    S.simon
+      ? '🟢 ¡AHORA!'
+      : '🔴 ¡QUIETO!';
+
+
+  clearInterval(tk);
+
+
+  tk=setInterval(()=>{
+
+    if(!S || S.id!==id){
+
+      clearInterval(tk);
+      return;
+
+    }
+
+
+    const left=
+      Math.max(
+        0,
+        dur-(Date.now()-t0)
+      );
+
+
+    const pct=
+      left/dur*100;
+
+
+    $('bar').style.width=
+      pct+'%';
+
+
+    if(left<=0){
+
+      clearInterval(tk);
+
+      finishRound(id);
+
+    }
+
+  },40);
+
+}
+
+
+/* =========================================================
+   TERMINAR RONDA
+========================================================= */
+
+function finishRound(id){
+
+  if(
+    !S ||
+    S.id!==id
+  )
+    return;
+
+
+  S.phase='pause';
+
+
+  $('bar').style.width='0%';
+
+
+  $('st').textContent=
+    '➡️ Siguiente orden…';
+
+
+  $('count').textContent='';
+
+
+  /*
+    Pausa muy corta entre órdenes.
+    Esto hace que el juego fluya.
+  */
+
+  const pause=
+    Math.max(
+      350,
+      900-S.round*10
+    );
+
+
+  nextTimer=setTimeout(
+    ()=>next(),
+    pause
+  );
+
+}
+
+
+/* =========================================================
+   TERMINAR PARTIDA
+========================================================= */
+
+function end(){
+
+  clearInterval(tk);
+  clearTimeout(nextTimer);
+
+
+  if(synth){
+
+    try{
+      synth.cancel();
+    }catch(e){}
+
+  }
+
+
+  if(!S)
+    return;
+
+
+  const rounds=S.round;
+
+
+  $('end').innerHTML=
+
+    '<span class="tag">FIN DE LA PARTIDA</span>'+
+
+    '<h2 style="margin-top:10px">'+
+      '🎉 ¡Partida terminada!'+
+    '</h2>'+
+
+    '<div class="sc">'+
+      '<span>Órdenes realizadas</span>'+
+      '<strong>'+rounds+'</strong>'+
+    '</div>'+
+
+    '<div class="sc">'+
+      '<span>Duración aproximada</span>'+
+      '<strong>'+
+        Math.max(1,Math.round(rounds*.055))+
+        ' min'+
+      '</strong>'+
+    '</div>'+
+
+    '<div class="notice">'+
+      '👏 ¡Buen trabajo! Para otra partida podéis '+
+      'subir la velocidad y ver cuánto aguantáis.'+
+    '</div>'+
+
+    '<div class="row" style="margin-top:14px">'+
+
+      '<button class="btn g" id="again">'+
+        '🔄 Otra partida'+
+      '</button>'+
+
+      '<button class="btn gh" id="menu">'+
+        '🏠 Menú'+
+      '</button>'+
+
+    '</div>';
+
+
+  S=null;
+
+
+  show('end');
+
+
+  $('again').onclick=start;
+
+
+  $('menu').onclick=()=>
+    show('home');
+
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
 
 $('go').onclick=start;
-$('do').onclick=tap;
-$('quit').onclick=()=>{if(S){S.lv=0;end()}};
-addEventListener('keydown',e=>{if(e.code==='Space'&&S&&!$('game').classList.contains('hidden')){e.preventDefault();tap()}});
+
+
+$('quit').onclick=()=>{
+
+  end();
+
+};
+
+
+/*
+  Ya no hay botón «¡Lo hice!».
+  Tampoco necesitamos teclado.
+*/
+
+
 })();
-</script></body></html>
+</script>
+
+</body>
+</html>
+```

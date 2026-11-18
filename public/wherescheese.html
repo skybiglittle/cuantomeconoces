@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>¿Dónde está el queso? · carrera de ratones</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#1a1530;--bg2:#0d0b1c;--ink:#f6f2ff;--sub:#a79fc7;--line:rgba(255,255,255,.18);--acc:#ffc93c;--bad:#ff5f7a;
+ padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: light){:root{--bg:#fff3d0;--bg2:#f3e6ff;--ink:#2a2038;--sub:#6a5f82;--line:rgba(42,32,56,.22)}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:none}
+section{position:fixed;inset:0;display:none;flex-direction:column;gap:12px;padding:18px 16px;max-width:520px;margin:0 auto;overflow:auto}
+section.on{display:flex}
+#sGame{max-width:none;padding:0;display:none}
+#sGame.on{display:block}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+h1{margin:6px 0 0;text-align:center;font-size:clamp(30px,9vw,44px);font-weight:900}
+h2{margin:0;text-align:center}
+.sub{color:var(--sub);text-align:center;margin:0;line-height:1.4}
+input:not([type=checkbox]),select{width:100%;min-height:54px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:0 16px;font:18px inherit;font-family:inherit;text-align:center;text-align-last:center}
+select option{color:#111}
+#code{text-transform:uppercase;letter-spacing:.3em;font-weight:800}
+.btn{min-height:56px;border-radius:16px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:800 18px inherit;font-family:inherit;cursor:pointer;padding:0 18px}
+.btn.main{background:var(--acc);border-color:var(--acc);color:#2a1c05}
+.btn:active{transform:scale(.97)}
+#err{min-height:22px;text-align:center;color:var(--bad);font-weight:700}
+.room{text-align:center;font-size:clamp(40px,14vw,64px);font-weight:900;letter-spacing:.2em;color:var(--acc)}
+.pl{display:flex;justify-content:space-between;padding:12px 16px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;margin-bottom:8px}
+#dpad{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(3,68px);grid-template-rows:repeat(2,68px);gap:8px}
+#dpad button{border-radius:18px;border:1.5px solid var(--line);background:rgba(20,16,40,.55);color:var(--ink);font-size:26px;touch-action:none}
+#dpad .u{grid-column:2;grid-row:1}#dpad .l{grid-column:1;grid-row:2}#dpad .d{grid-column:2;grid-row:2}#dpad .r{grid-column:3;grid-row:2}
+@media (hover:hover) and (pointer:fine){#dpad{display:none}}
+#leave{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);min-height:44px;font-size:14px;opacity:.8}
+</style>
+</head>
+<body>
+<section id="sMenu" class="on">
+  <h1>🧀 ¿Dónde está el queso?</h1>
+  <p class="sub">Todos los ratones empiezan en el mismo laberinto, a oscuras. El primero en encontrar el queso gana más puntos.</p>
+  <input id="name" placeholder="Tu nombre" maxlength="14" autocomplete="off">
+  <button class="btn main" id="bCreate">Crear sala</button>
+  <input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off">
+  <button class="btn" id="bJoin">Unirse a una sala</button>
+  <button class="btn" id="bSolo">Práctica sin conexión</button>
+  <div id="err"></div>
+</section>
+<section id="sLobby">
+  <h2>Sala</h2>
+  <div class="room" id="rcode"></div>
+  <p class="sub">Comparte el código. Los demás lo escriben en «Unirse a una sala».</p>
+  <div id="plist"></div>
+  <select id="rounds"><option value="3">3 rondas</option><option value="5" selected>5 rondas</option><option value="7">7 rondas</option></select>
+  <p class="sub" id="lobbyHint"></p>
+  <button class="btn main" id="bStart">Empezar partida</button>
+  <button class="btn" id="bLeave1">Salir</button>
+</section>
+<section id="sGame">
+  <canvas id="cv"></canvas>
+  <div id="dpad"><button class="u" data-d="0">▲</button><button class="l" data-d="3">◀</button><button class="d" data-d="2">▼</button><button class="r" data-d="1">▶</button></div>
+  <button class="btn" id="leave">Salir</button>
+</section>
+<section id="sOver">
+  <h2 id="winner"></h2>
+  <div id="rank"></div>
+  <button class="btn main" id="bAgain">Jugar otra vez</button>
+  <p class="sub" id="waitHost"></p>
+  <button class="btn" id="bLeave3">Salir</button>
+</section>
+<script>
+(function(){
+'use strict';
+var PREFIX='quesoratones-',CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',COLORS=['#ff6b6b','#4dd4ff','#ffd24d','#7dff8a','#c58bff','#ff9a4d','#ff7ac8','#9aa7ff'];
+var DX=[0,1,0,-1],DY=[-1,0,1,0],BIT=[1,2,4,8];
+function $(i){return document.getElementById(i);}
+function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ---------- laberinto determinista (mismo seed = mismo laberinto en todos) ---------- */
+function genMaze(n,seed){
+  var R=rng(seed),w=[],i,x,y,seen={},st=[[0,0]];
+  for(i=0;i<n*n;i++)w.push(15);seen[0]=1;
+  while(st.length){
+    var c=st[st.length-1],opts=[];
+    for(var d=0;d<4;d++){var nx=c[0]+DX[d],ny=c[1]+DY[d];if(nx>=0&&ny>=0&&nx<n&&ny<n&&!seen[ny*n+nx])opts.push(d);}
+    if(!opts.length){st.pop();continue;}
+    var k=opts[Math.floor(R()*opts.length)],ax=c[0]+DX[k],ay=c[1]+DY[k];
+    w[c[1]*n+c[0]]&=~BIT[k];w[ay*n+ax]&=~BIT[(k+2)%4];seen[ay*n+ax]=1;st.push([ax,ay]);
+  }
+  for(i=0;i<n*n*0.12;i++){ // huecos extra: más de un camino
+    x=Math.floor(R()*(n-1));y=Math.floor(R()*(n-1));var e=R()<0.5?1:2;
+    w[y*n+x]&=~BIT[e];w[(y+DY[e])*n+x+DX[e]]&=~BIT[(e+2)%4];
+  }
+  var dist=[],q=[0];for(i=0;i<n*n;i++)dist.push(-1);dist[0]=0;
+  while(q.length){var cur=q.shift();for(var f=0;f<4;f++)if(!(w[cur]&BIT[f])){var ni=((cur/n|0)+DY[f])*n+cur%n+DX[f];if(dist[ni]<0){dist[ni]=dist[cur]+1;q.push(ni);}}}
+  var far=[];for(i=1;i<n*n;i++)far.push(i);far.sort(function(a,b){return dist[b]-dist[a];});
+  var cheese=far[Math.floor(R()*Math.min(4,far.length))],items={};
+  ['⚡','⚡','🔦','🔦','🪤','🪤','🪤'].forEach(function(kd){for(var t=0;t<40;t++){var ci=1+Math.floor(R()*(n*n-1));if(ci!==cheese&&!items[ci]&&dist[ci]>3){items[ci]=kd;break;}}});
+  return {n:n,w:w,cheese:cheese,items:items};
+}
+
+var role=null,peer=null,hostConn=null,myId='host',myName='',H=null,S=null,G=null,me=null,posMap={},curRound=-1,dir=-1,msg='',msgUntil=0;
+
+/* ---------- anfitrión ---------- */
+function initHost(code){H={code:code,st:'lobby',players:[{id:'host',name:myName,score:0,x:0,y:0,fin:false,conn:null}],round:0,rounds:5,seed:0,n:11,t0:0,fins:[],deadline:0,next:0,last:null,M:null};}
+function snap(){var now=Date.now();return {t:'s',st:H.st,code:H.code,players:H.players.map(function(p,i){return {id:p.id,name:p.name,score:p.score,c:i,fin:p.fin};}),round:H.round,rounds:H.rounds,seed:H.seed,n:H.n,startIn:Math.max(0,H.t0-now),nextIn:Math.max(0,H.next-now),last:H.last};}
+function broadcast(){var s=snap();H.players.forEach(function(p){if(p.conn&&p.conn.open)p.conn.send(s);});render(s);}
+function startRound(){
+  H.round++;H.seed=Math.floor(Math.random()*1e9);H.n=Math.min(21,9+2*H.round);H.M=genMaze(H.n,H.seed);
+  H.t0=Date.now()+3500;H.fins=[];H.deadline=0;H.last=null;H.st='play';
+  H.players.forEach(function(p){p.x=0;p.y=0;p.fin=false;});broadcast();
+}
+function startGame(){H.round=0;H.players.forEach(function(p){p.score=0;});startRound();}
+function endRound(){H.st=H.round>=H.rounds?'over':'round';H.next=Date.now()+6000;broadcast();}
+function hostFound(id){
+  if(!H||H.st!=='play'||Date.now()<H.t0)return;
+  var p=H.players.filter(function(x){return x.id===id;})[0];
+  if(!p||p.fin||p.y*H.n+p.x!==H.M.cheese)return;
+  p.fin=true;H.fins.push(id);var pts=Math.max(1,4-H.fins.length);p.score+=pts;
+  if(H.fins.length===1)H.last={name:p.name,pts:pts,time:Date.now()-H.t0};
+  if(H.fins.length===1&&H.players.length>1)H.deadline=Date.now()+10000;
+  if(H.fins.length===H.players.length)endRound();else broadcast();
+}
+function removePlayer(id){if(!H)return;H.players=H.players.filter(function(p){return p.id!==id;});if(H.st==='lobby'||H.players.length)broadcast();}
+function hostMsg(conn,m){
+  if(m.t==='join'){
+    if(H.st!=='lobby'||H.players.length>=8){conn.send({t:'err',m:H.st!=='lobby'?'La partida ya ha empezado':'Sala llena (máx. 8)'});setTimeout(function(){conn.close();},300);return;}
+    H.players.push({id:conn.peer,name:String(m.name||'Ratón').slice(0,14),score:0,x:0,y:0,fin:false,conn:conn});broadcast();
+  }else{
+    var p=H.players.filter(function(x){return x.id===conn.peer;})[0];if(!p)return;
+    if(m.t==='pos'&&H.M&&m.x>=0&&m.y>=0&&m.x<H.n&&m.y<H.n){p.x=m.x|0;p.y=m.y|0;}
+    else if(m.t==='found')hostFound(conn.peer);
+  }
+}
+setInterval(function(){
+  if(!H)return;var now=Date.now();
+  if(H.st==='play'){
+    var g={};H.players.forEach(function(p){g[p.id]=[p.x,p.y];});
+    H.players.forEach(function(p){if(p.conn&&p.conn.open)p.conn.send({t:'g',p:g});});posMap=g;
+    if((H.deadline&&now>H.deadline)||now>H.t0+90000)endRound();
+  }else if(H.st==='round'&&now>H.next)startRound();
+},150);
+function newCode(){var c='';for(var i=0;i<4;i++)c+=CH[Math.floor(Math.random()*CH.length)];return c;}
+function err(m){$('err').textContent=m||'';}
+function createRoom(tries){
+  if(typeof Peer==='undefined'){err('No se pudo cargar PeerJS. Revisa tu conexión.');return;}
+  var code=newCode();role='host';myId='host';peer=new Peer(PREFIX+code);
+  peer.on('open',function(){initHost(code);show('sLobby');broadcast();});
+  peer.on('connection',function(conn){conn.on('data',function(m){hostMsg(conn,m);});conn.on('close',function(){removePlayer(conn.peer);});});
+  peer.on('error',function(e){if(e.type==='unavailable-id'&&tries<5){peer.destroy();createRoom(tries+1);}else{err('No se pudo crear la sala ('+e.type+').');leave(true);}});
+}
+function joinRoom(){
+  var code=$('code').value.trim().toUpperCase();
+  if(code.length!==4){err('Escribe el código de 4 letras.');return;}
+  if(typeof Peer==='undefined'){err('No se pudo cargar PeerJS. Revisa tu conexión.');return;}
+  role='guest';err('Conectando…');peer=new Peer();
+  peer.on('open',function(id){
+    myId=id;hostConn=peer.connect(PREFIX+code,{reliable:true});
+    hostConn.on('open',function(){hostConn.send({t:'join',name:myName});});
+    hostConn.on('data',function(m){if(m.t==='s'){err('');render(m);}else if(m.t==='g')posMap=m.p;else if(m.t==='err'){err(m.m);leave(true);}});
+    hostConn.on('close',function(){err('La sala se ha cerrado.');leave(true);});
+  });
+  peer.on('error',function(e){err(e.type==='peer-unavailable'?'No existe esa sala.':'Error de conexión ('+e.type+').');leave(true);});
+}
+function solo(){role='solo';myId='host';peer=null;initHost('SOLO');broadcast();}
+function leave(keepErr){try{if(peer)peer.destroy();}catch(e){}peer=null;hostConn=null;H=null;S=null;G=null;role=null;curRound=-1;if(!keepErr)err('');show('sMenu');}
+function show(id){['sMenu','sLobby','sGame','sOver'].forEach(function(s){$(s).classList.toggle('on',s===id);});if(id==='sGame')resize();}
+
+/* ---------- cliente: estado y juego ---------- */
+function render(s){
+  S=s;
+  if(s.st==='lobby'){
+    show('sLobby');$('rcode').textContent=s.code;
+    var pl=$('plist');pl.innerHTML='';
+    s.players.forEach(function(p){var d=document.createElement('div');d.className='pl';var a=document.createElement('span');a.textContent='🐭 '+p.name+(p.id===myId?' (tú)':'');d.appendChild(a);pl.appendChild(d);});
+    var isHost=role!=='guest';$('bStart').style.display=isHost?'':'none';$('rounds').style.display=isHost?'':'none';
+    if(isHost)$('rounds').value=String(s.rounds);
+    $('lobbyHint').textContent=isHost?(s.players.length<2?'Puedes jugar solo para practicar o esperar a más ratones.':s.players.length+' ratones listos.'):'Esperando al anfitrión… ('+s.rounds+' rondas)';
+  }else if(s.st==='over'){
+    show('sOver');var r=s.players.slice().sort(function(a,b){return b.score-a.score;});
+    $('winner').textContent='🏆 '+r[0].name+(r.length>1&&r[1].score===r[0].score?' (empate)':' gana')+' con '+r[0].score;
+    var box=$('rank');box.innerHTML='';
+    r.forEach(function(p,i){var d=document.createElement('div');d.className='pl';var a=document.createElement('span');a.textContent=(i+1)+'. '+p.name+(p.id===myId?' (tú)':'');var b=document.createElement('span');b.textContent=p.score;d.appendChild(a);d.appendChild(b);box.appendChild(d);});
+    var isH=role!=='guest';$('bAgain').style.display=isH?'':'none';$('waitHost').textContent=isH?'':'Esperando al anfitrión…';
+  }else{
+    show('sGame');
+    if(s.st==='play'&&s.round!==curRound){
+      curRound=s.round;G={n:s.n,M:genMaze(s.n,s.seed),startAt:Date.now()+s.startIn};
+      me={x:0,y:0,px:0,py:0,t:0,dur:140,next:0,boost:0,light:0,freeze:0,seen:{},took:{},fin:false};posMap={};msg='';
+    }
+  }
+}
+function sendPos(){
+  if(role==='guest'){if(hostConn&&hostConn.open)hostConn.send({t:'pos',x:me.x,y:me.y});}
+  else{var p=H.players[0];p.x=me.x;p.y=me.y;}
+}
+function step(now){
+  if(!G||!me||!S||S.st!=='play'||me.fin||now<G.startAt||now<me.freeze||dir<0||now<me.next)return;
+  var n=G.n;if(G.M.w[me.y*n+me.x]&BIT[dir])return;
+  var dur=now<me.boost?80:140;
+  me.px=me.x;me.py=me.y;me.x+=DX[dir];me.y+=DY[dir];me.t=now;me.dur=dur;me.next=now+dur;sendPos();
+  var i=me.y*n+me.x,it=G.M.items[i];
+  if(it&&!me.took[i]){me.took[i]=1;
+    if(it==='⚡'){me.boost=now+4500;note('⚡ ¡Velocidad!');}
+    else if(it==='🔦'){me.light=now+8000;note('🔦 ¡Linterna! Ves más lejos');}
+    else{me.freeze=now+2200;note('🪤 ¡Trampa! Quieto un momento');}
+  }
+  if(i===G.M.cheese){me.fin=true;note('🧀 ¡Lo encontraste!');if(role==='guest'){if(hostConn&&hostConn.open)hostConn.send({t:'found'});}else hostFound('host');}
+}
+function note(t){msg=t;msgUntil=Date.now()+2200;}
+
+/* ---------- dibujo ---------- */
+var cv=$('cv'),ctx=cv.getContext('2d'),W=0,H2=0,dpr=1,C={};
+function cols(){var s=getComputedStyle(document.documentElement);C.ink=s.getPropertyValue('--ink').trim();C.acc=s.getPropertyValue('--acc').trim();C.dark=matchMedia('(prefers-color-scheme: dark)').matches;}
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H2=innerHeight;cv.width=W*dpr;cv.height=H2*dpr;cols();}
+function text(t,x,y,size,col,al){ctx.font='800 '+size+'px "Trebuchet MS",system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.textAlign=al||'center';ctx.textBaseline='middle';ctx.fillStyle=col||C.ink;ctx.fillText(t,x,y);}
+function draw(now){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.dark?'#0d0b1c':'#2b2140';ctx.fillRect(0,0,W,H2);
+  if(!G||!S||!me)return;
+  var n=G.n,w=G.M.w,i,x,y;
+  // marcador
+  text('Ronda '+S.round+'/'+S.rounds,10,16,15,'#cfc6ee','left');
+  var el=Math.max(0,(now-G.startAt)/1000);if(S.st==='play'&&now>=G.startAt)text(el.toFixed(0)+' s',W/2,16,18,'#fff');
+  var ef='';if(now<me.boost)ef+='⚡';if(now<me.light)ef+='🔦';text(ef,W-10,16,18,'#fff','right');
+  var cx0=10,cy0=44;
+  S.players.forEach(function(p){var t=p.name+' '+p.score+(p.fin?' 🧀':'');ctx.font='700 14px "Trebuchet MS",system-ui,sans-serif';var tw=ctx.measureText(t).width+24;if(cx0+tw>W-6){cx0=10;cy0+=24;}
+    ctx.fillStyle=COLORS[p.c%8];ctx.beginPath();ctx.arc(cx0+7,cy0,6,0,6.3);ctx.fill();text(t,cx0+18,cy0,14,'#fff','left');cx0+=tw+6;});
+  var top=cy0+20,bottom=$('dpad').offsetParent?170:60,avail=Math.min(W-12,H2-top-bottom),cs=Math.floor(avail/n),ox=Math.floor((W-cs*n)/2),oy=top+Math.floor((H2-top-bottom-cs*n)/2);
+  var u=Math.min(1,(now-me.t)/me.dur),rx=me.px+(me.x-me.px)*u,ry=me.py+(me.y-me.py)*u,vr=3.3+(now<me.light?3:0);
+  ctx.lineCap='round';ctx.lineWidth=Math.max(2,cs*0.1);
+  for(y=0;y<n;y++)for(x=0;x<n;x++){
+    i=y*n+x;var dx=x-rx,dy=y-ry,vis=dx*dx+dy*dy<=vr*vr;if(vis)me.seen[i]=1;if(!vis&&!me.seen[i])continue;
+    var X=ox+x*cs,Y=oy+y*cs;
+    ctx.fillStyle=vis?'#4a3b72':'#2a2147';ctx.fillRect(X,Y,cs,cs);
+    ctx.strokeStyle=vis?'#ffd98a':'#6b5a99';ctx.beginPath();
+    if(w[i]&1){ctx.moveTo(X,Y);ctx.lineTo(X+cs,Y);}if(w[i]&2){ctx.moveTo(X+cs,Y);ctx.lineTo(X+cs,Y+cs);}
+    if(w[i]&4){ctx.moveTo(X,Y+cs);ctx.lineTo(X+cs,Y+cs);}if(w[i]&8){ctx.moveTo(X,Y);ctx.lineTo(X,Y+cs);}
+    ctx.stroke();
+    if(vis){var it=G.M.items[i];if(it&&!me.took[i])text(it,X+cs/2,Y+cs/2,cs*0.55);
+      if(i===G.M.cheese)text('🧀',X+cs/2,Y+cs/2+Math.sin(now/200)*cs*0.05,cs*0.75);}
+  }
+  // rivales (solo si están en tu campo de visión)
+  S.players.forEach(function(p){if(p.id===myId)return;var q=posMap[p.id];if(!q)return;var dx=q[0]-rx,dy=q[1]-ry;
+    if(dx*dx+dy*dy>vr*vr)return;var X=ox+q[0]*cs+cs/2,Y=oy+q[1]*cs+cs/2;
+    ctx.fillStyle=COLORS[p.c%8];ctx.beginPath();ctx.arc(X,Y,cs*0.36,0,6.3);ctx.fill();text('🐭',X,Y,cs*0.55);});
+  var mine=S.players.filter(function(p){return p.id===myId;})[0],mc=COLORS[(mine?mine.c:0)%8],MX=ox+rx*cs+cs/2,MY=oy+ry*cs+cs/2;
+  ctx.fillStyle=mc;ctx.beginPath();ctx.arc(MX,MY,cs*0.42,0,6.3);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();text('🐭',MX,MY,cs*0.62);
+  // mensajes
+  if(S.st==='play'&&now<G.startAt)text(String(Math.ceil((G.startAt-now)/1000)),W/2,H2/2,90,'#ffc93c');
+  if(S.st==='play'&&now<G.startAt+1000&&now>=G.startAt)text('¡YA!',W/2,H2/2,70,'#ffc93c');
+  if(msg&&Date.now()<msgUntil)text(msg,W/2,oy-12,16,'#ffc93c');
+  if(me.fin&&S.st==='play')text('¡Queso! Esperando a los demás…',W/2,oy+cs*n+18,16,'#ffc93c');
+  if(S.st==='round'){
+    ctx.fillStyle='rgba(8,6,20,.82)';ctx.fillRect(0,0,W,H2);
+    text('🧀 Ronda terminada',W/2,H2*0.2,26);
+    text(S.last?S.last.name+' fue el primero ('+(S.last.time/1000).toFixed(1)+' s, +'+S.last.pts+')':'Nadie encontró el queso',W/2,H2*0.28,17,'#ffc93c');
+    S.players.slice().sort(function(a,b){return b.score-a.score;}).forEach(function(p,k){text((k+1)+'. '+p.name+': '+p.score,W/2,H2*0.38+k*28,18,p.id===myId?'#ffc93c':'#fff');});
+    text('Siguiente ronda en '+Math.max(0,Math.ceil((S.nextIn-(now-recv))/1000))+' s',W/2,H2*0.38+S.players.length*28+34,15,'#cfc6ee');
+  }
+}
+var recv=0,lastS=null;
+function loop(){var now=Date.now();if(S!==lastS){lastS=S;recv=now;}step(now);if($('sGame').classList.contains('on'))draw(now);requestAnimationFrame(loop);}
+
+/* ---------- entrada ---------- */
+var KEYS={ArrowUp:0,KeyW:0,ArrowRight:1,KeyD:1,ArrowDown:2,KeyS:2,ArrowLeft:3,KeyA:3};
+addEventListener('keydown',function(e){if(e.code in KEYS){e.preventDefault();dir=KEYS[e.code];}});
+addEventListener('keyup',function(e){if(e.code in KEYS&&dir===KEYS[e.code])dir=-1;});
+Array.prototype.forEach.call(document.querySelectorAll('#dpad button'),function(b){
+  var d=parseInt(b.dataset.d,10);
+  b.addEventListener('pointerdown',function(e){e.preventDefault();dir=d;});
+  ['pointerup','pointerleave','pointercancel'].forEach(function(t){b.addEventListener(t,function(){if(dir===d)dir=-1;});});
+});
+function needName(){myName=$('name').value.trim().slice(0,14)||'Ratón';try{localStorage.setItem('queso-name',myName);}catch(e){}}
+$('bCreate').addEventListener('click',function(){needName();err('Creando sala…');createRoom(0);});
+$('bJoin').addEventListener('click',function(){needName();joinRoom();});
+$('bSolo').addEventListener('click',function(){needName();err('');solo();});
+$('bStart').addEventListener('click',function(){if(H){H.rounds=parseInt($('rounds').value,10);startGame();}});
+$('rounds').addEventListener('change',function(){if(H&&role!=='guest'){H.rounds=parseInt($('rounds').value,10);broadcast();}});
+$('bAgain').addEventListener('click',function(){if(H)startGame();});
+['bLeave1','leave','bLeave3'].forEach(function(i){$(i).addEventListener('click',function(){leave();});});
+addEventListener('resize',resize);
+document.addEventListener('touchmove',function(e){if(e.target.closest&&e.target.closest('#sGame'))e.preventDefault();},{passive:false});
+try{$('name').value=localStorage.getItem('queso-name')||'';}catch(e){}
+resize();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

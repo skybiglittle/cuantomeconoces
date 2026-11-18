@@ -1,0 +1,1356 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Humanity Cards · 1 jugador</title>
+<style>
+:root{--bg:#f2f0eb;--fg:#161616;--box:#fff;--mut:#6b6b6b;--gold:#e8b800;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#f1f1f1;--box:#1e1e1e;--mut:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:680px;margin:0 auto;padding:14px}
+h1{text-align:center;font-size:2rem;margin:8px 0 12px}
+h2{text-align:center;font-size:1.15rem;margin:12px 0 6px}
+.box{background:var(--box);border-radius:16px;padding:16px;box-shadow:0 2px 10px #0003}
+.mut{color:var(--mut);font-size:.9rem;margin:4px 0;text-align:center}
+.err{color:#d33;text-align:center;font-weight:600}
+.sc{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+.sc span{background:var(--box);border-radius:20px;padding:3px 10px;font-size:.85rem}
+.sc .me{outline:2px solid var(--gold)}
+input,textarea,select{font:inherit;padding:9px;border-radius:10px;border:2px solid var(--mut);background:var(--bg);color:var(--fg);width:100%;margin:4px 0}
+select{width:auto}
+textarea{min-height:100px}
+button{font:inherit;cursor:pointer}
+.go{display:block;width:100%;background:var(--fg);color:var(--bg);border:0;border-radius:12px;padding:13px;font-weight:700;font-size:1.05rem;margin-top:12px}
+.go:disabled{opacity:.35}
+.s{background:none;border:2px solid var(--mut);color:var(--fg);border-radius:10px;padding:8px 12px;margin:8px 6px 0 0}
+.c{display:block;width:100%;border-radius:12px;padding:14px;font-weight:700;text-align:left;min-height:110px;font-size:1rem;position:relative;border:0;margin:8px 0}
+.k{background:#111;color:#fff}
+.k u{color:#ffd54a;text-decoration-thickness:2px}
+.w{background:#fff;color:#111;border:2px solid #bbb;margin:0}
+.on{outline:4px solid var(--gold)}
+.w.on::after{content:attr(data-o);position:absolute;top:6px;right:8px;background:var(--gold);border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;font-size:.85rem}
+.hd{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0}
+.hd .k{margin:0}
+.code{font:800 2.6rem monospace;letter-spacing:8px;text-align:center}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+function makeRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return{join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,arr=[],subs=[],done=false,closed=false,retry=0,pres={},cid=Math.random().toString(36).slice(2);
+    var room={peers:function(){return arr},
+      onPeers:function(f){subs.push(f)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello')id=m.id;
+        else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
+const BASE_B=[
+    "Mi carrera profesional terminó cuando me descubrieron ______.",
+  "La nueva asignatura obligatoria en los colegios será ______.",
+  "El verdadero motivo por el que los extraterrestres no nos visitan es ______.",
+  "Mi abuela tiene un talento especial para ______.",
+  "El Ayuntamiento ha prohibido oficialmente ______.",
+  "La última moda entre los millonarios es ______.",
+  "No vuelvo a entrar en ese supermercado después de ______.",
+  "Mi mayor miedo es encontrarme con ______ en un ascensor.",
+  "El nuevo programa estrella de televisión se llama «______».",
+  "La policía encontró en mi maletero ______.",
+  "El verdadero secreto de la felicidad es ______.",
+  "Mi jefe me ha felicitado por ______.",
+  "La peor forma de empezar una reunión es ______.",
+  "El nuevo monumento de la ciudad representa ______.",
+  "Mi plan para conquistar el mundo comienza con ______.",
+  "Nunca pensé que tendría que explicar ______ a mis padres.",
+  "La NASA acaba de descubrir ______ en Marte.",
+  "Mi vecino ha vuelto a hacerlo: ______.",
+  "El ingrediente secreto de la receta de mi abuela es ______.",
+  "La inteligencia artificial todavía no sabe cómo gestionar ______.",
+  "Mi primer día de trabajo fue bastante bien hasta que apareció ______.",
+  "El nuevo deporte olímpico consiste en ______.",
+  "La peor sorpresa que puedes recibir en tu cumpleaños es ______.",
+  "El verdadero motivo del apagón fue ______.",
+  "Mi abogado me ha recomendado que no hable de ______.",
+  "La reunión de vecinos terminó con ______.",
+  "El alcalde ha dimitido después de anunciar ______.",
+  "Mi mayor logro académico fue ______.",
+  "La nueva atracción del parque temático es ______.",
+  "No estaba preparado para encontrar ______ en la nevera.",
+  "El servicio secreto utiliza ______ para entrenar a sus agentes.",
+  "La contraseña del ordenador de mi padre es ______.",
+  "La nueva ley obliga a todos los españoles a ______.",
+  "Mi currículum sería mucho más impresionante si incluyera ______.",
+  "El peor regalo de amigo invisible sería ______.",
+  "La excursión escolar se complicó cuando apareció ______.",
+  "La verdadera razón por la que los gatos nos ignoran es ______.",
+  "El próximo ganador de Eurovisión será ______.",
+  "La nueva aplicación permite detectar ______ a distancia.",
+  "El mayor enemigo de la productividad es ______.",
+  "Mi entrenador personal me ha prohibido ______.",
+  "La inauguración del centro comercial se arruinó por ______.",
+  "El nuevo método para ahorrar dinero consiste en ______.",
+  "La gente dejó de hablar cuando mencioné ______.",
+  "Mi familia todavía no ha superado lo de ______.",
+  "El peor nombre para una empresa sería ______.",
+  "La nueva campaña de turismo de España promociona ______.",
+  "Mi médico me ha dicho que deje inmediatamente de ______.",
+  "La última tendencia en decoración consiste en poner ______ en el salón.",
+  "El verdadero motivo por el que los lunes son tan malos es ______.",
+  "El profesor puso un examen sorpresa sobre ______.",
+  "La nueva mascota del colegio es ______.",
+  "Mi plan de jubilación consiste en ______.",
+  "La peor excusa para llegar tarde es ______.",
+  "El museo ha tenido que cerrar su exposición sobre ______.",
+  "La nueva especialidad de los restaurantes de lujo es ______.",
+  "Mi teléfono sabe demasiado sobre ______.",
+  "El presidente ha anunciado un plan nacional para acabar con ______.",
+  "El secreto para parecer inteligente en una conversación es ______.",
+  "La última voluntad de mi tío fue ______.",
+  "La nueva competición de televisión enfrenta a expertos en ______.",
+  "Mi infancia habría sido diferente si hubiera tenido ______.",
+  "El peor sitio para quedarse dormido es ______.",
+  "La empresa ha decidido sustituir a todos sus empleados por ______.",
+  "La nueva tradición familiar consiste en ______.",
+  "El verdadero motivo por el que se extinguieron los dinosaurios fue ______.",
+  "Mi cita perfecta incluye ______.",
+  "El nuevo invento español permite convertir ______ en dinero.",
+  "La policía científica ha encontrado restos de ______.",
+  "El peor momento para recibir una llamada es cuando estás ______.",
+  "La nueva colección de moda está inspirada en ______.",
+  "Mi entrenador de vida insiste en que debo aprender a ______.",
+  "El mayor misterio de mi infancia era ______.",
+  "La comunidad de vecinos ha convocado una reunión urgente por ______.",
+  "El nuevo récord mundial consiste en ______.",
+  "La peor cosa que puedes decir durante una entrevista de trabajo es ______.",
+  "Mi inteligencia emocional desaparece cuando alguien menciona ______.",
+  "El Gobierno ha creado una comisión especial para investigar ______.",
+  "La nueva atracción turística de Madrid es ______.",
+  "Mi familia me sigue preguntando por ______.",
+  "La peor forma de celebrar una victoria es ______.",
+  "El nuevo servicio de atención al cliente consiste en ______.",
+  "Mi secreto para mantener la calma es imaginar ______.",
+  "El director del colegio ha prohibido ______ durante el recreo.",
+  "La última compra que hice por Internet fue ______.",
+  "El nuevo concurso consiste en adivinar ______ con los ojos cerrados.",
+  "La peor cosa que puedes escuchar al subirte a un avión es ______.",
+  "Mi vecino asegura que puede comunicarse con ______.",
+  "El nuevo producto estrella del supermercado es ______.",
+  "La humanidad estará preparada para el futuro cuando consiga ______.",
+  "El verdadero motivo por el que no encuentro aparcamiento es ______.",
+  "La nueva norma de la oficina obliga a ______.",
+  "Mi mayor arrepentimiento es no haber comprado ______.",
+  "La peor manera de impresionar a alguien es ______.",
+  "El nuevo programa educativo enseña a los niños a ______.",
+  "La última vez que intenté ayudar, terminé provocando ______.",
+  "La ciudad entera se paralizó cuando apareció ______.",
+  "Mi familia ha decidido que este año la Navidad girará en torno a ______.",
+  "La nueva profesión del futuro será ______.",
+  "El verdadero significado de la vida podría ser ______.",
+  "El día que me haga famoso, todo el mundo recordará ______.",
+  "La peor cosa que puedes encontrar en una maleta ajena es ______.",
+  "El mundo sería mucho mejor si desapareciera ______.",
+   "No soy médico, pero estoy casi seguro de que lo que tienes se llama «______».",
+  "Lo siguiente de J. K. Rowling: Harry Potter y la Cámara de ______.",
+  "La vida de aquel pueblo cambió para siempre cuando llegó ______.",
+  "Las autoridades aéreas ahora prohíben ______ en los aviones.",
+  "Uh, chicos, sé que esto era idea mía, pero estoy teniendo serias dudas acerca de ______.",
+  "¡Guerra! ¿Para qué sirve? Para conseguir ______.",
+  "Si me disculpan, caballeros, tengo una cita con ______.",
+  "¿Qué me están escondiendo mis padres?",
+  "¿Qué acabó con mi última relación?",
+  "¿Qué te provoca gases incontrolables?",
+  "¿Cuál es el vicio secreto de Batman?",
+  "¿Qué hizo que mi primer beso fuera tan terrible?",
+  "¿Por qué vale la pena vivir?",
+  "¿Qué es lo que nunca falla para animar una fiesta?",
+  "¿Qué es lo que nunca falla para conseguir una invitación?",
+  "¿Qué encuentra la abuela perturbador, pero extrañamente encantador?",
+  "¿Cuál es el mejor amigo de una chica?",
+  "¿Cuál es mi poder secreto?",
+  "¿Qué están usando en Estados Unidos para inspirar a los alumnos a mejorar?",
+  "¿A qué huele?",
+  "¿Qué es ese sonido?",
+  "¿De qué hay un montón en el almacén?",
+  "Cuando sea multimillonario, erigiré una estatua de 15 metros para conmemorar ______.",
+  "Cuando yo sea presidente, voy a crear el Departamento de ______.",
+  "Cuando estaba medio dormido, ______ se transformó en ______.",
+  "Cuando el faraón se mantuvo impasible, sus consejeros propusieron ______.",
+  "Mientras Estados Unidos competía con la Unión Soviética para llegar a la Luna, el Gobierno español invirtió millones de euros en investigar ______.",
+  "¿Por qué estoy todo pegajoso?",
+  "¿Por qué no puedo dormir por la noche?",
+  "¿Por qué me duele todo?",
+  "______: ¡cuando haces pop, ya no hay stop!",
+  "______. Es por eso que las madres van a Islandia.",
+  "La seguridad aeroportuaria ahora prohíbe ______ en los aviones.",
+  "Lo siento, profesor, pero no pude terminar mis deberes debido a ______.",
+  "En un mundo devastado por ______, nuestro único consuelo es ______.",
+  "Nadie se espera la Inquisición española. Nuestras armas principales son el miedo, la sorpresa y ______.",
+  "Ahora en el Museo de Historia Natural: una exposición interactiva sobre ______.",
+  "RENFE se disculpa por el retraso en el servicio de trenes debido a ______.",
+  "Nuestro viaje de fin de curso se arruinó debido a ______.",
+  "El tema de Eurovisión para el año que viene es «Somos ______».",
+  "¿Qué me traje de mi último viaje a Ámsterdam?",
+  "¿Qué es lo que no te gustaría encontrarte en tu kebab?",
+    "Lo que más me gusta de mi suegra es ___.",
+    "Hacienda me ha llamado por culpa de ___.",
+    "En mi currículum pongo ___ como mayor logro.",
+    "Mi profesor cree que mi problema es ___.",
+    "¿Qué hay debajo de mi cama? ___.",
+  "Cuando por fin consiga mi propio castillo, la primera habitación será para ______.",
+"El Gobierno ha anunciado una nueva medida para combatir ______.",
+  "Mi abogado me ha recomendado que no vuelva a hablar de ______.",
+"El verdadero motivo por el que cerraron el supermercado fue ______.",
+"Mi nuevo negocio consiste en vender ______ a personas que necesitan ______.",
+"Los científicos han descubierto que ______ es la causa de todos nuestros problemas.",
+"El alcalde inauguró ayer un monumento dedicado a ______.",
+"Después de diez años de investigación, los expertos finalmente entendieron ______.",
+"Mi mayor talento oculto es ______.",
+"Lo primero que haré cuando tenga un millón de euros será comprar ______.",
+"Mi nuevo programa de televisión se llama «______ en directo».",
+"El peor consejo que he recibido en mi vida fue ______.",
+"Según mi abuela, la solución para cualquier problema es ______.",
+"El nuevo producto estrella de 2027 será ______.",
+"Los científicos están preocupados porque ______ ha empezado a multiplicarse.",
+"Mi vecino lleva tres semanas intentando construir ______.",
+"El récord mundial de ______ acaba de ser superado.",
+"Mi entrenador dice que para mejorar necesito dejar de hacer ______.",
+"El nuevo parque temático tendrá una atracción dedicada a ______.",
+"En la próxima reunión de vecinos tendremos que discutir sobre ______.",
+"Mi plan secreto para hacerme famoso incluye ______.",
+"El director del colegio anunció que mañana todos tendremos que traer ______.",
+"El nuevo restaurante de moda solo sirve ______.",
+"El inventor asegura que su máquina puede convertir ______ en ______.",
+"Después de abrir la caja misteriosa, encontramos ______.",
+"El museo tuvo que cerrar temporalmente después de descubrir ______.",
+"El científico gritó «¡Eureka!» cuando finalmente encontró ______.",
+"El nuevo alcalde prometió solucionar el problema de ______.",
+"Mi primer día en el trabajo terminó cuando apareció ______.",
+"El verdadero secreto de una buena tortilla es ______.",
+"El chef abandonó la cocina después de descubrir ______ en la nevera.",
+"Mi madre entró en mi habitación y encontró ______.",
+"Mi padre asegura que sabe arreglar ______, pero todos sabemos cómo acabará esto.",
+"Mi nuevo hobby consiste en coleccionar ______.",
+"El vecino de arriba se ha comprado ______ y ahora nadie puede dormir.",
+"En la próxima actualización del móvil aparecerá una función para ______.",
+"Mi GPS decidió llevarme directamente hasta ______.",
+"El avión no pudo despegar porque el piloto descubrió ______.",
+"El capitán anunció por megafonía que el barco tenía un pequeño problema con ______.",
+"El tren se retrasó debido a un incidente relacionado con ______.",
+"El guía turístico nos explicó que esta ciudad es famosa por ______.",
+"El turista preguntó dónde podía encontrar ______.",
+"El hotel nos ofreció una habitación con vistas a ______.",
+"El restaurante nos sorprendió con su especialidad: ______.",
+"El camarero preguntó si queríamos añadir ______ a nuestra pizza.",
+"El supermercado ha anunciado una oferta especial de ______.",
+"El cajero automático dejó de funcionar después de que alguien intentara comprar ______.",
+"El nuevo sabor de helado del verano será ______.",
+"El concurso de cocina de este año tiene como ingrediente secreto ______.",
+"El jurado quedó impresionado por la combinación de ______ y ______.",
+"Mi receta familiar secreta consiste en mezclar ______ con ______.",
+"El libro de cocina más vendido del año se titula «100 formas de preparar ______».",
+"El nuevo deporte olímpico será ______.",
+"El comentarista deportivo no sabía qué decir cuando apareció ______ en el campo.",
+"El árbitro tuvo que detener el partido debido a ______.",
+"Mi equipo ganó la final gracias a ______.",
+"El entrenador aseguró que la clave de la victoria fue ______.",
+"El próximo videojuego permitirá a los jugadores controlar ______.",
+"El nuevo videojuego fue retirado porque los jugadores no paraban de hacer ______.",
+"Mi personaje secreto en el videojuego es ______.",
+"El jefe final resultó ser simplemente ______.",
+"El tutorial del juego empieza diciendo: «Antes de continuar, necesitas ______».",
+"El nuevo invento de mi amigo sirve exclusivamente para ______.",
+"Después de montar el mueble de IKEA descubrí que me sobraban ______.",
+"El manual de instrucciones no mencionaba nada sobre ______.",
+"El robot doméstico se rebeló porque estaba cansado de ______.",
+"Mi aspiradora ha empezado a ______ y estoy empezando a preocuparme.",
+"El teléfono me conoce tan bien que ayer me recomendó ______.",
+"Mi impresora se negó a funcionar hasta que le di ______.",
+"El ordenador decidió borrar todos mis archivos y guardar únicamente ______.",
+"El nuevo asistente virtual puede responder cualquier pregunta excepto ______.",
+"Mi reloj inteligente me avisó de que llevaba demasiado tiempo haciendo ______.",
+"El examen era muy fácil hasta que apareció una pregunta sobre ______.",
+"Mi profesor me puso un cero por entregar ______.",
+"Lo que realmente había en mi mochila era ______.",
+"Mi excusa para llegar tarde fue ______.",
+"El director anunció que el premio al mejor estudiante sería ______.",
+"El nuevo método de estudio consiste en combinar ______ con ______.",
+"Mi compañero de clase lleva toda la semana hablando de ______.",
+"El trabajo en grupo terminó cuando alguien propuso ______.",
+"El profesor entró en clase y vio ______.",
+"El verdadero motivo por el que suspendí fue ______.",
+"Mi jefe dijo que quería hablar conmigo sobre ______.",
+"En mi primer día de trabajo me encargaron ______.",
+"El departamento de Recursos Humanos ha prohibido ______.",
+"Mi compañero de oficina ha convertido su mesa en ______.",
+"El jefe nos prometió una recompensa si conseguíamos ______.",
+"Mi carta de dimisión simplemente decía: «No puedo seguir viviendo con ______».",
+  "Mi plan para dominar el mundo empieza con ___ y termina con ___.",
+"Para sobrevivir a una semana de trabajo necesitas ___ y ___.",
+"El científico consiguió convertir ___ en ___.",
+"Mi abuela combina ___ con ___ y sorprendentemente funciona.",
+"El nuevo restaurante recomienda acompañar ___ con ___.",
+"El secreto de mi éxito consiste en ___ mientras todos los demás hacen ___.",
+"El nuevo invento sirve para ___ sin necesidad de ___.",
+"Mi entrenador dice que debo sustituir ___ por ___.",
+"En mi próxima fiesta habrá ___, ___ y absolutamente nada más.",
+"El alcalde prometió construir ___ junto a ___.",
+"Mi receta secreta lleva ___, ___ y mucha confianza.",
+"El nuevo programa de televisión consiste en ___ mientras ___ observa.",
+"Los expertos recomiendan ___ antes de intentar ___.",
+"Mi nuevo negocio consiste en vender ___ a personas que buscan ___.",
+"El museo ha inaugurado una exposición sobre ___ y ___.",
+"Mi vecino asegura que ___ es la solución definitiva para ___.",
+"El futuro de la humanidad depende de ___ y ___.",
+"Mi profesor descubrió que ___ funciona mucho mejor que ___.",
+"El nuevo reto consiste en conseguir ___ utilizando solamente ___.",
+"Para ganar el concurso tendrás que llevar ___ y convencer al jurado de ___.",
+  "Para conseguir el trabajo de mis sueños solo necesito ___, ___ y ___.",
+"El plan perfecto para una fiesta incluye ___, ___ y ___.",
+"Mi nuevo invento funciona gracias a ___, ___ y una cantidad preocupante de ___.",
+"El científico presentó su descubrimiento: ___, ___ y ___.",
+"Para sobrevivir a una semana sin internet necesitas ___, ___ y ___.",
+"Mi receta secreta contiene ___, ___ y exactamente tres cucharadas de ___.",
+"El nuevo parque de atracciones tendrá ___, ___ y una montaña rusa de ___.",
+"El Gobierno ha anunciado un nuevo ministerio dedicado a ___, ___ y ___.",
+"Mi estrategia para ganar el concurso consiste en ___, ___ y fingir que sé ___.",
+"El museo ha inaugurado una exposición sobre ___, ___ y ___.",
+"Para ser considerado adulto necesitas ___, ___ y saber arreglar ___.",
+"El nuevo videojuego incluye ___, ___ y un jefe final llamado ___.",
+"Mi vecino afirma que puede solucionar cualquier problema con ___, ___ y ___.",
+"El menú especial de hoy incluye ___, ___ y de postre ___.",
+"El secreto de una buena convivencia es ___, ___ y nunca mencionar ___.",
+"Mi viaje soñado incluye ___, ___ y dormir al lado de ___.",
+"El nuevo invento español combina ___, ___ y ___.",
+"Para convertirse en famoso solo hacen falta ___, ___ y ___.",
+"El peor equipo de trabajo está formado por ___, ___ y ___.",
+"Mi plan para el fin de semana: ___, ___ y absolutamente nada de ___.",
+"Los expertos recomiendan ___ por la mañana, ___ por la tarde y evitar ___.",
+"El nuevo restaurante se especializa en ___, ___ y una misteriosa salsa de ___.",
+"Para ganar esta competición necesitarás ___, ___ y una suerte increíble con ___.",
+"Mi profesor descubrió ___, ___ y finalmente entendió por qué entregué ___.",
+"El detective encontró ___, ___ y una pista relacionada con ___.",
+"En mi próxima fiesta habrá ___, ___ y alguien encargado de vigilar ___.",
+"El nuevo deporte olímpico combina ___, ___ y ___.",
+"Mi abuela asegura que ___, ___ y ___.",
+"El manual para sobrevivir al lunes recomienda ___, ___ y ___.",
+"Mi plan de vacaciones consiste en ___, ___ y evitar a toda costa ___.",
+  "Primero necesitas ___; después, ___; y finalmente, aceptar que ___.",
+"Todo iba perfectamente hasta que aparecieron ___, ___ y ___.",
+"Nunca pensé que mi vida acabaría dependiendo de ___, ___ y ___.",
+"El verdadero motivo de la celebración fue ___, ___ y ___.",
+"En caso de emergencia, recuerda: ___, ___ y nunca ___.",
+"Mi plan era sencillo: ___, ___ y ___. ¿Qué podía salir mal?",
+"Los tres pilares de una sociedad moderna son ___, ___ y ___.",
+"El próximo gran descubrimiento será ___, ___ y probablemente ___.",
+"Mi autobiografía se titulará «___, ___ y el día que descubrí ___».",
+"Según los expertos, el futuro estará dominado por ___, ___ y ___.",
+  "El chef recomienda acompañar ___ con ___.",
+"El nuevo programa de televisión consiste en ___ mientras ___.",
+"El museo ha encontrado una conexión entre ___ y ___.",
+"Mi vecino asegura que ___ es la solución perfecta para ___.",
+"El alcalde prometió construir ___ junto a ___.",
+"Mi profesor descubrió que ___ funciona mejor que ___.",
+"Para ganar la competición tendrás que dominar ___ y evitar ___.",
+"El nuevo videojuego permite controlar ___ mientras intentas escapar de ___.",
+"Mi viaje de vacaciones se arruinó por culpa de ___ y ___.",
+"El invento del año sirve para convertir ___ en ___.",
+"Mi abuela siempre dice que ___ es mucho mejor que ___.",
+"El restaurante se ha hecho famoso por mezclar ___ con ___.",
+    "Lo único que sobrevivirá al fin del mundo: ___.",
+    "La boda de mi primo se fue al garete por ___.",
+    "Última hora en el telediario: ___.",
+    "Para triunfar en la vida solo necesitas ___ y ___.",
+    "Me han echado del gimnasio por ___.",
+    "El nuevo reto viral de Internet: ___.",
+    "Nada une más a una familia que ___.",
+    "Ayer mi vecino me pidió prestado ___.",
+    "El secreto de mi éxito: ___ combinado con ___.",
+    "Lo peor de las vacaciones en Benidorm: ___.",
+    "Querido diario: hoy descubrí ___.",
+    "En la cena de Navidad, mi tío habló de ___ y de ___.",
+    "Prohibido en este restaurante: ___."
+  ];
+  
+ 
+
+
+  
+const BASE_W=[
+  "Una cita con un señor que habla demasiado",
+  "Una guerra de almohadas",
+  "Un concurso de eructos",
+  "Una gaviota robando comida",
+  "Una estatua de quince metros de mi perro",
+  "Un departamento gubernamental completamente inútil",
+  "Un faraón con problemas de autoridad",
+  "Una investigación científica sobre las croquetas",
+  "Un viaje de fin de curso desastroso",
+  "Un viaje a Ámsterdam que nadie quiere explicar",
+  "Un kebab con ingredientes sospechosos",
+  "Una fiesta que termina con los vecinos llamando a la policía",
+  "Un Batman con problemas de organización",
+  "Una impresora que solo funciona los viernes",
+  "Un profesor que pone deberes en vacaciones",
+  "Una reunión de emergencia para decidir qué pedir de cena",
+  "Un ejército de gaviotas hambrientas",
+  "Un invento que nadie necesitaba",
+  "Una estatua dedicada a las siestas",
+  "Un político inaugurando una rotonda",
+  "Una máquina expendedora que vende cosas absurdas",
+  "Un señor que se ha perdido en su propio barrio",
+  "Un discurso motivacional de un pato",
+  "Una competición mundial de poner caras raras",
+  "Un vecino que sabe absolutamente todo de todos",
+    "Una estupidez inexplicable",
+  "Un político recibiendo un baño de realidad",
+  "¡Cachorros!",
+  "Lanzar uvas a un hombre hasta que pierda la paciencia",
+  "Un accidente de tráfico de película",
+  "Manos de jazz vigorosas",
+  "Vladimir Putin",
+  "Vomitar marisco y arrepentirse de todas las decisiones de la vida",
+  "Levantarse medio desnudo en el parking de un McDonald's",
+  "Una pesadilla especialmente incómoda",
+  "Una persona que no sabe cuándo parar",
+  "Privilegio injustificado",
+  "William Shatner",
+  "Música de magos",
+  "Mujeres en anuncios de yogures",
+  "Sufragio femenino",
+  "Una salsa misteriosa en un bote para llevar",
+  "Tu hermano raro",
+  "400 años de atrocidades coloniales",
+  "Una buena taza de té",
+  "Una decisión tomada a las tres de la mañana",
+  "Un irlandés que no se preocupa por las patatas",
+  "Un sistema de clases fuertemente arraigado",
+  "Siendo marginados",
+  "Sangre, esfuerzo, sudor y lágrimas",
+  "Brexit",
+  "Caballería",
+  "Disimular que no tienes ni idea de lo que haces",
+  "Beber del váter y comer basura",
+  "Inglaterra",
+  "Alemanes de vacaciones",
+  "Casarse, tener unos cuantos niños, comprar algunas cosas, retirarse a la costa y morir",
+  "Un vecino que siempre está pendiente de todo",
+  "Simplemente tocar el pelo de David Beckham",
+  "Muchachos",
+  "La enfermedad de las vacas locas",
+  "El inmaculado despacho de la reina",
+  "Hacer cola",
+  "Cagar una salchicha Frankfurt perfecta",
+  "Los piratas somalíes",
+  "Un poco de jodida paz y tranquilidad",
+  "La Peste Negra",
+  "El fin de los tiempos",
+  "El Norte",
+  "Los pequeños problemas de los terratenientes",
+  "El olor a Primark",
+  "La forma en que James Bond trata a los villanos",
+  "Conservadores",
+  "Tu madre",
+  "España",
+  "Una impresora atascada",
+  "Un atasco monumental",
+  "Una reunión familiar interminable",
+  "Una excursión que sale terriblemente mal",
+  "Un robot que no entiende las emociones humanas",
+  "Un señor que se cree el protagonista de una película",
+  "Un concurso de baile bastante lamentable",
+  "Una gaviota con muy malas intenciones",
+  "Una montaña de ropa sin doblar",
+  "¡Cachorros!",
+  "Una situación tremendamente incómoda en el ascensor",
+  "Preguntas de selectividad con sesgos absurdos",
+  "Racismo",
+  "Un grupo de villanos con un plan incomprensible",
+  "Música rap",
+  "Ataques de velociraptores",
+  "Represión",
+  "Republicanos",
+  "RoboCop",
+  "Quedarse sin batería en el peor momento",
+  "Diciendo «te quiero»",
+  "Ciencia",
+  "Cienciología",
+  "Ver a la abuela en una situación comprometida",
+  "Ver llorar a mi padre",
+  "Encerrar a varias personas con gaviotas hambrientas",
+  "Estar furioso por dentro",
+  "Odiarse a uno mismo",
+  "Vender cromos a los niños a precios desorbitados",
+  "Un duelo de honor con espadas de plástico",
+  "Servidumbre",
+  "Siete personas llegando tarde y tres poniendo excusas",
+  "Una tensión incómoda durante una cena familiar",
+  "Objetos brillantes",
+  "Callarse la boca para que pueda ver el partido",
+  "Silencio",
+  "Una manta llena de manchas misteriosas",
+  "Solucionar los problemas con violencia",
+  "Un poco de paz y tranquilidad de una maldita vez",
+  "Algún chico",
+  "Algunos de los mejores raperos del mundo",
+  "Sopa que está demasiado caliente",
+  "¿Espaguetis? ¿Otra vez?",
+  "Abdominales espectaculares",
+  "Cachalotes",
+  "Combustión espontánea de una tostadora",
+  "Stalin",
+  "Stephen Hawking diciendo barbaridades",
+  "Personajes femeninos fuertes y con carácter",
+  "Rayos de sol y arcoíris",
+  "Dulce, dulce venganza",
+  "Cambiarse a Línea Directa®",
+  "Una bandada de pájaros atacando a un señor con sombrero",
+  "Soluciones de gestión sinérgica",
+  "Bailando claqué como si no hubiera un mañana",
+  "Enseñar a un robot a amar",
+  "Embarazo adolescente",
+  "Contando una historia de mierda que no va a ninguna parte",
+  "El sueño americano",
+  "Los Amish",
+  "La llegada de la pizza",
+  "El Big Bang",
+  "El bombardeo de Nagasaki",
+  "Los Boy Scouts de América",
+  "El sabor refrescante y genial de Pepsi®",
+  "La Fuerza",
+  "El techo de cristal",
+  "La Gran Depresión",
+  "El corazón de un niño",
+  "La agenda de un político",
+  "The Hustle",
+  "La inevitable muerte térmica del universo",
+  "El KKK",
+  "La magia del teatro en vivo",
+  "El lechero",
+  "El milagro del parto",
+  "La única persona que sabe usar la impresora",
+  "El pasado",
+  "El patriarcado",
+  "La placenta",
+  "El Papa",
+  "Los Red Hot Chili Peppers",
+  "Los ritmos de África",
+  "Los rusos",
+  "Los gritos... los terribles gritos",
+  "El Sur",
+  "El compromiso de los Tres Quintos",
+  "El Camino de Lágrimas",
+  "El auténtico significado de la Navidad",
+  "El ferrocarril subterráneo",
+  "La marea imparable de los rumores",
+  "La violación de nuestros derechos humanos más básicos",
+  "La contraseña del wifi",
+  "Las maravillas de Oriente",
+  "El tiroteo de este mes en una película de acción",
+  "Tres patos a la vez",
+  "Una discusión sobre quién tiene que sacar la basura",
+  "Un examen sorpresa",
+  "Un político prometiendo bajar los impuestos",
+  "Un robot con una crisis existencial",
+  "Un grupo de gaviotas organizadas",
+  "Una reunión que podría haber sido un correo",
+  "Una impresora que decide jubilarse",
+  "Un vecino que canta ópera a las tres de la mañana",
+  "Un señor que se cree Napoleón",
+  "Un ejército de abuelas jugando al bingo",
+  "Un concurso de eructos",
+  "Un gato que juzga tus decisiones",
+  "Una excursión que sale completamente mal",
+  "Una pizza con piña defendida con argumentos científicos",
+  "Un profesor que pone deberes en vacaciones",
+  "Una alarma que suena cinco minutos antes de que te duermas",
+  "Un atasco de dimensiones épicas",
+  "Un discurso de veinte minutos para explicar algo sencillo",
+  "Un grupo de turistas perdidos en su propia ciudad",
+    "Ser un marginado",
+  "Estar en racha",
+  "Un pato con demasiada confianza",
+  "Una abuela que conduce un kart",
+   "Un señor que discute con una máquina expendedora",
+  "Una paloma que exige respeto",
+  "Un pingüino entrando en una reunión de negocios",
+  "Un caballo con una cuenta de redes sociales",
+  "Una cabra que sabe demasiado",
+  "Un cocodrilo trabajando en atención al cliente",
+  "Un ejército de abuelas con cucharas de madera",
+  "Un grupo de patos tomando decisiones importantes",
+  "Un hamster con una agenda secreta",
+  "Un perro que ha leído demasiados libros",
+  "Un gato que se presenta a presidente",
+  "Una vaca que sabe utilizar Excel",
+  "Un pez con complejo de superioridad",
+  "Un loro que conoce todos tus secretos",
+  "Una ardilla robando las llaves del coche",
+  "Un burro intentando abrir una cuenta bancaria",
+  "Una gallina que dirige una empresa",
+  "Un pato que ha estudiado Derecho",
+  "Un pulpo trabajando de camarero",
+  "Una tortuga que llega tarde a todo",
+  "Un dinosaurio intentando utilizar un cajero automático",
+  "Un gorila intentando montar un mueble de IKEA",
+  "Un mono que se ha convertido en influencer",
+  "Un tiburón vegetariano",
+  "Una jirafa intentando entrar en un coche pequeño",
+  "Un elefante escondiéndose detrás de una farola",
+  "Una oveja que quiere ser detective",
+  "Un mapache con una tarjeta de crédito",
+  "Un pingüino que se cree empresario",
+  "Una paloma que sabe demasiado sobre tus vecinos",
+  "Un gato que cobra alquiler por dormir en el sofá",
+  "Un perro que ha perdido la paciencia",
+  "Un hamster que controla el mando de la televisión",
+  "Una cabra presentando un telediario",
+  "Un pato trabajando como guardia de seguridad",
+  "Una gallina que exige hablar con el encargado",
+  "Un pez intentando cruzar una carretera",
+  "Una vaca que se ha comprado un descapotable",
+  "Un caballo haciendo una entrevista de trabajo",
+  "Una tortuga participando en una carrera",
+  "Un loro dando consejos financieros",
+  "Un cocodrilo que tiene miedo de los charcos",
+  "Una ardilla que ha descubierto las criptomonedas",
+  "Un oso intentando hacer yoga",
+  "Un mapache que se ha mudado al ático",
+  "Un pingüino de vacaciones en Benidorm",
+  "Una cabra que ha aprendido a tocar la trompeta",
+
+  "Un señor que lleva 40 años esperando el autobús",
+  "Una persona que aplaude cuando aterriza el avión",
+  "Un vecino que canta ópera mientras cocina",
+  "Una persona que habla con las plantas",
+  "Un señor que lleva calcetines con sandalias",
+  "Una persona que se ha perdido dentro de IKEA",
+  "Un hombre que intenta montar una silla sin instrucciones",
+  "Una abuela que gana todas las discusiones",
+  "Un vecino que sabe absolutamente todo de todos",
+  "Un señor que lleva un paraguas en un día soleado",
+  "Una persona que se ríe en los momentos menos apropiados",
+  "Un hombre que se ha puesto dos zapatos diferentes",
+  "Una persona que saluda a alguien que no conoce",
+  "Un señor que entra en una tienda y olvida qué quería comprar",
+  "Una persona que lleva tres horas buscando las gafas que tiene puestas",
+  "Un hombre que habla solo en el ascensor",
+  "Una persona que manda un mensaje al grupo equivocado",
+  "Un señor que responde «igualmente» cuando no corresponde",
+  "Una persona que intenta abrir una puerta que dice claramente «empujar»",
+  "Un hombre que se tropieza cuando nadie lo está mirando",
+
+  "Una impresora que desarrolla sentimientos",
+  "Un GPS que se niega a dar indicaciones",
+  "Una tostadora que exige vacaciones",
+  "Un frigorífico que guarda rencor",
+  "Un microondas que cocina demasiado despacio",
+  "Un ordenador que sabe cuándo estás mintiendo",
+  "Un móvil que empieza a juzgar tus decisiones",
+  "Una calculadora que se niega a hacer matemáticas",
+  "Una alarma que decide cuándo debes levantarte",
+  "Un mando a distancia que desaparece cada noche",
+  "Una lavadora que se come los calcetines",
+  "Una nevera que cobra por abrir la puerta",
+  "Un robot que no entiende los chistes",
+  "Un robot que se cree demasiado inteligente",
+  "Una aspiradora que persigue a sus dueños",
+  "Un reloj que siempre llega cinco minutos tarde",
+  "Una cámara que solo funciona cuando nadie mira",
+  "Una impresora que necesita que la feliciten para funcionar",
+  "Un teléfono que llama automáticamente a tu madre",
+  "Un altavoz que decide qué música quieres escuchar",
+
+  "Una reunión que podría haber sido un mensaje",
+  "Un grupo de WhatsApp con 4.000 mensajes sin leer",
+  "Una videollamada en la que nadie sabe cómo activar el micrófono",
+  "Una presentación que empieza con «esto será muy rápido»",
+  "Un examen que empieza con una pregunta imposible",
+  "Un trabajo en grupo en el que trabaja una sola persona",
+  "Una reunión en la que nadie sabe por qué está allí",
+  "Una cola que deja de avanzar cuando llegas tú",
+  "Un supermercado sin cestas",
+  "Una máquina de café que nunca tiene café",
+  "Un restaurante donde todos piden lo mismo",
+  "Una excursión organizada por alguien sin sentido de la orientación",
+  "Un viaje en coche con seis personas y cinco asientos",
+  "Una maleta que pesa más que su dueño",
+  "Un hotel donde nadie sabe dónde está la recepción",
+  "Un aeropuerto donde anuncian tu vuelo en el peor momento",
+  "Un tren que se detiene justo cuando tienes prisa",
+  "Un autobús lleno de gente y un asiento vacío misteriosamente",
+  "Un mapa que hace que todo parezca más complicado",
+  "Un GPS que te manda por un camino de tierra",
+
+  "Una pizza de 47 ingredientes",
+  "Una tortilla tan grande que necesita permiso de obras",
+  "Una croqueta del tamaño de un ladrillo",
+  "Un bocadillo que requiere dos personas para transportarlo",
+  "Un helado que se derrite en tres segundos",
+  "Un plato de espaguetis imposible de desenredar",
+  "Una sopa que está a la temperatura del Sol",
+  "Un pastel que ocupa toda la mesa",
+  "Una hamburguesa con demasiados pisos",
+  "Un desayuno que parece un banquete medieval",
+  "Una nevera llena de comida que nadie recuerda haber comprado",
+  "El último trozo de pizza",
+  "Una patata con una forma sospechosamente perfecta",
+  "Un huevo con una personalidad muy fuerte",
+  "Una sandía que pesa más que una mochila",
+  "Un bocadillo preparado para sobrevivir al apocalipsis",
+  "Una receta que requiere 37 ingredientes",
+  "Un restaurante donde solo sirven croquetas",
+  "Un buffet en el que nadie sabe por dónde empezar",
+  "Un postre que necesita instrucciones",
+
+  "Una siesta de cinco minutos que dura cuatro horas",
+  "Buscar el móvil mientras lo tienes en la mano",
+  "Buscar las gafas mientras las llevas puestas",
+  "Entrar en una habitación y olvidar por qué",
+  "Abrir la nevera y olvidar qué querías",
+  "Decir «solo un episodio más»",
+  "Intentar arreglar algo y empeorarlo",
+  "Montar un mueble y que sobren piezas",
+  "Leer las instrucciones después de haberlo montado",
+  "Intentar guardar una sábana ajustable",
+  "Doblar una camiseta y que vuelva a estar arrugada",
+  "Despertarse cinco minutos antes de que suene la alarma",
+  "Tropezarse en una habitación completamente vacía",
+  "Reírse cuando nadie más se está riendo",
+  "Saludar a alguien que en realidad estaba saludando a otra persona",
+  "Enviar un mensaje y arrepentirse inmediatamente",
+  "Escribir «jajaja» sin estar riéndose",
+  "Intentar parecer ocupado cuando no estás haciendo nada",
+  "Decir «sí, sí, lo entiendo» sin entender absolutamente nada",
+  "Asentir con mucha seguridad mientras estás completamente perdido",
+  "Ser rico",
+  "Bill Nye, el Hombre de la Ciencia",
+  "Darse un atracón de croquetas",
+  "Una colección de mocos",
+  "Comenzar a bailar de improviso",
+  "Cartas Contra la Humanidad",
+  "Sugerir organizar una competición de miradas disimuladamente",
+  "Catapultas",
+  "Centauros",
+  "Tener motosierras como manos (de mentira)",
+  "Un concurso de belleza infantil",
+  "Una confianza totalmente injustificada",
+  "Deuda agobiante",
+  "Migas por toda la maldita alfombra",
+  "Acurrucarse en el sofá",
+  "Traumas infantiles por culpa de las matemáticas",
+  "Darth Vader",
+  "David Bowie volando en un tigre hecho de relámpagos",
+  "Pájaros muertos por todas partes",
+  "Padres que no paran de contar batallitas",
+  "Dedos como salchichas",
+  "Diversidad",
+  "Cometiendo crímenes absurdos",
+  "Hacer lo correcto por una vez",
+  "Donald J. Trump",
+  "Beber agua directamente del grifo del baño",
+  "Arcadas",
+  "Comerse el último bisonte del planeta",
+  "Ancianos japoneses jugando al bingo",
+  "¡Saliendo del mar y destruyendo Tokio!",
+  "Emociones",
+  "Estrógenos",
+  "Explicar cómo funciona el cerebro humano",
+  "Esperar un eructo y acabar vomitando en el suelo",
+  "Explosiones",
+  "Pantalones demasiado ajustados",
+  "Facebook",
+  "Desvanecerse lentamente y desaparecer en la nada",
+  "Hambre",
+  "Comida de lujo para gatos",
+  "Tirarse un pedo y alejarse",
+  "El miedo en sí mismo",
+  "Cagando fuego",
+  "Llenando mi maletín con cosas de negocios",
+  "Pintando con los dedos",
+  "Bacterias carnívoras",
+  "Pájaros que no pueden volar",
+  "Ex-Presidente George W. Bush",
+  "La 2 Noticias",
+  "Masculinidad delicada",
+  "Muestras gratis",
+  "Fricción",
+  "Gandhi",
+  "Gansos",
+  "Conexión humana genuina",
+  "La canciller alemana Angela Merkel",
+  "Ser aplastado por una máquina expendedora",
+  "Eliminar las drogas de las calles",
+  "Casarse, tener algunos hijos, comprar algunas cosas, retirarse a Florida y morir",
+  "Desnudarse y mirar Nickelodeon",
+  "Estar tan enfadado que te explota la cabeza",
+  "Chicas",
+  "Dando el 110%",
+  "Goblins",
+  "Pasar un día entero sin mirar el móvil",
+  "La abuela",
+  "Tener orejas en lugar de ojos",
+  "Tener grandes sueños pero ninguna forma realista de alcanzarlos",
+  "Huérfanos agradecidos",
+  "Su Majestad, la Reina Isabel II",
+  "Esperanza",
+  "Carne de caballo",
+  "Vagabundos",
+  "Una abuela que sabe karate",
+  "Un vecino que espía con prismáticos",
+  "Un concurso de talentos sin participantes talentosos",
+  "Un dinosaurio en una oficina",
+  "Una cabra con complejo de superioridad",
+  "Un profesor que se cree gracioso",
+  "Un robot que ha perdido las instrucciones",
+  "Una reunión de vecinos que acaba en guerra de almohadas",
+  "Un señor que lleva 40 años esperando el autobús",
+  "Una abuela que domina Internet mejor que tú",
+  "Un pato que exige hablar con el encargado",
+  "Un ascensor lleno de gente que no se conoce",
+  "Una tostadora que ha decidido jubilarse",
+  "Un campeonato mundial de lanzamiento de chanclas",
+  "Un hombre que se ha quedado encerrado en un probador",
+  "Un equipo de pingüinos organizando una revolución",
+  "Una vaca que sabe demasiado",
+  "Un supermercado sin carros",
+  "Una paloma con complejo de influencer",
+  "Una excursión organizada por alguien sin sentido de la orientación",
+  "Un señor que habla con las plantas",
+  "Una impresora que solo funciona los domingos",
+  "Un concurso de comer flanes",
+  "Un calcetín que lleva desaparecido diez años",
+  "Un GPS que te insulta cuando te equivocas",
+  "Una familia que discute por la última croqueta",
+  "Un hombre que se presenta a una entrevista en pijama",
+  "Un pingüino trabajando de socorrista",
+  "Una gallina que dirige una empresa",
+  "Un campeonato de siestas",
+  "Un perro que se cree el dueño de la casa",
+
+    "Mi cuñado explicando criptomonedas",
+    "Una siesta de tres horas",
+    "El WhatsApp de la familia a las 7 de la mañana",
+    "Un chándal de terciopelo",
+    "Una factura de la luz de 900 euros",
+    "Un croquetón sospechoso",
+    "La tortilla con cebolla (¡con cebolla!)",
+    "Un karaoke sin vuelta atrás",
+    "Mi antiguo profesor apareciendo por sorpresa",
+    "Una piscina de gelatina",
+    "El WiFi del vecino",
+    "Los abuelos con el móvil en altavoz",
+    "Un dron con malas intenciones",
+    "El gimnasio en enero",
+    "Una paella con piña",
+    "Perder las llaves otra vez",
+    "Un mariachi inoportuno",
+    "Bailar sin música",
+    "Un perro con complejo de superioridad",
+    "La cola de Correos",
+    "Fingir que entiendo de vinos",
+    "Una crisis de los cuarenta",
+    "Mi tía contando el mismo chiste",
+    "Un gato que sabe demasiado",
+    "Pisar un Lego descalzo",
+    "El último trozo de pizza",
+    "Un mago que no sabe hacer magia",
+    "Un abrazo muy largo e incómodo",
+    "Un tutorial de YouTube que sale mal",
+    "Comer pipas en el cine",
+    "Un cuñado con megáfono",
+    "Hablar solo en el ascensor",
+    "Mi currículum lleno de mentiras",
+    "Un sofá con muchos secretos",
+    "Una abuela ninja",
+    "Un pulpo con rencor",
+    "Un pavo de Navidad con vida propia",
+    "El grupo de padres del colegio",
+    "Una reunión que podría haber sido un email",
+    "Un jamón con pasaporte",
+    "Una dieta que empieza el lunes",
+    "Mi gemelo malvado",
+    "10.000 refugiados sirios",
+    "50.000 voltios directamente en los pezones",
+    "Una bolsa de habichuelas mágicas",
+    "Un desayuno equilibrado",
+    "Una bola de cera de oreja y recortes de uñas",
+    "Un pájaro que caga zurullos de tamaño humano",
+    "Un bofetón monumental",
+    "Un tazón de mayonesa y dientes de juguete",
+    "Un tumor cerebral",
+    "Una fiesta de cumpleaños decepcionante",
+    "Un halcón con un gorro en la cabeza",
+    "Un pedo tan poderoso que despierta a los gigantes de su sueño de mil años",
+    "Un cerdo diminuto llevando un chubasquero pequeñito y botas de agua",
+    "Un gorila fuerte y bueno",
+    "Un montaje absurdo sobre voleibol",
+    "Una horda de vikingos",
+    "Una vida de tristeza",
+    "Un niño pequeño que no deja de hablar de dinosaurios",
+    "Una audiencia de estudio en directo",
+    "Un mexicano",
+    "Un hombre de mediana edad en patines",
+    "Un león de zoo deprimido",
+    "Una pirámide de cabezas de maniquíes",
+    "Un sombrero muy guay",
+    "Una tortuga mordiéndote la punta del zapato",
+    "Un pelo solitario en la comida",
+    "Una pistola de agua llena de zumo de tomate",
+    "Una paradoja de viajes en el tiempo",
+    "Un mini caballo",
+    "Una mini guitarra bastante peculiar llamada ukelele",
+    "Un molino lleno de espantapájaros",
+    "Aceptar las cosas tal y como son",
+    "Escuchar activamente",
+    "Niños africanos jugando al fútbol",
+    "Agricultura",
+    "Alcoholismo",
+    "Todos los tipos de comida que he probado",
+    "Buffet libre de gambas por 8,99 €",
+    "Un accidente de tráfico de dibujos animados",
+    "Una diarrea que nunca se detiene",
+    "Un giro argumental inesperado",
+    "Un pulpo haciendo malabares con siete pelotas",
+    "Un complejo de Edipo",
+    "Un viejo que está casi muerto",
+    "Una mujer mayor que sabe lo que tiene que hacer con el mando de la televisión",
+    "Un chupachups extragrande",
+    "Un embarazo inesperado",
+    "Arnold Schwarzenegger",
+    "Chaparreras sin culo",
+    "Auténtica cocina mexicana",
+    "Desodorante AXE",
+    "Pelotas",
+    "Plátanos",
+    "Barack Obama",
+    "¡BATMAN!",
+    "Amputaciones de guerra",
+    "Convertirse en un arándano",
+    "¿Abejas?",
+    "Ser un cabrón con los niños",
+    "Ser una persona extremadamente pesada",
+    "Ser una mujer",
+    "Ser capaz de hablar con los elefantes",
+    "Ser gordo y despistado",
+    "Un pájaro que habla como mi jefe",
+    "Una abuela que gana todos los concursos",
+    "Un vecino que sabe absolutamente todo de todos",
+    "Una impresora que funciona a la primera",
+    "Un ejército de patos enfadados",
+    "Un examen sorpresa de matemáticas",
+    "Un viaje en ascensor de tres horas",
+    "Una vaca que sabe karate",
+    "Un restaurante donde solo sirven croquetas",
+    "Un hombre que se ha perdido en IKEA",
+    "Una llamada de teléfono que empieza con tenemos que hablar",
+    "Un concurso de miradas con un caballo",
+    "Una nevera llena de cosas caducadas",
+    "Un grupo de WhatsApp con 500 mensajes sin leer",
+    "Un señor que aplaude cuando aterriza el avión",
+    "Una reunión familiar que termina en un campeonato de dominó",
+    "Un calcetín mojado",
+    "Un pingüino con problemas de identidad",
+    "Una gallina con complejo de jefa",
+    "Un robot que no entiende los chistes",
+    "Una montaña de ropa por planchar",
+    "Un GPS que siempre te manda por el camino más largo",
+    "Una tostadora que tiene demasiada personalidad",
+    "Un concurso de eructos entre dinosaurios",
+    "Una mudanza sin ascensor",
+    "Un cocodrilo trabajando de recepcionista",
+    "Un peluquero que solo sabe cortar flequillos",
+    "Un señor que se cuela en todas las colas",
+    "Un disfraz de dinosaurio en una boda",
+    "Una cabra que se ha comido los deberes",
+    "Un equipo de fútbol formado por abuelos",
+    "Un pato con una orden de alejamiento",
+    "Un profesor que pone deberes en vacaciones",
+    "Una montaña rusa construida por aficionados",
+    "Una pizza con 47 ingredientes",
+    "Un despertador que no tiene botón de apagado",
+    "Una paloma que te sigue a todas partes",
+    "Un concurso de talentos sin ningún talento",
+    "Un dentista con miedo a los dientes",
+    "Un caballo que sabe abrir puertas",
+    "Un vecino que practica la trompeta a medianoche"
+ ];
+
+const $=i=>document.getElementById(i),app=$('app');
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const L=t=>t.split('\n').map(x=>x.trim()).filter(Boolean);
+const newCode=()=>Array.from({length:4},()=>'abcdefghjkmnpqrstuvwxyz'[Math.random()*23|0]).join('');
+let NR=null,G=null,MSG='';
+
+const peers=()=>NR?NR.peers().filter(p=>p.presence&&p.presence.rm).map(p=>({me:p.isMe,p:p.presence})):[];
+const byk=()=>{const o={};peers().forEach(x=>o[x.p.k]=x.p);return o};
+const hostP=()=>{const x=peers().find(y=>y.p.h===1);return x&&x.p};
+const H=()=>G.host?G.hs:(hostP()||{}).hs;
+const valid=(s,h)=>s&&s.g===h.g&&s.r===h.r;
+const nm=k=>{const p=byk()[k];return p?E(p.n):'?'};
+const pk=b=>Math.min(3,Math.max(1,(b.match(/_{3,}/g)||[]).length));
+
+  
+const black=h=>{const a=BASE_B.concat(h.cc.b||[]);return a[h.bd[(h.r-1)%h.bd.length]%a.length]};
+
+  
+function fillB(b,cs){
+  let i=0,had=false;
+  let s=E(b).replace(/_{3,}/g,()=>{had=true;return `<u>${E(cs[i++]??'___')}</u>`});
+  // Cartas negras que son preguntas (sin hueco): la respuesta se muestra debajo
+  if(!had&&cs.length)s+=`<br><u>${cs.map(E).join(' / ')}</u>`;
+  return s;
+}
+const bc=(b,cs=[])=>`<div class="c k">${fillB(b,cs)}</div>`;
+const sb=h=>`<div class="sc">${peers().map(x=>`<span class="${x.me?'me':''}">${x.p.k===h.cz?'⚖ ':''}${E(x.p.n)}: ${h.sc[x.p.k]||0}</span>`).join('')}</div>`;
+
+function pub(){
+ if(!NR||!G)return;
+ NR.presence({rm:1,n:G.name,k:G.me,s:G.sub,pk:G.pk,rt:G.rt||null,h:G.host?1:null,hs:G.host?G.hs:null}).catch(()=>{});
+}
+function home(){
+ app.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Juego de cartas. Cada uno juega desde su móvil.</p>
+ ${MSG?`<p class="err">${MSG}</p>`:''}
+ <input id="nm" placeholder="Tu nombre" maxlength="16">
+ <h2>Crear sala</h2><label>Puntos para ganar: <select id="tg">${[3,5,7,10].map(v=>`<option ${v==5?'selected':''}>${v}</option>`).join('')}</select></label>
+ <button class="go" id="cr">Crear sala</button>
+ <h2>Unirme a una sala</h2><input id="cd" placeholder="Código de la sala" maxlength="6"><button class="go" id="jn">Unirme</button></div>`;
+ $('cr').onclick=()=>enter(true);$('jn').onclick=()=>enter(false);
+}
+function enter(create){
+ if(!RM){MSG='Las salas necesitan abrir este archivo desde tu servidor (http), no como archivo suelto.';return home()}
+ const name=($('nm').value||'').trim().slice(0,16)||(create?'Anfitrión':'Jugador');
+ const code=create?newCode():($('cd').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+ if(!code){MSG='Escribe el código de la sala.';return home()}
+ G={code,name,me:Math.random().toString(36).slice(2,8),host:!!create,sub:null,pk:null,hand:[],sel:[],jsel:null,jo:{r:-1,ks:[]},ct:{b:'',w:''},lk:'',
+  hs:create?{ph:'lobby',r:0,g:'',o:[],bd:[],cc:{b:[],w:[]},t:+$('tg').value,sc:{},win:null,cz:null}:null};
+ MSG='';render();
+ RM.join('hc-'+code).then(r=>{NR=r;NR.onPeers(sync);pub();sync()}).catch(e=>leave(e&&e.code==='room_full'?'La sala está llena.':'No se pudo entrar en la sala ('+((e&&e.code)||'error')+').'));
+}
+function leave(m){if(NR){NR.leave();NR=null}G=null;MSG=m||'';home()}
+
+/* ===== Lógica del anfitrión ===== */
+function nextCz(){const h=G.hs,by=byk(),n=h.o.length,i=h.o.indexOf(h.cz);for(let j=1;j<=n;j++){const k=h.o[(i+j)%n];if(by[k]){h.cz=k;return}}}
+function adv(){const h=G.hs;nextCz();h.r++;h.ph='play';h.win=null;pub();sync()}
+function hostLogic(){
+ const h=G.hs,by=byk();let ch=0;
+ if(h.ph==='lobby')return;
+ peers().forEach(x=>{if(!h.o.includes(x.p.k)){h.o.push(x.p.k);ch=1}});
+ if(ch)pub();
+ if(h.ph!=='play'&&h.ph!=='judge')return;
+ const cz=by[h.cz];if(!cz)return adv();
+ if(h.ph==='play'){
+  const need=h.o.filter(k=>k!==h.cz&&by[k]);
+  if(need.length&&need.every(k=>valid(by[k].s,h))){h.ph='judge';pub()}
+ }else if(cz.pk&&cz.pk.g===h.g&&cz.pk.r===h.r&&by[cz.pk.k]&&valid(by[cz.pk.k].s,h)){
+  const w=cz.pk.k;h.sc[w]=(h.sc[w]||0)+1;h.win={k:w,n:by[w].n,c:by[w].s.c};h.ph=h.sc[w]>=h.t?'end':'reveal';pub();
+ }
+}
+function startGame(){
+ const h=G.hs,ps=peers();if(ps.length<3)return;
+ h.g=Math.random().toString(36).slice(2,6);h.o=ps.map(x=>x.p.k);h.cz=h.o[0];h.r=1;
+ h.cc={b:L(G.ct.b),w:L(G.ct.w)};h.bd=sh([...Array(BASE_B.length+h.cc.b.length).keys()]);h.sc={};h.win=null;h.ph='play';pub();sync();
+}
+function again(){const h=G.hs;h.ph='lobby';h.sc={};h.win=null;h.r=0;pub();sync()}
+function sync(){if(!G||!NR)return;if(G.host)hostLogic();render()}
+
+/* ===== Jugador ===== */
+function ensure(h){const w=BASE_W.concat(h.cc.w||[]);while(G.hand.length<10&&G.hand.length<w.length){const c=w[Math.random()*w.length|0];if(!G.hand.includes(c))G.hand.push(c)}}
+function send(h){const cs=G.sel.map(i=>G.hand[i]);G.hand=G.hand.filter((_,i)=>!G.sel.includes(i));G.sel=[];G.sub={g:h.g,r:h.r,c:cs};pub();render()}
+function pick(h){G.pk={g:h.g,r:h.r,k:G.jsel};G.jsel=null;pub();render()}
+
+/* ===== Pantallas ===== */
+function render(){
+ if(!G)return home();
+ const h=H(),key=h?h.ph+h.r:'x',a=document.activeElement;
+ if(a&&/TEXTAREA|INPUT/.test(a.tagName)&&app.contains(a)&&G.lk===key)return;
+ G.lk=key;
+ const top=`<p class="mut">Sala <b>${E(G.code)}</b>${h?` · meta ${h.t} puntos`:''} · <button class="s" id="lv" style="margin:0;padding:2px 8px">Salir</button></p>`;
+ let b;
+ if(!h)b='<div class="box"><p class="mut">Conectando con la sala… Si no aparece, revisa el código.</p></div>';
+ else if(h.ph==='lobby')b=lobby(h);
+ else b=sb(h)+(h.ph==='play'?(h.cz===G.me?czWait(h):mine(h)):h.ph==='judge'?(h.cz===G.me?judge(h):`<div class="box">${bc(black(h))}<h2>⚖ ${nm(h.cz)} está eligiendo…</h2></div>`):result(h));
+ app.innerHTML=top+b;wire(h);
+}
+function lobby(h){
+ const n=peers().length;
+ return `<div class="box"><h2>Código de sala</h2><div class="code">${E(G.code)}</div><p class="mut">Los demás lo escriben en «Unirme a una sala».</p>
+ <h2>Jugadores (${n})</h2><div class="sc">${peers().map(x=>`<span>${E(x.p.n)}${x.p.h===1?' ★':''}</span>`).join('')}</div>
+ ${G.host?`<details><summary>Añadir mis cartas (opcional)</summary><p class="mut">Una por línea. En las negras usa ___ para el hueco.</p>
+ <textarea id="tb" placeholder="Negras">${E(G.ct.b)}</textarea><textarea id="tw" placeholder="Blancas">${E(G.ct.w)}</textarea></details>
+ <button class="go" id="st" ${n<3?'disabled':''}>${n<3?'Hacen falta 3 jugadores':'¡Empezar!'}</button>`:'<p class="mut">Esperando a que el anfitrión empiece…</p>'}</div>`;
+}
+function czWait(h){
+ const by=byk(),need=h.o.filter(k=>k!==h.cz&&by[k]),got=need.filter(k=>valid(by[k].s,h)).length;
+ return `<div class="box">${bc(black(h))}<h2>⚖ Eres el juez</h2><p class="mut">Esperando respuestas (${got}/${need.length})…</p></div>`;
+}
+function mine(h){
+ const b=black(h),k=pk(b);
+ if(valid(G.sub,h))return `<div class="box">${bc(b)}<h2>Respuesta enviada ✓</h2><p class="mut">Esperando al resto…</p></div>`;
+ ensure(h);
+ return `<div class="box">${bc(b)}<p class="mut">Elige ${k} carta${k>1?'s (en orden)':''}</p><div class="hd" id="hd">${G.hand.map((w,i)=>{const j=G.sel.indexOf(i);return `<button class="c w${j>=0?' on':''}" data-i="${i}" data-o="${j>=0?j+1:''}">${E(w)}</button>`}).join('')}</div><button class="go" id="ok" ${G.sel.length!==k?'disabled':''}>Enviar</button></div>`;
+}
+function judge(h){
+ const by=byk();
+ // La lista se recalcula en cada pintado y conserva el orden sorteado
+ const valids=h.o.filter(k=>k!==h.cz&&by[k]&&valid(by[k].s,h));
+ if(G.jo.r!==h.r||G.jo.g!==h.g)G.jo={r:h.r,g:h.g,ks:[]};
+ G.jo.ks=G.jo.ks.filter(k=>valids.includes(k)).concat(sh(valids.filter(k=>!G.jo.ks.includes(k))));
+ const ks=G.jo.ks;
+ return `<div class="box"><p class="mut">Elige la mejor respuesta</p><div class="hd" id="jd">${ks.map(k=>`<button class="c k${G.jsel===k?' on':''}" data-k="${k}">${fillB(black(h),by[k].s.c)}</button>`).join('')}</div><button class="go" id="pk" ${G.jsel?'':'disabled'}>Elegir ganador</button></div>`;
+}
+function result(h){
+ const w=h.win,end=h.ph==='end';
+ return `<div class="box">${bc(black(h),w.c)}<h2>🏆 ${E(w.n)} ${end?'gana la partida':'gana la ronda (+1)'}</h2>
+ ${G.host?`<button class="go" id="${end?'ag':'nx'}">${end?'Nueva partida':'Siguiente ronda'}</button>`:'<p class="mut">Esperando al anfitrión…</p>'}</div>`;
+}
+function wire(h){
+ $('lv')&&($('lv').onclick=()=>leave());
+ if($('tb')){$('tb').oninput=e=>G.ct.b=e.target.value;$('tw').oninput=e=>G.ct.w=e.target.value}
+ $('st')&&($('st').onclick=startGame);$('ag')&&($('ag').onclick=again);$('nx')&&($('nx').onclick=adv);
+ if($('hd')){const k=pk(black(h));$('hd').onclick=e=>{const b=e.target.closest('.w');if(!b)return;const i=+b.dataset.i,x=G.sel.indexOf(i);if(x>=0)G.sel.splice(x,1);else if(G.sel.length<k)G.sel.push(i);render()};$('ok').onclick=()=>send(h)}
+ if($('jd')){$('jd').onclick=e=>{const b=e.target.closest('.k');if(!b)return;G.jsel=b.dataset.k;render()};$('pk').onclick=()=>pick(h)}
+}
+/* ===== Modo DUELO (2 jugadores): online en sala y local en un mismo móvil ===== */
+(()=>{
+const rid=()=>Math.random().toString(36).slice(2,6);
+const RT=[['😐','Sosa',0],['😄','Gracioso',1],['🤣','Genial',2]];
+const rateBtns=()=>RT.map(x=>`<button class="c k" data-v="${x[2]}" style="text-align:center;min-height:90px"><div style="font-size:2rem">${x[0]}</div>${x[1]} (+${x[2]})</button>`).join('');
+/* ---------- 2) DUELO ONLINE (2 jugadores en sala) ---------- */
+const _lobby=lobby;
+lobby=function(h){
+  let s=_lobby(h);
+  if(G.host){
+    const n=peers().length;
+    if(n===2)s=s.replace('id="st" disabled>Hacen falta 3 jugadores','id="st">⚔ ¡Empezar duelo (2 jugadores)!')
+      .replace('<button class="go" id="st"','<p class="mut">Con 2 jugadores se juega el <b>modo Duelo</b>: los dos respondéis a la vez y os valoráis de 0 a 2 puntos. La meta es el doble.</p><button class="go" id="st"');
+    else if(n<2)s=s.replace('Hacen falta 3 jugadores','Hacen falta 2 jugadores como mínimo');
+  }
+  return s;
+};
+
+const _start=startGame;
+startGame=function(){
+  const h=G.hs,ps=peers();
+  h.t0=h.t0||h.t;
+  if(ps.length===2){
+    h.mode='duel';h.t=h.t0*2;h.g=rid();h.o=ps.map(x=>x.p.k);h.cz=null;h.r=1;
+    h.cc={b:L(G.ct.b),w:L(G.ct.w)};h.bd=sh([...Array(BASE_B.length+h.cc.b.length).keys()]);
+    h.sc={};h.win=null;h.dr=null;h.ph='play';pub();sync();return;
+  }
+  h.mode='normal';h.t=h.t0;_start();
+};
+
+const _hl=hostLogic;
+hostLogic=function(){
+  const h=G.hs;
+  if(h.mode!=='duel'||h.ph==='lobby')return _hl();
+  const by=byk();
+  if(h.ph==='play'){
+    if(h.o.every(k=>by[k]&&valid(by[k].s,h))){h.ph='judge';pub()}
+  }else if(h.ph==='judge'){
+    const ok=k=>by[k]&&by[k].rt&&by[k].rt.g===h.g&&by[k].rt.r===h.r;
+    if(h.o.every(ok)){
+      const a=h.o[0],b=h.o[1],pa=by[b].rt.v,pb=by[a].rt.v; // cada uno recibe la nota que le da el otro
+      h.sc[a]=(h.sc[a]||0)+pa;h.sc[b]=(h.sc[b]||0)+pb;
+      h.dr=[{k:a,n:by[a].n,c:by[a].s.c,p:pa},{k:b,n:by[b].n,c:by[b].s.c,p:pb}];
+      h.ph=(h.sc[a]>=h.t||h.sc[b]>=h.t)?'end':'reveal';pub();
+    }
+  }
+};
+
+const _adv=adv;
+adv=function(){
+  const h=G.hs;
+  if(h.mode==='duel'){h.r++;h.ph='play';h.dr=null;pub();sync();return}
+  _adv();
+};
+
+const _render=render;
+render=function(){
+  const h=G&&NR&&H();
+  if(!h||h.mode!=='duel'||h.ph==='lobby')return _render();
+  const by=byk(),inGame=h.o.includes(G.me),opp=h.o.find(k=>k!==G.me);
+  G.lk='duel'+h.ph+h.r;
+  const top=`<p class="mut">Sala <b>${E(G.code)}</b> · ⚔ Duelo · meta ${h.t} puntos · <button class="s" id="lv" style="margin:0;padding:2px 8px">Salir</button></p>`;
+  let b;
+  if(!inGame)b=sb(h)+'<div class="box"><p class="mut">Hay un duelo en marcha. Esperas como espectador…</p></div>';
+  else if(h.ph==='play')b=sb(h)+mine(h);
+  else if(h.ph==='judge'){
+    if(G.rt&&G.rt.g===h.g&&G.rt.r===h.r)b=sb(h)+`<div class="box">${bc(black(h))}<h2>Valoración enviada ✓</h2><p class="mut">Esperando a ${nm(opp)}…</p></div>`;
+    else if(by[opp]&&by[opp].s&&valid(by[opp].s,h))b=sb(h)+`<div class="box"><p class="mut">Valora la respuesta de ${nm(opp)}</p>${bc(black(h),by[opp].s.c)}<div class="hd">${rateBtns()}</div></div>`;
+    else b=sb(h)+'<div class="box"><p class="mut">Cargando la respuesta del rival…</p></div>';
+  }else{
+    const d=h.dr||[],x=d[0],y=d[1],end=h.ph==='end';
+    let fin='';
+    if(x&&y){
+      const rw=x.p===y.p?'🤝 Empate en la ronda':'🏆 '+E((x.p>y.p?x:y).n)+' gana la ronda';
+      fin=end?(h.sc[x.k]===h.sc[y.k]?'🤝 ¡Empate final!':'🎉 '+E((h.sc[x.k]>h.sc[y.k]?x:y).n)+' gana el duelo'):rw;
+    }
+    b=sb(h)+d.map(r=>`<div class="box" style="margin-bottom:10px">${bc(black(h),r.c)}<h2>${E(r.n)}: +${r.p}</h2></div>`).join('')
+      +`<div class="box"><h2>${fin}</h2>${G.host?`<button class="go" id="${end?'ag':'nx'}">${end?'Nueva partida':'Siguiente ronda'}</button>`:'<p class="mut">Esperando al anfitrión…</p>'}</div>`;
+  }
+  app.innerHTML=top+b;
+  wire(h);
+  document.querySelectorAll('[data-v]').forEach(e=>e.onclick=()=>{G.rt={g:h.g,r:h.r,v:+e.dataset.v};pub();render()});
+};
+
+/* ---------- 3) DUELO LOCAL (mismo móvil, sin servidor) ---------- */
+let LD=null;
+const bl=()=>BASE_B[LD.bd[(LD.r-1)%LD.bd.length]];
+const ldTop=()=>`<p class="mut">⚔ Duelo local · Ronda ${LD.r} · ${E(LD.n[0])} ${LD.sc[0]} – ${LD.sc[1]} ${E(LD.n[1])} · meta ${LD.t} · <button class="s" id="lx" style="margin:0;padding:2px 8px">Salir</button></p>`;
+function ldShow(html){app.innerHTML=ldTop()+html;$('lx').onclick=()=>{LD=null;home()}}
+function ldHome(){
+  app.innerHTML=`<h1>Duelo local</h1><div class="box"><p class="mut">Dos jugadores, un solo móvil. Os lo pasáis para elegir y valorar en secreto. No necesita servidor.</p>
+  <input id="n1" placeholder="Jugador 1" maxlength="16"><input id="n2" placeholder="Jugador 2" maxlength="16">
+  <label>Puntos para ganar: <select id="tg2">${[6,10,14,20].map(v=>`<option ${v==10?'selected':''}>${v}</option>`).join('')}</select></label>
+  <p class="mut">Cada ronda: los dos respondéis y os valoráis de 0 a 2 puntos.</p>
+  <button class="go" id="gl">Empezar</button><button class="s" id="bk">← Volver</button></div>`;
+  $('bk').onclick=()=>home();
+  $('gl').onclick=()=>{
+    LD={n:[($('n1').value||'').trim().slice(0,16)||'Jugador 1',($('n2').value||'').trim().slice(0,16)||'Jugador 2'],sc:[0,0],r:1,t:+$('tg2').value,
+      bd:sh([...Array(BASE_B.length).keys()]),hand:[[],[]],sub:[null,null],rt:[0,0],sel:[]};
+    ldPass(0,'pick','Elige tu respuesta; el otro no debe mirar.');
+  };
+}
+function ldPass(p,next,txt){
+  ldShow(`<div class="box"><h2>📱 Pasa el móvil a ${E(LD.n[p])}</h2><p class="mut">${txt}</p><button class="go" id="gp">Soy ${E(LD.n[p])}</button></div>`);
+  $('gp').onclick=()=>{LD.sel=[];(next==='pick'?ldPick:ldRate)(p)};
+}
+function ldPick(p){
+  const b=bl(),k=pk(b),hd=LD.hand[p];
+  while(hd.length<10){const c=BASE_W[Math.random()*BASE_W.length|0];if(!hd.includes(c))hd.push(c)}
+  ldShow(`<div class="box">${bc(b)}<p class="mut">${E(LD.n[p])}, elige ${k} carta${k>1?'s (en orden)':''}</p><div class="hd" id="lh">${hd.map((w,i)=>{const j=LD.sel.indexOf(i);return `<button class="c w${j>=0?' on':''}" data-i="${i}" data-o="${j>=0?j+1:''}">${E(w)}</button>`}).join('')}</div><button class="go" id="lok" ${LD.sel.length!==k?'disabled':''}>Enviar</button></div>`);
+  $('lh').onclick=e=>{const x=e.target.closest('.w');if(!x)return;const i=+x.dataset.i,j=LD.sel.indexOf(i);if(j>=0)LD.sel.splice(j,1);else if(LD.sel.length<k)LD.sel.push(i);ldPick(p)};
+  $('lok').onclick=()=>{
+    LD.sub[p]=LD.sel.map(i=>hd[i]);LD.hand[p]=hd.filter((_,i)=>!LD.sel.includes(i));LD.sel=[];
+    if(p===0)ldPass(1,'pick','Elige tu respuesta; el otro no debe mirar.');
+    else ldPass(0,'rate','Valora la respuesta de '+LD.n[1]+'.');
+  };
+}
+function ldRate(p){
+  const o=1-p;
+  ldShow(`<div class="box"><p class="mut">${E(LD.n[p])}, valora la respuesta de ${E(LD.n[o])}</p>${bc(bl(),LD.sub[o])}<div class="hd">${rateBtns()}</div></div>`);
+  document.querySelectorAll('[data-v]').forEach(e=>e.onclick=()=>{
+    const v=+e.dataset.v;LD.sc[o]+=v;LD.rt[o]=v;
+    if(p===0)ldPass(1,'rate','Valora la respuesta de '+LD.n[0]+'.');else ldRes();
+  });
+}
+function ldRes(){
+  const end=LD.sc[0]>=LD.t||LD.sc[1]>=LD.t;
+  const w=LD.rt[0]===LD.rt[1]?'🤝 Empate en la ronda':'🏆 '+E(LD.n[LD.rt[0]>LD.rt[1]?0:1])+' gana la ronda';
+  const fin=LD.sc[0]===LD.sc[1]?'🤝 ¡Empate final!':'🎉 '+E(LD.n[LD.sc[0]>LD.sc[1]?0:1])+' gana el duelo';
+  ldShow([0,1].map(i=>`<div class="box" style="margin-bottom:10px">${bc(bl(),LD.sub[i])}<h2>${E(LD.n[i])}: +${LD.rt[i]}</h2></div>`).join('')
+    +`<div class="box"><h2>${end?fin:w}</h2><button class="go" id="gn">${end?'Nuevo duelo':'Siguiente ronda'}</button></div>`);
+  $('gn').onclick=()=>{if(end)ldHome();else{LD.r++;ldPass(0,'pick','Elige tu respuesta; el otro no debe mirar.')}};
+}
+
+// Botón en la pantalla de inicio
+const _home=home;
+home=function(){
+  _home();
+  const box=app.querySelector('.box');
+  if(box){
+    const bt=document.createElement('button');
+    bt.className='go';bt.textContent='🎮 Duelo local (2 jugadores, un solo móvil)';
+    bt.style.background='#e8b800';bt.style.color='#111';bt.onclick=ldHome;
+    box.appendChild(bt);
+  }
+};
+})();
+
+/* ===== MODO INDIVIDUAL: jugador contra tres bots ===== */
+let SOLO=null;
+function soloHome(){
+ app.innerHTML=`<h1>Humanity Cards</h1><div class="box"><p class="mut">Modo individual · Tú contra 3 rivales virtuales. Sin salas ni conexión.</p>
+ <input id="soloName" maxlength="16" placeholder="Tu nombre (opcional)" value="Jugador">
+ <label>Puntos para ganar: <select id="soloTarget">${[3,5,7,10].map(v=>`<option ${v===5?'selected':''}>${v}</option>`).join('')}</select></label>
+ <button class="go" id="soloStart">🎮 Empezar partida</button>
+ <p class="mut">En cada ronda eliges una carta para responder y después haces de juez. ¡Intenta que tu respuesta sea la mejor!</p></div>`;
+ $('soloStart').onclick=soloStart;
+}
+function soloStart(){
+ const name=($('soloName').value||'Jugador').trim().slice(0,16)||'Jugador';
+ SOLO={names:[name,'Bot Alex','Bot Lola','Bot Marcos'],score:[0,0,0,0],target:+$('soloTarget').value,round:0,blackDeck:sh([...Array(BASE_B.length).keys()]),whiteDeck:sh(BASE_W.slice()),hands:[[],[],[],[]],black:null,answers:[],selected:null,phase:'pick'};
+ soloNext();
+}
+function soloDraw(p,n=1){
+ const h=SOLO.hands[p];
+ while(h.length<10){if(!SOLO.whiteDeck.length)SOLO.whiteDeck=sh(BASE_W.slice());const c=SOLO.whiteDeck.pop();if(!h.includes(c))h.push(c);}
+}
+function soloNext(){
+ SOLO.round++;SOLO.selected=null;SOLO.answers=[];SOLO.phase='pick';
+ if(!SOLO.blackDeck.length)SOLO.blackDeck=sh([...Array(BASE_B.length).keys()]);
+ SOLO.black=BASE_B[SOLO.blackDeck.pop()];
+ SOLO.need=pk(SOLO.black);
+ SOLO.hands.forEach((_,i)=>soloDraw(i));
+ SOLO.answers.push({owner:0,cards:null});
+ soloRenderPick();
+}
+function soloRenderPick(){
+ const k=SOLO.need;
+ app.innerHTML=`<p class="mut">Ronda ${SOLO.round} · Tú ${SOLO.score[0]} puntos · Meta ${SOLO.target} · <button class="s" id="soloExit">Salir</button></p>
+ <div class="sc">${SOLO.names.map((n,i)=>`<span>${E(n)}: ${SOLO.score[i]}</span>`).join('')}</div>
+ <div class="box">${bc(SOLO.black)}<p class="mut">Elige ${k} carta${k>1?'s en orden':''} para completar la frase.</p>
+ <div class="hd" id="soloHand">${SOLO.hands[0].map((c,i)=>{const j=SOLO.selected?SOLO.selected.indexOf(i):-1;return `<button class="c w${j>=0?' on':''}" data-i="${i}" data-o="${j>=0?j+1:''}">${E(c)}</button>`}).join('')}</div>
+ <button class="go" id="soloSubmit" disabled>Enviar respuesta</button></div>`;
+ $('soloExit').onclick=soloHome;
+ $('soloHand').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const i=+b.dataset.i;if(!SOLO.selected)SOLO.selected=[];const at=SOLO.selected.indexOf(i);if(at>=0)SOLO.selected.splice(at,1);else if(SOLO.selected.length<k)SOLO.selected.push(i);soloRenderPick()};
+ $('soloSubmit').disabled=!(SOLO.selected&&SOLO.selected.length===k);
+ $('soloSubmit').onclick=soloSubmit;
+}
+function soloSubmit(){
+ const chosen=SOLO.selected.map(i=>SOLO.hands[0][i]);SOLO.hands[0]=SOLO.hands[0].filter((_,i)=>!SOLO.selected.includes(i));
+ SOLO.answers[0].cards=chosen;
+ for(let p=1;p<4;p++){
+   const h=SOLO.hands[p],cards=[];
+   for(let j=0;j<SOLO.need;j++){const ix=Math.random()*h.length|0;cards.push(h.splice(ix,1)[0]);}
+   SOLO.answers.push({owner:p,cards});
+ }
+ SOLO.answers=sh(SOLO.answers);SOLO.phase='judge';soloJudge();
+}
+function soloJudge(){
+ app.innerHTML=`<p class="mut">Ronda ${SOLO.round} · Elige la respuesta ganadora</p><div class="sc">${SOLO.names.map((n,i)=>`<span>${E(n)}: ${SOLO.score[i]}</span>`).join('')}</div>
+ <div class="box">${bc(SOLO.black)}<p class="mut">¿Qué respuesta es la más divertida? No sabes quién la ha escrito.</p>
+ <div id="soloAnswers">${SOLO.answers.map((a,i)=>`<button class="c k" data-answer="${i}" style="${SOLO.selected===i?'outline:4px solid #e8b800':''}">${fillB(SOLO.black,a.cards)}</button>`).join('')}</div>
+ <button class="go" id="soloVote" disabled>🏆 Elegir ganadora</button></div>`;
+ $('soloAnswers').onclick=e=>{const b=e.target.closest('[data-answer]');if(!b)return;SOLO.selected=+b.dataset.answer;soloJudge();$('soloVote').disabled=false};
+ $('soloVote').disabled=SOLO.selected===null;
+ $('soloVote').onclick=soloResult;
+}
+function soloResult(){
+ const winner=SOLO.answers[SOLO.selected],who=winner.owner;SOLO.score[who]++;
+ const end=SOLO.score[who]>=SOLO.target;
+ SOLO.phase='result';
+ app.innerHTML=`<p class="mut">Ronda ${SOLO.round} · Resultado</p><div class="sc">${SOLO.names.map((n,i)=>`<span>${E(n)}: ${SOLO.score[i]}</span>`).join('')}</div>
+ <div class="box">${bc(SOLO.black,winner.cards)}<h2>🏆 ${E(SOLO.names[who])} gana la ronda</h2><p class="mut">${who===0?'¡Has conseguido el punto!': 'Esta vez se lo lleva '+E(SOLO.names[who])+'.'}</p>
+ ${end?`<h2>${who===0?'🎉 ¡Has ganado la partida!':'🤖 '+E(SOLO.names[who])+' ha ganado la partida'}</h2><button class="go" id="soloAgain">Nueva partida</button>`:`<button class="go" id="soloContinue">Siguiente ronda</button>`}
+ <button class="s" id="soloExit">Salir al inicio</button></div>`;
+ $('soloExit').onclick=soloHome;
+ if(end)$('soloAgain').onclick=soloStart;else $('soloContinue').onclick=soloNext;
+}
+// Sustituye por completo la pantalla de salas y el duelo local.
+home=soloHome;
+
+soloHome();
+</script>
+</body>
+</html>

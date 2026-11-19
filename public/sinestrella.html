@@ -63,7 +63,7 @@ a.it small{color:var(--mut)}
       list.innerHTML='<p class="msg">'+(all?'No hay más archivos .html en public.':'No hay ninguna página con ☆ en el título.')+'</p>';
       return;
     }
-    sub.textContent=shown.length+' página'+(shown.length>1?'s':'')+(all?' en public':' con ☆');
+    sub.textContent=shown.length+' página'+(shown.length>1?'s':'')+(all?' en public':' SIN ☆');
     shown.forEach(function(g){
       var a=document.createElement('a'),b=document.createElement('b'),s=document.createElement('small');
       a.className='it';a.href=g.href;

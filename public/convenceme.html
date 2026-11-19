@@ -1,455 +1,323 @@
-//MEJORAR ESTE JUEGO PORQUE PODRIA SER DE AMS JUGADORES O LO QUE SEA Y QUE N HAYA QUE ESCRIBIR POR QUE QUE PARESA ESCRIBIR ARUGMENTOS ESO ES HABLADO
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e4f1f7">
 <title>Convénceme</title>
 <style>
-:root{--paper:#e4f1f7;--ink:#0b1b2b;--beak:#ff6a1a;--beakink:#1a0a00;--ice:#bcd9e6;--card:#ffffff;--mut:#46647c;--ok:#1b9e5a;--no:#c9372c;
+:root{--paper:#dff0f8;--paper2:#f4fbff;--ink:#0b1b2b;--beak:#ff6a1a;--beak2:#ffa23a;--beakink:#1a0a00;--ice:#bcd9e6;--card:#ffffff;--mut:#46647c;--blob:#ffffff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0b1b2b;--ink:#e4f1f7;--ice:#1d3a54;--card:#12283d;--mut:#9db8cc;--ok:#4fd18b;--no:#ff7a6e}}
-:root[data-theme="dark"]{--paper:#0b1b2b;--ink:#e4f1f7;--ice:#1d3a54;--card:#12283d;--mut:#9db8cc;--ok:#4fd18b;--no:#ff7a6e}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;min-height:100dvh;background:var(--paper);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:560px;margin:0 auto;padding:18px 16px 40px}
-.hidden{display:none!important}
-h1,.sign{font-family:Impact,"Arial Narrow Bold","Haettenschweiler",sans-serif;font-weight:900;letter-spacing:.01em}
-h1{font-size:clamp(44px,14vw,72px);line-height:.95;margin:6px 0 10px}
-.mut{color:var(--mut);font-size:15px}
-.top{display:flex;justify-content:space-between;align-items:center;font-size:15px;color:var(--mut);margin-bottom:12px}
-.top b{color:var(--ink)}
-.sign{background:var(--card);border:4px solid var(--ink);border-radius:6px;padding:22px 16px;font-size:clamp(26px,8vw,40px);line-height:1.1;text-align:center;box-shadow:6px 6px 0 var(--ink);position:relative;margin:6px 0 34px}
-.sign::after{content:"";position:absolute;left:50%;bottom:-30px;width:10px;height:26px;margin-left:-5px;background:var(--ink)}
-.btn{display:block;width:100%;margin-top:12px;padding:15px;border:3px solid var(--ink);border-radius:8px;background:var(--beak);color:var(--beakink);font:inherit;font-weight:800;font-size:19px;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
-.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
-.btn.g{background:var(--card);color:var(--ink)}
-.btn:focus-visible,textarea:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-textarea{width:100%;height:150px;padding:12px;border:3px solid var(--ink);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;resize:none}
-.bar{height:14px;border:3px solid var(--ink);border-radius:8px;background:var(--card);overflow:hidden;margin:4px 0 10px}
-.bar i{display:block;height:100%;width:100%;background:var(--ink);transition:width .25s linear}
-.bar.hot i{background:var(--no)}
-.clock{font-family:Impact,sans-serif;font-size:34px;text-align:center}
-.jury{display:flex;justify-content:center;gap:10px;margin:14px 0}
-.j{width:52px;text-align:center;font-size:30px;line-height:1.1;border:3px solid var(--ink);border-radius:10px;padding:6px 0;background:var(--card)}
-.j small{display:block;font-size:12px;font-weight:700}
-.j.y small{color:var(--ok)}.j.n small{color:var(--no)}
-.pts{font-family:Impact,sans-serif;font-size:56px;text-align:center;line-height:1}
-.say{text-align:center;margin:6px 0 4px}
-.tip{background:var(--ice);border-radius:8px;padding:10px 12px;font-size:15px;margin-top:10px}
-.rank{list-style:none;padding:0;margin:14px 0}
-.rank li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:2px dashed var(--ice);font-size:15px}
-.big{font-size:22px;font-weight:800;text-align:center;margin:6px 0}
-@media (prefers-reduced-motion:no-preference){.j{animation:pop .35s both}.j:nth-child(2){animation-delay:.12s}.j:nth-child(3){animation-delay:.24s}.j:nth-child(4){animation-delay:.36s}.j:nth-child(5){animation-delay:.48s}}
-@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-color-scheme:dark){:root{--paper:#0b1b2b;--paper2:#123049;--ink:#e4f1f7;--ice:#1d3a54;--card:#12283d;--mut:#9db8cc;--blob:#2a5b83}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(120% 80% at 50% 0%,var(--paper2) 0,var(--paper) 60%);overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;background:var(--blob);opacity:.35;filter:blur(2px);z-index:0;pointer-events:none}
+.b1{width:260px;height:260px;left:-90px;top:8%}.b2{width:180px;height:180px;right:-60px;top:46%}.b3{width:320px;height:320px;left:30%;bottom:-170px}
+main{position:relative;z-index:1;max-width:560px;min-height:100dvh;margin:0 auto;padding:20px 18px 26px;display:flex;flex-direction:column}
+header{text-align:center}
+.logo{font-family:Impact,"Arial Narrow Bold","Haettenschweiler",sans-serif;font-weight:900;letter-spacing:.02em;font-size:clamp(34px,10vw,48px);line-height:1;margin:4px 0 6px}
+.logo span{display:inline-block;background:linear-gradient(135deg,var(--beak),var(--beak2));color:var(--beakink);padding:2px 12px 4px;border:3px solid var(--ink);border-radius:8px;transform:rotate(-2deg);box-shadow:3px 3px 0 var(--ink)}
+.sub{color:var(--mut);font-size:14px;margin:12px 0 0}
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:18px 0 8px}
+.tag{align-self:center;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);background:var(--ice);border-radius:99px;padding:5px 14px;margin-bottom:16px}
+.sign{position:relative;background:var(--card);border:4px solid var(--ink);border-radius:14px;padding:34px 20px;min-height:230px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:Impact,"Arial Narrow Bold","Haettenschweiler",sans-serif;font-weight:900;font-size:clamp(26px,7.4vw,40px);line-height:1.12;letter-spacing:.01em;box-shadow:8px 8px 0 var(--ink);margin-bottom:56px;transform-origin:50% 100%;cursor:pointer;user-select:none;-webkit-user-select:none}
+.sign::before{content:"";position:absolute;inset:8px;border:2px dashed var(--ice);border-radius:8px;pointer-events:none}
+.sign::after{content:"";position:absolute;left:50%;top:100%;width:14px;height:48px;margin-left:-7px;background:var(--ink);border-radius:0 0 4px 4px}
+.sign i{position:absolute;top:-14px;font-style:normal;font-size:26px}
+.sign i.l{left:16px}.sign i.r{right:16px}
+.ground{position:absolute;left:50%;bottom:-62px;width:130px;height:16px;margin-left:-65px;background:var(--ice);border-radius:50%;z-index:-1}
+.sign p{margin:0;position:relative}
+.sign.swing{animation:swing .55s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes swing{0%{transform:rotate(-6deg) scale(.94);opacity:.2}60%{transform:rotate(2deg) scale(1.01);opacity:1}100%{transform:rotate(0) scale(1)}}
+.actions{display:flex;gap:10px;margin-top:6px}
+.btn{font:inherit;font-weight:800;font-size:19px;cursor:pointer;padding:15px 18px;border:3px solid var(--ink);border-radius:10px;background:linear-gradient(180deg,var(--beak2),var(--beak));color:var(--beakink);box-shadow:0 5px 0 var(--ink);flex:1}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.g{flex:0 0 auto;background:var(--card);color:var(--ink);padding:15px 20px}
+.btn:disabled{opacity:.35;cursor:default}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.hint{text-align:center;color:var(--mut);font-size:13px;margin:16px 0 0}
+@media (prefers-reduced-motion:reduce){.sign.swing{animation:none}}
 </style>
 </head>
 <body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
 <main>
-  <section id="start">
-    <h1>Convénceme</h1>
-    <p>Te toca una afirmación absurda y tienes 30 segundos para defenderla como si te fuera la vida en ello. Un jurado de cinco decide si te cree.</p>
-    <p class="mut">Cinco rondas, hasta 500 puntos. El jurado es simulado y premia los argumentos largos, variados y bien enlazados.</p>
-    <button class="btn" id="go">Empezar</button>
-    <p class="mut" id="best"></p>
-  </section>
-
-  <section id="game" class="hidden">
-    <div class="top"><span>Ronda <b id="rn">1</b> de 5</span><span>Puntos: <b id="tot">0</b></span></div>
-    <div class="sign" id="sign">—</div>
-
-    <div id="pThink">
-      <p class="mut">Léela y piensa tu primer argumento. El reloj empieza cuando pulses el botón.</p>
-      <button class="btn" id="bTalk">Defender (30 s)</button>
-      <button class="btn g" id="bSkip">Cambiar afirmación</button>
+  <header>
+    <div class="logo"><span>Convénceme</span></div>
+    <p class="sub">Defiende la afirmación como si te fuera la vida en ello</p>
+  </header>
+  <div class="stage">
+    <div class="tag" id="tag">Afirmación 1</div>
+    <div class="sign swing" id="sign" role="button" tabindex="0" aria-live="polite" aria-label="Afirmación actual, toca para pasar a la siguiente">
+      <i class="l">🐧</i><i class="r">🐧</i>
+      <p id="txt"></p>
+      <span class="ground"></span>
     </div>
-
-    <div id="pTalk" class="hidden">
-      <div class="clock" id="clock">30</div>
-      <div class="bar" id="bar"><i id="barI"></i></div>
-      <textarea id="txt" placeholder="Escribe tu defensa aquí. También puedes decirla en voz alta."></textarea>
-      <button class="btn g" id="bDone">Ya he terminado</button>
+    <div class="actions">
+      <button class="btn g" id="prev" aria-label="Afirmación anterior">←</button>
+      <button class="btn" id="next">Otra afirmación</button>
     </div>
-
-    <div id="pRes" class="hidden">
-      <div class="say" id="verdict"></div>
-      <div class="jury" id="jury"></div>
-      <div class="pts" id="pts">0</div>
-      <div class="mut say">puntos esta ronda</div>
-      <div class="tip" id="tip"></div>
-      <button class="btn" id="bNext">Siguiente ronda</button>
-    </div>
-  </section>
-
-  <section id="end" class="hidden">
-    <h1>Fin del debate</h1>
-    <div class="pts" id="final">0</div>
-    <div class="mut say">de 500 puntos</div>
-    <p class="big" id="title"></p>
-    <ul class="rank" id="list"></ul>
-    <button class="btn" id="again">Jugar otra vez</button>
-  </section>
+    <p class="hint">Toca el cartel, desliza o usa las flechas del teclado</p>
+  </div>
 </main>
 <script>
-var CLAIMS=[
+var C=[
 "Los extraterrestres deberían pagar alquiler si viven en la Tierra",
-"Las cucharas son superiores a los tenedores",
-"El desayuno debería celebrarse tres veces al día",
-"Los ascensores deberían tener música de ascensor obligatoria",
-"Los turistas deberían pedir permiso a las estatuas para hacerse fotos",
-"Los martes deberían llamarse prelunes",
-"Los humanos deberían hibernar durante agosto",
-"Las croquetas deberían tener denominación de origen",
-"Los bancos deberían prestar dinero en monedas de chocolate",
-"Los mosquitos deberían anunciar a quién van a picar",
-"Los muebles deberían poder votar en las elecciones",
-"Los peluqueros deberían decidir el futuro de la moda",
-"Los supermercados deberían tener una sección de objetos inútiles",
-"Los cumpleaños deberían celebrarse cada seis meses",
-"Los coches deberían tener un modo de caminar",
-"Las escaleras mecánicas deberían ir en ambas direcciones a la vez",
-"Los calcetines deberían venir con GPS",
-"Las reuniones deberían sustituirse por partidas de piedra, papel o tijera",
-"Los bebés deberían elegir el nombre de sus padres",
-"Los restaurantes deberían servir primero el postre",
-"Los caracoles deberían tener matrícula",
-"Las estatuas deberían cambiar de postura cada noche",
-"Los teléfonos deberían descansar los domingos",
-"Los paraguas deberían tener seguro de vida",
-"Las bicicletas deberían poder aparcar en los árboles",
-"Los frigoríficos deberían contar chistes al abrirse",
-"Las personas deberían tener un día libre por cada bostezo",
-"Los turistas deberían llevar una bandera de su ciudad",
-"Los ascensores deberían permitir votar el piso de destino",
-"Los zapatos deberían tener personalidad propia",
-"Las gallinas deberían tener derecho a vacaciones",
-"Los fantasmas deberían pagar facturas de luz",
-"Las playas deberían tener carriles para correr",
-"Los lápices deberían poder jubilarse",
-"Los relojes deberían tener cinco minutos de propina",
-"Los peluqueros deberían poder multar los malos peinados",
-"Los semáforos deberían decidir cuándo podemos bailar",
-"Los hospitales deberían recetar vacaciones",
-"Los trenes deberían esperar a quien llega tarde",
-"Las escobas deberían tener permiso de conducir",
-"Los aviones deberían permitir viajar de pie para ahorrar",
-"Los mapas deberían incluir lugares imaginarios",
-"Los ordenadores deberían pedir perdón cuando se bloquean",
-"Las puertas deberían tener derecho a no abrirse",
-"Los ascensores deberían contar secretos de sus pasajeros",
-"Los bancos deberían ofrecer siestas en lugar de intereses",
-"Los cines deberían permitir gritar el final de la película",
-"Los parques deberían tener árboles frutales de chocolate",
-"Las vacas deberían tener derecho a elegir su nombre",
-"Los peces deberían poder votar desde sus peceras",
-"Las ciudades deberían tener un alcalde de reserva",
-"Los lunes deberían empezar después de comer",
-"Las multas deberían pagarse haciendo favores",
-"Los peluquines deberían tener su propio pasaporte",
-"Los restaurantes deberían permitir llevarse las sobras de otras mesas",
-"Las máquinas expendedoras deberían negociar los precios",
-"Los supermercados deberían cerrar cuando están de mal humor",
-"Los libros deberían poder cambiar su propio final",
-"Los ordenadores deberían tener vacaciones pagadas",
-"Las farolas deberían apagarse cuando alguien las mira",
-"Los relojes deberían funcionar más despacio los viernes",
-"Los turistas deberían dejar propina a los monumentos",
-"Los ascensores deberían tener un botón para salir de la conversación",
-"Los perros deberían poder denunciar a sus dueños",
-"Los gatos deberían tener un sindicato",
-"Las ovejas deberían cobrar derechos de imagen",
-"Los bancos deberían regalar dinero los días de lluvia",
-"Las naranjas deberían venir peladas de fábrica",
-"Los calcetines deberían tener un botón de emparejamiento",
-"Los supermercados deberían tener probadores de comida",
-"Los coches deberían pedir permiso para aparcar",
-"Los dentistas deberían aceptar dientes como forma de pago",
-"Las bibliotecas deberían prestar personas para conversar",
-"Los vecinos deberían competir en un campeonato de saludos",
-"Los peluqueros deberían poder cambiar el nombre de sus clientes",
-"Los parques deberían tener fuentes de chocolate",
-"Los aviones deberían tener una parada para estirar las piernas",
-"Los políticos deberían explicar sus promesas mediante dibujos",
-"Los cajeros automáticos deberían dar consejos financieros no solicitados",
-"Los restaurantes deberían cobrar menos si la comida está fea",
-"Los zapatos deberían avisar cuando alguien camina mal",
-"Las bicicletas deberían tener matrícula y claxon de barco",
-"Los museos deberían permitir tocar las obras una vez al año",
-"Las casas deberían tener un botón para ordenar la habitación",
-"Los despertadores deberían negociar cinco minutos más",
-"Los supermercados deberían poner música elegida por los clientes",
-"Los teléfonos deberían bloquearse cuando detectan cotilleos",
-"Las almohadas deberían tener memoria de los sueños",
-"Los espejos deberían mostrar cómo te ven los demás",
-"Los aviones deberían tener una fila para personas que quieren hablar",
-"Los restaurantes deberían permitir pagar con canciones",
-"Los ascensores deberían tener un presentador de televisión",
-"Los parques deberían tener zonas para adultos que quieran jugar",
-"Los colegios deberían enseñar a poner excusas convincentes",
-"Las ciudades deberían tener un día oficial sin prisas",
-"Los semáforos deberían felicitar a los peatones que esperan",
-"Los supermercados deberían tener una caja exclusiva para indecisos",
-"Los animales deberían poder elegir a sus veterinarios",
-"Las nubes deberían tener nombres oficiales",
-"Los calcetines deberían poder divorciarse",
-"Los humanos deberían tener un botón de reinicio",
-"Los peluqueros deberían tener poder para cambiar las leyes",
-"Las personas deberían poder cambiar de edad una vez al año",
-"Los sueños deberían contar como horas trabajadas",
-"Los lunes deberían empezar a las doce del mediodía",
-"Los restaurantes deberían permitir elegir al cocinero",
-"Las personas deberían tener un límite diario de conversaciones",
-"Los animales deberían tener representantes en el Congreso",
-"Las ciudades deberían competir en Eurovisión",
-"Los profesores deberían poner deberes a los padres",
-"Las vacaciones deberían ser obligatorias para los jefes",
-"Los bancos deberían pagar intereses por guardar secretos",
-"Las personas deberían poder devolver regalos que no les gustan sin dar explicaciones",
-"Los cumpleaños deberían celebrarse en el día de tu concepción",
-"Los supermercados deberían vender productos por orden de felicidad",
-"Los coches deberían tener un botón para evitar conversaciones incómodas",
-"Las personas deberían poder poner multas a quienes hablan demasiado alto",
-"Los vecinos deberían tener un límite de ruido al caminar",
-"Los restaurantes deberían tener un menú para personas indecisas",
-"Los políticos deberían someterse a un detector de excusas",
-"Las personas deberían poder denunciar a su despertador",
-"Los extraterrestres deberían tener derecho a voto si llevan cinco años en España",
-"Los bebés deberían elegir cuándo quieren nacer",
-"Los gimnasios deberían pagar a quienes entrenan",
-"Los peluqueros deberían poder prohibir ciertos cortes de pelo",
-"Las personas deberían tener derecho a una segunda primera impresión",
-"Las ciudades deberían tener una playa artificial en cada barrio",
-"Los supermercados deberían contratar catadores de patatas fritas",
-"Las personas deberían poder cambiar de nombre cada viernes",
-"Los gatos deberían tener que recoger sus propios pelos",
-"Las bodas deberían incluir un examen de compatibilidad",
-"Los restaurantes deberían permitir que los clientes cocinen su propia comida",
-"Las personas deberían cobrar por escuchar problemas ajenos",
-"Los trenes deberían tener vagones para personas que quieren cantar",
-"Las reuniones familiares deberían tener un árbitro",
-"Los niños deberían elegir el menú de los restaurantes",
-"Las personas deberían poder suspender un día de su vida y repetirlo",
-"Los bancos deberían tener una ventanilla para gente que no sabe qué hace con su dinero",
-"Los turistas deberían pagar una tasa por hacerse demasiadas fotos",
-"Las ciudades deberían tener un alcalde elegido por sorteo",
-"Los perros deberían poder elegir dónde viven",
-"Los restaurantes deberían ofrecer descuentos por terminarse todo el plato",
-"Las personas deberían tener un día al año para decir siempre la verdad",
-"Los vecinos deberían organizar elecciones para decidir quién pone la música",
-"Las películas deberían tener descansos para comentar lo que está pasando",
-"Los supermercados deberían permitir probar los productos antes de comprarlos",
-"Las personas deberían poder cambiar de trabajo durante una semana al año",
-"Los ascensores deberían permitir votar si se quiere hablar o guardar silencio",
-"Los bancos deberían prestar dinero a cambio de buenas ideas",
-"Las ciudades deberían tener una hora diaria de silencio obligatorio",
-"Los colegios deberían enseñar a detectar mentiras",
-"Las personas deberían poder alquilar amigos para eventos aburridos",
-"Los restaurantes deberían tener un botón para pedir que alguien elija por ti",
-"Los coches deberían tener un modo de conducción para personas despistadas",
-"Los políticos deberían tener que vivir un mes con el sueldo mínimo",
-"Los animales deberían poder elegir sus vacaciones",
-"Las personas deberían tener un presupuesto mensual para caprichos absurdos",
-"Los supermercados deberían tener un pasillo dedicado a cosas que nadie necesita",
-"Los domingos deberían tener 30 horas",
-"Las personas deberían poder bloquear a alguien en la vida real",
-"Los edificios deberían tener una planta secreta para descansar",
-"Los restaurantes deberían cobrar según lo buena que sea la conversación",
-"Los profesores deberían poder poner notas a los padres",
-"Los vecinos deberían poder elegir qué día se recoge la basura",
-"Las personas deberían poder solicitar un cambio de personalidad durante 24 horas",
-"Los parques deberían tener zonas para gritar sin motivo",
-"Los hoteles deberían ofrecer habitaciones temáticas según tu estado de ánimo",
-"Las personas deberían poder vender sus malas experiencias",
-"Los aeropuertos deberían tener una sala para personas que llegan demasiado pronto",
-"Los supermercados deberían tener un detector de antojos",
-"Los restaurantes deberían permitir pedir medias raciones de todo",
-"Las personas deberían poder pedir una pausa en mitad de una discusión",
-"Los relojes deberían avisar cuando estás perdiendo el tiempo",
-"Los colegios deberían tener una asignatura de cómo ser adulto",
-"Los animales deberían tener derecho a vacaciones pagadas",
-"Las ciudades deberían tener un día al mes sin coches ni bicicletas",
-"Las personas deberían poder cambiar de opinión sin tener que justificarse",
-"Los vecinos deberían poder intercambiar sus casas durante un fin de semana",
-"Los restaurantes deberían tener una mesa para personas que comen solas",
-"Los supermercados deberían contratar detectives para encontrar productos desaparecidos",
-"Las personas deberían poder elegir qué recuerdos conservar",
-"Los ascensores deberían tener un botón de teletransporte",
-"Los parques deberían tener un campeonato oficial de escondite",
-"Los políticos deberían debatir usando únicamente refranes",
-"Las personas deberían poder pedir una prórroga para tomar decisiones",
-"Los restaurantes deberían tener un menú secreto que cambia cada día",
-"Los animales deberían poder dejar reseñas de sus dueños",
-"Los colegios deberían tener una asignatura de negociación",
-"Los supermercados deberían vender tiempo libre",
-"Las personas deberían tener un botón para pausar las conversaciones",
-"Los hoteles deberían tener una habitación para no pensar en nada",
-"Los coches deberían poder elegir su propio destino",
-"Los vecinos deberían tener un concurso de decoración de portales",
-"Las personas deberían poder cambiar el tiempo que hace durante su cumpleaños",
-"Los restaurantes deberían permitir pagar según el hambre que tengas",
-"Los políticos deberían tener que responder cantando",
-"Las ciudades deberían tener una oficina de reclamaciones contra el clima",
-"Los perros deberían poder elegir qué canal de televisión ver",
-"Los humanos deberían tener un día de mantenimiento obligatorio al año",
-"Los supermercados deberían tener una sección de productos que aún no existen",
-"Las personas deberían poder contratar a alguien para tomar decisiones difíciles",
-"Los restaurantes deberían ofrecer un plato gratis a quien cuente el mejor chiste",
-"Los colegios deberían enseñar a perder con elegancia",
-"Los vecinos deberían poder votar quién tiene el mejor jardín",
-"Las personas deberían tener derecho a cinco minutos de fama al día"
-,
-"Los peluqueros deberían entregar un certificado de calidad después de cada corte",
-"Las personas deberían poder pedir un cambio de personalidad en vacaciones",
-"Los restaurantes deberían tener un botón para acelerar la digestión",
-"Los animales deberían poder elegir a sus propios dueños",
-"Los supermercados deberían tener un límite de productos por persona según su nivel de simpatía",
-"Las personas deberían llevar un currículum para tener pareja",
-"Los vecinos deberían poder votar quién puede hacer fiestas",
-"Los coches deberían tener un asiento reservado para las malas decisiones",
-"Las ciudades deberían tener un museo de los objetos perdidos",
-"Los colegios deberían enseñar a fingir que entiendes una explicación",
-"Las personas deberían poder cobrar por aparecer en los sueños de otros",
-"Los restaurantes deberían servir primero a quien tenga más hambre",
-"Los domingos deberían tener una hora extra para no hacer absolutamente nada",
-"Los bebés deberían recibir una paga semanal",
-"Las personas deberían poder cambiar de voz una vez al mes",
-"Los supermercados deberían vender productos caducados a mitad de precio aunque estén recién hechos",
-"Los perros deberían tener un día de asuntos propios",
-"Las personas deberían poder solicitar un aplauso al terminar una tarea difícil",
-"Los ascensores deberían tener un botón para evitar encontrarse con vecinos",
-"Los restaurantes deberían tener un jurado que valore cómo comes",
-"Las ciudades deberían tener un monumento dedicado a las siestas",
-"Los profesores deberían poder suspender a los alumnos por falta de entusiasmo",
-"Los teléfonos deberían dejar de funcionar cuando alguien dice 'te cuento una cosa rápida'",
-"Los bancos deberían permitir pagar las hipotecas con buenas acciones",
-"Las personas deberían poder borrar una conversación incómoda de la memoria de todos",
-"Los supermercados deberían tener una caja para compras impulsivas",
-"Los aeropuertos deberían tener una pista exclusiva para personas que llegan tarde",
-"Los gatos deberían tener que demostrar que saben cazar antes de recibir comida",
-"Los restaurantes deberían tener una carta escrita por los propios clientes",
-"Los relojes deberían adelantar cinco minutos cuando detecten que tienes prisa",
-"Las personas deberían tener derecho a una siesta después de cada discusión",
-"Los colegios deberían tener un recreo de dos horas",
-"Los vecinos deberían tener que presentarse oficialmente antes de hacer ruido",
-"Los coches deberían tener un botón para encontrar aparcamiento y otro para encontrar paciencia",
-"Los supermercados deberían contratar probadores profesionales de galletas",
-"Las personas deberían poder pedir vacaciones de sus propias responsabilidades",
-"Los hoteles deberían ofrecer una habitación donde todo esté ligeramente torcido",
-"Los políticos deberían tener que cumplir sus promesas durante una semana antes de ser elegidos",
-"Los restaurantes deberían ofrecer descuentos a quienes sepan pronunciar correctamente todos los platos",
-"Los parques deberían tener una zona para adultos que quieran jugar al escondite",
-"Las personas deberían poder cambiar el final de una conversación",
-"Los aviones deberían tener un botón para hacer que el viaje parezca más corto",
-"Los colegios deberían enseñar a reconocer cuándo alguien está mintiendo",
-"Los supermercados deberían tener un día en el que todo cueste lo que el cliente quiera pagar",
-"Los animales deberían poder elegir su nombre cuando cumplen un año",
-"Las ciudades deberían tener un campeonato anual de vecinos",
-"Los restaurantes deberían permitir que el cliente se siente en la cocina",
-"Las personas deberían poder pedir una segunda oportunidad para causar buena impresión",
-"Los ascensores deberían tener un límite de conversaciones incómodas por trayecto",
-"Los bancos deberían ofrecer préstamos de felicidad",
-"Los domingos deberían ser oficialmente días de pijama",
-"Las personas deberían poder contratar un doble para ir a reuniones aburridas",
-"Los colegios deberían tener una asignatura de cómo sobrevivir a una comida familiar",
-"Los supermercados deberían vender aire fresco embotellado",
-"Los peluqueros deberían poder prohibir los peinados que no favorecen a nadie",
-"Los restaurantes deberían tener una zona para personas que no quieren compartir comida",
-"Las personas deberían poder elegir el clima de su habitación",
-"Los coches deberían tener un modo de aparcamiento automático en doble fila",
-"Los vecinos deberían poder intercambiar sus ruidos durante una semana",
-"Los hoteles deberían tener una recepción atendida por robots que no hagan preguntas",
-"Las personas deberían poder poner una estrella a los desconocidos que conocen por la calle",
-"Los parques deberían tener fuentes de refrescos",
-"Los colegios deberían enseñar a ganar discusiones sin levantar la voz",
-"Los supermercados deberían tener un pasillo de productos que dan vergüenza comprar",
-"Las personas deberían poder pedir que alguien les traduzca lo que realmente quieren decir",
-"Los restaurantes deberían cobrar un suplemento por las malas compañías",
-"Los animales deberían poder votar en las elecciones de su barrio",
-"Las ciudades deberían tener un botón gigante para cancelar los atascos",
-"Los teléfonos deberían avisar cuando estás hablando demasiado",
-"Los cumpleaños deberían incluir una evaluación anual de la personalidad",
-"Los vecinos deberían tener que superar una prueba de convivencia",
-"Los colegios deberían permitir que los alumnos evalúen a los profesores cada día",
-"Los supermercados deberían tener un servicio de acompañamiento para indecisos",
-"Las personas deberían poder congelar su edad durante cinco años",
-"Los restaurantes deberían ofrecer un menú para personas que no saben qué quieren",
-"Los ascensores deberían tener un botón para saltarse todos los pisos intermedios",
-"Los políticos deberían tener que explicar sus decisiones con marionetas",
-"Los coches deberían poder quejarse de sus conductores",
-"Las personas deberían poder devolver una amistad si no cumple las expectativas",
-"Los parques deberían tener una zona para dormir la siesta en horario laboral",
-"Los restaurantes deberían permitir llevarse al camarero a casa para que recomiende qué cenar",
-"Los supermercados deberían tener un detector de hambre emocional",
-"Las personas deberían poder cambiar de trabajo según su estado de ánimo",
-"Los colegios deberían tener una asignatura de cómo hacer amigos",
-"Los vecinos deberían organizar una liga de balcones",
-"Las ciudades deberían tener un servicio público de abrazos a domicilio",
-"Los relojes deberían dejar de contar el tiempo cuando estás de vacaciones",
-"Los restaurantes deberían permitir pedir comida por su aspecto y no por su nombre",
-"Las personas deberían poder elegir quién aparece en sus fotografías",
-"Los aeropuertos deberían tener un servicio de devolución de equipaje emocional",
-"Los supermercados deberían vender sorpresas en cajas opacas",
-"Los animales deberían poder denunciar los ruidos de los humanos",
-"Los colegios deberían enseñar a detectar ofertas engañosas",
-"Los políticos deberían tener que hacer una promesa absurda en cada discurso",
-"Las personas deberían tener derecho a desaparecer durante un fin de semana sin dar explicaciones",
-"Los coches deberían tener una función para encontrar a sus dueños cuando se pierden",
-"Los restaurantes deberían permitir que los clientes pongan nombre a sus platos",
-"Los vecinos deberían tener un representante oficial para quejarse del tiempo",
-"Los supermercados deberían tener una sección de cosas que no sabías que necesitabas",
-"Las personas deberían poder cambiar de cara durante un día",
-"Los parques deberían tener una pista de baile para personas que no saben bailar",
-"Los colegios deberían enseñar a improvisar excusas sin ponerse nervioso"
-,
+  "Los calcetines deberían venir en grupos de tres porque siempre se pierde uno",
+"Los lunes deberían empezar a las 11:00",
+"Las pizzas cuadradas deberían llamarse cubizzas",
+"Los perros deberían poder poner multas por mal comportamiento humano",
+"Las puertas automáticas deberían saludar al entrar",
+"Los plátanos deberían tener una fecha de maduración visible",
+"Las tostadoras deberían saber cuándo estás de buen humor",
+"Los parques deberían tener una zona exclusiva para caminar sin rumbo",
+"Los supermercados deberían permitir pagar con minutos de vida",
+"Los paraguas deberían tener limpiaparabrisas",
+"Los zapatos deberían poder elegir qué día quieren descansar",
+"Los semáforos deberían cambiar según el nivel de paciencia de la gente",
+"Las sillas deberían tener cinturón de seguridad",
+"Los bocadillos deberían tener una ventanilla para ver lo que llevan dentro",
+"Los cereales deberían indicar cuánto tardan en ponerse blandos",
+"Los ascensores deberían permitir votar qué música poner",
+"Los ordenadores deberían tener un botón que diga 'no sé qué he tocado'",
+"Las mochilas deberían avisar cuando llevas algo inútil durante demasiado tiempo",
+"Los bolígrafos deberían negarse a escribir cuando no tienes buena letra",
+"Las cucharas deberían tener tallas",
+"Los vasos deberían indicar exactamente cuánto líquido les queda",
+"Los cojines deberían tener un lado oficial para sentarse",
+"Los frigoríficos deberían avisarte cuando estás abriendo la puerta por aburrimiento",
+"Las escaleras deberían llevar un contador de pasos",
+"Las ventanas deberían poder cerrarse solas cuando hace frío",
+"Los paraguas deberían avisar cinco minutos antes de que vaya a llover",
+"Los relojes deberían tener un botón para redondear la hora",
+"Las camas deberían registrar cuántas veces pulsas 'cinco minutos más'",
+"Los sofás deberían tener plazas numeradas",
+"Los zapatos deberían poder decirte que llevas el pie izquierdo en el derecho",
+"Los restaurantes deberían tener una mesa para gente que no sabe qué pedir",
+"Los menús deberían incluir una opción 'sorpréndeme pero no demasiado'",
+"Los camareros deberían poder recomendarte comida basándose en tu estado de ánimo",
+"Los supermercados deberían tener una fila para personas que solo compran una cosa",
+"Las bolsas de patatas deberían indicar cuántas patatas hay realmente",
+"Las galletas deberían venir con un porcentaje oficial de rotura",
+"Los helados deberían tener una alarma cuando están a punto de derretirse",
+"Las neveras deberían tener un botón de '¿qué puedo comer con esto?'",
+"Los microondas deberían detenerse automáticamente cuando la comida ya está caliente",
+"Los hornos deberían poder decirte si has quemado la cena antes de abrirlos",
+"Las tostadas deberían saltar según lo contentas que estén",
+"Las pizzas deberían venir con una esquina reservada para la última persona que llega",
+"Las sopas deberían tener un velocímetro para saber cuánto puedes comer sin quemarte",
+"Los platos deberían tener un botón para pedir repetir",
+"Los cuchillos deberían poder cortar solo hasta donde tú quieras",
+"Las servilletas deberían venir con instrucciones de emergencia",
+"Los restaurantes deberían cobrar menos si tardas más de veinte minutos en decidir",
+"Los desayunos deberían incluir siempre una opción de emergencia",
+"Los supermercados deberían tener un carril exclusivo para personas que no saben qué comprar",
+"Los carritos deberían tener dirección asistida",
+"Los cajeros deberían poder detectar cuándo estás buscando monedas en los bolsillos",
+"Las máquinas expendedoras deberían permitir negociar una segunda oportunidad",
+"Los paquetes deberían traer una foto de lo que hay dentro para no abrirlos por curiosidad",
+"Las cajas de cereales deberían poder rellenarse solas",
+"Los bolígrafos de los bancos deberían estar atados con una cadena de seguridad",
+"Los bancos deberían tener una máquina que convierta monedas en billetes y viceversa",
+"Las monedas deberían tener un lado para lanzarlas y decidir cosas",
+"Los billetes deberían tener números más fáciles de recordar",
+"Los cajeros automáticos deberían felicitarte cuando ahorras dinero",
+"Las tiendas deberían tener una sección llamada 'no sé qué regalar'",
+"Los centros comerciales deberían tener bancos cada cincuenta metros",
+"Las colas deberían mostrar cuánto tiempo llevas esperando",
+"Las colas deberían poder cambiarse por puntos",
+"Las personas que llegan tarde deberían poder adelantar en la cola pagando una multa",
+"Los relojes deberían avisarte de que llevas demasiado tiempo mirando el móvil",
+"Los móviles deberían tener un modo 'no quiero hablar con nadie'",
+"Los móviles deberían poder detectar cuándo estás a punto de mandar un mensaje del que te arrepentirás",
+"Los grupos de WhatsApp deberían tener un botón de 'demasiados mensajes'",
+"Los audios deberían venir con una puntuación de lo importante que es escucharlos",
+"Los emojis deberían poder combinarse para crear palabras nuevas",
+"Los teclados deberían aprender tus errores y cometerlos menos",
+"Los auriculares deberían poder encontrarse entre ellos",
+"Los cargadores deberían tener un botón para hacer que aparezcan mágicamente",
+"Las contraseñas deberían poder ser sustituidas por una pregunta absurda",
+"Las cámaras deberían tener un botón de 'haz que parezca que sé posar'",
+"Las fotos deberían indicar automáticamente quién salió peor",
+"Los GPS deberían tener una opción 'llévame por donde haya menos gente'",
+"Los mapas deberían mostrar dónde está la mejor sombra",
+"Los autobuses deberían esperar diez segundos a quien corre hacia ellos",
+"Los trenes deberían tener un vagón para personas que quieren dormir",
+"Los aviones deberían tener un botón para pedir que el vuelo vaya más rápido",
+"Las estaciones deberían tener una zona para personas que se han perdido",
+"Los aeropuertos deberían tener una cinta para caminar despacio",
+"Las carreteras deberían tener un carril para conductores que no tienen ninguna prisa",
+"Los coches deberían poder poner automáticamente música adecuada para el tráfico",
+"Los coches deberían tener un botón de 'no sé dónde estoy'",
+"Las bicicletas deberían tener intermitentes",
+"Los patinetes deberían tener una bocina con distintos niveles de educación",
+"Las calles deberían tener bancos para descansar después de subir una cuesta",
+"Las rotondas deberían tener narradores que expliquen quién tiene la prioridad",
+"Los semáforos deberían poner una cuenta atrás para los peatones",
+"Las aceras deberían tener carriles rápidos y lentos",
+"Los pasos de peatones deberían tener calefacción en invierno",
+"Las farolas deberían apagarse cuando no haya nadie mirando",
+"Las ciudades deberían tener una plaza oficial para no hacer absolutamente nada",
+"Los edificios deberían tener escaleras con música diferente en cada planta",
+"Los ascensores deberían mostrar chistes mientras suben",
+"Las casas deberían tener un botón de '¿dónde he dejado las llaves?'",
+"Las habitaciones deberían tener un botón para ordenar todo durante diez minutos",
+"Las puertas deberían saber cuándo tienes las manos ocupadas",
+"Los armarios deberían recomendarte qué ponerte",
+"Los espejos deberían tener un modo 'hoy no juzgamos'",
+"Las duchas deberían avisar cuando llevas demasiado tiempo dentro",
+"Los grifos deberían recordar la temperatura perfecta de cada persona",
+"Las almohadas deberían poder girarse automáticamente cuando tienes calor",
+"Las mantas deberían saber cuándo alguien te las está robando",
+"Las camas deberían tener un botón para encontrar el lado frío",
+"Los despertadores deberían tener una opción para despertarte gradualmente",
+"Los relojes deberían añadir minutos cuando has tenido un día horrible",
+"Los fines de semana deberían empezar oficialmente el viernes por la mañana",
+"Los martes deberían tener fama de ser el segundo lunes",
+"Los miércoles deberían durar solo hasta las cinco",
+"Los jueves deberían contar como fin de semana",
+"Los domingos deberían tener una pausa para la siesta",
+"Los cumpleaños deberían durar 48 horas",
+"Las vacaciones deberían empezar un día antes de salir de viaje",
+"Las vacaciones deberían incluir un día obligatorio sin hacer absolutamente nada",
+"Los días de lluvia deberían dar puntos por quedarse en casa",
+"El frío debería desaparecer después de las seis de la tarde",
+"El verano debería tener una temperatura máxima oficial",
+"Las nubes deberían tener nombres según su forma",
+"El viento debería soplar solo cuando alguien tenga una cometa",
+"Los arcoíris deberían aparecer bajo demanda",
+"Las palomas deberían tener que apartarse cuando alguien camina hacia ellas",
+"Los gatos deberían tener un botón para explicar por qué han tirado algo",
+"Los perros deberían poder votar en las reuniones familiares",
+"Los peces deberían tener acuarios con vistas al exterior",
+"Los pájaros deberían pagar alquiler por dormir en árboles privados",
+"Las hormigas deberían tener pasos de peatones",
+"Las vacas deberían poder elegir qué música escuchar",
+"Los caballos deberían tener permiso de conducir",
+"Los caracoles deberían llevar chaleco reflectante",
+"Las abejas deberían cobrar por polinizar jardines privados",
+"Las mariposas deberían tener nombres según sus colores",
+"Los pingüinos deberían poder solicitar vacaciones tropicales",
+"Los dinosaurios deberían tener derecho a una segunda oportunidad",
+"Los árboles deberían poder cambiar de sitio una vez al año",
+"Las plantas deberían poder elegir hacia dónde crecer",
+"Las flores deberían abrirse solo cuando alguien las mire",
+"Los cactus deberían tener derecho a espacio personal",
+"Los parques deberían tener árboles que den sombra exactamente donde la necesitas",
+"Las fuentes deberían aceptar deseos solo los viernes",
+"Los bancos de los parques deberían tener calefacción",
+"Los parques deberían tener una zona para personas que quieren estar solas",
+"Los museos deberían tener una obra que puedas modificar",
+"Las estatuas deberían cambiar de expresión según el tiempo",
+"Los monumentos deberían poder responder preguntas",
+"Los cuadros deberían poder votar qué cuadro se coloca al lado",
+"Los libros deberían avisar cuando estás a punto de llegar a una parte aburrida",
+"Las bibliotecas deberían tener una sección de libros que nadie ha terminado",
+"Los diccionarios deberían incluir palabras inventadas por los usuarios",
+"Los cómics deberían tener finales alternativos oficiales",
+"Las películas deberían permitir votar el siguiente giro de la historia",
+"Los cines deberían tener una fila para personas que siempre llegan tarde",
+"Las series deberían avisar de cuánto tiempo te queda de vida si sigues viendo capítulos",
+"Los videojuegos deberían tener un botón de 'no quiero perder hoy'",
+"Los mandos deberían vibrar cuando estás tomando una mala decisión",
+"Los juegos de mesa deberían permitir negociar las reglas antes de empezar",
+"Las cartas deberían poder protestar cuando salen demasiadas veces",
+"Los dados deberían poder negarse a tirar un número concreto",
+"El Monopoly debería tener un banco que no pueda quebrar",
+"Las partidas deberían tener un árbitro que pueda inventar una regla una vez",
+"Los cumpleaños deberían incluir un torneo para decidir quién conoce mejor al cumpleañero",
+"Las reuniones familiares deberían tener tarjetas amarillas",
+"Las discusiones deberían terminar automáticamente cuando alguien repite el mismo argumento tres veces",
+"Las personas deberían poder pedir tiempo muerto durante una discusión",
+"Los amigos deberían tener un botón para deshacer una frase desafortunada",
+"Las conversaciones deberían tener subtítulos para detectar sarcasmo",
+"Las personas deberían poder saltarse una conversación incómoda",
+"Los silencios incómodos deberían tener una duración máxima legal",
+"Las excusas deberían tener que pasar un detector de originalidad",
+"Las mentiras deberían venir con una etiqueta de advertencia",
+"Las opiniones deberían tener fecha de caducidad",
+"Las discusiones deberían resolverse con una partida de piedra, papel o tijera",
+"Cada grupo de amigos debería tener un presidente elegido por sorteo",
+"Los vecinos deberían tener que votar el nombre de sus edificios",
+"Las comunidades de vecinos deberían organizar unos Juegos Olímpicos",
+"Los barrios deberían tener una mascota oficial",
+"Cada ciudad debería tener una tradición completamente inútil",
+"Los países deberían competir en campeonatos mundiales de cosas absurdas",
+"Las ciudades deberían tener una canción oficial para los atascos",
+"Los pueblos deberían poder cambiar de nombre durante un día",
+"Los edificios deberían tener que elegir una canción que los represente",
+"Los monumentos deberían poder ponerse sombrero los domingos",
+"Las personas deberían poder solicitar un cambio de nombre durante 24 horas",
+"Todos deberían tener derecho a inventarse una fiesta nacional",
+"Cada persona debería tener un día al año en el que todas sus decisiones fueran obligatorias para los demás",
+"Los trabajos deberían incluir una hora diaria para hacer algo completamente inútil",
+"Los jefes deberían tener que superar un examen antes de poder convocar una reunión",
+"Las reuniones deberían tener un límite de diez minutos",
+"Los empleados deberían poder votar qué día trabajar desde casa",
+"Los trabajos deberían permitir un día al año de cambiar de profesión",
+"Los profesores deberían poder pedir deberes a sus alumnos sobre cosas que ellos tampoco entienden",
+"Los colegios deberían tener una asignatura de saber cuándo dejar una discusión",
+"Los exámenes deberían incluir una pregunta sobre algo que no hayas estudiado",
+"Los recreos deberían poder comprarse con puntos",
+"Los deberes deberían caducar",
+"Las aulas deberían tener un botón de pausa",
+"Los profesores deberían poder pedir un comodín en los exámenes",
+"Los alumnos deberían poder recurrir una pregunta por ser demasiado fácil",
+"Las notas deberían poder incluir una categoría llamada 'lo intentó con ganas'",
+"Los gimnasios deberían tener una máquina que aplauda cuando terminas",
+"Las cintas de correr deberían mostrar paisajes según la velocidad",
+"Las bicicletas estáticas deberían tener rutas imaginarias",
+"Los vestuarios deberían tener espejos que solo digan cosas positivas",
+"Los deportes deberían tener un minuto oficial para quejarse del árbitro",
+"Los árbitros deberían poder sacar tarjetas por protestar demasiado",
+"Los equipos deberían poder fichar mascotas",
+"Los estadios deberían tener una grada para quienes no entienden las reglas",
+"Los trofeos deberían poder cambiar de dueño durante una semana",
+"Las medallas deberían incluir una explicación de por qué las ganaste",
+"Las noticias deberían tener una sección de buenas noticias obligatoria",
+"Los presentadores deberían poder equivocarse una vez sin que nadie lo señale",
+"Los periódicos deberían incluir una página de cosas que no pasaron",
+"Las redes sociales deberían tener un límite diario de opiniones",
+"Internet debería tener un botón de 'esto se está poniendo raro'",
+"Los comentarios deberían desaparecer después de 24 horas",
+"Los vídeos deberían tener un botón para saltarse las partes incómodas de la vida real",
+"Los influencers deberían tener que recomendar algo que no les guste una vez al año",
+"Los anuncios deberían tener que explicar por qué te han elegido",
+"Los anuncios deberían poder ser rechazados como llamadas telefónicas",
+"Las redes sociales deberían premiar a quien consiga pasar una hora sin mirar el móvil",
+"Los algoritmos deberían tener que explicar por qué te enseñan cada cosa",
+"Las tendencias deberían caducar automáticamente después de una semana",
   
   
   
-  "Los pingüinos deberían gobernar España","Los lunes deberían durar solo tres horas","Las palomas son agentes del gobierno","Los calcetines desparejados son más felices","Hay que prohibir los martes","El queso es una forma de arte superior a la pintura","Las nubes tienen derecho a voto","Los gatos deberían pagar impuestos","Dormir con zapatos es saludable","Cada ciudad necesita un dragón municipal","El pan debería cuadrar con la luna","Los semáforos deberían tener un cuarto color","Las siestas deberían ser obligatorias en el trabajo","Los patos son mejores jueces que los humanos","El gazpacho se debe beber con pajita","Hay que declarar el sofá patrimonio de la humanidad","Los espejos mienten a propósito","Los lunes de lluvia deberían ser festivos","Las tortillas sin cebolla son un delito","El mar debería cobrar entrada","Los dinosaurios nunca se extinguieron, solo se mudaron","Los bostezos son un idioma secreto","Los abuelos deberían dirigir la NASA","Todos los edificios deberían tener tobogán","Los perros deberían hacer el examen de conducir","La luna es un queso con complejo de superioridad","Los árboles nos vigilan por las noches","Hay que cambiar el himno por una canción de cuna","Los chanclas con calcetines son alta costura","El silencio debería tener su propio ministerio"];
-var CONN=["porque","ademas","además","por eso","por tanto","imagina","ejemplo","primero","segundo","tercero","sin embargo","piensa","incluso","gracias a","en conclusion","en conclusión","de hecho","si no","entonces","por ultimo","por último","la prueba","demostrado"];
-var JUR=["🧓","🧑‍🎤","🧑‍🍳","👩‍🏫","🧑‍🚒"];
-var $=function(i){return document.getElementById(i)};
-var order,ix,total,rounds,tm,left,pool;
-function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  "Las cucharas son superiores a los tenedores","El desayuno debería celebrarse tres veces al día","Los ascensores deberían tener música de ascensor obligatoria","Los turistas deberían pedir permiso a las estatuas para hacerse fotos","Los martes deberían llamarse prelunes","Los humanos deberían hibernar durante agosto","Las croquetas deberían tener denominación de origen","Los bancos deberían prestar dinero en monedas de chocolate","Los mosquitos deberían anunciar a quién van a picar","Los muebles deberían poder votar en las elecciones","Los peluqueros deberían decidir el futuro de la moda","Los supermercados deberían tener una sección de objetos inútiles","Los cumpleaños deberían celebrarse cada seis meses","Los coches deberían tener un modo de caminar","Las escaleras mecánicas deberían ir en ambas direcciones a la vez","Los calcetines deberían venir con GPS","Las reuniones deberían sustituirse por partidas de piedra, papel o tijera","Los bebés deberían elegir el nombre de sus padres","Los restaurantes deberían servir primero el postre","Los caracoles deberían tener matrícula","Las estatuas deberían cambiar de postura cada noche","Los teléfonos deberían descansar los domingos","Los paraguas deberían tener seguro de vida","Las bicicletas deberían poder aparcar en los árboles","Los frigoríficos deberían contar chistes al abrirse","Las personas deberían tener un día libre por cada bostezo","Los zapatos deberían tener personalidad propia","Las gallinas deberían tener derecho a vacaciones","Los fantasmas deberían pagar facturas de luz","Las playas deberían tener carriles para correr","Los lápices deberían poder jubilarse","Los relojes deberían tener cinco minutos de propina","Los peluqueros deberían poder multar los malos peinados","Los semáforos deberían decidir cuándo podemos bailar","Los hospitales deberían recetar vacaciones","Los trenes deberían esperar a quien llega tarde","Las escobas deberían tener permiso de conducir","Los mapas deberían incluir lugares imaginarios","Los ordenadores deberían pedir perdón cuando se bloquean","Las puertas deberían tener derecho a no abrirse","Los ascensores deberían contar secretos de sus pasajeros","Los bancos deberían ofrecer siestas en lugar de intereses","Los cines deberían permitir gritar el final de la película","Los parques deberían tener árboles frutales de chocolate","Las vacas deberían tener derecho a elegir su nombre","Los peces deberían poder votar desde sus peceras","Las ciudades deberían tener un alcalde de reserva","Los lunes deberían empezar después de comer","Las multas deberían pagarse haciendo favores","Los restaurantes deberían permitir llevarse las sobras de otras mesas","Las máquinas expendedoras deberían negociar los precios","Los supermercados deberían cerrar cuando están de mal humor","Los libros deberían poder cambiar su propio final","Las farolas deberían apagarse cuando alguien las mira","Los relojes deberían funcionar más despacio los viernes","Los turistas deberían dejar propina a los monumentos","Los ascensores deberían tener un botón para salir de la conversación","Los perros deberían poder denunciar a sus dueños","Los gatos deberían tener un sindicato","Las ovejas deberían cobrar derechos de imagen","Los bancos deberían regalar dinero los días de lluvia","Las naranjas deberían venir peladas de fábrica","Los calcetines deberían tener un botón de emparejamiento","Los supermercados deberían tener probadores de comida","Los coches deberían pedir permiso para aparcar","Los dentistas deberían aceptar dientes como forma de pago","Las bibliotecas deberían prestar personas para conversar","Los vecinos deberían competir en un campeonato de saludos","Los peluqueros deberían poder cambiar el nombre de sus clientes","Los aviones deberían tener una parada para estirar las piernas","Los políticos deberían explicar sus promesas mediante dibujos","Los cajeros automáticos deberían dar consejos financieros no solicitados","Los restaurantes deberían cobrar menos si la comida está fea","Los zapatos deberían avisar cuando alguien camina mal","Las bicicletas deberían tener matrícula y claxon de barco","Los museos deberían permitir tocar las obras una vez al año","Las casas deberían tener un botón para ordenar la habitación","Los despertadores deberían negociar cinco minutos más","Los supermercados deberían poner música elegida por los clientes","Las almohadas deberían tener memoria de los sueños","Los espejos deberían mostrar cómo te ven los demás","Los restaurantes deberían permitir pagar con canciones","Los ascensores deberían tener un presentador de televisión","Los colegios deberían enseñar a poner excusas convincentes","Las ciudades deberían tener un día oficial sin prisas","Los semáforos deberían felicitar a los peatones que esperan","Los supermercados deberían tener una caja exclusiva para indecisos","Los animales deberían poder elegir a sus veterinarios","Las nubes deberían tener nombres oficiales","Los calcetines deberían poder divorciarse","Los humanos deberían tener un botón de reinicio","Las personas deberían poder cambiar de edad una vez al año","Los sueños deberían contar como horas trabajadas","Los restaurantes deberían permitir elegir al cocinero","Los animales deberían tener representantes en el Congreso","Las ciudades deberían competir en Eurovisión","Los profesores deberían poner deberes a los padres","Las vacaciones deberían ser obligatorias para los jefes","Los bancos deberían pagar intereses por guardar secretos","Los cumpleaños deberían celebrarse en el día de tu concepción","Los supermercados deberían vender productos por orden de felicidad","Las personas deberían poder denunciar a su despertador","Los extraterrestres deberían tener derecho a voto si llevan cinco años en España","Los bebés deberían elegir cuándo quieren nacer","Los gimnasios deberían pagar a quienes entrenan","Las personas deberían tener derecho a una segunda primera impresión","Los gatos deberían recoger sus propios pelos","Las bodas deberían incluir un examen de compatibilidad","Los restaurantes deberían dejar que los clientes cocinen su propia comida","Las personas deberían cobrar por escuchar problemas ajenos","Los trenes deberían tener vagones para personas que quieren cantar","Las reuniones familiares deberían tener un árbitro","Los niños deberían elegir el menú de los restaurantes","Las personas deberían poder suspender un día de su vida y repetirlo","Los turistas deberían pagar una tasa por hacerse demasiadas fotos","Las ciudades deberían tener un alcalde elegido por sorteo","Los perros deberían poder elegir dónde viven","Las personas deberían tener un día al año para decir siempre la verdad","Las películas deberían tener descansos para comentar lo que está pasando","Las personas deberían poder cambiar de trabajo durante una semana al año","Los bancos deberían prestar dinero a cambio de buenas ideas","Las ciudades deberían tener una hora diaria de silencio obligatorio","Los colegios deberían enseñar a detectar mentiras","Las personas deberían poder alquilar amigos para eventos aburridos","Los políticos deberían vivir un mes con el sueldo mínimo","Los domingos deberían tener 30 horas","Las personas deberían poder bloquear a alguien en la vida real","Los edificios deberían tener una planta secreta para descansar","Los profesores deberían poder poner notas a los padres","Las personas deberían poder solicitar un cambio de personalidad durante 24 horas","Los parques deberían tener zonas para gritar sin motivo","Los hoteles deberían ofrecer habitaciones temáticas según tu estado de ánimo","Los aeropuertos deberían tener una sala para personas que llegan demasiado pronto","Los relojes deberían avisar cuando estás perdiendo el tiempo","Los colegios deberían tener una asignatura de cómo ser adulto","Las personas deberían poder cambiar de opinión sin tener que justificarse","Los vecinos deberían poder intercambiar sus casas durante un fin de semana","Las personas deberían poder elegir qué recuerdos conservar","Los ascensores deberían tener un botón de teletransporte","Los parques deberían tener un campeonato oficial de escondite","Los políticos deberían debatir usando únicamente refranes","Los restaurantes deberían tener un menú secreto que cambia cada día","Los animales deberían poder dejar reseñas de sus dueños","Los supermercados deberían vender tiempo libre","Las personas deberían tener un botón para pausar las conversaciones","Los hoteles deberían tener una habitación para no pensar en nada","Los coches deberían poder elegir su propio destino","Las personas deberían poder cambiar el tiempo que hace durante su cumpleaños","Los restaurantes deberían permitir pagar según el hambre que tengas","Los políticos deberían tener que responder cantando","Los perros deberían poder elegir qué canal de televisión ver","Los humanos deberían tener un día de mantenimiento obligatorio al año","Las personas deberían poder contratar a alguien para tomar decisiones difíciles","Los colegios deberían enseñar a perder con elegancia","Las personas deberían tener derecho a cinco minutos de fama al día","Los coches deberían tener un asiento reservado para las malas decisiones","Las ciudades deberían tener un museo de los objetos perdidos","Las personas deberían poder cobrar por aparecer en los sueños de otros","Los bebés deberían recibir una paga semanal","Las personas deberían poder cambiar de voz una vez al mes","Las personas deberían poder borrar una conversación incómoda de la memoria de todos","Los aeropuertos deberían tener una pista exclusiva para personas que llegan tarde","Los restaurantes deberían tener una carta escrita por los propios clientes","Las personas deberían tener derecho a una siesta después de cada discusión","Los colegios deberían tener un recreo de dos horas","Los hoteles deberían ofrecer una habitación donde todo esté ligeramente torcido","Los políticos deberían cumplir sus promesas durante una semana antes de ser elegidos","Las personas deberían poder cambiar el final de una conversación","Los supermercados deberían tener un día en el que todo cueste lo que el cliente quiera pagar","Las ciudades deberían tener un campeonato anual de vecinos","Los restaurantes deberían permitir que el cliente se siente en la cocina","Los bancos deberían ofrecer préstamos de felicidad","Los domingos deberían ser oficialmente días de pijama","Las personas deberían poder contratar un doble para ir a reuniones aburridas","Los supermercados deberían vender aire fresco embotellado","Las personas deberían poder elegir el clima de su habitación","Las ciudades deberían tener un servicio público de abrazos a domicilio","Los relojes deberían dejar de contar el tiempo cuando estás de vacaciones","Las personas deberían tener derecho a desaparecer un fin de semana sin dar explicaciones","Las personas deberían poder cambiar de cara durante un día","Los parques deberían tener una pista de baile para personas que no saben bailar","Los pingüinos deberían gobernar España","Los lunes deberían durar solo tres horas","Las palomas son agentes del gobierno","Los calcetines desparejados son más felices","El queso es una forma de arte superior a la pintura","Las nubes tienen derecho a voto","Los gatos deberían pagar impuestos","Dormir con zapatos es saludable","Cada ciudad necesita un dragón municipal","Los semáforos deberían tener un cuarto color","Las siestas deberían ser obligatorias en el trabajo","Los patos son mejores jueces que los humanos","El gazpacho se debe beber con pajita","Hay que declarar el sofá patrimonio de la humanidad","Los espejos mienten a propósito","Los lunes de lluvia deberían ser festivos","Las tortillas sin cebolla son un delito","El mar debería cobrar entrada","Los dinosaurios nunca se extinguieron, solo se mudaron","Los bostezos son un idioma secreto","Los abuelos deberían dirigir la NASA","Todos los edificios deberían tener tobogán","Los perros deberían hacer el examen de conducir","La luna es un queso con complejo de superioridad","Los árboles nos vigilan por las noches","Hay que cambiar el himno por una canción de cuna","Los chanclas con calcetines son alta costura","El silencio debería tener su propio ministerio"
+];
+var $=function(i){return document.getElementById(i)},deck=[],hist=[],h=-1;
 function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
-function view(id){["start","game","end"].forEach(function(v){$(v).classList.toggle("hidden",v!==id)})}
-function phase(id){["pThink","pTalk","pRes"].forEach(function(v){$(v).classList.toggle("hidden",v!==id)})}
-function showBest(){var b=ls("conv-best");$("best").textContent=b?"Tu mejor marca: "+b+" de 500":""}
-function begin(){pool=sh(CLAIMS);ix=0;total=0;rounds=[];$("tot").textContent=0;view("game");round()}
-function round(){$("rn").textContent=ix+1;$("sign").textContent="«"+pool[ix]+"»";$("txt").value="";phase("pThink")}
-function talk(){left=30;phase("pTalk");tick();$("txt").focus();clearInterval(tm);tm=setInterval(function(){left--;tick();if(left<=0){clearInterval(tm);done()}},1000)}
-function tick(){$("clock").textContent=left;$("barI").style.width=(left/30*100)+"%";$("bar").classList.toggle("hot",left<=8)}
-function score(t){
-  var low=t.toLowerCase(),w=low.split(/[^a-záéíóúüñ]+/).filter(function(x){return x}),n=w.length;
-  if(n<3)return{p:5,tip:"Casi no has dicho nada. Prueba con al menos tres o cuatro frases."};
-  var uniq={};w.forEach(function(x){uniq[x]=1});var ur=Object.keys(uniq).length/n;
-  var len=Math.min(n,70)/70*45,var_=Math.max(0,ur-.45)/.55*20,c=0;
-  CONN.forEach(function(k){if(low.indexOf(k)>-1)c++});
-  var con=Math.min(c,5)*5,ex=Math.min((t.match(/[!?]/g)||[]).length,3)*3,num=/\d/.test(t)?6:0;
-  var p=Math.round(len+var_+con+ex+num);p=Math.max(5,Math.min(100,p));
-  var tip=n<25?"Corta. Con más argumentos el jurado se lo creería más.":c<2?"Enlaza las ideas con «porque», «además» o «por ejemplo».":ur<.6?"Repites muchas palabras. Varía el vocabulario.":"Defensa sólida. Incluso un número inventado ayuda a que suene a ciencia.";
-  return{p:p,tip:tip}
+function draw(){
+  if(!deck.length){deck=sh(C);if(hist.length&&deck[deck.length-1]===hist[hist.length-1]){deck.unshift(deck.pop())}}
+  return deck.pop();
 }
-function done(){
-  clearInterval(tm);var r=score($("txt").value),y=0,votes=[];
-  JUR.forEach(function(){var v=r.p+Math.round((Math.random()-.5)*30)>=50;votes.push(v);if(v)y++});
-  total+=r.p;rounds.push({c:pool[ix],p:r.p});$("tot").textContent=total;
-  $("jury").innerHTML=votes.map(function(v,i){return'<div class="j '+(v?"y":"n")+'">'+JUR[i]+'<small>'+(v?"Sí":"No")+'</small></div>'}).join("");
-  $("verdict").innerHTML="<b>"+y+" de 5</b> jurados "+(y>=3?"te creen":"no te creen");
-  $("pts").textContent=r.p;$("tip").textContent=r.tip;
-  $("bNext").textContent=ix>=4?"Ver resultado final":"Siguiente ronda";phase("pRes")
+function show(){
+  $("txt").textContent="«"+hist[h]+"»";
+  $("tag").textContent="Afirmación "+(h+1);
+  $("prev").disabled=h<=0;
+  var s=$("sign");s.classList.remove("swing");void s.offsetWidth;s.classList.add("swing");
 }
-function finish(){
-  var b=+ls("conv-best")||0;if(total>b){ls("conv-best",total)}
-  $("final").textContent=total;
-  $("title").textContent=total>=400?"Político profesional":total>=300?"Abogado del diablo":total>=200?"Tertuliano con futuro":total>=100?"Cuñado en prácticas":"Hay que practicar la labia";
-  $("list").innerHTML=rounds.map(function(r){return"<li><span>"+r.c+"</span><b>"+r.p+"</b></li>"}).join("");
-  showBest();view("end")
-}
-$("go").onclick=begin;$("again").onclick=begin;$("bTalk").onclick=talk;$("bDone").onclick=done;
-$("bSkip").onclick=function(){var j=5+Math.floor(Math.random()*(pool.length-5)),t=pool[ix];pool[ix]=pool[j];pool[j]=t;round()};
-$("bNext").onclick=function(){ix++;if(ix>=5)finish();else round()};
-showBest();
+function next(){if(h<hist.length-1)h++;else{hist.push(draw());h++}show()}
+function prev(){if(h>0){h--;show()}}
+$("next").onclick=next;$("prev").onclick=prev;
+$("sign").onclick=next;
+document.addEventListener("keydown",function(e){
+  if(e.key==="ArrowRight"||e.key===" "||e.key==="Enter"){if(e.target.tagName!=="BUTTON"){e.preventDefault();next()}}
+  else if(e.key==="ArrowLeft")prev();
+});
+var tx=null;
+document.addEventListener("touchstart",function(e){tx=e.touches[0].clientX},{passive:true});
+document.addEventListener("touchend",function(e){if(tx===null)return;var d=e.changedTouches[0].clientX-tx;tx=null;if(d<-60)next();else if(d>60)prev()},{passive:true});
+next();
 </script>
 </body>
 </html>

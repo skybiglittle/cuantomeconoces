@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020">
 <title>Duelo de Familias · Las respuestas más populares</title>
- //MEJORA. AÑADIR MAS PREGUNTAS
 <style>
 :root{color-scheme:dark;--bg:#0b1020;--line:#34425f;--text:#f4f6ff;--muted:#aab6d0;--a:#8b7cff;--gold:#ffd166;--good:#48d597;--bad:#ff6c7f;--tA:#38bdf8;--tB:#f472b6}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 8% 0%,#29244d 0,transparent 42%),radial-gradient(ellipse at 100% 15%,#103e4b 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
@@ -27,6 +26,8 @@ button{font:inherit;cursor:pointer}.btn{border:0;border-radius:12px;padding:13px
 .ref{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ref button{font-size:12px;padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:#101a2e;color:var(--text)}
 .foot{font-size:11px;color:var(--muted);text-align:center;margin:18px 0}
 @media(max-width:520px){.slot{font-size:15px;padding:10px}}
+.bigx{position:fixed;inset:0;display:grid;place-items:center;font-size:45vmin;color:var(--bad);pointer-events:none;z-index:9;text-shadow:0 0 50px #000;animation:bx .9s forwards}
+@keyframes bx{0%{transform:scale(.3);opacity:0}25%{transform:scale(1);opacity:1}100%{opacity:0}}
 </style></head>
 <body><div class="wrap">
 <header class="top"><a class="brand" href="/">Duelo de <span>Familias</span></a><a class="back" href="/">← Juegos</a></header>
@@ -82,7 +83,25 @@ const QUESTIONS=[
 ['Algo que hace tu madre',['cocinar|comida|cocina','regañar|reñir|gritar|regañar','limpiar|ordenar|recoger','preocuparse|preocupa','llamarte|llamar|llamadas','abrazarte|abrazar|besos|besar']],
 ['Algo que se enciende',['luz|bombilla|lámpara','tele|televisión|televisor','vela|velas','fuego|hoguera|chimenea','ordenador|pc','cigarro|cigarrillo|tabaco|pitillo']],
 ['Una profesión muy bien pagada',['médico|doctor|cirujano','abogado','futbolista|jugador','ingeniero','piloto','banquero|bancario|empresario']],
-['Un destino de vacaciones',['playa|la playa','mallorca|baleares|ibiza','parís|paris','canarias|tenerife','italia|roma','cancún|cancun|méxico|caribe|punta cana']]
+['Un destino de vacaciones',['playa|la playa','mallorca|baleares|ibiza','parís|paris','canarias|tenerife','italia|roma','cancún|cancun|méxico|caribe|punta cana']],
+['Algo que haces en el coche',['conducir|manejar','escuchar música|música|radio','cantar','hablar por teléfono|teléfono|móvil','dormir|dormirse','comer']],
+['Una prenda de abrigo',['abrigo','chaqueta|cazadora','jersey|suéter|sudadera','bufanda','guantes|guante','gorro|gorra']],
+['Algo que se hace en Nochevieja',['tomar las uvas|uvas','brindar|cava|champán|champagne','cenar|cena','bailar|fiesta','ver las campanadas|campanadas|tele|televisión','fuegos artificiales|petardos']],
+['Un mueble de la casa',['sofá|sillón','cama','mesa','silla','armario','estantería|librería']],
+['Algo que se hace en el gimnasio',['pesas|levantar pesas|pesa','correr|cinta|running','bicicleta|bici|spinning','yoga|pilates','abdominales|flexiones','nadar|natación|piscina']],
+['Un animal doméstico',['perro','gato','pájaro|canario|periquito|loro','pez|peces|pecera','hámster|conejo','tortuga']],
+['Algo que hay en un colegio',['pizarra|encerado','mesa|pupitre|silla','libros|libro','profesor|profesores|maestro','mochila|mochilas','recreo|patio']],
+['Un motivo para llamar a un amigo',['quedar|planes','cotilleo|chisme|cotillear','pedirle un favor|favor','felicitarle|cumpleaños|felicitar','desahogarse|problemas|hablar','echarle de menos|echar de menos|saludar']],
+['Algo que se hace en una boda',['bailar|baile','comer|banquete|cenar|comida','casarse|ceremonia','tirar arroz|arroz|confeti','brindar','hacer fotos|fotos|fotografías']],
+['Una verdura',['zanahoria','lechuga','cebolla','brócoli|brocoli','patata|papa','pimiento']],
+['Algo que se hace en la nieve',['esquiar|esquí','muñeco de nieve|muñeco','bolas de nieve|tirar bolas','snowboard|tabla','trineo','patinar']],
+['Algo que se come con las manos',['pizza','hamburguesa','patatas fritas|patatas|papas','bocadillo|bocata|sándwich|sandwich','pollo|alitas','palomitas']],
+['Un sitio donde se hacen colas',['supermercado|súper|super|caja','banco','médico|hospital|centro de salud','cine','aeropuerto','correos']],
+['Un regalo de San Valentín',['flores|rosas|ramo|rosa','bombones|chocolate|chocolates','cena|cenar|restaurante','peluche|osito','joya|joyas|anillo|colgante','perfume|colonia']],
+['Algo que haces antes de dormir',['lavarse los dientes|dientes|cepillarse los dientes|cepillarse','leer|libro','mirar el móvil|móvil|redes|redes sociales','ver la tele|tele|televisión|serie|series','ponerse el pijama|pijama','ir al baño|baño|pis']],
+['Algo que pasa en una cena familiar',['discutir|discusión|bronca|pelea','reírse|reír|risas','comer demasiado|comer mucho|empacho','hablar de política|política','cotillear|cotilleo|chismes','sobremesa|café|cartas|juegos']],
+['Algo que cuesta mucho dinero',['casa|piso|vivienda|hipoteca','coche','boda','viaje|viajes|vacaciones','universidad|estudios|carrera','joyas|joya|reloj|diamante']],
+['El mejor día de la semana',['sábado','viernes','domingo','jueves']]
 ];
 const ansOf=()=>{const a=QUESTIONS[state.qi][1];return a.map((s,i)=>{const syn=s.split('|');return{syn,text:syn[0],pts:PTS[a.length][i]}})};
 
@@ -107,7 +126,7 @@ const P=x=>x.p||{};
 const playerList=()=>peers.map(x=>P(x)).filter(p=>p.c_key).map(p=>({key:p.c_key,name:p.c_name||'Jugador',p}));
 const pname=k=>state?.names?.[k]||playerList().find(p=>p.key===k)?.name||'Jugador';
 function publish(extra={}){Object.assign(myPres,extra);if(!socket||socket.readyState!==1)return;socket.send(JSON.stringify({t:'pres',p:{c_name:name,c_key:myKey,c_host:isHost?1:0,...myPres}}))}
-function commit(){if(!isHost)return;state.v=(state.v||0)+1;publish({c_state:state});persist();render()}
+function commit(){if(!isHost)return;if(state.answerer&&state.dlSeq!==state.seq){state.dl=Date.now()+25000;state.dlSeq=state.seq}if(!state.answerer)state.dl=0;state.v=(state.v||0)+1;publish({c_state:state});persist();render()}
 function connect(){if(connecting||!roomCode)return;connecting=true;closed=false;
  socket=new WebSocket((location.protocol==='https:'?'wss:':'ws:')+'//'+location.host);
  socket.onopen=()=>socket.send(JSON.stringify({t:'join',room:'cmb-duelo-'+roomCode.toLowerCase(),cid}));
@@ -161,6 +180,7 @@ function hostStep(){if(!isHost||!state)return;const pls=playerList(),pl={};pls.f
    if(state.names[p.key]!==p.name){state.names[p.key]=p.name;ch=true}}
   if(ch)commit();return}
  if(state.phase==='finished')return;
+ if(state.answerer&&state.dl&&Date.now()>state.dl&&['faceoff','play','steal'].includes(state.phase))return resolve(-1,'⏰ tiempo agotado');
  for(const p of pls){if(!state.teams[p.key]){const cnt={A:0,B:0};Object.values(state.teams).forEach(t=>cnt[t]++);state.teams[p.key]=cnt.A<=cnt.B?'A':'B';state.names[p.key]=p.name;ch=true}}
  if(state.phase==='faceoff'&&state.fo.stage==='buzz'){
   for(const t of ['A','B']){const k=state.reps[t],c=pl[k]&&pl[k].c_act;if(c&&c.s===state.seq&&c.type==='buz'){state.fo.first=k;state.fo.stage='first';state.answerer=k;state.seq++;return commit()}}}
@@ -174,10 +194,21 @@ function sendAns(){const el=$('ans'),t=(el?.value||'').trim();if(!t)return;publi
 function sendBuz(){publish({c_act:{s:state.seq,type:'buz'}});const b=$('buzz');if(b)b.disabled=true}
 function setTeam(t){publish({c_team:t});if(isHost){state.teams[myKey]=t;commit()}}
 
+// ---------- Sonidos, ✖ gigante y cuenta atrás ----------
+let AC,fbSig='';
+function tone(f,t,d,type='sine',v=.15){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime+t;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+d)}catch(e){}}
+function sfx(k){if(k==='ok'){tone(660,0,.15);tone(990,.12,.3)}else if(k==='bad')tone(150,0,.55,'sawtooth',.2);else if(k==='win')[523,659,784,1047].forEach((f,i)=>tone(f,i*.13,.35,'triangle'))}
+function bigX(){const d=document.createElement('div');d.className='bigx';d.textContent='✖';document.body.appendChild(d);setTimeout(()=>d.remove(),900)}
+function feedback(){const sig=state.round+'|'+state.seq+'|'+state.phase;if(sig===fbSig)return;const first=!fbSig;fbSig=sig;if(first)return;
+ if(state.phase==='result')return sfx('win');
+ if(state.last){if(state.last.ok)sfx('ok');else{sfx('bad');bigX()}}}
+setInterval(()=>{const t=$('timer');if(!t)return;if(!state||!state.dl||!state.answerer||state.phase==='result'){t.innerHTML='';return}
+ const s=Math.max(0,Math.ceil((state.dl-Date.now())/1000));t.innerHTML='⏱️ <b style="color:'+(s<=5?'var(--bad)':'var(--gold)')+'">'+s+' s</b>'},400);
+
 // ---------- Vistas ----------
 function mount(sig,html,bind){if(sig===curSig)return;curSig=sig;app.innerHTML=html;bind&&bind()}
 function setHTML(el,html){if(!el)return;if(el._h!==html){el._h=html;el.innerHTML=html}}
-function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>DUELO DE FAMILIAS</h1><p class="muted">Las respuestas más populares de la encuesta… ¿sabrás adivinar lo que piensa la gente? 🎙️</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Dos equipos. En cada ronda hay una pregunta con respuestas ocultas, ordenadas de más a menos populares.<br><br>1) <b>Duelo:</b> un representante de cada equipo pulsa el botón y responde. Gana el control quien dé la respuesta más popular.<br>2) <b>Turno:</b> el equipo con el control responde por turnos y cada acierto suma al banco. Con <b>3 fallos</b> pierde el control.<br>3) <b>Robo:</b> el otro equipo tiene una sola respuesta: si acierta, se lleva todo el banco.<br>La última ronda vale <b>doble</b>. El anfitrión actúa de árbitro y puede dar por buena una respuesta.</p></section>';
+function renderHome(msg=''){curSig='';app.innerHTML='<section class="card center"><h1>DUELO DE FAMILIAS</h1><p class="muted">Las respuestas más populares de la encuesta… ¿sabrás adivinar lo que piensa la gente? 🎙️</p></section><section class="card"><label for="name">Tu nombre</label><input id="name" maxlength="16" placeholder="¿Cómo te llamas?" value="'+safe(name)+'"><div class="row" style="margin-top:14px"><button class="btn" id="create">Crear sala</button><button class="btn secondary" id="tj">Unirme con código</button></div><div id="ja" class="hidden"><label for="code">Código de sala</label><input id="code" maxlength="5" placeholder="ABCDE" autocapitalize="characters"><button class="btn secondary" id="join" style="width:100%;margin-top:10px">Entrar</button></div><p class="notice" id="notice">'+safe(msg)+'</p></section><section class="card"><h3>Cómo se juega</h3><p class="muted small">Dos equipos. En cada ronda hay una pregunta con respuestas ocultas, ordenadas de más a menos populares.<br><br>1) <b>Duelo:</b> un representante de cada equipo pulsa el botón y responde. Gana el control quien dé la respuesta más popular.<br>2) <b>Turno:</b> el equipo con el control responde por turnos y cada acierto suma al banco. Con <b>3 fallos</b> pierde el control.<br>3) <b>Robo:</b> el otro equipo tiene una sola respuesta: si acierta, se lleva todo el banco.<br>Tienes <b>25 segundos</b> para responder. La última ronda vale <b>doble</b>. El anfitrión actúa de árbitro y puede dar por buena una respuesta.</p></section>';
  $('create').onclick=createRoom;$('tj').onclick=()=>{$('ja').classList.toggle('hidden');$('code')?.focus()};$('join').onclick=joinRoom;$('code')?.addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5))}
 function renderLobby(){
  mount('lobby|'+isHost,'<section class="card center"><div class="tag">CÓDIGO DE SALA</div><div class="code">'+safe(roomCode)+'</div><button class="btn secondary" id="copy">Copiar código</button></section><section class="card"><h3>Equipos</h3><div class="teams" id="teams"></div><div class="row" style="margin-top:10px"><button class="btn secondary" data-t="A">Unirme al equipo A</button><button class="btn secondary" data-t="B">Unirme al equipo B</button></div></section>'
@@ -204,7 +235,7 @@ function refHtml(){if(!isHost||!['faceoff','play','steal'].includes(state.phase)
 function renderGame(){const ph=state.phase,me=state.answerer===myKey,
   canBuzz=ph==='faceoff'&&state.fo.stage==='buzz'&&(state.reps.A===myKey||state.reps.B===myKey);
  mount('g|'+state.round+'|'+ph+'|'+state.seq+'|'+me+'|'+canBuzz,
- '<section class="card"><div class="score" id="score"></div><div class="small center bank" id="bank" style="margin-top:6px"></div><div class="q" id="q"></div><div class="board" id="board"></div><div class="strikes" id="strikes"></div><div id="info"></div>'
+ '<section class="card"><div class="score" id="score"></div><div class="small center bank" id="bank" style="margin-top:6px"></div><div class="q" id="q"></div><div class="board" id="board"></div><div class="strikes" id="strikes"></div><div class="small center" id="timer"></div><div id="info"></div>'
  +(me&&ph!=='result'?'<div class="row" style="margin-top:8px"><input id="ans" maxlength="60" autocomplete="off" placeholder="Tu respuesta…" style="flex:3"><button class="btn" id="sbtn">Responder</button></div>':'')
  +(canBuzz?'<button class="buzz" id="buzz" style="margin-top:10px">🔔 ¡PULSAR!</button>':'')
  +'<div id="ref"></div>'
@@ -215,7 +246,7 @@ function renderGame(){const ph=state.phase,me=state.answerer===myKey,
  setHTML($('score'),'<div class="'+cls('A')+'"><small>Equipo A</small><b>'+state.score.A+'</b></div><div class="small muted">Ronda '+state.round+'/'+state.rounds+(state.round>=state.rounds?'<br>×2':'')+'</div><div class="'+cls('B')+'"><small>Equipo B</small><b>'+state.score.B+'</b></div>');
  setHTML($('bank'),'💰 Banco: '+state.bank);setHTML($('q'),safe(QUESTIONS[state.qi][0]));
  setHTML($('board'),boardHtml());setHTML($('strikes'),'<span style="color:var(--bad)">'+'✖'.repeat(state.strikes)+'</span><span style="color:#2c3a55">'+'✖'.repeat(3-state.strikes)+'</span>');
- setHTML($('info'),infoHtml());setHTML($('ref'),refHtml())}
+ setHTML($('info'),infoHtml());setHTML($('ref'),refHtml());feedback()}
 function renderFinished(){const a=state.score.A,b=state.score.B,w=a===b?'¡Empate!':(a>b?'Gana el equipo A':'Gana el equipo B');
  mount('fin','<section class="card center"><div class="tag">PARTIDA TERMINADA</div><div style="font-size:78px">🏆</div><h1>'+w+'</h1><div class="score" style="margin-top:12px"><div class="s A"><small>Equipo A</small><b>'+a+'</b></div><div></div><div class="s B"><small>Equipo B</small><b>'+b+'</b></div></div></section>'+(isHost?'<button class="btn" id="again" style="width:100%">Volver a la sala</button>':'')+'<button class="btn ghost" id="leave" style="width:100%;margin-top:9px">Salir</button>',
  ()=>{$('again')&&($('again').onclick=()=>{state.phase='lobby';commit()});$('leave').onclick=leaveRoom})}

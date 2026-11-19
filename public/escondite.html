@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><title> TEST Escondite GPS</title>
+<html lang="es"><head><meta charset="utf-8"><title>Escondite GPS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f4ef;--card:#fff;--tx:#1c1b19;--mut:#6b675f;--ac:#d9481c;--ok:#1f8a4c;--bd:#e3dfd6;--me:#2563eb;color-scheme:light dark}
@@ -10,7 +10,7 @@ main{max-width:480px;margin:0 auto;padding:16px}
 h1{font-size:22px;margin:4px 0 12px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
 label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
-input{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:16px}
+input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:16px}
 button{padding:12px 14px;border-radius:10px;border:0;background:var(--ac);color:#fff;font-size:16px;font-weight:600;width:100%;margin-top:8px}
 button.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
 .row{display:flex;gap:8px}.row>*{flex:1}
@@ -18,12 +18,14 @@ button.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
 .seg button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 #st{font-weight:700;font-size:18px}
 .warn{background:#c62828;color:#fff;border-radius:10px;padding:10px;margin-bottom:12px;font-weight:600}
+.warn.soft{background:#b7791f}.warn.ok{background:#1f8a4c}
 .chip{display:inline-block;padding:4px 10px;border-radius:99px;font-size:14px;margin:0 6px 6px 0;border:1px solid var(--bd)}
 .h{border-color:var(--ok);color:var(--ok)}.s{border-color:var(--ac);color:var(--ac)}
 canvas{width:100%;aspect-ratio:1;display:block;border-radius:14px;background:var(--card);border:1px solid var(--bd)}
 .mut{color:var(--mut);font-size:14px}
 .hide{display:none}
 #code{font-size:26px;letter-spacing:4px;font-weight:800}
+#cap{position:sticky;top:8px;z-index:5;border:2px solid var(--ac)}
 </style></head><body><main>
 <h1>Escondite GPS</h1>
 
@@ -42,7 +44,10 @@ canvas{width:100%;aspect-ratio:1;display:block;border-radius:14px;background:var
   <div class="card"><div class="mut">Código de sala (compártelo)</div><div id="code"></div>
     <button class="alt" id="shr">Copiar enlace</button></div>
   <div id="note" class="warn hide"></div>
-  <div id="warn" class="warn hide">Estás fuera de la zona. Vuelve dentro.</div>
+  <div id="ev" class="warn ok hide"></div>
+  <div id="warn" class="warn hide"><span id="warr" style="display:inline-block;font-size:26px;line-height:1;vertical-align:middle;margin-right:8px">↑</span><span id="wtx"></span></div>
+  <div id="cap" class="card hide"><div id="captx"></div>
+    <div class="row"><button id="cy">Sí, me ha encontrado</button><button class="alt" id="cn">No, falsa alarma</button></div></div>
   <div class="card"><div id="st"></div><div class="mut" id="sub"></div></div>
   <canvas id="cv"></canvas>
   <div class="mut" id="gps"></div>
@@ -57,8 +62,12 @@ canvas{width:100%;aspect-ratio:1;display:block;border-radius:14px;background:var
     <div><label>Min. para esconderse</label><input id="hm" type="number" value="10"></div>
     <div><label>Pista cada (min)</label><input id="pm" type="number" value="5"></div></div>
     <div class="row"><div><label>Encoger cada (min, 0 = no)</label><input id="sm" type="number" value="0"></div>
-    <div><label>Encoger (%)</label><input id="sp" type="number" value="25"></div>
+    <div><label>Encoger (%)</label><input id="sp" type="number" value="10"></div>
     <div><label>Radio mínimo (m)</label><input id="mr" type="number" value="50"></div></div>
+    <div class="row"><div><label>Empezar a encoger tras (min)</label><input id="sd" type="number" value="10"></div>
+    <div><label>Captura a menos de (m, 0 = manual)</label><input id="cdist" type="number" value="10"></div>
+    <div><label>Confirmar captura</label><select id="cf"><option value="1">Pregunta al escondido</option><option value="0">Automática</option></select></div></div>
+    <p class="mut" id="sprev"></p>
     <button class="alt" id="zset">Fijar zona en mi posición</button>
     <button id="start">Empezar partida</button>
     <button class="alt" id="end">Terminar partida</button>
@@ -71,13 +80,22 @@ canvas{width:100%;aspect-ratio:1;display:block;border-radius:14px;background:var
 const $=id=>document.getElementById(id);
 const PFX="escgps-";
 let peer=null,myId=null,hostConn=null,conns=[],states={},peers=[],roomCode="";
-let me={lat:null,lng:null},my={n:"",role:"h",found:false,ping:null,host:false,g:{z:null,ph:"lobby",t0:0,hm:10,pm:5,sm:0,sp:25,mr:50}};
-let lastSend=0,lastK=-1,pend=false,started=false,wasOut=false,gpsErr="",mapOn=true,lastRd=0,retries=0,retryPending=false,gone=false,joinCode="";
+let me={lat:null,lng:null},my={n:"",role:"h",found:false,ping:null,host:false,g:{z:null,ph:"lobby",t0:0,hm:10,pm:5,sm:0,sp:10,sd:10,mr:50,cd:10,cf:1,ev:null}};
+let lastSend=0,lastK=-1,pend=false,started=false,gpsErr="",mapOn=true,lastRd=0,retries=0,retryPending=false,gone=false,joinCode="";
+let outSince=0,lastAlert=0,outNow=false,capData=null,capEnd=0,capShown=false,capAns=false,lastEv=null,evUntil=0,evTxt="";
 const timers={},seenPing={};
+const hf={},near={};   /* solo anfitrión: estado propio de cada jugador (encontrado, petición de captura) */
 const team=p=>p.found?"s":p.role;
 function xy(p,c){const k=Math.cos(c.lat*Math.PI/180);return{x:(p.lng-c.lng)*111320*k,y:(p.lat-c.lat)*110540}}
 function dist(a,b){const d=xy(a,b);return Math.hypot(d.x,d.y)}
 function fmt(ms){ms=Math.max(0,Math.round(ms/1000));return Math.floor(ms/60)+":"+String(ms%60).padStart(2,"0")}
+function card(b){return["N","NE","E","SE","S","SO","O","NO"][Math.round(((b%360)+360)%360/45)%8]}
+
+/* ---------- Sonido y vibración (iPhone no vibra: el pitido sirve de aviso) ---------- */
+let ac=null;
+function initAudio(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){}}
+function beep(f,d){try{if(!ac)return;const o=ac.createOscillator(),gn=ac.createGain();o.type="square";o.frequency.value=f;gn.gain.value=.08;o.connect(gn);gn.connect(ac.destination);o.start();gn.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 
 $("rh").onclick=()=>{my.role="h";$("rh").classList.add("on");$("rs").classList.remove("on")};
 $("rs").onclick=()=>{my.role="s";$("rs").classList.add("on");$("rh").classList.remove("on")};
@@ -90,16 +108,23 @@ function newCode(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i
 /* El anfitrión guarda el estado completo (states) y a cada jugador le manda una vista filtrada:
    los buscadores NO reciben la posición en vivo de los escondidos, solo sus pistas. */
 function view(forId){
-  const mine=states[forId],hider=mine&&team(mine)==="h";
-  if(hider)return states;
-  const o={};
-  for(const id in states){const q=states[id];o[id]=(id!==forId&&team(q)==="h")?Object.assign({},q,{lat:null,lng:null}):q}
+  const mine=states[forId],hider=mine&&team(mine)==="h",o={};
+  for(const id in states){const q=states[id];o[id]=(!hider&&id!==forId&&team(q)==="h")?Object.assign({},q,{lat:null,lng:null}):Object.assign({},q)}
+  if(o[forId]){const cp=hf[forId]&&hf[forId].cap;o[forId].cap=cp?{by:cp.by,left:Math.max(0,cp.until-Date.now())}:null}
   return o;
 }
 function applyStates(st){
   peers=Object.entries(st).map(([id,p])=>({peer:id,isMe:id===myId,presence:p}));
+  const mine=st[myId];
+  if(mine){
+    if(mine.found&&!my.found){my.found=true;buzz([200,100,200]);beep(520,.25)}
+    const cp=mine.cap;
+    if(cp){capEnd=Date.now()+(cp.left||0);if(!capShown){capShown=true;buzz([300,150,300]);beep(700,.2)}}
+    else{capShown=false;capAns=false}
+    capData=cp||null;
+  }
   if(team(my)!=="h")peers.forEach(p=>{const pg=p.presence.ping;if(!pg||p.isMe)return;
-    if(seenPing[p.peer]!==undefined&&seenPing[p.peer]!==pg.t)try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}
+    if(seenPing[p.peer]!==undefined&&seenPing[p.peer]!==pg.t)buzz(200);
     seenPing[p.peer]=pg.t});
   render();
 }
@@ -113,9 +138,10 @@ function clean(p,id){
   const base=String(p.n||"?").slice(0,14);let name=base,i=2;
   while(Object.keys(states).some(k=>k!==id&&states[k].n===name))name=base.slice(0,11)+" "+i++;
   const pg=p.ping&&num(p.ping.lat)!==null&&num(p.ping.lng)!==null?{lat:p.ping.lat,lng:p.ping.lng,t:num(p.ping.t)||0}:null;
-  return{n:name,role:p.role==="s"?"s":"h",found:!!p.found,lat:num(p.lat),lng:num(p.lng),ping:pg,host:null,g:null};
+  const f=hf[id];if(p.role==="s"&&f&&f.found)f.found=false;
+  return{n:name,role:p.role==="s"?"s":"h",found:!!p.found||!!(f&&f.found),lat:num(p.lat),lng:num(p.lng),acc:num(p.acc),ping:pg,host:null,g:null};
 }
-function myPresence(){return{n:my.n,role:my.role,found:my.found,lat:me.lat,lng:me.lng,ping:my.ping,host:my.host?1:null,g:my.host?my.g:null}}
+function myPresence(){return{n:my.n,role:my.role,found:my.found,lat:me.lat,lng:me.lng,acc:me.acc||null,ping:my.ping,host:my.host?1:null,g:my.host?my.g:null}}
 function send(force){
   const now=Date.now();
   if(!force&&now-lastSend<3000){pend=true;return}
@@ -123,16 +149,24 @@ function send(force){
   if(my.host){states[myId]=myPresence();broadcast()}
   else if(hostConn&&hostConn.open){hostConn.send({t:"p",p:myPresence()})}
 }
+function announce(txt){my.g.ev={id:Date.now(),txt}}
 function createRoom(tries){
   const code=newCode();
   peer=new Peer(PFX+code);
   peer.on("open",id=>{myId=id;roomCode=code;my.host=true;enter();
     peer.on("connection",c=>{
       c.on("open",()=>{clearTimeout(timers[c.peer]);conns=conns.filter(x=>x.peer!==c.peer);conns.push(c);c.send({t:"s",st:view(c.peer)})});
-      c.on("data",m=>{if(m&&m.t==="p"&&m.p&&typeof m.p==="object"){states[c.peer]=clean(m.p,c.peer);broadcast()}});
+      c.on("data",m=>{
+        if(!m)return;
+        if(m.t==="p"&&m.p&&typeof m.p==="object"){
+          const prev=states[c.peer],nx=clean(m.p,c.peer);states[c.peer]=nx;
+          if(prev&&!prev.found&&nx.found&&nx.role==="h")announce("🚩 "+nx.n+" ha sido encontrado");
+          broadcast();
+        }else if(m.t==="a"){respondCap(c.peer,!!m.ok)}
+      });
       c.on("close",()=>{conns=conns.filter(x=>x!==c);clearTimeout(timers[c.peer]);
         /* 15 s de margen por si el jugador se reconecta */
-        timers[c.peer]=setTimeout(()=>{if(!conns.some(x=>x.peer===c.peer)){delete states[c.peer];broadcast()}},15000)});
+        timers[c.peer]=setTimeout(()=>{if(!conns.some(x=>x.peer===c.peer)){delete states[c.peer];delete hf[c.peer];broadcast()}},15000)});
     });
   });
   peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
@@ -163,8 +197,8 @@ function retry(){
   retries++;retryPending=true;note("Reconectando… ("+retries+"/8)");
   setTimeout(()=>{retryPending=false;try{if(peer.disconnected)peer.reconnect();connectHost()}catch(e){retry()}},3000);
 }
-$("mk").onclick=()=>{if(!name())return;$("jmsg").textContent="Creando sala…";createRoom(0)};
-$("join2").onclick=()=>{if(!name())return;const c=$("cd").value.trim().toUpperCase();
+$("mk").onclick=()=>{initAudio();if(!name())return;$("jmsg").textContent="Creando sala…";createRoom(0)};
+$("join2").onclick=()=>{initAudio();if(!name())return;const c=$("cd").value.trim().toUpperCase();
   if(!c){$("jmsg").textContent="Escribe el código de sala.";return}$("jmsg").textContent="Conectando…";joinRoom(c)};
 
 function enter(){
@@ -175,31 +209,78 @@ function enter(){
     navigator.geolocation.watchPosition(pos=>{me.lat=pos.coords.latitude;me.lng=pos.coords.longitude;me.acc=pos.coords.accuracy;gpsErr="";send(false);render()},
       e=>{gpsErr=e&&e.code===1?"Has denegado el permiso de ubicación. Actívalo en los ajustes del navegador.":"No consigo tu ubicación. Sal a cielo abierto y comprueba que el GPS está activado."},{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
   }
-  const wl=()=>{try{navigator.wakeLock&&navigator.wakeLock.request("screen")}catch(e){}};wl();document.addEventListener("visibilitychange",()=>{if(!document.hidden){wl();send(true)}});
+  const wl=()=>{try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}};wl();document.addEventListener("visibilitychange",()=>{if(!document.hidden){wl();send(true)}});
   send(true);setInterval(tick,1000);render();
 }
 $("shr").onclick=async()=>{const u=location.origin+location.pathname+"?sala="+roomCode;
   try{await navigator.clipboard.writeText(u);$("shr").textContent="¡Copiado!"}catch(e){prompt("Copia el enlace:",u)}};
 
+/* ---------- Captura por proximidad (solo el anfitrión decide) ---------- */
+function setFound(id,by){
+  const f=hf[id]||(hf[id]={});f.found=true;f.cap=null;
+  if(states[id])states[id].found=true;
+  if(id===myId)my.found=true;
+  announce("🎯 "+by+" ha encontrado a "+((states[id]&&states[id].n)||"?"));
+}
+function respondCap(id,ok){
+  const f=hf[id];if(!f||!f.cap)return;
+  if(ok)setFound(id,f.cap.by);else{f.cap=null;f.sup=Date.now()+45000}
+  send(true);
+}
+/* Un buscador lleva 3 s seguidos a menos de cd metros → captura (o pregunta al escondido, 15 s para responder) */
+function hostScan(g){
+  const now=Date.now(),D=g.cd||0;if(!D)return false;
+  let changed=false;const ids=Object.keys(states);
+  ids.forEach(id=>{
+    const h=states[id];if(!h||team(h)!=="h"||h.lat==null)return;
+    const f=hf[id]||(hf[id]={});
+    if(f.cap){if(now>f.cap.until){setFound(id,f.cap.by);changed=true}return}
+    if(f.sup&&now<f.sup)return;
+    let by=null;
+    for(const k of ids){if(k===id)continue;const s=states[k];if(!s||team(s)!=="s"||s.lat==null)continue;
+      if((h.acc||0)>60||(s.acc||0)>60)continue;   /* señal GPS demasiado floja: no se fía */
+      if(dist(h,s)<=D){by=s.n;break}}
+    if(!by){delete near[id];return}
+    const n=near[id]||(near[id]={t:now});
+    if(now-n.t<3000)return;
+    delete near[id];
+    if(g.cf)f.cap={by,until:now+15000};else setFound(id,by);
+    changed=true;
+  });
+  return changed;
+}
+$("cy").onclick=()=>{capAns=true;if(my.host)respondCap(myId,true);else if(hostConn&&hostConn.open)hostConn.send({t:"a",ok:true});render()};
+$("cn").onclick=()=>{capAns=true;if(my.host)respondCap(myId,false);else if(hostConn&&hostConn.open)hostConn.send({t:"a",ok:false});render()};
+
 /* ---------- Controles de anfitrión ---------- */
+function prev(){
+  const r0=+$("zr").value||300,mr=+$("mr").value||50,sm=+$("sm").value||0,sp=Math.min(90,Math.max(5,+$("sp").value||10)),sd=+$("sd").value||0;
+  if(!sm||mr>=r0){$("sprev").textContent="La zona no se encoge.";return}
+  const n=Math.log(mr/r0)/Math.log(1-sp/100);
+  $("sprev").textContent="Empieza a encoger a los "+sd+" min de búsqueda y llega a "+mr+" m tras ~"+Math.round(sd+n*sm)+" min.";
+}
+["zr","mr","sm","sp","sd"].forEach(i=>$(i).oninput=prev);prev();
 $("zset").onclick=()=>{if(me.lat==null){alert("Aún no tengo tu ubicación.");return}
   my.g.z={lat:me.lat,lng:me.lng,r:Math.max(30,+$("zr").value||300)};send(true);render()};
 $("start").onclick=()=>{if(!my.g.z){alert("Primero fija la zona.");return}
+  const cdv=$("cdist").value;
   my.g.hm=Math.max(1,+$("hm").value||10);my.g.pm=Math.max(1,+$("pm").value||5);
-  my.g.sm=Math.max(0,+$("sm").value||0);my.g.sp=Math.min(90,Math.max(5,+$("sp").value||25));my.g.mr=Math.max(10,+$("mr").value||50);
-  my.g.t0=Date.now();my.g.ph="hide";send(true);render()};
-/* Radio actual: se encoge de forma continua durante la búsqueda */
+  my.g.sm=Math.max(0,+$("sm").value||0);my.g.sp=Math.min(90,Math.max(5,+$("sp").value||10));my.g.mr=Math.max(10,+$("mr").value||50);
+  my.g.sd=Math.max(0,+$("sd").value||0);my.g.cd=cdv===""?10:Math.max(0,+cdv||0);my.g.cf=+$("cf").value?1:0;
+  for(const k in hf)delete hf[k];for(const k in near)delete near[k];
+  my.g.t0=Date.now();my.g.ph="hide";my.g.ev=null;send(true);render()};
+/* Radio actual: se encoge de forma continua durante la búsqueda, tras el retraso configurado */
 function curR(g,now){
   const r0=g.z.r;if(!g.sm||now===undefined)return r0;
-  const ss=g.t0+g.hm*6e4;if(now<ss||g.ph==="lobby")return r0;
-  const t=(now-ss)/(g.sm*6e4),k=Math.floor(t),f=t-k,q=1-g.sp/100,rk=r0*Math.pow(q,k);
+  const s2=g.t0+g.hm*6e4+(g.sd||0)*6e4;if(now<s2||g.ph==="lobby")return r0;
+  const t=(now-s2)/(g.sm*6e4),k=Math.floor(t),f=t-k,q=1-g.sp/100,rk=r0*Math.pow(q,k);
   return Math.max(Math.min(g.mr,r0),rk+(rk*q-rk)*f);
 }
 $("end").onclick=()=>{my.g.ph="end";send(true);render()};
-$("nr").onclick=()=>{my.g.ph="lobby";my.g.t0=0;my.g.rd=(my.g.rd||0)+1;send(true);render()};
+$("nr").onclick=()=>{my.g.ph="lobby";my.g.t0=0;my.g.rd=(my.g.rd||0)+1;my.g.ev=null;for(const k in hf)delete hf[k];for(const k in near)delete near[k];send(true);render()};
 $("swap").onclick=()=>{my.role=my.role==="h"?"s":"h";my.found=false;my.ping=null;send(true);render()};
 $("mapb").onclick=()=>{mapOn=!mapOn;$("mapb").textContent=mapOn?"Ocultar mapa":"Mostrar mapa";render()};
-$("fnd").onclick=()=>{my.found=true;send(true);render()};
+$("fnd").onclick=()=>{my.found=true;if(my.host)announce("🚩 "+my.n+" ha sido encontrado");send(true);render()};
 
 /* ---------- Lógica de juego ---------- */
 function curG(){
@@ -216,11 +297,12 @@ function phase(g){
 }
 function tick(){
   const g=curG(),{ph,ss}=phase(g);
-  if(g&&(g.rd||0)!==lastRd){lastRd=g.rd||0;my.found=false;my.ping=null;lastK=-1;send(true)}
+  if(g&&(g.rd||0)!==lastRd){lastRd=g.rd||0;my.found=false;my.ping=null;lastK=-1;capAns=false;send(true)}
   if(g&&ph==="seek"&&team(my)==="h"&&!my.found&&me.lat!=null){
     const k=Math.floor((Date.now()-ss)/(g.pm*6e4));
     if(k!==lastK){lastK=k;my.ping={lat:me.lat,lng:me.lng,t:Date.now()};send(true)}
   }
+  if(my.host&&g&&ph==="seek"&&hostScan(g))send(true);
   if(pend&&Date.now()-lastSend>=3000)send(false);
   render();
 }
@@ -229,23 +311,49 @@ function render(){
   const g=curG(),{ph,ss}=phase(g),now=Date.now(),mt=team(my);
   const hiders=peers.filter(p=>p.presence.n&&team(p.presence)==="h");
   let st="",sub="";
+  const R=g&&g.z?curR(g,now):0;
   if(ph==="lobby"){st="Sala de espera";sub=g&&g.z?"Zona fijada. Esperando a que empiece.":"El anfitrión debe fijar la zona."}
   else if(ph==="hide"){st="Escondiéndose: "+fmt(ss-now);sub=mt==="h"?"Corre a esconderte dentro de la zona.":"Quédate quieto. Saldrás cuando acabe el tiempo."}
   else if(ph==="seek"){
     const nxt=ss+(Math.floor((now-ss)/(g.pm*6e4))+1)*g.pm*6e4;
     st="¡A buscar!";sub=mt==="h"?"Cada "+g.pm+" min revelas tu posición. Próxima en "+fmt(nxt-now):"Próxima pista de los escondidos en "+fmt(nxt-now);
+    if(g.cd)sub+=" · Captura a menos de "+g.cd+" m";
     if(hiders.length===0&&peers.length>1){st="¡Fin! Han encontrado a todos";sub=""}
   }else{st="Partida terminada";sub=""}
+  if(ph==="seek"&&g.sm){const s2=ss+(g.sd||0)*6e4;
+    sub+=now<s2?" · La zona empieza a encoger en "+fmt(s2-now):" · Zona: "+Math.round(R)+" m"+(R<=Math.min(g.mr,g.z.r)+0.5?" (mínima)":" y encogiéndose")}
   $("st").textContent=st;$("sub").textContent=sub;
   $("host").classList.toggle("hide",!my.host);
   $("fnd").classList.toggle("hide",!(my.role==="h"&&!my.found&&ph==="seek"));
   $("swap").classList.toggle("hide",ph!=="lobby"&&ph!=="end");
-  let out=false;const R=g&&g.z?curR(g,now):0;
-  if(g&&g.z&&me.lat!=null&&mt==="h"&&(ph==="hide"||ph==="seek"))out=dist(me,g.z)>R;
-  if(ph==="seek"&&g.sm)$("sub").textContent+=" · Zona: "+Math.round(R)+" m"+(R<=Math.min(g.mr,g.z.r)+0.5?" (mínima)":" y encogiéndose");
-  if(out&&!wasOut)try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
-  wasOut=out;
-  $("warn").classList.toggle("hide",!out);
+
+  /* Aviso de captura / evento */
+  const cp=capData&&!capAns&&team(my)==="h"&&!my.found&&ph==="seek";
+  $("cap").classList.toggle("hide",!cp);
+  if(cp)$("captx").textContent="🎯 "+capData.by+" está a menos de "+((g&&g.cd)||"?")+" m de ti. ¿Te ha encontrado? Si no respondes en "+Math.max(0,Math.ceil((capEnd-now)/1000))+" s, se da por bueno.";
+  if(g&&lastEv===null)lastEv=g.ev?g.ev.id:0;
+  if(g&&g.ev&&g.ev.id!==lastEv){lastEv=g.ev.id;evUntil=now+8000;evTxt=g.ev.txt;buzz(150);beep(440,.15)}
+  $("ev").textContent=evTxt;$("ev").classList.toggle("hide",!evTxt||now>evUntil);
+
+  /* Aviso de fuera de zona: margen por precisión GPS, 4 s de cortesía, distancia, dirección y repetición */
+  let out=false,rawOut=false,edge=false,over=0,brg=0;
+  if(g&&g.z&&me.lat!=null&&mt==="h"&&(ph==="hide"||ph==="seek")){
+    over=dist(me,g.z)-R;const mg=Math.min(me.acc||0,25);
+    rawOut=over>mg;edge=!rawOut&&over>-Math.max(15,R*.12);
+    if(rawOut){if(!outSince)outSince=now;out=now-outSince>=4000}else outSince=0;
+    const d=xy(g.z,me);brg=Math.atan2(d.x,d.y)*180/Math.PI;
+  }else outSince=0;
+  outNow=out;
+  const w=$("warn");
+  if(out||rawOut||edge){
+    w.className="warn"+(out?"":" soft");
+    $("warr").style.display=(out||rawOut)?"inline-block":"none";
+    $("warr").style.transform="rotate("+brg+"deg)";
+    $("wtx").textContent=out?"¡Fuera de la zona! A "+Math.round(over)+" m del borde. Vuelve hacia el "+card(brg)+".":rawOut?"Estás saliendo de la zona ("+Math.round(over)+" m). Vuelve hacia el "+card(brg)+".":"Cerca del borde de la zona ("+Math.round(-over)+" m).";
+  }else w.className="warn hide";
+  if(out&&now-lastAlert>6000){lastAlert=now;buzz([300,150,300]);beep(880,.3)}
+  if(!out)lastAlert=0;
+
   $("gps").textContent=gpsErr||(me.lat==null?"Buscando señal GPS…":"GPS: ±"+Math.round(me.acc||0)+" m"+(me.acc>30?" · señal floja, sal a cielo abierto":""));
   const ro=$("roster");ro.textContent="";
   peers.forEach(p=>{const q=p.presence;if(!q.n)return;const s=document.createElement("span");const t=team(q);
@@ -266,7 +374,7 @@ function drawMap(x,c,sc,cx,cy,w){
   if((x1-x0+1)*(y1-y0+1)>40)return;
   for(let i=x0;i<=x1;i++)for(let j=y0;j<=y1;j++){if(j<0||j>=n)continue;
     const t=tileImg(z,((i%n)+n)%n,j);if(t.ok)x.drawImage(t.img,cx+(i-wx)*ts,cy+(j-wy)*ts,ts+0.5,ts+0.5)}
-  x.fillStyle="#333";x.font="10px system-ui";x.textAlign="right";x.fillText("© OpenStreetMap",w-6,w-6);
+  x.fillStyle="#333";x.font="10px system-ui";x.textAlign="right";x.fillText("© OpenStreetMap contributors",w-6,w-6);
 }
 function draw(g,mt){
   const cv=$("cv"),dpr=window.devicePixelRatio||1,w=cv.clientWidth;if(!w)return;
@@ -281,7 +389,7 @@ function draw(g,mt){
   if(mapOn){drawMap(x,c,sc,cx,cy,w);x.beginPath();x.rect(0,0,w,w);x.arc(cx,cy,R*sc,0,7);x.fillStyle="rgba(0,0,0,.3)";x.fill("evenodd")}
   const lab=(t,a,b)=>{x.font="bold 12px system-ui";x.textAlign="center";if(mapOn){x.lineWidth=3;x.strokeStyle="#fff";x.strokeText(t,a,b)}x.fillStyle=mapOn?"#111":col("--tx");x.fillText(t,a,b)};
   if(R<c.r-0.5){x.strokeStyle=col("--mut");x.globalAlpha=.4;x.lineWidth=1;x.setLineDash([3,5]);x.beginPath();x.arc(cx,cy,c.r*sc,0,7);x.stroke();x.globalAlpha=1}
-  x.strokeStyle=col("--ok");x.lineWidth=2;x.setLineDash([6,5]);x.beginPath();x.arc(cx,cy,R*sc,0,7);x.stroke();x.setLineDash([]);
+  x.strokeStyle=outNow?"#c62828":col("--ok");x.lineWidth=outNow?3:2;x.setLineDash([6,5]);x.beginPath();x.arc(cx,cy,R*sc,0,7);x.stroke();x.setLineDash([]);
   lab("zona "+Math.round(R)+" m",cx,cy-R*sc-4);
   const dot=(p,color,label,ring)=>{const[a,b]=pt(p);x.beginPath();x.arc(a,b,ring?9:7,0,7);
     if(ring){x.strokeStyle=color;x.lineWidth=2;x.stroke()}else{x.fillStyle=color;x.fill()}
@@ -293,6 +401,7 @@ function draw(g,mt){
     }else if(q.lat!=null)dot(q,col("--ac"),q.n)});
   if(me.lat!=null&&me.acc){const[a,b]=pt(me);x.beginPath();x.arc(a,b,Math.max(9,me.acc*sc),0,7);x.fillStyle="rgba(37,99,235,.18)";x.fill()}
   if(me.lat!=null)dot(me,col("--me"),"tú");
+  if(outNow){x.strokeStyle="#c62828";x.lineWidth=6;x.strokeRect(3,3,w-6,w-6)}
   if(mt!=="h"&&me.lat!=null){let best=null;peers.forEach(p=>{const q=p.presence;if(q.ping&&team(q)==="h"){const d=dist(me,q.ping);if(best===null||d<best)best=d}});
     $("legend").textContent=best!==null?"Última pista más cercana: a "+Math.round(best)+" m de ti. Los aros son pistas pasadas.":"Verde: escondidos. Naranja: buscadores. Azul: tú. Norte arriba."}
 }

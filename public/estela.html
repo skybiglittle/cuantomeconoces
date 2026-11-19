@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Estela</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f4ef;--card:#fff;--tx:#1c1b19;--mut:#6b675f;--ac:#7c3aed;--ok:#1f8a4c;--bd:#e3dfd6;--me:#2563eb;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#15140f;--card:#201f1a;--tx:#f1eee6;--mut:#a09b8f;--ac:#a78bfa;--ok:#4cc88a;--bd:#34322b;--me:#6ea0ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:480px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
+input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:16px}
+button{padding:12px 14px;border-radius:10px;border:0;background:var(--ac);color:#fff;font-size:16px;font-weight:600;width:100%;margin-top:8px}
+button.alt{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+#st{font-weight:700;font-size:18px}
+.warn{background:#c62828;color:#fff;border-radius:10px;padding:10px;margin-bottom:12px;font-weight:600}
+.warn.ok{background:#1f8a4c}
+canvas{width:100%;aspect-ratio:1;display:block;border-radius:14px;background:var(--card);border:1px solid var(--bd)}
+.mut{color:var(--mut);font-size:14px}
+.hide{display:none}
+#code{font-size:26px;letter-spacing:4px;font-weight:800}
+.lb{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)}.lb:last-child{border:0}
+.sw{width:14px;height:14px;border-radius:50%;flex:none}.lb b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style></head><body><main>
+<h1>Estela</h1>
+
+<div id="join" class="card">
+  <p class="mut" style="margin-top:0">Camina y pinta celdas del mapa con tu color. Quien pasa después se queda con la celda. <b>Cierra un bucle y rellenas todo lo de dentro</b>, también lo que era de otros. Gana quien tenga más área al acabar el tiempo.</p>
+  <label>Tu nombre</label><input id="nm" maxlength="14" autocomplete="off">
+  <label>Código de sala (déjalo vacío si vas a crear una)</label>
+  <input id="cd" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="p. ej. K7QX">
+  <button id="join2">Unirme a la sala</button>
+  <button class="alt" id="mk">Crear sala nueva</button>
+  <button class="alt" id="tst">Modo prueba (1 jugador + bots)</button>
+  <p class="mut" id="jmsg"></p>
+</div>
+
+<div id="game" class="hide">
+  <div class="card" id="codec"><div class="mut">Código de sala (compártelo)</div><div id="code"></div>
+    <button class="alt" id="shr">Copiar enlace</button></div>
+  <div id="note" class="warn hide"></div>
+  <div id="ev" class="warn ok hide"></div>
+  <div id="warn" class="warn hide"></div>
+  <div class="card"><div id="st"></div><div class="mut" id="sub"></div></div>
+  <canvas id="cv"></canvas>
+  <div class="mut" id="gps"></div>
+  <div class="row"><button class="alt" id="mapb">Ocultar mapa</button><button class="alt" id="zoom">Zoom: seguirme</button></div>
+  <div class="card" style="margin-top:12px"><div id="lb"></div></div>
+  <div id="host" class="card hide">
+    <b>Anfitrión</b>
+    <div class="row"><div><label>Radio zona (m)</label><input id="zr" type="number" value="200"></div>
+    <div><label>Celda (m)</label><select id="cs"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+    <div><label>Duración (min)</label><input id="dur" type="number" value="10"></div></div>
+    <div class="row"><div><label>Estela</label><select id="br"><option value="0">Fina (1 celda)</option><option value="1">Gruesa (3×3)</option></select></div>
+    <div><label>Cerrar bucles</label><select id="lp"><option value="1">Rellena el interior</option><option value="0">No rellena</option></select></div></div>
+    <div id="tbox" class="hide">
+      <div class="row"><div><label>Bots rivales</label><select id="nb"><option>0</option><option>1</option><option selected>2</option><option>3</option></select></div>
+      <div><label>Velocidad (m/s)</label><select id="spd"><option>2</option><option selected>5</option><option>10</option></select></div></div>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ugps" style="width:auto"> Usar mi GPS real en vez de simulado</label>
+      <p class="mut">Toca el mapa para caminar hacia ese punto, o usa las flechas del teclado.</p>
+    </div>
+    <button class="alt" id="zset">Fijar zona en mi posición</button>
+    <button id="start">Empezar partida</button>
+    <button class="alt" id="end">Terminar partida</button>
+    <button class="alt" id="nr">Nueva partida (vuelve a la sala)</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id),PFX="estela-";
+const PAL=["#e6194b","#3cb44b","#4363d8","#f58231","#911eb4","#00a5b5","#f032e6","#9a6324","#808000","#008080","#e6b800","#800000","#000075","#fabed4","#aaffc3","#dcbeff","#808080","#ffd8b1","#469990","#bfef45"];
+let peer=null,myId=null,hostConn=null,conns=[],roomCode="",started=false,test=false,useGps=false,watching=false;
+let me={lat:null,lng:null,acc:0},my={n:"",host:false};
+let V=null,grid=null,endAt=0,mapOn=true,follow=false,gpsErr="",lastSend=0,retries=0,retryPending=false,gone=false,joinCode="";
+let lastEv=null,evUntil=0,evTxt="",view=null,tgt=null;const keys=new Set();
+/* Estado del anfitrión (autoridad): rejilla de celdas, jugadores y ajustes */
+const G={w:0,h:0,c:null,v:0,tot:0,cnt:new Array(22).fill(0)},P={},S={ph:"lobby",z:null,cs:10,br:0,lp:1,dur:10,endAt:0,ev:null};
+let dirty=false,lastB=0,sentV=-1,lastBot=0;
+
+/* ---------- Geometría ---------- */
+const K=lat=>Math.cos(lat*Math.PI/180);
+const xy=(p,c)=>({x:(p.lng-c.lng)*111320*K(c.lat),y:(p.lat-c.lat)*110540});
+const toLL=(x,y,c)=>({lat:c.lat+y/110540,lng:c.lng+x/(111320*K(c.lat))});
+const dist=(a,b)=>{const d=xy(a,b);return Math.hypot(d.x,d.y)};
+const fmt=ms=>{ms=Math.max(0,Math.round(ms/1000));return Math.floor(ms/60)+":"+String(ms%60).padStart(2,"0")};
+const card=b=>["N","NE","E","SE","S","SO","O","NO"][Math.round(((b%360)+360)%360/45)%8];
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+/* Rejilla comprimida: '.' libre, '#' fuera de zona, a..t = jugador 1..20 (cada tramo con su longitud) */
+function enc(c){let s="",i=0;const n=c.length;while(i<n){const v=c[i];let j=i;while(j<n&&c[j]===v)j++;s+=(v===0?".":v===255?"#":String.fromCharCode(96+v))+(j-i);i=j}return s}
+function dec(s,n){const c=new Uint8Array(n),re=/([.#a-z])(\d+)/g;let i=0,m;while((m=re.exec(s))){const v=m[1]==="."?0:m[1]==="#"?255:m[1].charCodeAt(0)-96;c.fill(v,i,i+(+m[2]));i+=+m[2]}return c}
+
+/* ---------- Lógica del anfitrión ---------- */
+function initGrid(){
+  const z=S.z,cs=S.cs;G.w=G.h=Math.ceil(2*z.r/cs);G.c=new Uint8Array(G.w*G.h);G.cnt.fill(0);let t=0;
+  for(let j=0;j<G.h;j++)for(let i=0;i<G.w;i++){const x=(i+.5)*cs-z.r,y=z.r-(j+.5)*cs;if(Math.hypot(x,y)>z.r)G.c[j*G.w+i]=255;else t++}
+  G.tot=t;G.v++;
+}
+function stamp(p,x,y){
+  const z=S.z,cs=S.cs,ci=Math.floor((x+z.r)/cs),cj=Math.floor((z.r-y)/cs);let ch=0;
+  for(let dj=-S.br;dj<=S.br;dj++)for(let di=-S.br;di<=S.br;di++){
+    const i=ci+di,j=cj+dj;if(i<0||j<0||i>=G.w||j>=G.h)continue;
+    const k=j*G.w+i,o=G.c[k];if(o===255||o===p.i)continue;
+    if(o)G.cnt[o]--;G.c[k]=p.i;G.cnt[p.i]++;ch++}
+  return ch;
+}
+/* Cierra bucles: todo lo que no se pueda alcanzar desde fuera sin cruzar tus celdas pasa a ser tuyo */
+function fillLoops(pi){
+  const W=G.w,H=G.h,c=G.c,n=W*H,seen=new Uint8Array(n),q=new Int32Array(n);let a=0,b=0;
+  const push=k=>{if(!seen[k]&&c[k]!==pi){seen[k]=1;q[b++]=k}};
+  for(let i=0;i<W;i++){push(i);push((H-1)*W+i)}for(let j=0;j<H;j++){push(j*W);push(j*W+W-1)}
+  for(let k=0;k<n;k++)if(c[k]===255)push(k);
+  while(a<b){const k=q[a++],i=k%W,j=(k/W)|0;if(i>0)push(k-1);if(i<W-1)push(k+1);if(j>0)push(k-W);if(j<H-1)push(k+W)}
+  let got=0;for(let k=0;k<n;k++)if(!seen[k]&&c[k]!==pi){const o=c[k];if(o)G.cnt[o]--;c[k]=pi;G.cnt[pi]++;got++}
+  return got;
+}
+function announce(txt){S.ev={id:Date.now(),txt}}
+function move(p,lat,lng,acc){
+  p.lat=lat;p.lng=lng;dirty=true;
+  if(S.ph!=="play"||!G.c||acc>40)return;
+  const now=Date.now(),z=S.z,cur={lat,lng},f=p.last;p.last={lat,lng,t:now};
+  const pt=xy(cur,z);let ch=0;
+  if(!f)ch=stamp(p,pt.x,pt.y);
+  else{
+    const d=dist(f,cur),dt=Math.max(.5,(now-f.t)/1000);
+    if(d/dt>9&&d>25)return;   /* salto de GPS o vehículo: no pinta */
+    const a=xy(f,z),n=Math.max(1,Math.ceil(d/(S.cs/2)));
+    for(let s=1;s<=n;s++)ch+=stamp(p,a.x+(pt.x-a.x)*s/n,a.y+(pt.y-a.y)*s/n);
+  }
+  if(ch){G.v++;if(S.lp){const g=fillLoops(p.i);if(g>=4)announce("🔁 "+p.n+" cierra un bucle: +"+g+" celdas")}}
+}
+function onPres(id,m){
+  let p=P[id];
+  if(!p){
+    const nm=String(m.n||"?").slice(0,14),old=Object.values(P).find(q=>q.off&&q.n===nm&&!q.bot);
+    if(old){delete P[old.id];old.id=id;old.off=false;P[id]=old;p=old}
+    else{
+      const used=new Set(Object.values(P).map(q=>q.i));let i=1;while(used.has(i))i++;if(i>20)return;
+      let name=nm,k=2;while(Object.values(P).some(q=>q.n===name))name=nm.slice(0,11)+" "+k++;
+      p=P[id]={id,i,n:name,lat:null,lng:null,last:null};
+    }
+  }
+  p.off=false;
+  const num=v=>typeof v==="number"&&isFinite(v)?v:null,la=num(m.lat),ln=num(m.lng);
+  if(la!==null&&ln!==null)move(p,la,ln,num(m.acc)||0);else dirty=true;
+}
+function botsStep(now){
+  const dt=Math.min(1,(now-(lastBot||now))/1000);lastBot=now;if(!dt)return;const z=S.z;
+  Object.values(P).forEach(b=>{
+    if(!b.bot)return;const a=xy(b,z);
+    if(!b.wp||!b.wp.length){   /* dibuja un rectángulo (cierra bucle) y luego va a otro sitio */
+      const s=40+Math.random()*50,sx=Math.random()<.5?-1:1,sy=Math.random()<.5?-1:1,m=z.r*.95;
+      b.wp=[[a.x+sx*s,a.y],[a.x+sx*s,a.y+sy*s],[a.x,a.y+sy*s],[a.x,a.y]].map(([x,y])=>{const L=Math.hypot(x,y);return L>m?[x*m/L,y*m/L]:[x,y]});
+      const r=Math.random()*z.r*.7,t=Math.random()*6.283;b.wp.push([r*Math.cos(t),r*Math.sin(t)]);
+    }
+    const [tx,ty]=b.wp[0],dx=tx-a.x,dy=ty-a.y,L=Math.hypot(dx,dy),st=4*dt;let nx,ny;
+    if(L<=st){b.wp.shift();nx=tx;ny=ty}else{nx=a.x+dx/L*st;ny=a.y+dy/L*st}
+    const ll=toLL(nx,ny,z);move(b,ll.lat,ll.lng,5);
+  });
+}
+function snap(){
+  return{ph:S.ph,z:S.z,cs:S.cs,br:S.br,lp:S.lp,w:G.w,h:G.h,tot:G.tot,left:S.ph==="play"?Math.max(0,S.endAt-Date.now()):0,ev:S.ev,
+    pl:Object.values(P).map(p=>({id:p.id,i:p.i,n:p.n,lat:p.lat,lng:p.lng,c:G.cnt[p.i]||0,off:!!p.off}))};
+}
+function broadcast(){
+  dirty=false;lastB=Date.now();const s=snap(),withGrid=G.v!==sentV;sentV=G.v;
+  apply(s,null,true);
+  if(conns.length){const rle=withGrid&&G.c?enc(G.c):undefined;conns.forEach(c=>{try{c.open&&c.send({t:"s",s,rle})}catch(e){}})}
+}
+function endGame(){
+  S.ph="end";const t=Object.values(P).sort((a,b)=>G.cnt[b.i]-G.cnt[a.i])[0];
+  announce(t&&G.cnt[t.i]>0?"🏁 ¡Gana "+t.n+"!":"🏁 Fin de la partida");broadcast();
+}
+function hostLoop(){
+  const now=Date.now();
+  if(S.ph==="play"){if(test)botsStep(now);if(now>=S.endAt)return endGame()}
+  if((dirty&&now-lastB>=700)||now-lastB>=2000)broadcast();
+}
+function dropBots(){for(const k in P)if(P[k].bot)delete P[k]}
+$("zset").onclick=()=>{if(me.lat==null){alert("Aún no tengo tu ubicación.");return}
+  S.z={lat:me.lat,lng:me.lng,r:Math.max(30,+$("zr").value||200)};broadcast()};
+$("start").onclick=()=>{
+  if(!S.z){alert("Primero fija la zona.");return}
+  S.z.r=Math.max(30,+$("zr").value||200);S.cs=+$("cs").value;S.br=+$("br").value;S.lp=+$("lp").value;S.dur=Math.max(1,+$("dur").value||10);
+  dropBots();initGrid();for(const k in P)P[k].last=null;
+  if(test){const n=+$("nb").value||0;for(let k=1;k<=n;k++){const used=new Set(Object.values(P).map(q=>q.i));let i=1;while(used.has(i))i++;
+    P["bot"+k]={id:"bot"+k,i,n:"Bot "+k,bot:true,lat:S.z.lat,lng:S.z.lng,last:null,wp:[]}}lastBot=0}
+  S.ph="play";S.endAt=Date.now()+S.dur*6e4;announce("🚀 ¡A pintar!");broadcast()};
+$("end").onclick=()=>{if(S.ph==="play")endGame()};
+$("nr").onclick=()=>{S.ph="lobby";G.c=null;G.w=G.h=0;G.cnt.fill(0);G.v++;S.ev=null;dropBots();for(const k in P)P[k].last=null;broadcast()};
+
+/* ---------- Cliente / red (PeerJS: el anfitrión es el servidor de la sala) ---------- */
+function apply(s,rle,isHost){
+  V=s;endAt=Date.now()+(s.left||0);
+  if(isHost)grid=G.c;else if(!s.w)grid=null;else if(typeof rle==="string")grid=dec(rle,s.w*s.h);
+  render();
+}
+function pushPos(force){
+  if(my.host){onPres(myId,{n:my.n,lat:me.lat,lng:me.lng,acc:me.acc});return}
+  const now=Date.now();if(!force&&now-lastSend<900)return;lastSend=now;
+  if(hostConn&&hostConn.open)hostConn.send({t:"p",n:my.n,lat:me.lat,lng:me.lng,acc:me.acc});
+}
+function newCode(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
+function name(){const n=$("nm").value.trim();if(!n){$("jmsg").textContent="Pon tu nombre.";return null}my.n=n;return n}
+function note(t){$("note").textContent=t;$("note").classList.toggle("hide",!t)}
+function createRoom(tries){
+  const code=newCode();peer=new Peer(PFX+code);
+  peer.on("open",id=>{myId=id;roomCode=code;my.host=true;onPres(myId,{n:my.n});enter();
+    peer.on("connection",c=>{
+      c.on("open",()=>{conns=conns.filter(x=>x.peer!==c.peer);conns.push(c);c.send({t:"s",s:snap(),rle:G.c?enc(G.c):undefined})});
+      c.on("data",m=>{if(m&&m.t==="p")onPres(c.peer,m)});
+      c.on("close",()=>{conns=conns.filter(x=>x!==c);const p=P[c.peer];if(p){p.off=true;dirty=true}});
+    });
+  });
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{
+    if(e.type==="unavailable-id"&&tries<5){peer.destroy();createRoom(tries+1)}
+    else if(!started)$("jmsg").textContent="No se pudo crear la sala ("+e.type+").";
+  });
+}
+function joinRoom(code){
+  joinCode=code;peer=new Peer();
+  peer.on("open",id=>{myId=id;connectHost()});
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{
+    if(started)retry();
+    else $("jmsg").textContent=e.type==="peer-unavailable"?"Esa sala no existe.":"Error de conexión ("+e.type+").";
+  });
+}
+function connectHost(){
+  const c=peer.connect(PFX+joinCode,{reliable:true});hostConn=c;
+  c.on("open",()=>{retries=0;roomCode=joinCode;note("");enter();pushPos(true)});
+  c.on("data",m=>{if(m&&m.t==="s"&&m.s)apply(m.s,m.rle,false)});
+  c.on("close",()=>{if(c===hostConn)retry()});
+}
+function retry(){
+  if(gone||retryPending)return;
+  if(retries>=8){gone=true;note("El anfitrión se ha desconectado. La partida ha terminado.");return}
+  retries++;retryPending=true;note("Reconectando… ("+retries+"/8)");
+  setTimeout(()=>{retryPending=false;try{if(peer.disconnected)peer.reconnect();connectHost()}catch(e){retry()}},3000);
+}
+$("mk").onclick=()=>{if(!name())return;$("jmsg").textContent="Creando sala…";createRoom(0)};
+$("join2").onclick=()=>{if(!name())return;const c=$("cd").value.trim().toUpperCase();
+  if(!c){$("jmsg").textContent="Escribe el código de sala.";return}$("jmsg").textContent="Conectando…";joinRoom(c)};
+const qs=new URLSearchParams(location.search).get("sala");if(qs)$("cd").value=qs.toUpperCase();
+
+/* Modo prueba: sin red, posición simulada (toca el mapa) y bots que dibujan rectángulos */
+$("tst").onclick=()=>{
+  my.n=($("nm").value.trim()||"Tú").slice(0,14);test=true;my.host=true;myId="me";roomCode="PRUEBA";
+  const go=(la,ln)=>{me.lat=la;me.lng=ln;me.acc=5;S.z={lat:la,lng:ln,r:+$("zr").value||200};onPres(myId,{n:my.n,lat:la,lng:ln,acc:5});enter()};
+  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>go(p.coords.latitude,p.coords.longitude),()=>go(40.41678,-3.70379),{timeout:3500});
+  else go(40.41678,-3.70379);
+};
+function simStep(){
+  if(!test||useGps||me.lat==null)return;
+  const sp=+$("spd").value||5,dt=.25;let dx=0,dy=0;
+  if(keys.size){dx=(keys.has("ArrowRight")?1:0)-(keys.has("ArrowLeft")?1:0);dy=(keys.has("ArrowUp")?1:0)-(keys.has("ArrowDown")?1:0);
+    if(dx||dy){const L=Math.hypot(dx,dy);dx=dx/L*sp*dt;dy=dy/L*sp*dt;tgt=null}}
+  else if(tgt){const d=xy(tgt,me),L=Math.hypot(d.x,d.y);if(L<.5)tgt=null;else{const s=Math.min(L,sp*dt);dx=d.x/L*s;dy=d.y/L*s}}
+  if(dx||dy){const n=toLL(dx,dy,me);me.lat=n.lat;me.lng=n.lng;me.acc=5;pushPos();render()}
+}
+addEventListener("keydown",e=>{if(test&&started&&e.key.startsWith("Arrow")){keys.add(e.key);e.preventDefault()}});
+addEventListener("keyup",e=>keys.delete(e.key));
+$("cv").onclick=e=>{if(!test||useGps||!view)return;const r=$("cv").getBoundingClientRect();
+  tgt=toLL((e.clientX-r.left-view.cx)/view.sc,-(e.clientY-r.top-view.cy)/view.sc,view.c)};
+$("ugps").onchange=e=>{useGps=e.target.checked;if(useGps)watch()};
+function watch(){
+  if(watching||!navigator.geolocation)return;watching=true;
+  navigator.geolocation.watchPosition(pos=>{me.lat=pos.coords.latitude;me.lng=pos.coords.longitude;me.acc=pos.coords.accuracy;gpsErr="";pushPos();render()},
+    e=>{gpsErr=e&&e.code===1?"Has denegado el permiso de ubicación. Actívalo en los ajustes del navegador.":"No consigo tu ubicación. Sal a cielo abierto y comprueba que el GPS está activado."},{enableHighAccuracy:true,maximumAge:1000,timeout:20000});
+}
+function enter(){
+  if(started)return;started=true;
+  $("join").classList.add("hide");$("game").classList.remove("hide");$("code").textContent=roomCode;
+  if(test){$("tbox").classList.remove("hide");$("codec").classList.add("hide")}
+  if(window.isSecureContext===false&&!test)gpsErr="El GPS solo funciona si abres la página con https.";
+  if(!test)watch();
+  const wl=()=>{try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}};wl();
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){wl();pushPos(true)}});
+  if(my.host){S.z=S.z;broadcast()}
+  setInterval(()=>{if(my.host)hostLoop();render()},500);setInterval(simStep,250);render();
+}
+$("shr").onclick=async()=>{const u=location.origin+location.pathname+"?sala="+roomCode;
+  try{await navigator.clipboard.writeText(u);$("shr").textContent="¡Copiado!"}catch(e){prompt("Copia el enlace:",u)}};
+$("mapb").onclick=()=>{mapOn=!mapOn;$("mapb").textContent=mapOn?"Ocultar mapa":"Mostrar mapa";render()};
+$("zoom").onclick=()=>{follow=!follow;$("zoom").textContent=follow?"Zoom: ver zona":"Zoom: seguirme";render()};
+
+/* ---------- Interfaz ---------- */
+function render(){
+  if(!started)return;const now=Date.now();
+  $("host").classList.toggle("hide",!my.host);
+  const pl=V?V.pl.slice().sort((a,b)=>b.c-a.c):[],mine=V&&V.pl.find(p=>p.id===myId),tot=V&&V.tot||1,cs=V?V.cs:10;
+  const area=c=>Math.round(c*cs*cs)+" m² ("+(c/tot*100).toFixed(1)+"%)";
+  let st="Sala de espera",sub=V&&V.z?"Zona fijada. Esperando a que empiece.":"El anfitrión debe fijar la zona.";
+  if(V&&V.ph==="play"){const left=endAt-now;st="Quedan "+fmt(left)+(left<60000?" · ¡último minuto!":"");sub=mine?"Tú: "+area(mine.c)+(pl[0]&&pl[0].id===mine.id?" · vas primero":""):""}
+  else if(V&&V.ph==="end"){st="Partida terminada";sub=pl.length&&pl[0].c>0?"Gana "+pl[0].n+" con "+area(pl[0].c):""}
+  $("st").textContent=st;$("sub").textContent=sub;
+  if(V&&V.ev&&lastEv===null)lastEv=V.ev.id;
+  if(V&&V.ev&&V.ev.id!==lastEv){lastEv=V.ev.id;evUntil=now+7000;evTxt=V.ev.txt;buzz(150)}
+  $("ev").textContent=evTxt;$("ev").classList.toggle("hide",!evTxt||now>evUntil);
+  const w=$("warn");let msg="";
+  if(V&&V.z&&me.lat!=null&&V.ph==="play"){const d=dist(me,V.z);if(d>V.z.r){const q=xy(V.z,me);msg="Fuera de la zona ("+Math.round(d-V.z.r)+" m del borde): aquí no pintas. Vuelve hacia el "+card(Math.atan2(q.x,q.y)*180/Math.PI)+"."}
+    else if(me.acc>40)msg="Señal GPS floja (±"+Math.round(me.acc)+" m): no se pinta hasta que mejore."}
+  w.textContent=msg;w.classList.toggle("hide",!msg);
+  $("gps").textContent=gpsErr||(me.lat==null?"Buscando señal GPS…":(test&&!useGps?"Posición simulada":"GPS: ±"+Math.round(me.acc||0)+" m"));
+  const lb=$("lb");lb.textContent="";
+  pl.forEach(p=>{const r=document.createElement("div");r.className="lb";const sw=document.createElement("span");sw.className="sw";sw.style.background=PAL[p.i-1];
+    const b=document.createElement("b");b.textContent=(p.id===myId?"Tú: ":"")+p.n+(p.off?" (sin conexión)":"");const a=document.createElement("span");a.className="mut";a.textContent=area(p.c);
+    r.append(sw,b,a);lb.appendChild(r)});
+  draw();
+}
+const tiles={};
+function tileImg(z,tx,ty){const k=z+"/"+tx+"/"+ty;let t=tiles[k];
+  if(!t){t=tiles[k]={img:new Image(),ok:false};t.img.onload=()=>{t.ok=true;render()};t.img.src="https://tile.openstreetmap.org/"+k+".png"}
+  return t}
+function drawMap(x,c,sc,cx,cy,w){
+  const k=K(c.lat),z=Math.max(3,Math.min(19,Math.round(Math.log2(156543.03*k*sc)))),n=Math.pow(2,z);
+  const ts=256*(156543.03*k/n)*sc,lr=c.lat*Math.PI/180;
+  const wx=(c.lng+180)/360*n,wy=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n;
+  const x0=Math.floor(wx-cx/ts),x1=Math.floor(wx+(w-cx)/ts),y0=Math.floor(wy-cy/ts),y1=Math.floor(wy+(w-cy)/ts);
+  if((x1-x0+1)*(y1-y0+1)>40)return;
+  for(let i=x0;i<=x1;i++)for(let j=y0;j<=y1;j++){if(j<0||j>=n)continue;
+    const t=tileImg(z,((i%n)+n)%n,j);if(t.ok)x.drawImage(t.img,cx+(i-wx)*ts,cy+(j-wy)*ts,ts+0.5,ts+0.5)}
+  x.fillStyle="#333";x.font="10px system-ui";x.textAlign="right";x.fillText("© OpenStreetMap contributors",w-6,w-6);
+}
+function draw(){
+  const cv=$("cv"),dpr=window.devicePixelRatio||1,w=cv.clientWidth;if(!w)return;
+  cv.width=w*dpr;cv.height=w*dpr;const x=cv.getContext("2d");x.scale(dpr,dpr);x.clearRect(0,0,w,w);
+  const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();
+  const zone=V&&V.z,base=zone||(me.lat!=null?{lat:me.lat,lng:me.lng,r:150}:null);
+  if(!base){x.fillStyle=col("--mut");x.font="15px system-ui";x.textAlign="center";x.fillText("Esperando tu ubicación…",w/2,w/2);return}
+  const ctr=follow&&me.lat!=null?{lat:me.lat,lng:me.lng}:base,range=follow?70:base.r*1.15,sc=(w/2)/range,cx=w/2,cy=w/2;
+  view={c:ctr,sc,cx,cy};
+  const off=xy(base,ctr),zx=cx+off.x*sc,zy=cy-off.y*sc;
+  if(mapOn){drawMap(x,ctr,sc,cx,cy,w);x.beginPath();x.rect(0,0,w,w);x.arc(zx,zy,base.r*sc,0,7);x.fillStyle="rgba(0,0,0,.3)";x.fill("evenodd")}
+  if(grid&&V&&V.w&&zone){
+    const W=V.w,c=V.cs,px=c*sc+.6;x.globalAlpha=.6;
+    for(let k=0;k<grid.length;k++){const o=grid[k];if(!o||o===255)continue;
+      const i=k%W,j=(k/W)|0,a=zx+(i*c-zone.r)*sc,b=zy+(j*c-zone.r)*sc;
+      if(a>w||b>w||a+px<0||b+px<0)continue;x.fillStyle=PAL[o-1];x.fillRect(a,b,px,px)}
+    x.globalAlpha=1;
+  }
+  x.strokeStyle=col("--ok");x.lineWidth=2;x.setLineDash([6,5]);x.beginPath();x.arc(zx,zy,base.r*sc,0,7);x.stroke();x.setLineDash([]);
+  const lab=(t,a,b)=>{x.font="bold 12px system-ui";x.textAlign="center";if(mapOn){x.lineWidth=3;x.strokeStyle="#fff";x.strokeText(t,a,b)}x.fillStyle=mapOn?"#111":col("--tx");x.fillText(t,a,b)};
+  if(V)V.pl.forEach(p=>{
+    const isMe=p.id===myId,pos=isMe&&me.lat!=null?me:p;if(pos.lat==null||p.off)return;
+    const d=xy(pos,ctr),a=cx+d.x*sc,b=cy-d.y*sc;
+    x.beginPath();x.arc(a,b,isMe?8:6,0,7);x.fillStyle=PAL[p.i-1];x.fill();x.lineWidth=isMe?3:2;x.strokeStyle=isMe?col("--me"):"#fff";x.stroke();
+    lab(p.n,a,b-12)});
+  if(tgt&&test&&!useGps){const d=xy(tgt,ctr),a=cx+d.x*sc,b=cy-d.y*sc;x.strokeStyle=col("--me");x.lineWidth=2;x.beginPath();x.arc(a,b,6,0,7);x.stroke()}
+}
+addEventListener("resize",render);
+</script></main></body></html>

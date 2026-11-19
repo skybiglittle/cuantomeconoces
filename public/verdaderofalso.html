@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¿Verdadero o falso?</title>
+<style>
+:root{--paper:#dff0f8;--paper2:#f4fbff;--ink:#0b1b2b;--beak:#ff6a1a;--beak2:#ffa23a;--beakink:#1a0a00;--ice:#bcd9e6;--card:#fff;--mut:#46647c;--ok:#1b9e5a;--no:#c9372c;--tc:#ff6a1a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--paper:#0b1b2b;--paper2:#123049;--ink:#e4f1f7;--ice:#1d3a54;--card:#12283d;--mut:#9db8cc;--ok:#2fbf78;--no:#e5594d}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(120% 80% at 50% 0,var(--paper2) 0,var(--paper) 60%);min-height:100dvh}
+main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+.logo{text-align:center;font-family:Impact,"Arial Narrow Bold",sans-serif;font-weight:900;font-size:clamp(28px,8vw,40px);margin:2px 0 12px}
+.logo span{display:inline-block;background:linear-gradient(135deg,var(--beak),var(--beak2));color:var(--beakink);padding:2px 12px 4px;border:3px solid var(--ink);border-radius:8px;transform:rotate(-2deg);box-shadow:3px 3px 0 var(--ink)}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:12px;padding:14px;margin:12px 0;box-shadow:4px 4px 0 var(--ink)}
+label{display:block;font-size:13px;color:var(--mut);font-weight:700;margin:10px 0 4px}
+input,select{width:100%;padding:12px;border:3px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+.btn{display:block;width:100%;margin-top:10px;padding:14px;border:3px solid var(--ink);border-radius:10px;background:linear-gradient(180deg,var(--beak2),var(--beak));color:var(--beakink);font:inherit;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}.btn.g{background:var(--card);color:var(--ink)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.mut{color:var(--mut);font-size:14px}.hide{display:none}.c{text-align:center}
+.tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);background:var(--ice);border-radius:99px;padding:4px 12px;margin:4px 0 12px}
+.tbtn{border:3px solid var(--ink);border-radius:10px;padding:10px 4px;font:inherit;font-weight:800;font-size:14px;color:#fff;background:var(--c);cursor:pointer;opacity:.55}
+.tbtn.on{opacity:1;box-shadow:0 0 0 3px var(--card),0 0 0 6px var(--c)}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font-size:14px;font-weight:700;color:#fff;background:var(--c);margin:0 6px 6px 0}
+.sign{position:relative;background:var(--card);border:4px solid var(--ink);border-radius:12px;padding:26px 16px;text-align:center;box-shadow:6px 6px 0 var(--ink);font-family:Impact,"Arial Narrow Bold",sans-serif;font-weight:900;font-size:clamp(23px,6.6vw,34px);line-height:1.15;margin:4px 0 14px}
+.sign::before{content:"";position:absolute;inset:7px;border:2px dashed var(--ice);border-radius:7px;pointer-events:none}
+.sign p{margin:0;position:relative}
+.bar{height:14px;border:3px solid var(--ink);border-radius:8px;background:var(--card);overflow:hidden}.bar i{display:block;height:100%;background:var(--ink);transition:width .5s linear}.bar.hot i{background:var(--no)}
+.clock{font-family:Impact,sans-serif;font-size:30px;text-align:center;line-height:1.1}
+.vf{display:flex;gap:10px;margin-top:14px}
+.vb{flex:1;padding:22px 6px;border:4px solid var(--ink);border-radius:12px;font:inherit;font-weight:900;font-size:20px;color:#fff;cursor:pointer;box-shadow:0 5px 0 var(--ink)}
+.vb.v{background:var(--ok)}.vb.f{background:var(--no)}.vb.dim{opacity:.4}.vb.sel{outline:5px solid var(--ink);outline-offset:3px}.vb:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.stamp{font-family:Impact,sans-serif;font-size:clamp(44px,13vw,70px);text-align:center;line-height:1;border:6px solid;border-radius:12px;padding:6px 0;margin:6px 0;transform:rotate(-3deg)}
+.stamp.v{color:var(--ok)}.stamp.f{color:var(--no)}
+.split{display:flex;height:42px;border:3px solid var(--ink);border-radius:10px;overflow:hidden;font-weight:800;color:#fff}
+.split div{display:flex;align-items:center;justify-content:center;width:50%;transition:width 1s cubic-bezier(.3,.9,.3,1);min-width:0;white-space:nowrap}
+.sv{background:var(--ok)}.sf{background:var(--no)}
+.fell{font-size:20px;text-align:center;margin:12px 0 2px}.msg{text-align:center;font-weight:800;color:var(--beak)}
+.why{background:var(--ice);border-radius:10px;padding:12px;font-size:15px;margin:12px 0}
+.pr{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:15px}.pr b{width:84px;flex:none}.pr .bar{flex:1;height:12px}.pr .bar i{background:var(--c)}
+.pt{font-family:Impact,sans-serif;font-size:36px;text-align:center}
+@media (prefers-reduced-motion:no-preference){.a{opacity:0;animation:in .5s forwards;animation-delay:var(--d,0s)}.stamp.a{animation-name:slam}}
+@keyframes in{to{opacity:1}}@keyframes slam{0%{opacity:0;transform:scale(2.4) rotate(-3deg)}100%{opacity:1;transform:scale(1) rotate(-3deg)}}
+</style></head><body><main>
+<div class="logo"><span>¿Verdadero o falso?</span></div>
+<div id="s"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+/* [afirmación, 1=verdadera/0=falsa, categoría, explicación] */
+const Q=[
+["La Gran Muralla china se ve a simple vista desde el espacio",0,"Mundo","Es larguísima pero estrecha. Los astronautas, incluido el chino Yang Liwei, dicen que no la distinguieron a simple vista."],
+["Solo usamos el 10 % del cerebro",0,"Cuerpo","La neuroimagen muestra actividad en casi todo el cerebro a lo largo del día. No hay un 90 % dormido."],
+["Los peces de colores tienen memoria de tres segundos",0,"Animales","Los experimentos demuestran que aprenden y recuerdan durante semanas o meses."],
+["Un rayo nunca cae dos veces en el mismo sitio",0,"Ciencia","Cae una y otra vez: el Empire State Building recibe unos 20 rayos al año."],
+["El color rojo enfurece a los toros",0,"Animales","Los toros no distinguen bien el rojo. Les provoca el movimiento del capote, no su color."],
+["Napoleón era muy bajito",0,"Historia","Medía en torno a 1,69 m, algo normal para un francés de su época. El mito viene de las unidades de medida y de la propaganda británica."],
+["Afeitarse hace que el vello crezca más grueso y oscuro",0,"Cuerpo","Los estudios no hallan cambios en el grosor ni en el ritmo. La punta cortada solo parece más áspera."],
+["El azúcar vuelve hiperactivos a los niños",0,"Cuerpo","Los ensayos doble ciego, resumidos en un metaanálisis de 1995, no encontraron efecto. Influye lo que esperan los adultos."],
+["Los vikingos llevaban cascos con cuernos",0,"Historia","No se ha hallado ninguno. La imagen nace en el siglo XIX, con el vestuario de la ópera de Wagner."],
+["Einstein suspendía matemáticas de pequeño",0,"Historia","Destacaba en matemáticas y él mismo desmintió ese bulo."],
+["Perdemos la mayor parte del calor corporal por la cabeza",0,"Cuerpo","Se pierde en proporción a la superficie expuesta. El mito sale de un experimento militar en el que solo la cabeza iba descubierta."],
+["El alcohol te quita el frío",0,"Cuerpo","Dilata los vasos de la piel: sientes calor, pero pierdes calor corporal más rápido."],
+["Madrid es la capital más alta de Europa",0,"España","Lo es de la Unión Europea (unos 650 m), pero Andorra la Vella supera los 1.000 m."],
+["El Sáhara es el mayor desierto del mundo",0,"Mundo","Un desierto es una zona con muy poca precipitación: la Antártida (unos 14 millones de km²) es el mayor. El Sáhara es el mayor cálido."],
+["Los pingüinos viven en el Polo Norte",0,"Animales","De forma natural solo viven en el hemisferio sur. En el Ártico están los osos polares."],
+["El cacahuete es un fruto seco",0,"España","Botánicamente es una legumbre: crece bajo tierra, en vainas, como las lentejas."],
+["Esperar dos horas tras comer evita el «corte de digestión»",0,"España","No hay evidencia de ahogamientos causados por comer antes de bañarse. El riesgo real es la hidrocución: un cambio brusco de temperatura, con el estómago lleno o vacío."],
+["En tiempos de Colón se creía que la Tierra era plana",0,"Historia","Se sabía que era esférica desde la Grecia antigua; Eratóstenes calculó su tamaño hacia el 240 a. C. El debate era la distancia a Asia."],
+["La gripe de 1918 se originó en España",0,"España","Se llamó «española» porque España, neutral en la guerra, informaba libremente. Su origen exacto sigue debatido."],
+["Sherlock Holmes dice «Elemental, querido Watson» en los libros de Conan Doyle",0,"Cultura","La frase completa nunca aparece en las novelas. Se popularizó en el cine."],
+["En la antigua Roma se vomitaba en los «vomitorios» para seguir comiendo",0,"Historia","Un vomitorium era un pasillo de acceso de teatros y anfiteatros, por el que el público salía en masa."],
+["Hay que beber ocho vasos de agua al día",0,"Cuerpo","No hay base científica para esa cifra. Las necesidades varían y parte del agua llega con la comida."],
+["Los perros ven en blanco y negro",0,"Animales","Distinguen azules y amarillos; confunden rojos y verdes, como una persona con daltonismo."],
+["En la Estación Espacial Internacional no hay gravedad",0,"Ciencia","Allí la gravedad es cerca del 90 % de la de la superficie. Flotan porque están en caída libre continua."],
+["Los hombres tienen una costilla menos que las mujeres",0,"Cuerpo","Ambos tenemos 12 pares. La creencia viene del relato de Adán y Eva."],
+["Las mujeres hablan más que los hombres",0,"Cuerpo","Un estudio de 2007 en Science midió unas 16.000 palabras al día en ambos sexos, sin diferencia significativa."],
+["Salir con el pelo mojado en invierno te provoca un resfriado",0,"Cuerpo","Los resfriados los causan virus. El frío puede influir algo en la susceptibilidad, pero sin virus no hay resfriado."],
+["El vidrio de las vidrieras antiguas es más grueso abajo porque el cristal fluye con los siglos",0,"Ciencia","El vidrio es un sólido amorfo que no fluye a escala humana. Los vidrios antiguos salían irregulares de fábrica."],
+["Los camaleones cambian de color sobre todo para camuflarse",0,"Animales","Lo usan sobre todo para comunicarse y regular la temperatura. El camuflaje es un uso secundario."],
+["Los murciélagos son ciegos",0,"Animales","Ven. Muchas especies tienen buena vista, además de la ecolocalización."],
+["Las vacas tienen cuatro estómagos",0,"Animales","Tienen un solo estómago con cuatro compartimentos: rumen, retículo, omaso y abomaso."],
+["Los avestruces esconden la cabeza bajo tierra cuando tienen miedo",0,"Animales","No lo hacen. Huyen o se tumban pegados al suelo."],
+["El chicle que se traga tarda siete años en digerirse",0,"Cuerpo","No se digiere, pero sale con el resto de los desechos en pocos días."],
+["Cada zona de la lengua detecta un sabor distinto",0,"Cuerpo","El «mapa de la lengua» es un mito. Todas las zonas con papilas detectan todos los sabores básicos."],
+["Cleopatra vivió más cerca de la llegada a la Luna que de la construcción de la Gran Pirámide",1,"Historia","La pirámide es de hacia el 2560 a. C.; Cleopatra nació en el 69 a. C., unos 2.500 años después. De ella a 1969 hay unos 2.040."],
+["La Universidad de Oxford es más antigua que el Imperio azteca",1,"Historia","Hay enseñanza en Oxford desde 1096; Tenochtitlan se fundó hacia 1325."],
+["Los tiburones existían antes que los árboles",1,"Animales","Los tiburones tienen unos 450 millones de años; los primeros árboles, unos 380."],
+["Un día en Venus dura más que su año",1,"Ciencia","Gira sobre sí mismo cada 243 días terrestres y da la vuelta al Sol en 225."],
+["Las heces del wombat tienen forma de cubo",1,"Animales","Un estudio liderado por Patricia Yang (Georgia Tech) lo explica por la elasticidad desigual de sus intestinos."],
+["Los pulpos tienen tres corazones",1,"Animales","Dos bombean la sangre a las branquias y uno al resto del cuerpo."],
+["Un plátano es una baya y una fresa no",1,"Ciencia","Una baya procede de un solo ovario con semillas dentro. La fresa es un fruto agregado."],
+["Un rayo es más caliente que la superficie del Sol",1,"Ciencia","Calienta el aire a unos 30.000 °C; la superficie solar ronda los 5.500 °C."],
+["La Tierra está más cerca del Sol en pleno invierno del hemisferio norte",1,"Ciencia","Pasa por su punto más cercano a principios de enero. Las estaciones se deben a la inclinación del eje, no a la distancia."],
+["El cerebro no siente dolor",1,"Cuerpo","No tiene receptores de dolor. Por eso se puede operar con el paciente despierto; el dolor de cabeza viene de otras estructuras."],
+["Una cucaracha puede vivir hasta una semana sin cabeza",1,"Animales","Respira por orificios del cuerpo. Acaba muriendo de sed."],
+["La piel del oso polar es negra",1,"Animales","Su pelo es transparente; debajo, la piel negra absorbe el calor."],
+["La miel bien cerrada puede conservarse prácticamente para siempre",1,"Ciencia","Tiene muy poca agua, es ácida y contiene peróxido de hidrógeno: casi ningún microbio sobrevive."],
+["Los caballos pueden dormir de pie",1,"Animales","Un mecanismo de las patas bloquea las articulaciones. El sueño profundo sí lo hacen tumbados."],
+["El coche eléctrico se inventó antes que el de gasolina",1,"Historia","Hubo prototipos eléctricos en la década de 1830. El Benz de gasolina es de 1885-1886."],
+["La torre Eiffel es más alta en verano que en invierno",1,"Mundo","El calor dilata el hierro: la diferencia puede llegar a unos 15 cm."],
+["Hay más árboles en la Tierra que estrellas en la Vía Láctea",1,"Ciencia","Un estudio de 2015 en Nature calculó unos 3 billones de árboles. La Vía Láctea tiene entre 100.000 y 400.000 millones de estrellas."],
+["Las nutrias marinas se agarran de la mano mientras duermen",1,"Animales","Así evitan que la corriente las separe."],
+["Los flamencos nacen grises",1,"Animales","Se vuelven rosas por los carotenoides de su alimentación."],
+["Los delfines duermen con medio cerebro",1,"Animales","Descansan un hemisferio cada vez, para seguir respirando."],
+["Los koalas tienen huellas dactilares casi idénticas a las humanas",1,"Animales","Un estudio de 1996 las encontró tan parecidas que podrían confundirse al microscopio."],
+["Las orejas se alargan con la edad",1,"Cuerpo","Un estudio del BMJ (1995) midió unos 0,2 mm al año. El cartílago pierde elasticidad y cede a la gravedad."],
+["Las jirafas tienen siete vértebras en el cuello, como los humanos",1,"Animales","Siete, solo que muy alargadas."],
+["El Everest sigue creciendo",1,"Mundo","Unos milímetros al año, por el choque de las placas india y euroasiática."],
+["La luz del Sol tarda unos ocho minutos en llegar a la Tierra",1,"Ciencia","Unos 8 minutos y 20 segundos."],
+["Un bebé tiene más huesos que un adulto",1,"Cuerpo","Nace con unos 270-300 piezas óseas. Muchas se fusionan y un adulto tiene 206."],
+["El español es la segunda lengua materna más hablada del mundo",1,"Cultura","Va detrás del chino mandarín, con unos 480 millones de hablantes nativos."],
+["Los plátanos son ligeramente radiactivos",1,"Ciencia","Contienen potasio-40, un isótopo natural, en cantidades inofensivas."]
+];
+const $=id=>document.getElementById(id),PFX="vf-",esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TM=[["Naranja","#ff6a1a"],["Azul","#2f7de1"],["Verde","#1b9e5a"],["Morado","#8b4fd6"]];
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let peer=null,myId=null,hostConn=null,conns=[],code="",host=false,test=false,name="",myTeam=0,V=null,endAt=0,myV=null,lastQ=-2,sig="",retries=0,retryP=false,gone=false,joinCode="",started=false,msg="";
+/* ---------- Anfitrión: estado y reglas ---------- */
+const H={ph:"lobby",rounds:10,time:20,qi:-1,order:[],endAt:0,res:null,hist:[]},PL={};let TS=[0,1,2,3].map(()=>({cor:0,tot:0}));
+function build(n){const F=sh(Q.filter(q=>!q[1])),T=sh(Q.filter(q=>q[1])),o=[];while(o.length<n&&(F.length||T.length)){const f=F.length&&(!T.length||Math.random()<.5);o.push(f?F.pop():T.pop())}return o}
+function join(id,n,t){
+  if(!PL[id]){
+    const nm=String(n||"Jugador").slice(0,14),old=Object.values(PL).find(p=>p.off&&p.n===nm&&!p.bot);
+    if(old){delete PL[old.id];old.id=id;old.off=false;PL[id]=old}
+    else if(Object.keys(PL).length>=30)return;else PL[id]={id,n:nm,team:0,vote:null,sc:0};
+  }
+  const p=PL[id];p.off=false;p.n=String(n||"Jugador").slice(0,14);if(H.ph==="lobby"||!p.team)p.team=t>=0&&t<4?t|0:0;bc();
+}
+function setTeam(id,t){const p=PL[id];if(p&&H.ph==="lobby"&&t>=0&&t<4){p.team=t|0;bc()}}
+function castVote(id,v){const p=PL[id];if(!p||H.ph!=="vote")return;p.vote=!!v;if(Object.values(PL).filter(x=>!x.off).every(x=>x.vote!==null))reveal();else bc()}
+function reveal(){
+  if(H.ph!=="vote")return;const q=H.order[H.qi],ans=!!q[1],ps=Object.values(PL).filter(p=>!p.off);let y=0,no=0,ni=0,w=0;
+  ps.forEach(p=>{const ok=p.vote===ans;if(p.vote===true)y++;else if(p.vote===false)no++;else ni++;TS[p.team].tot++;if(ok){p.sc++;TS[p.team].cor++}else w++});
+  H.res={y,no,ni,w,n:ps.length,pct:ps.length?Math.round(w/ps.length*100):0};H.hist.push({t:q[0],a:q[1],e:q[3],pct:H.res.pct});H.ph="reveal";bc();
+}
+function nextQ(){H.qi++;if(H.qi>=H.order.length){H.ph="end";bc();return}Object.values(PL).forEach(p=>p.vote=null);H.ph="vote";H.endAt=Date.now()+H.time*1000;bc()}
+function startGame(){
+  H.order=build(H.rounds);H.qi=-1;H.hist=[];TS=[0,1,2,3].map(()=>({cor:0,tot:0}));
+  Object.values(PL).forEach(p=>{p.sc=0;p.vote=null});
+  if(test)for(let k=1;k<=3;k++)PL["bot"+k]={id:"bot"+k,n:"Bot "+k,team:k%4,vote:null,sc:0,bot:true};
+  nextQ();
+}
+function snap(){
+  const q=H.order[H.qi],pls=Object.values(PL),rv=H.ph==="reveal";
+  return{ph:H.ph,rounds:H.order.length||H.rounds,qi:H.qi,time:H.time,rcfg:H.rounds,left:H.ph==="vote"?Math.max(0,H.endAt-Date.now()):0,
+    q:q&&H.ph!=="lobby"&&H.ph!=="end"?{t:q[0],c:q[2]}:null,ans:rv?!!q[1]:null,e:rv?q[3]:null,res:rv?H.res:null,
+    tm:TM.map((t,i)=>({cor:TS[i].cor,tot:TS[i].tot,m:pls.filter(p=>p.team===i&&!p.off).length})),
+    pl:pls.map(p=>({id:p.id,n:p.n,team:p.team,sc:p.sc,off:!!p.off,voted:p.vote!==null,vote:rv?p.vote:undefined})),
+    top:H.ph==="end"?H.hist.slice().sort((a,b)=>b.pct-a.pct).slice(0,3):null};
+}
+function bc(){const s=snap();apply(s);conns.forEach(c=>{try{c.open&&c.send({t:"s",s})}catch(e){}})}
+function hostLoop(){
+  if(H.ph!=="vote")return;
+  if(test)Object.values(PL).forEach(p=>{if(p.bot&&p.vote===null&&Math.random()<.2)castVote(p.id,Math.random()<.5)});
+  if(H.ph==="vote"&&Date.now()>=H.endAt)reveal();
+}
+/* ---------- Red (PeerJS: el anfitrión es el servidor de la sala) ---------- */
+function apply(s){V=s;endAt=Date.now()+(s.left||0);if(s.qi!==lastQ||s.ph==="lobby"){lastQ=s.qi;myV=null}render()}
+const newCode=()=>{const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
+function setName(){const n=$("nm").value.trim();if(!n){$("jm").textContent="Pon tu nombre.";return false}name=n.slice(0,14);return true}
+function createRoom(tries){
+  const c=newCode();peer=new Peer(PFX+c);
+  peer.on("open",id=>{myId=id;code=c;host=true;join(id,name,myTeam);enter();
+    peer.on("connection",cn=>{
+      cn.on("open",()=>{conns=conns.filter(x=>x.peer!==cn.peer);conns.push(cn);cn.send({t:"s",s:snap()})});
+      cn.on("data",m=>{if(!m)return;if(m.t==="j")join(cn.peer,m.n,m.team);else if(m.t==="v")castVote(cn.peer,m.v);else if(m.t==="team")setTeam(cn.peer,m.team)});
+      cn.on("close",()=>{conns=conns.filter(x=>x!==cn);const p=PL[cn.peer];if(p){p.off=true;if(H.ph==="vote"&&Object.values(PL).filter(x=>!x.off).every(x=>x.vote!==null))reveal();else bc()}});
+    });
+  });
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(e.type==="unavailable-id"&&tries<5){peer.destroy();createRoom(tries+1)}else if(!started)$("jm").textContent="No se pudo crear la sala ("+e.type+")."});
+}
+function joinRoom(c){
+  joinCode=c;peer=new Peer();
+  peer.on("open",id=>{myId=id;connectHost()});
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(started)retry();else $("jm").textContent=e.type==="peer-unavailable"?"Esa sala no existe.":"Error de conexión ("+e.type+")."});
+}
+function connectHost(){
+  const c=peer.connect(PFX+joinCode,{reliable:true});hostConn=c;
+  c.on("open",()=>{retries=0;code=joinCode;msg="";c.send({t:"j",n:name,team:myTeam});enter()});
+  c.on("data",m=>{if(m&&m.t==="s"&&m.s)apply(m.s)});
+  c.on("close",()=>{if(c===hostConn)retry()});
+}
+function retry(){
+  if(gone||retryP)return;
+  if(retries>=8){gone=true;msg="El anfitrión se ha desconectado.";render();return}
+  retries++;retryP=true;msg="Reconectando… ("+retries+"/8)";render();
+  setTimeout(()=>{retryP=false;try{if(peer.disconnected)peer.reconnect();connectHost()}catch(e){retry()}},3000);
+}
+function enter(){if(started)return;started=true;sig="";setInterval(()=>{if(host)hostLoop();tickUI()},400);render()}
+const act={
+  vote(v){myV=v;if(host)castVote(myId,v);else if(hostConn&&hostConn.open)hostConn.send({t:"v",v});sig="";render()},
+  team(t){myTeam=t;if(host)setTeam(myId,t);else if(hostConn&&hostConn.open)hostConn.send({t:"team",team:t})},
+  start(){if(host)startGame()},next(){if(host)nextQ()},close(){if(host)reveal()},
+  again(){if(host){H.ph="lobby";H.qi=-1;H.order=[];Object.values(PL).forEach(p=>{if(p.bot)delete PL[p.id];else p.vote=null});bc()}},
+  copy(){navigator.clipboard&&navigator.clipboard.writeText(location.origin+location.pathname+"?sala="+code).then(()=>{$("cp").textContent="¡Enlace copiado!"}).catch(()=>{})}
+};
+/* ---------- Pantallas ---------- */
+const tcol=i=>"style=\"--c:"+TM[i][1]+"\"";
+function home(){
+  const qs=new URLSearchParams(location.search).get("sala")||"";
+  $("s").innerHTML='<div class="card"><p style="margin-top:0">Aparece una afirmación en todos los móviles. Cada uno vota <b>en secreto</b> y, al revelar, se ve cuánta gente ha caído. Las preguntas juegan con creencias muy extendidas: todas las respuestas están documentadas.</p>'
+   +'<label>Tu nombre</label><input id="nm" maxlength="14" autocomplete="off"><label>Tu equipo</label><div class="row" id="tp">'+TM.map((t,i)=>'<button class="tbtn'+(i===myTeam?" on":"")+'" data-t="'+i+'" '+tcol(i)+'>'+t[0]+'</button>').join("")+'</div>'
+   +'<label>Código de sala (vacío si vas a crear una)</label><input id="cd" maxlength="6" autocapitalize="characters" value="'+esc(qs.toUpperCase())+'" placeholder="p. ej. K7QX">'
+   +'<button class="btn" id="bj">Unirme a la sala</button><button class="btn g" id="bm">Crear sala nueva</button><button class="btn g" id="bt">Modo prueba (1 jugador + 3 bots)</button><p class="mut" id="jm"></p></div>';
+  $("tp").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;myTeam=+b.dataset.t;[...$("tp").children].forEach((x,i)=>x.classList.toggle("on",i===myTeam))};
+  $("bj").onclick=()=>{if(!setName())return;const c=$("cd").value.trim().toUpperCase();if(!c){$("jm").textContent="Escribe el código.";return}$("jm").textContent="Conectando…";joinRoom(c)};
+  $("bm").onclick=()=>{if(!setName())return;$("jm").textContent="Creando sala…";createRoom(0)};
+  $("bt").onclick=()=>{name=($("nm").value.trim()||"Tú").slice(0,14);test=true;host=true;myId="me";code="PRUEBA";join(myId,name,myTeam);enter()};
+}
+function lobby(){
+  const me=V.pl.find(p=>p.id===myId),t=me?me.team:myTeam;
+  $("s").innerHTML='<div class="card c"><div class="mut">Código de sala</div><div style="font-size:30px;font-weight:900;letter-spacing:4px">'+esc(code)+'</div>'+(test?"":'<button class="btn g" data-a="copy" id="cp">Copiar enlace</button>')+'</div>'
+   +'<div class="card"><b>Elige equipo</b><div class="row" style="margin-top:8px">'+TM.map((x,i)=>'<button class="tbtn'+(i===t?" on":"")+'" data-t="'+i+'" '+tcol(i)+'>'+x[0]+' · '+V.tm[i].m+'</button>').join("")+'</div></div>'
+   +'<div class="card">'+(TM.map((x,i)=>{const m=V.pl.filter(p=>p.team===i&&!p.off);return m.length?'<div>'+m.map(p=>'<span class="chip" '+tcol(i)+'>'+esc(p.n)+(p.id===myId?" (tú)":"")+'</span>').join("")+'</div>':""}).join("")||'<span class="mut">Esperando jugadores…</span>')+'</div>'
+   +(host?'<div class="card"><b>Ajustes</b><div class="row"><div><label>Preguntas</label><select id="rc">'+[6,10,15].map(n=>'<option'+(n===V.rcfg?" selected":"")+'>'+n+'</option>').join("")+'</select></div><div><label>Segundos por pregunta</label><select id="tc">'+[15,20,30].map(n=>'<option'+(n===V.time?" selected":"")+'>'+n+'</option>').join("")+'</select></div></div><button class="btn" data-a="start">Empezar</button></div>':'<p class="mut c">El anfitrión empezará la partida.</p>');
+  if(host){$("rc").onchange=e=>{H.rounds=+e.target.value;bc()};$("tc").onchange=e=>{H.time=+e.target.value;bc()}}
+}
+function vote(){
+  const my=myV;
+  $("s").innerHTML='<div class="c"><span class="tag">Pregunta '+(V.qi+1)+' de '+V.rounds+' · '+esc(V.q.c)+'</span></div><div class="sign"><p>«'+esc(V.q.t)+'»</p></div>'
+   +'<div class="clock" id="clk"></div><div class="bar" id="bar"><i id="bi"></i></div>'
+   +'<div class="vf"><button class="vb v'+(my===false?" dim":"")+(my===true?" sel":"")+'" data-a="vote" data-v="1">✔ VERDADERO</button><button class="vb f'+(my===true?" dim":"")+(my===false?" sel":"")+'" data-a="vote" data-v="0">✖ FALSO</button></div>'
+   +'<p class="mut c" id="cnt"></p><p class="mut c">'+(my===null?"Vota sin que te vean. Se revela cuando todos voten o acabe el tiempo.":"Voto guardado. Puedes cambiarlo mientras falte alguien por votar.")+'</p>'
+   +(host?'<button class="btn g" data-a="close">Cerrar votación ya</button>':"");
+}
+function reveal_(){
+  const r=V.res,me=V.pl.find(p=>p.id===myId),tot=Math.max(1,r.y+r.no),yw=Math.round(r.y/tot*100),last=V.qi+1>=V.rounds;
+  const m=r.pct>=60?"¡Trampa maestra! Cayó casi todo el mundo":r.pct>=40?"Muy repartidos: la duda era razonable":r.pct>=20?"Una parte de la sala picó":"Esto lo sabía casi todo el mundo";
+  const mine=!me?"":me.vote===null?"No votaste a tiempo":me.vote===V.ans?"✔ Tú acertaste":"✖ Tú has caído";
+  const teams=V.tm.map((t,i)=>{const m=V.pl.filter(p=>p.team===i&&!p.off);if(!m.length)return"";const ok=m.filter(p=>p.vote===V.ans).length;return'<div class="pr" '+tcol(i)+'><b>'+TM[i][0]+'</b><div class="bar"><i style="width:'+Math.round(ok/m.length*100)+'%"></i></div><span>'+ok+'/'+m.length+'</span></div>'}).join("");
+  $("s").innerHTML='<div class="c"><span class="tag">Pregunta '+(V.qi+1)+' de '+V.rounds+'</span></div><div class="sign" style="font-size:20px;padding:16px"><p>«'+esc(V.q.t)+'»</p></div>'
+   +'<div class="stamp a '+(V.ans?"v":"f")+'" style="--d:.5s">'+(V.ans?"VERDADERO":"FALSO")+'</div>'
+   +'<div class="split a" style="--d:1.3s"><div class="sv" data-w="'+yw+'%">✔ '+r.y+'</div><div class="sf" data-w="'+(100-yw)+'%">✖ '+r.no+'</div></div>'
+   +'<div class="fell a" style="--d:2.3s">🎯 Han caído <b>'+r.w+' de '+r.n+'</b> ('+r.pct+' %)<br><span class="mut">Cayeron: '+(V.pl.filter(p=>!p.off&&p.vote!==V.ans).map(p=>esc(p.n)).join(", ")||"nadie")+'</span></div><div class="msg a" style="--d:2.3s">'+m+'</div>'
+   +'<div class="why a" style="--d:3.2s">'+esc(V.e)+'</div><div class="a" style="--d:3.8s"><p class="c" style="font-weight:800;margin:6px 0">'+mine+'</p><div class="card">'+teams+'</div>'
+   +(host?'<button class="btn" data-a="next">'+(last?"Ver resultados":"Siguiente pregunta")+'</button>':'<p class="mut c">Espera al anfitrión…</p>')+'</div>';
+  setTimeout(()=>document.querySelectorAll("[data-w]").forEach(e=>e.style.width=e.dataset.w),1400);
+}
+function end(){
+  const tm=V.tm.map((t,i)=>({i,p:t.tot?Math.round(t.cor/t.tot*100):0,t})).filter(x=>x.t.tot>0).sort((a,b)=>b.p-a.p),best=V.pl.slice().sort((a,b)=>b.sc-a.sc)[0];
+  const win=tm.filter(x=>x.p===(tm[0]&&tm[0].p));
+  $("s").innerHTML='<div class="card c"><div class="mut">Fin de la partida</div><div class="pt" style="color:'+(win.length===1?TM[win[0].i][1]:"var(--ink)")+'">'+(win.length===1?"Gana el equipo "+TM[win[0].i][0]:"¡Empate!")+'</div></div>'
+   +'<div class="card">'+tm.map(x=>'<div class="pr" '+tcol(x.i)+'><b>'+TM[x.i][0]+'</b><div class="bar"><i style="width:'+x.p+'%"></i></div><span>'+x.p+' %</span></div>').join("")+'<p class="mut" style="margin-bottom:0">Porcentaje de aciertos del equipo.'+(best?" Mejor jugador: <b>"+esc(best.n)+"</b> con "+best.sc+" aciertos.":"")+'</p></div>'
+   +'<div class="card"><b>Ranking</b>'+V.pl.slice().sort((a,b)=>b.sc-a.sc).slice(0,8).map((p,k)=>'<div class="pr" '+tcol(p.team)+'><span style="width:30px">'+(["🥇","🥈","🥉"][k]||k+1)+'</span><span style="flex:1;font-weight:700">'+esc(p.n)+'</span><span>'+p.sc+'/'+V.rounds+'</span></div>').join("")+'</div>'
+   +'<div class="card"><b>Las que más engañaron</b>'+(V.top||[]).map(h=>'<p style="margin:10px 0 2px"><b>«'+esc(h.t)+'»</b></p><p class="mut" style="margin:0">'+(h.a?"Verdadero":"Falso")+' · cayó el '+h.pct+' %. '+esc(h.e)+'</p>').join("")+'</div>'
+   +(host?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="mut c">El anfitrión puede empezar otra partida.</p>');
+}
+function render(){
+  if(!started){if(!$("nm"))home();return}
+  if(!V)return;
+  const s=V.ph+"|"+V.qi+"|"+(V.ph==="lobby"?V.pl.map(p=>p.id+p.n+p.team+p.off).join()+V.rcfg+V.time:"")+"|"+myV+"|"+msg;
+  if(s===sig)return;sig=s;
+  if(V.ph==="lobby")lobby();else if(V.ph==="vote")vote();else if(V.ph==="reveal")reveal_();else end();
+  if(msg)$("s").insertAdjacentHTML("afterbegin",'<div class="card" style="background:var(--no);color:#fff">'+esc(msg)+'</div>');
+  tickUI();
+}
+function tickUI(){
+  if(!V||V.ph!=="vote")return;
+  const left=Math.max(0,endAt-Date.now()),b=$("bi"),c=$("clk"),k=$("cnt");
+  if(b){b.style.width=(left/(V.time*1000)*100)+"%";$("bar").classList.toggle("hot",left<6000)}
+  if(c)c.textContent=Math.ceil(left/1000);
+  if(k){const a=V.pl.filter(p=>!p.off);k.textContent=a.filter(p=>p.voted).length+" de "+a.length+" han votado"}
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-t]");if(t&&started&&V&&V.ph==="lobby"){act.team(+t.dataset.t);return}
+  const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+  if(a==="vote")act.vote(b.dataset.v==="1");else act[a]&&act[a]();
+});
+render();
+</script></main></body></html>

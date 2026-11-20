@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b0f16">
+<title>Gatitos explosivos</title>
+<style>
+:root{--bg:#1b0f16;--bg2:#3a1626;--card:#26141d;--ink:#fff1e6;--mut:#c4a597;--ln:#4d2a38;--ac:#ff7a3d;--ok:#3ccf8e;--no:#ff5468;--gold:#ffc857;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(110% 70% at 50% 0,var(--bg2) 0,var(--bg) 62%) fixed;min-height:100dvh}
+main{max-width:540px;margin:0 auto;padding:14px 14px 40px}
+h1{margin:2px 0 0;text-align:center;font-size:clamp(28px,8vw,40px);letter-spacing:.02em}h1 span{color:var(--ac)}
+.sub{text-align:center;color:var(--mut);font-size:13px;margin:0 0 10px}
+.panel{background:var(--card);border:2px solid var(--ln);border-radius:16px;padding:14px;margin:10px 0}
+label{display:block;font-size:13px;color:var(--mut);font-weight:700;margin:10px 0 4px}
+input,select{width:100%;padding:12px;border:2px solid var(--ln);border-radius:12px;background:#12090e;color:var(--ink);font:inherit}
+.btn{display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:14px;background:var(--ac);color:#1b0a00;font:inherit;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 4px 0 #0005}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0005}.btn.g{background:#33202b;color:var(--ink);border:2px solid var(--ln)}.btn.r{background:var(--no);color:#fff}.btn.k{background:var(--ok)}.btn:disabled{opacity:.35}
+.mut{color:var(--mut);font-size:14px}.c{text-align:center}.row{display:flex;gap:8px}.row>*{flex:1}
+.bar{display:flex;justify-content:space-between;align-items:center;font-weight:800;background:var(--card);border:2px solid var(--ln);border-radius:14px;padding:10px 14px}
+.pls{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.pl{padding:5px 11px;border-radius:99px;background:#33202b;border:2px solid var(--ln);font-size:14px}.pl.t{border-color:var(--ac);color:var(--gold);font-weight:800}.pl.me{text-decoration:underline}.pl.dead{opacity:.4;text-decoration:line-through}
+.table{display:flex;gap:18px;justify-content:center;align-items:flex-end;padding:14px;margin:8px 0;border-radius:16px;border:2px dashed var(--ln)}
+.kc{position:relative;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:66px;height:92px;border-radius:12px;background:var(--c);color:#1b0f16;font-size:28px;font-weight:800;border:3px solid #0004;box-shadow:0 3px 0 #0005;cursor:pointer;margin:3px;user-select:none}
+.kc small{font-size:10px;line-height:1.05;text-align:center;margin-top:2px;padding:0 2px}
+.kc.sel{transform:translateY(-10px);box-shadow:0 0 0 3px var(--gold),0 8px 14px #0007}.kc.dis{opacity:.45}
+.kc.lg{width:96px;height:132px;font-size:44px;cursor:default;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}.kc.lg small{font-size:13px}
+.kc.back{background:repeating-linear-gradient(45deg,#4d2a38,#4d2a38 6px,#3a1d29 6px,#3a1d29 12px);color:var(--mut);cursor:default}
+@keyframes pop{0%{transform:scale(.4) rotate(-10deg);opacity:0}100%{transform:none;opacity:1}}
+.hand{display:flex;flex-wrap:wrap;justify-content:center;margin:12px 0 4px;padding-top:10px}
+.log{font-size:14px;color:var(--mut);margin:6px 0}.log div{padding:2px 0}.log div:last-child{color:var(--ink);font-weight:700}
+.code{font-size:32px;font-weight:900;letter-spacing:.2em;color:var(--ac);text-align:center}
+.big-t{font-size:clamp(24px,7vw,34px);font-weight:900;text-align:center;margin:6px 0}
+.alert{background:#4a1b27;border:2px solid var(--no);border-radius:14px;padding:12px;margin:10px 0;text-align:center}
+.nb{height:10px;border-radius:99px;background:#12090e;overflow:hidden;margin:8px 0}.nb i{display:block;height:100%;width:100%;background:var(--no)}
+.pk{display:flex;justify-content:center}
+</style></head><body><main>
+<h1>GATITOS <span>EXPLOSIVOS</span></h1>
+<p class="sub">Roba carta y reza · versión casera no oficial</p>
+<div id="s"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id),PFX="gatos-",esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+/* Cartas: [emoji, nombre, color] */
+const CT={ek:["💣","Gatito explosivo","#4a4a52"],df:["🧯","Desactivar","#47d49a"],at:["⚔️","Atacar","#ff7a62"],sk:["⏭️","Pasar","#62b4ff"],fv:["🤝","Favor","#ffb860"],sh:["🔀","Barajar","#b48cff"],sf:["🔮","Ver futuro","#f080c6"],no:["🚫","¡Ni hablar!","#ff6b6b"],
+ c1:["🍕","Gato pizza","#f6d16e"],c2:["🥑","Gato aguacate","#aedc7a"],c3:["🌈","Gato nube","#8fdcf5"],c4:["🧔","Gato bigote","#d3ae88"],c5:["🍉","Gato sandía","#f59a9a"]};
+const KEYS=Object.keys(CT),ACT=["at","sk","sh","sf"],isCat=c=>/^c\d$/.test(c);
+let peer=null,myId=null,hostConn=null,conns=[],code="",host=false,test=false,name="",V=null,started=false,msg="",retries=0,retryP=false,gone=false,joinCode="",sel=[],hsig="",pendEnd=0,nmv="df";
+/* ---------- Anfitrión: reglas ---------- */
+const PL={},H={ph:"lobby",st:"act",turn:null,owed:1,order:[],pend:null,ask:null,kit:null,peek:null,log:[],disc:[],winner:null,pid:0,insEnd:0,cfg:{nope:5}};let D=[];
+const alive=()=>H.order.filter(id=>PL[id]&&PL[id].alive);
+const log=t=>{H.log.push(t);if(H.log.length>6)H.log.shift()};
+function join(id,n){
+  if(!PL[id]){if(Object.keys(PL).length>=5)return;PL[id]={id,n:"",hand:[],alive:false,next:0}}
+  PL[id].n=String(n||"Jugador").slice(0,14);bc();
+}
+function startGame(){
+  if(test)for(let k=1;k<=2;k++)PL["bot"+k]={id:"bot"+k,n:"Bot "+k,hand:[],alive:false,bot:true,next:0};
+  const ps=Object.values(PL);if(ps.length<2)return;const n=ps.length;
+  const base=[];const add=(t,k)=>{for(let i=0;i<k;i++)base.push(t)};add("at",4);add("sk",4);add("fv",4);add("sh",4);add("sf",5);add("no",5);["c1","c2","c3","c4","c5"].forEach(c=>add(c,4));
+  D=sh(base);ps.forEach(p=>{p.hand=["df",...D.splice(0,7)];p.alive=true});
+  for(let i=0;i<Math.min(2,6-n);i++)D.push("df");for(let i=0;i<n-1;i++)D.push("ek");D=sh(D);
+  H.order=sh(ps.map(p=>p.id));H.turn=H.order[0];H.owed=1;H.st="act";H.pend=null;H.ask=null;H.peek=null;H.disc=[];H.winner=null;H.ph="play";H.log=["Empieza "+PL[H.turn].n];bc();
+}
+function nextTurn(quiet){
+  const a=H.order,i=a.indexOf(H.turn);
+  for(let k=1;k<=a.length;k++){const id=a[(i+k)%a.length];if(PL[id].alive){H.turn=id;break}}
+  H.owed=1;H.st="act";H.peek=null;log("Turno de "+PL[H.turn].n);if(!quiet)bc();
+}
+function endOwed(){H.owed--;if(H.owed>0){H.st="act";bc()}else nextTurn()}
+function checkWin(){const a=alive();if(a.length<=1){H.ph="end";H.winner=a[0]||null;H.pend=null;H.ask=null;bc();return true}return false}
+function kill(p,why){p.alive=false;H.disc.push(...p.hand);p.hand=[];log(why)}
+function drawCard(id){
+  if(H.ph!=="play"||H.st!=="act"||id!==H.turn)return;
+  const p=PL[id];if(!D.length){H.ph="end";H.winner=null;bc();return}
+  const c=D.pop();H.peek=null;
+  if(c==="ek"){
+    const i=p.hand.indexOf("df");
+    if(i>=0){p.hand.splice(i,1);H.disc.push("df");H.st="defuse";H.kit=id;H.insEnd=Date.now()+30000;log("🧯 "+p.n+" desactiva un gatito explosivo");return bc()}
+    H.disc.push("ek");kill(p,"💥 "+p.n+" explota y queda eliminado");if(checkWin())return;return nextTurn();
+  }
+  p.hand.push(c);log(p.n+" roba una carta");endOwed();
+}
+function ins(id,pos){
+  if(H.st!=="defuse"||id!==H.kit)return;
+  pos=Math.max(0,Math.min(D.length,pos|0));D.splice(D.length-pos,0,"ek");H.peek=null;log(PL[id].n+" esconde el gatito en el mazo");endOwed();
+}
+function playCards(id,cards,tgt,want){
+  if(H.ph!=="play"||H.st!=="act"||id!==H.turn||!Array.isArray(cards))return;
+  const p=PL[id],one=cards.length===1&&(ACT.includes(cards[0])||cards[0]==="fv"),cat=cards.length>=2&&cards.length<=3&&cards.every(c=>c===cards[0]&&isCat(c));
+  if(!one&&!cat)return;
+  const h=p.hand.slice();for(const c of cards){const i=h.indexOf(c);if(i<0)return;h.splice(i,1)}
+  const need=cards[0]==="fv"||cat,t=PL[tgt];
+  if(need&&(!t||!t.alive||t.id===id||!t.hand.length))return;
+  if(cards.length===3&&!CT[want])return;
+  p.hand=h;H.disc.push(...cards);
+  H.pend={id:++H.pid,by:id,cards,tgt:need?tgt:null,nm:want,nopes:[],end:Date.now()+H.cfg.nope*1000};H.st="react";
+  log(p.n+" juega "+(cat?(cards.length===2?"una pareja":"un trío")+" de "+CT[cards[0]][1]:CT[cards[0]][1])+(need?" contra "+t.n:""));bc();
+}
+function nope(id){
+  const p=PL[id];if(H.st!=="react"||!p||!p.alive)return;const i=p.hand.indexOf("no");if(i<0)return;
+  p.hand.splice(i,1);H.disc.push("no");H.pend.nopes.push(id);H.pend.end=Date.now()+H.cfg.nope*1000;
+  log("🚫 "+p.n+" juega ¡Ni hablar!"+(H.pend.nopes.length%2?" (cancela la jugada)":" (la jugada vuelve)"));bc();
+}
+function resolve(){
+  const pd=H.pend,p=PL[pd.by],c=pd.cards[0];H.pend=null;H.st="act";
+  if(pd.nopes.length%2){log("La jugada de "+p.n+" queda cancelada");return bc()}
+  if(c==="at"){const o=H.owed,n=o>1?o+2:2;nextTurn(1);H.owed=n;log("⚔️ "+p.n+" ataca: "+PL[H.turn].n+" juega "+n+" turnos");return bc()}
+  if(c==="sk"){log("⏭️ "+p.n+" pasa sin robar");return endOwed()}
+  if(c==="sh"){D=sh(D);H.peek=null;log("🔀 "+p.n+" baraja el mazo");return bc()}
+  if(c==="sf"){H.peek={id:p.id,cards:D.slice(-3).reverse()};log("🔮 "+p.n+" mira las 3 siguientes cartas");return bc()}
+  const t=PL[pd.tgt];
+  if(!t||!t.alive||!t.hand.length){log("La jugada no tiene efecto");return bc()}
+  if(c==="fv"){H.st="favor";H.ask={from:t.id,to:p.id,end:Date.now()+25000};log("🤝 "+p.n+" pide un favor a "+t.n);return bc()}
+  if(pd.cards.length===2){const x=t.hand.splice(Math.floor(Math.random()*t.hand.length),1)[0];p.hand.push(x);log("🐱 "+p.n+" roba una carta al azar a "+t.n);return bc()}
+  const i=t.hand.indexOf(pd.nm);
+  if(i>=0){t.hand.splice(i,1);p.hand.push(pd.nm);log("🐱 "+p.n+" pide «"+CT[pd.nm][1]+"» y "+t.n+" la tiene")}else log("🐱 "+p.n+" pide «"+CT[pd.nm][1]+"» y "+t.n+" no la tiene");
+  bc();
+}
+function give(id,c){
+  if(H.st!=="favor"||!H.ask||H.ask.from!==id)return;const t=PL[id],p=PL[H.ask.to],i=t.hand.indexOf(c);if(i<0)return;
+  t.hand.splice(i,1);p.hand.push(c);log(t.n+" da una carta a "+p.n);H.ask=null;H.st="act";bc();
+}
+function dropPlayer(id){
+  const p=PL[id];if(!p)return;
+  if(H.ph!=="play"){delete PL[id];bc();return}
+  if(!p.alive){bc();return}
+  kill(p,"🚪 "+p.n+" se ha ido de la partida");
+  if(H.pend&&H.pend.by===id){H.pend=null;H.st="act"}
+  if(H.ask&&(H.ask.from===id||H.ask.to===id)){H.ask=null;H.st="act"}
+  if(H.st==="defuse"&&H.kit===id)H.st="act";
+  if(checkWin())return;
+  if(H.turn===id)return nextTurn();bc();
+}
+function snap(vid){
+  const me=PL[vid],vp=H.pend,k=H.ask;
+  return{ph:H.ph,st:H.st,turn:H.turn,owed:H.owed,deck:D.length,top:H.disc[H.disc.length-1]||null,log:H.log,cfg:H.cfg,
+    pl:H.ph==="lobby"?Object.values(PL).map(p=>({id:p.id,n:p.n,cnt:0,alive:true})):H.order.map(id=>({id,n:PL[id].n,cnt:PL[id].hand.length,alive:PL[id].alive})),
+    h:me?me.hand.slice().sort((a,b)=>KEYS.indexOf(a)-KEYS.indexOf(b)):[],
+    pend:vp?{by:PL[vp.by].n,cards:vp.cards,tgt:vp.tgt?PL[vp.tgt].n:null,nopes:vp.nopes.length,left:Math.max(0,vp.end-Date.now())}:null,
+    ask:k?{from:k.from,to:k.to,fromN:PL[k.from].n,toN:PL[k.to].n}:null,
+    peek:H.peek&&H.peek.id===vid?H.peek.cards:null,
+    ins:H.st==="defuse"?{id:H.kit,n:PL[H.kit].n,deck:D.length}:null,
+    win:H.winner?{id:H.winner,n:PL[H.winner].n}:null};
+}
+function bc(){apply(snap(myId));conns.forEach(c=>{try{c.open&&c.send({t:"s",s:snap(c.peer)})}catch(e){}})}
+function bot(p,now){
+  if(!p.alive)return;
+  if(H.st==="react"&&H.pend){const key=H.pend.id+":"+H.pend.nopes.length;if(p.chk!==key){p.chk=key;if(p.hand.includes("no")&&Math.random()<.22&&(H.pend.by!==p.id||H.pend.nopes.length%2))nope(p.id)}return}
+  if(H.st==="favor"&&H.ask&&H.ask.from===p.id){if(!p.next)p.next=now+900;if(now>=p.next){p.next=0;give(p.id,p.hand[Math.floor(Math.random()*p.hand.length)])}return}
+  if(H.st==="defuse"&&H.kit===p.id){if(!p.next)p.next=now+900;if(now>=p.next){p.next=0;ins(p.id,Math.floor(Math.random()*(D.length+1)))}return}
+  if(H.st!=="act"||H.turn!==p.id)return;
+  if(!p.next)p.next=now+1300+Math.random()*900;if(now<p.next)return;p.next=0;
+  const tg=alive().filter(i=>i!==p.id&&PL[i].hand.length),acts=p.hand.filter(c=>ACT.includes(c)),r=Math.random();
+  if(acts.length&&r<.4)return playCards(p.id,[acts[0]],null);
+  if(p.hand.includes("fv")&&tg.length&&r<.6)return playCards(p.id,["fv"],tg[Math.floor(Math.random()*tg.length)]);
+  const pr=["c1","c2","c3","c4","c5"].find(c=>p.hand.filter(x=>x===c).length>=2);
+  if(pr&&tg.length&&r<.75)return playCards(p.id,[pr,pr],tg[Math.floor(Math.random()*tg.length)]);
+  drawCard(p.id);
+}
+function hostLoop(){
+  if(H.ph!=="play")return;const now=Date.now();
+  if(H.st==="react"&&H.pend&&now>=H.pend.end)return resolve();
+  if(H.st==="favor"&&H.ask&&now>=H.ask.end){const t=PL[H.ask.from];return give(t.id,t.hand[Math.floor(Math.random()*t.hand.length)])}
+  if(H.st==="defuse"&&now>=H.insEnd)return ins(H.kit,Math.floor(Math.random()*(D.length+1)));
+  if(test)Object.values(PL).forEach(p=>p.bot&&bot(p,now));
+}
+/* ---------- Red (PeerJS: el anfitrión es el servidor de la sala) ---------- */
+function apply(s){
+  const sg=s.h.join();if(sg!==hsig){hsig=sg;sel=[]}
+  V=s;pendEnd=Date.now()+(s.pend?s.pend.left:0);render();
+}
+const newCode=()=>{const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
+function setName(){const n=$("nm").value.trim();if(!n){$("jm").textContent="Pon tu nombre.";return false}name=n.slice(0,14);return true}
+function createRoom(tries){
+  const c=newCode();peer=new Peer(PFX+c);
+  peer.on("open",id=>{myId=id;code=c;host=true;join(id,name);enter();
+    peer.on("connection",cn=>{
+      cn.on("open",()=>{conns=conns.filter(x=>x.peer!==cn.peer);conns.push(cn);cn.send({t:"s",s:snap(cn.peer)})});
+      cn.on("data",m=>{if(!m)return;const i=cn.peer;
+        if(m.t==="j")join(i,m.n);else if(m.t==="d")drawCard(i);else if(m.t==="play")playCards(i,m.cards,m.tgt,m.nm);
+        else if(m.t==="nope")nope(i);else if(m.t==="give")give(i,m.c);else if(m.t==="ins")ins(i,m.pos)});
+      cn.on("close",()=>{conns=conns.filter(x=>x!==cn);dropPlayer(cn.peer)});
+    });
+  });
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(e.type==="unavailable-id"&&tries<5){peer.destroy();createRoom(tries+1)}else if(!started)$("jm").textContent="No se pudo crear la sala ("+e.type+")."});
+}
+function joinRoom(c){
+  joinCode=c;peer=new Peer();
+  peer.on("open",id=>{myId=id;connectHost()});
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(started)retry();else $("jm").textContent=e.type==="peer-unavailable"?"Esa sala no existe.":"Error de conexión ("+e.type+")."});
+}
+function connectHost(){
+  const c=peer.connect(PFX+joinCode,{reliable:true});hostConn=c;
+  c.on("open",()=>{retries=0;code=joinCode;msg="";c.send({t:"j",n:name});enter()});
+  c.on("data",m=>{if(m&&m.t==="s"&&m.s)apply(m.s)});
+  c.on("close",()=>{if(c===hostConn)retry()});
+}
+function retry(){
+  if(gone||retryP)return;
+  if(retries>=8){gone=true;msg="El anfitrión se ha desconectado.";render();return}
+  retries++;retryP=true;msg="Reconectando… ("+retries+"/8)";render();
+  setTimeout(()=>{retryP=false;try{if(peer.disconnected)peer.reconnect();connectHost()}catch(e){retry()}},3000);
+}
+function enter(){
+  if(started)return;started=true;
+  setInterval(()=>{if(host)hostLoop()},300);
+  setInterval(()=>{const b=$("nb");if(b&&V&&V.pend)b.firstChild.style.width=Math.max(0,(pendEnd-Date.now())/(V.cfg.nope*1000)*100)+"%"},120);
+  render();
+}
+const send=m=>{if(hostConn&&hostConn.open)hostConn.send(m)};
+const A={
+  draw(){if(host)drawCard(myId);else send({t:"d"})},
+  nope(){if(host)nope(myId);else send({t:"nope"})},
+  play(tgt){const cards=sel.map(i=>V.h[i]);sel=[];if(host)playCards(myId,cards,tgt,nmv);else send({t:"play",cards,tgt,nm:nmv})},
+  give(){const c=V.h[sel[0]];if(c===undefined)return;sel=[];if(host)give(myId,c);else send({t:"give",c})},
+  ins(pos){if(host)ins(myId,pos);else send({t:"ins",pos})},
+  start(){if(host)startGame()},
+  cfg(v){if(host){H.cfg.nope=+v;bc()}},
+  again(){if(!host)return;H.ph="lobby";H.order=[];H.pend=null;H.ask=null;D=[];Object.keys(PL).forEach(k=>{if(PL[k].bot)delete PL[k];else{PL[k].hand=[];PL[k].alive=false}});bc()},
+  copy(){navigator.clipboard&&navigator.clipboard.writeText(location.origin+location.pathname+"?sala="+code).then(()=>{$("cp").textContent="¡Enlace copiado!"}).catch(()=>{})}
+};
+/* ---------- Pantallas ---------- */
+function home(){
+  const qs=new URLSearchParams(location.search).get("sala")||"";
+  $("s").innerHTML='<div class="panel"><p style="margin-top:0">En tu turno juegas las cartas que quieras y terminas <b>robando una</b>. Si es un gatito explosivo y no tienes cómo desactivarlo, explotas. <b>Gana el último que queda vivo.</b> Para 2 a 5 jugadores.</p>'
+   +'<label>Tu nombre</label><input id="nm" maxlength="14" autocomplete="off"><label>Código de sala (vacío si vas a crear una)</label><input id="cd" maxlength="6" autocapitalize="characters" value="'+esc(qs.toUpperCase())+'" placeholder="p. ej. K7QX">'
+   +'<button class="btn" id="bj">Unirme a la sala</button><button class="btn g" id="bm">Crear sala nueva</button><button class="btn g" id="bt">Modo prueba (tú + 2 bots)</button><p class="mut" id="jm"></p></div>';
+  $("bj").onclick=()=>{if(!setName())return;const c=$("cd").value.trim().toUpperCase();if(!c){$("jm").textContent="Escribe el código.";return}$("jm").textContent="Conectando…";joinRoom(c)};
+  $("bm").onclick=()=>{if(!setName())return;$("jm").textContent="Creando sala…";createRoom(0)};
+  $("bt").onclick=()=>{name=($("nm").value.trim()||"Tú").slice(0,14);test=true;host=true;myId="me";code="PRUEBA";join(myId,name);enter()};
+}
+const tile=(c,extra,i)=>'<span class="kc'+(extra||"")+'" style="--c:'+CT[c][2]+'"'+(i!==undefined?' data-i="'+i+'"':"")+'>'+CT[c][0]+'<small>'+CT[c][1]+'</small></span>';
+function info(){
+  const t=sel.map(i=>V.h[i]);if(!t.length)return null;
+  if(t.length===1&&ACT.includes(t[0]))return{need:0,txt:CT[t[0]][1]};
+  if(t.length===1&&t[0]==="fv")return{need:1,txt:"Favor"};
+  if(t.length>=2&&t.length<=3&&t.every(c=>c===t[0]&&isCat(c)))return{need:1,trio:t.length===3,txt:t.length===2?"Pareja de "+CT[t[0]][1]:"Trío de "+CT[t[0]][1]};
+  return{bad:1};
+}
+function lobby(){
+  const n=V.pl.length,c=V.cfg;
+  $("s").innerHTML='<div class="panel"><div class="mut c">Código de sala</div><div class="code">'+esc(code)+'</div>'+(test?"":'<button class="btn g" data-a="copy" id="cp">Copiar enlace</button>')+'</div>'
+   +'<div class="panel"><b>Jugadores ('+n+'/5)</b><div class="pls">'+V.pl.map(p=>'<span class="pl'+(p.id===myId?" me":"")+'">🐱 '+esc(p.n)+'</span>').join("")+'</div>'+(n<2?'<p class="mut">Hacen falta de 2 a 5 jugadores.</p>':"")+'</div>'
+   +'<div class="panel"><b>Opciones</b>'+(host?'<label>Tiempo para jugar «¡Ni hablar!»</label><select id="c1">'+[3,5,8].map(v=>'<option value="'+v+'"'+(v===c.nope?" selected":"")+'>'+v+' segundos</option>').join("")+'</select>':'<p class="mut" style="margin:6px 0 0">Tiempo para «¡Ni hablar!»: '+c.nope+' s</p>')+'</div>'
+   +(host?'<button class="btn" data-a="start"'+(n<2&&!test?" disabled":"")+'>Empezar</button>':'<p class="mut c">El anfitrión empezará la partida.</p>');
+  if(host)$("c1").onchange=e=>A.cfg(e.target.value);
+}
+function play_(){
+  const me=V.pl.find(p=>p.id===myId),dead=me&&!me.alive,turn=V.turn===myId&&!dead,cur=V.pl.find(p=>p.id===V.turn),pd=V.pend,ask=V.ask,ins_=V.ins;
+  let h='<div class="bar"><span>'+(turn?"Tu turno":"Turno de "+esc(cur?cur.n:""))+(V.owed>1?" · "+V.owed+" turnos":"")+'</span><span>🂠 '+V.deck+'</span></div>'
+   +'<div class="pls">'+V.pl.map(p=>'<span class="pl'+(p.id===V.turn&&p.alive?" t":"")+(p.id===myId?" me":"")+(p.alive?"":" dead")+'">'+(p.alive?"":"💀 ")+esc(p.n)+' · '+p.cnt+'</span>').join("")+'</div>'
+   +'<div class="table"><div class="c"><span class="kc back lg">🂠</span><div class="mut">Mazo ('+V.deck+')</div></div><div class="c">'+(V.top?tile(V.top,"lg"):'<span class="kc back lg" style="opacity:.3">—</span>')+'<div class="mut">Descarte</div></div></div>'
+   +'<div class="log">'+V.log.map(t=>"<div>"+esc(t)+"</div>").join("")+'</div>';
+  if(pd){
+    h+='<div class="alert"><b>'+esc(pd.by)+'</b> juega <b>'+pd.cards.map(c=>CT[c][1]).join(" + ")+'</b>'+(pd.tgt?' contra <b>'+esc(pd.tgt)+'</b>':"")+'<div class="nb" id="nb"><i></i></div><span class="mut">'+(pd.nopes?pd.nopes+" «¡Ni hablar!» hasta ahora "+(pd.nopes%2?"(cancelada)":"(se mantiene)"):"¿Alguien lo para?")+'</span>'
+     +(me&&!dead&&V.h.includes("no")?'<button class="btn r" data-a="nope">🚫 ¡NI HABLAR!</button>':"")+'</div>';
+  }
+  if(ins_&&ins_.id===myId){const d=ins_.deck;h+='<div class="alert" style="border-color:var(--ok)"><b>¡Gatito desactivado!</b> Escóndelo en el mazo ('+d+' cartas):<div class="row" style="flex-wrap:wrap"><button class="btn g" data-a="ins" data-p="0">Arriba</button><button class="btn g" data-a="ins" data-p="1">A 2</button><button class="btn g" data-a="ins" data-p="2">A 3</button><button class="btn g" data-a="ins" data-p="'+Math.floor(d/2)+'">Medio</button><button class="btn g" data-a="ins" data-p="'+d+'">Fondo</button><button class="btn g" data-a="ins" data-p="'+Math.floor(Math.random()*(d+1))+'">Azar</button></div></div>'}
+  else if(ins_)h+='<div class="alert" style="border-color:var(--ok)">'+esc(ins_.n)+' está escondiendo el gatito…</div>';
+  if(V.peek)h+='<div class="panel c"><b>Las 3 siguientes cartas</b> (la 1ª, a la izquierda)<div class="pk">'+V.peek.map(c=>tile(c,"")).join("")+'</div></div>';
+  if(ask&&ask.from===myId)h+='<div class="alert">🤝 <b>'+esc(ask.toN)+'</b> te pide un favor: toca la carta que quieres darle y pulsa el botón.</div>';
+  else if(ask)h+='<div class="alert">🤝 '+esc(ask.toN)+' espera un favor de '+esc(ask.fromN)+'…</div>';
+  if(dead)h+='<div class="alert">💀 Has explotado. Sigue mirando hasta el final.</div>';
+  else{
+    const favMode=ask&&ask.from===myId,canSel=(turn&&V.st==="act")||favMode;
+    h+='<div class="hand">'+V.h.map((c,i)=>tile(c,(sel.includes(i)?" sel":"")+(canSel&&c!=="df"?"":" dis")+(favMode&&false?"":""),i)).join("")+'</div>';
+    if(favMode)h+='<button class="btn k" data-a="give"'+(sel.length===1?"":" disabled")+'>Dar la carta seleccionada</button>';
+    else if(turn&&V.st==="act"){
+      const f=info(),tg=V.pl.filter(p=>p.alive&&p.id!==myId&&p.cnt>0);
+      if(f&&f.need){
+        if(f.trio)h+='<label>Pides esta carta</label><select id="nmsel">'+KEYS.filter(k=>k!=="ek").map(k=>'<option value="'+k+'"'+(k===nmv?" selected":"")+'>'+CT[k][0]+" "+CT[k][1]+'</option>').join("")+'</select>';
+        h+='<div class="row" style="flex-wrap:wrap">'+(tg.length?tg.map(p=>'<button class="btn" data-a="play" data-t="'+p.id+'">'+esc(f.txt)+' → '+esc(p.n)+'</button>').join(""):'<p class="mut">Nadie tiene cartas.</p>')+'</div>';
+      }else if(f&&!f.bad)h+='<button class="btn" data-a="play">Jugar «'+f.txt+'»</button>';
+      else if(sel.length)h+='<p class="mut c">Esa combinación no se puede jugar. Vale una carta de acción, una pareja o un trío de gatos iguales.</p>';
+      h+='<button class="btn g" data-a="draw">Terminar el turno robando carta</button><p class="mut c">Toca cartas para seleccionarlas. Los desactivar se usan solos al robar un gatito.</p>';
+    }
+  }
+  $("s").innerHTML=h;
+  const ns=$("nmsel");if(ns)ns.onchange=e=>{nmv=e.target.value};
+}
+function end(){
+  const w=V.win;
+  $("s").innerHTML='<div class="panel c"><div style="font-size:60px">'+(w?"🏆":"💥")+'</div><div class="big-t">'+(w?(w.id===myId?"¡Has ganado!":"Gana "+esc(w.n)):"Fin de la partida")+'</div><p class="mut">'+(w?"Último gato en pie.":"No quedaba nadie.")+'</p></div>'
+   +'<div class="log">'+V.log.map(t=>"<div>"+esc(t)+"</div>").join("")+'</div>'
+   +(host?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="mut c">El anfitrión puede empezar otra partida.</p>');
+}
+function render(){
+  if(!started){if(!$("nm"))home();return}
+  if(!V)return;
+  if(V.ph==="lobby")lobby();else if(V.ph==="play")play_();else end();
+  if(msg)$("s").insertAdjacentHTML("afterbegin",'<div class="alert">'+esc(msg)+'</div>');
+}
+document.addEventListener("click",e=>{
+  const k=e.target.closest("[data-i]");
+  if(k&&V&&V.ph==="play"&&!k.classList.contains("dis")){
+    const i=+k.dataset.i,favMode=V.ask&&V.ask.from===myId;
+    if(favMode)sel=[i];else sel=sel.includes(i)?sel.filter(x=>x!==i):[...sel,i];
+    render();return;
+  }
+  const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+  if(a==="play")A.play(b.dataset.t);else if(a==="ins")A.ins(+b.dataset.p);else if(A[a])A[a]();
+});
+render();
+</script></main></body></html>

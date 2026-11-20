@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bombas Salas</title>
+<style>
+:root{--bg:#15171c;--fg:#eee;--card:#25272e;--ac:#e8590c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+#app{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+canvas{max-width:100%;max-height:calc(100% - 150px);aspect-ratio:480/416;touch-action:none}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:5}
+.card{background:var(--card);padding:20px;border-radius:14px;width:min(320px,88%);text-align:center}
+.card h1{margin:0 0 6px;font-size:22px}.card p{margin:6px 0;font-size:14px;opacity:.85}
+input{width:100%;box-sizing:border-box;padding:10px;font-size:18px;text-align:center;border-radius:8px;border:1px solid #888;background:var(--bg);color:var(--fg);margin:8px 0}
+button{padding:11px;margin:4px 0;font-size:16px;border:0;border-radius:8px;background:var(--ac);color:#fff;cursor:pointer;touch-action:manipulation;user-select:none}
+.card button{width:100%}button.s{background:#6b7280}
+#hud{font-size:14px;padding:4px;min-height:22px}
+#pad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,50px);gap:4px;margin-top:4px}
+#pad button{margin:0;padding:0;font-size:22px;background:#4b4f5a}
+#bb{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);width:84px;height:84px;border-radius:50%;font-size:36px;padding:0;z-index:3}
+#msg{font-size:12px;color:#f87171}
+.d{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;border:1px solid #fff}
+</style></head><body>
+<div id="app"><div id="hud"></div><canvas id="c" width="480" height="416"></canvas>
+<div id="pad"><span></span><button data-k="u">▲</button><span></span><button data-k="l">◀</button><button data-k="d">▼</button><button data-k="r">▶</button></div>
+<button id="bb">💣</button>
+<div class="ov" id="lobby"><div class="card">
+<h1>💣 Bombas Salas</h1>
+<p>Pon bombas, rompe cajas, coge mejoras y sé el último en pie. 2 a 4 jugadores.</p>
+<input id="code" maxlength="8" placeholder="código de sala" autocomplete="off">
+<button id="join">Unirse / crear sala</button>
+<button class="s" id="rnd">Sala aleatoria</button>
+<button class="s" id="solo">Practicar solo</button>
+<div id="msg"></div>
+</div></div>
+<div class="ov" id="end" style="display:none"><div class="card"><h1 id="et"></h1><button id="again">Nueva ronda</button></div></div>
+</div>
+<script>
+function makeRoom(){
+  var url=(location.protocol==='https:'?'wss://':'ws://')+location.host;
+  return{join:function(name){return new Promise(function(resolve,reject){
+    var ws=null,id=null,arr=[],subs=[],done=false,closed=false,retry=0,pres={},cid=Math.random().toString(36).slice(2);
+    var room={peers:function(){return arr},
+      onPeers:function(f){subs.push(f)},
+      presence:function(p){Object.keys(p).forEach(function(k){if(p[k]===null)delete pres[k];else pres[k]=p[k]});send({t:'pres',p:p});return Promise.resolve()},
+      leave:function(){closed=true;try{ws.close()}catch(e){}return Promise.resolve()}};
+    function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+    function open(){
+      ws=new WebSocket(url);
+      ws.onopen=function(){retry=0;send({t:'join',room:name,cid:cid});if(Object.keys(pres).length)send({t:'pres',p:pres})};
+      ws.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}
+        if(m.t==='hello')id=m.id;
+        else if(m.t==='peers'){arr=m.peers.map(function(q){return{peer:q.id,isMe:q.id===id,presence:q.p||{}}});if(!done){done=true;resolve(room)}subs.forEach(function(f){f()})}
+        else if(m.t==='err'){closed=true;if(!done){done=true;reject({code:m.code})}}};
+      ws.onclose=function(){if(closed)return;retry++;setTimeout(open,Math.min(1000*retry,8000))};
+    }
+    open();setTimeout(function(){if(!done){done=true;closed=true;try{ws.close()}catch(e){}reject({code:'timeout'})}},20000);
+  })}};
+}
+var RM=window.WebSocket&&location.protocol.indexOf('http')===0?makeRoom():null;
+
+const cv=document.getElementById('c'),g=cv.getContext('2d'),$=id=>document.getElementById(id);
+const CW=15,CH=13,T=32,SPAWN=[[1,1],[13,1],[1,11],[13,11]];
+let room=null,seed=1,rn='',peers=[],hue=Math.floor(Math.random()*360),run=false,AC=null,rd=0;
+let map=[],bombs=[],fl=[],pw=[],me,lastBm=null,bctr=0,lastB={},pk=[],lastP=0,gh={},tm=0,over=0;
+const inp={u:0,d:0,l:0,r:0},hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const rng=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+function beep(f,d,s2){if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}if(!AC)return;AC.resume();const o=AC.createOscillator(),k=AC.createGain(),t=AC.currentTime;o.type='square';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(s2||f,t+d);k.gain.setValueAtTime(.06,t);k.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(k);k.connect(AC.destination);o.start(t);o.stop(t+d)}
+function slot(){const ids=peers.map(p=>p.peer).sort(),m=peers.find(p=>p.isMe);const i=m?ids.indexOf(m.peer):0;return Math.max(0,i)%4}
+function gen(){
+  const R=rng(seed^Math.imul(rd+1,2654435761));map=[];
+  for(let r=0;r<CH;r++){map.push([]);for(let c=0;c<CW;c++){
+    let v=0;if(c===0||r===0||c===CW-1||r===CH-1||(c%2===0&&r%2===0))v=1;
+    else if(R()<.7&&!SPAWN.some(s=>Math.abs(s[0]-c)+Math.abs(s[1]-r)<3))v=2;map[r].push(v)}}
+  bombs=[];fl=[];pw=[];pk=[];
+}
+function reset(){
+  gen();const s=SPAWN[slot()];me={c:s[0],r:s[1],x:s[0],y:s[1],tx:s[0],ty:s[1],mv:0,alive:1,mb:1,rg:2,sp:4.5};over=0;lastBm=null;$('end').style.display='none';push(1);
+}
+const blocked=(c,r,self)=>map[r][c]!==0||bombs.some(b=>b.c===c&&b.r===r);
+function put(c,r,rg,own){if(bombs.some(b=>b.c===c&&b.r===r))return;bombs.push({c,r,rg,t:2.2,own});beep(300,.1)}
+function drop(){
+  if(!me.alive||over)return;const c=me.tx===me.c?me.c:me.tx,r=me.ty;
+  if(bombs.filter(b=>b.own).length>=me.mb||bombs.some(b=>b.c===me.c&&b.r===me.r))return;
+  put(me.c,me.r,me.rg,true);lastBm=[++bctr,me.c,me.r,me.rg];push(1);
+}
+function boom(b){
+  bombs=bombs.filter(x=>x!==b);beep(120,.35,40);fl.push({c:b.c,r:b.r,l:.5});
+  for(const [dc,dr] of[[1,0],[-1,0],[0,1],[0,-1]])for(let i=1;i<=b.rg;i++){
+    const c=b.c+dc*i,r=b.r+dr*i,v=map[r][c];if(v===1)break;fl.push({c,r,l:.5});
+    if(v===2){map[r][c]=0;const R=rng(seed^Math.imul(rd+1,97)^hash(c+','+r));if(R()<.35)pw.push({c,r,k:Math.floor(R()*3),id:c*100+r});break}
+    const ob=bombs.find(x=>x.c===c&&x.r===r);if(ob)ob.t=Math.min(ob.t,.05)}
+}
+function upd(dt){
+  for(const b of bombs){b.t-=dt;}for(const b of [...bombs])if(b.t<=0)boom(b);
+  fl.forEach(f=>f.l-=dt);fl=fl.filter(f=>f.l>0);
+  if(!me.alive||over)return;
+  if(me.mv){const dx=me.tx-me.x,dy=me.ty-me.y,d=Math.hypot(dx,dy),s=me.sp*dt;if(d<=s){me.x=me.tx;me.y=me.ty;me.c=me.tx;me.r=me.ty;me.mv=0}else{me.x+=dx/d*s;me.y+=dy/d*s}}
+  if(!me.mv){const dc=inp.r-inp.l,dr=inp.d-inp.u;let c=me.c+(dc||0),r=me.r+(dc?0:dr);
+    if((dc||dr)&&!blocked(c,r)){me.tx=c;me.ty=r;me.mv=1}}
+  if(fl.some(f=>f.c===Math.round(me.x)&&f.r===Math.round(me.y)&&f.l>.05)){me.alive=0;beep(200,.5,40);push(1)}
+  const p=pw.findIndex(q=>q.c===Math.round(me.x)&&q.r===Math.round(me.y));
+  if(p>=0){const q=pw[p];pw.splice(p,1);pk.unshift([q.id,Math.floor(Date.now()/1000)]);pk.length=Math.min(pk.length,10);if(q.k===0)me.mb++;else if(q.k===1)me.rg++;else me.sp=Math.min(8,me.sp+.7);beep(800,.2,1400);push(1)}
+}
+function push(f){
+  if(!room||!me)return;const n=Date.now();if(!f&&n-lastP<100)return;lastP=n;
+  room.presence({x:+me.x.toFixed(2),y:+me.y.toFixed(2),h:hue,dd:me.alive?0:1,bm:lastBm,pk,rd,bb:1}).catch(()=>{});
+}
+function net(){
+  for(const p of peers){const q=p.presence;if(p.isMe||!q||q.x==null)continue;
+    if(q.rd>rd){rd=q.rd;reset();return}
+    if(q.bm){if(lastB[p.peer]===undefined)lastB[p.peer]=q.bm[0];else if(q.bm[0]>lastB[p.peer]){lastB[p.peer]=q.bm[0];put(q.bm[1],q.bm[2],q.bm[3],false)}}
+    else if(lastB[p.peer]===undefined)lastB[p.peer]=0;
+    if(q.pk)for(const [id] of q.pk){const i=pw.findIndex(w=>w.id===id);if(i>=0)pw.splice(i,1)}
+    const s=gh[p.peer]||(gh[p.peer]={x:q.x,y:q.y});s.x+=(q.x-s.x)*.4;s.y+=(q.y-s.y)*.4}
+  const al=peers.filter(p=>p.presence&&p.presence.x!=null&&!p.presence.dd).length;
+  if(room&&peers.length>1&&!over&&al<=1&&peers.filter(p=>p.presence&&p.presence.x!=null).length>1){
+    over=1;const w=peers.find(p=>p.presence&&p.presence.x!=null&&!p.presence.dd);
+    $('et').innerHTML=!w?'¡Empate!':w.isMe?'🏆 ¡Ganaste!':'<span class="d" style="background:hsl('+(w.presence.h||0)+',70%,55%)"></span>¡Ha ganado!';$('end').style.display='flex'}
+}
+function guy(x,y,col,al,me2){
+  const X=x*T+T/2,Y=y*T+T/2;g.globalAlpha=al;g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(X,Y+11,11,4,0,0,6.3);g.fill();
+  g.fillStyle='hsl('+col+',70%,50%)';g.beginPath();g.arc(X,Y,12,0,6.3);g.fill();g.fillStyle='#fff';g.fillRect(X-7,Y-4,5,6);g.fillRect(X+2,Y-4,5,6);g.fillStyle='#111';g.fillRect(X-5,Y-2,2,3);g.fillRect(X+4,Y-2,2,3);
+  if(me2){g.fillStyle='#fff';g.font='11px system-ui';g.textAlign='center';g.fillText('▼',X,Y-17)}g.globalAlpha=1}
+function draw(){
+  for(let r=0;r<CH;r++)for(let c=0;c<CW;c++){const v=map[r][c],x=c*T,y=r*T;
+    g.fillStyle=(c+r)%2?'#4c9a4c':'#559f55';g.fillRect(x,y,T,T);
+    if(v===1){g.fillStyle='#5b6070';g.fillRect(x,y,T,T);g.fillStyle='#7b8194';g.fillRect(x,y,T,5);g.fillStyle='#464a58';g.fillRect(x,y+T-5,T,5)}
+    else if(v===2){g.fillStyle='#b9824a';g.fillRect(x+1,y+1,T-2,T-2);g.fillStyle='#8a5a2b';g.fillRect(x+1,y+T/2-1,T-2,3);g.fillRect(x+T/2-1,y+1,3,T/2-1)}}
+  g.font='22px system-ui';g.textAlign='center';
+  for(const w of pw)g.fillText(['💣','🔥','👟'][w.k],w.c*T+T/2,w.r*T+T/2+8);
+  for(const b of bombs){const s=1+Math.sin(tm*10)*.08;g.save();g.translate(b.c*T+T/2,b.r*T+T/2+6);g.scale(s,s);g.font='26px system-ui';g.fillText('💣',0,0);g.restore()}
+  for(const f of fl){g.fillStyle='rgba(255,'+(120+Math.floor(f.l*200))+',30,'+Math.min(1,f.l*3)+')';g.fillRect(f.c*T+3,f.r*T+3,T-6,T-6)}
+  for(const p of peers){const q=p.presence,s=gh[p.peer];if(p.isMe||!q||!s)continue;guy(s.x,s.y,q.h||0,q.dd?.2:1,false)}
+  if(me)guy(me.x,me.y,hue,me.alive?1:.2,true);
+}
+function hud(){if(!me)return;$('hud').innerHTML='💣'+me.mb+' 🔥'+me.rg+' 👟'+me.sp.toFixed(1)+(me.alive?'':' · ☠️')+(room?' · Sala '+rn+' · '+peers.filter(p=>p.presence&&p.presence.x!=null).length+' jug.':'')}
+let l0=performance.now();
+function loop(n){const dt=Math.min(.05,(n-l0)/1000);l0=n;if(run&&me){tm+=dt;upd(dt);net();draw();push()}requestAnimationFrame(loop)}
+setInterval(()=>{if(run)hud()},300);
+async function start(code){
+  beep(1,.01);$('msg').textContent='';
+  if(code){
+    if(!RM){$('msg').textContent='Las salas necesitan abrir este archivo desde tu servidor (http).';return}
+    try{room=await RM.join('bm-'+code);rn=code}catch(e){$('msg').textContent=(e&&e.code==='room_full')?'La sala está llena (máx. 4).':'No se pudo entrar ('+((e&&e.code)||'error')+')';return}
+    room.onPeers(()=>{peers=room.peers()});peers=room.peers();seed=hash(code);
+  }else{room=null;peers=[];seed=Math.floor(Math.random()*1e9)}
+  $('lobby').style.display='none';run=true;rd=0;reset();
+}
+const clean=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
+$('join').onclick=()=>{const c=clean($('code').value);c?start(c):$('msg').textContent='Escribe un código de sala'};
+$('rnd').onclick=()=>start(Math.random().toString(36).slice(2,6));
+$('solo').onclick=()=>start('');
+$('again').onclick=()=>{rd=Math.max(rd,...peers.map(p=>(p.presence&&p.presence.rd)||0))+1;reset()};
+const KM={ArrowUp:'u',w:'u',ArrowDown:'d',s:'d',ArrowLeft:'l',a:'l',ArrowRight:'r',d:'r'};
+addEventListener('keydown',e=>{const k=KM[e.key];if(k){e.preventDefault();inp[k]=1}else if(e.key===' '||e.key==='Enter'){e.preventDefault();drop()}});
+addEventListener('keyup',e=>{const k=KM[e.key];if(k)inp[k]=0});
+document.querySelectorAll('#pad [data-k]').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();inp[k]=1});['pointerup','pointerleave','pointercancel'].forEach(v=>b.addEventListener(v,()=>inp[k]=0))});
+$('bb').addEventListener('pointerdown',e=>{e.preventDefault();drop()});
+requestAnimationFrame(loop);
+</script></body></html>

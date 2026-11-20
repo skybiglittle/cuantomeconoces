@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7efe3">
+<title>Pelusas</title>
+<style>
+:root{--bg:#f7efe3;--bg2:#fffaf2;--card:#fffdf8;--ink:#2a1d3a;--mut:#7a6b86;--ln:#e6d8c4;--ac:#7b4de0;--ok:#1f9d63;--no:#e04a5f;--gold:#f2a900;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1326;--bg2:#2a1d3f;--card:#241a36;--ink:#f4ecff;--mut:#b4a6c6;--ln:#3d2f55;--ac:#a98bff;--ok:#43d391;--no:#ff6b81;--gold:#ffc43d}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(110% 70% at 50% 0,var(--bg2) 0,var(--bg) 62%) fixed;min-height:100dvh}
+main{max-width:520px;margin:0 auto;padding:14px 14px 40px}
+h1{margin:2px 0 0;text-align:center;font-size:clamp(32px,9vw,46px);letter-spacing:.02em}
+h1 span{color:var(--ac)}.sub{text-align:center;color:var(--mut);font-size:13px;margin:0 0 10px}
+.panel{background:var(--card);border:2px solid var(--ln);border-radius:18px;padding:14px;margin:10px 0}
+label{display:block;font-size:13px;color:var(--mut);font-weight:700;margin:10px 0 4px}
+input,select{width:100%;padding:12px;border:2px solid var(--ln);border-radius:12px;background:var(--bg2);color:var(--ink);font:inherit}
+.btn{display:block;width:100%;margin-top:10px;padding:14px;border:0;border-radius:14px;background:var(--ac);color:#fff;font:inherit;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 4px 0 #0003}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0003}.btn.g{background:var(--card);color:var(--ink);border:2px solid var(--ln)}.btn.s{background:var(--ok)}.btn:disabled{opacity:.4}
+.mut{color:var(--mut);font-size:14px}.c{text-align:center}.row{display:flex;gap:8px}.row>*{flex:1}
+.bar{display:flex;justify-content:space-between;align-items:center;font-weight:800;background:var(--card);border:2px solid var(--ln);border-radius:14px;padding:10px 14px}
+.table{text-align:center;padding:14px 10px;margin:10px 0;border-radius:18px;border:2px dashed var(--ln);min-height:170px}
+.pc{position:relative;display:inline-flex;align-items:center;justify-content:center;width:46px;height:62px;border-radius:14px;font-weight:900;font-size:24px;color:#25163a;border:2px solid #0002;margin:3px;box-shadow:0 3px 0 #0002}
+.pc i{position:absolute;right:-6px;top:-8px;background:var(--ink);color:var(--bg);font-style:normal;font-size:12px;border-radius:99px;padding:1px 6px}
+.pc.big{width:92px;height:124px;font-size:56px;border-radius:22px;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+.pc.big.bust{animation:shake .5s}
+@keyframes pop{0%{transform:scale(.4) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.pp{border:2px solid var(--ln);border-radius:16px;padding:10px 12px;margin:8px 0;background:var(--card)}
+.pp.cur{border-color:var(--ac);box-shadow:0 0 0 3px #7b4de033}.pp.off{opacity:.45}
+.ph{display:flex;justify-content:space-between;align-items:center}.ph b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stk{min-height:40px;margin-top:4px}
+.log{font-size:14px;color:var(--mut);margin:6px 0}.log div{padding:2px 0}.log div:last-child{color:var(--ink);font-weight:700}
+.code{font-size:32px;font-weight:900;letter-spacing:.2em;color:var(--ac);text-align:center}
+.big-t{font-size:clamp(24px,7vw,34px);font-weight:900;text-align:center;margin:6px 0}
+.rk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed var(--ln)}.rk:last-child{border:0}.rk b{flex:1}
+.risk{text-align:center;font-weight:800;margin:6px 0}
+</style></head><body><main>
+<h1>PELU<span>SAS</span></h1>
+<p class="sub">Tienta a la suerte · sin repetir números · versión casera no oficial</p>
+<div id="s"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id),PFX="pelu-",esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const COL=["#ff8fa3","#ffb27a","#ffd966","#b6e36b","#5fdcb0","#6bd3e3","#7db4f5","#a798f7","#d890e6","#c3c3cf"];
+let peer=null,myId=null,hostConn=null,conns=[],code="",host=false,test=false,name="",V=null,started=false,msg="",retries=0,retryP=false,gone=false,joinCode="";
+/* ---------- Anfitrión: reglas ---------- */
+/* Mazo: 110 cartas con números del 1 al 10 (1-5: 13 cartas cada uno; 6-10: 9 cada uno). */
+const PL={},H={ph:"lobby",cur:null,drawn:0,seq:[],log:[],last:null,cfg:{short:0,risk:0}};let D=[];
+const cnt=v=>Object.values(v).reduce((a,b)=>a+b,0);
+const log=t=>{H.log.push(t);if(H.log.length>6)H.log.shift()};
+const activeSeq=()=>H.seq.filter(id=>PL[id]&&!PL[id].off);
+function makeDeck(){const d=[];for(let n=1;n<=10;n++)for(let i=0;i<(n<=5?13:9);i++)d.push(n);return H.cfg.short?sh(d).slice(0,60):sh(d)}
+function join(id,n){
+  if(!PL[id]){
+    const nm=String(n||"Jugador").slice(0,14),old=Object.values(PL).find(p=>p.off&&p.n===nm&&!p.bot);
+    if(old){delete PL[old.id];H.seq=H.seq.map(x=>x===old.id?id:x);if(H.cur===old.id)H.cur=id;old.id=id;old.off=false;PL[id]=old}
+    else if(Object.keys(PL).length>=6)return;
+    else PL[id]={id,n:nm,safe:0,vis:{},mx:0,off:false,next:0};
+  }
+  PL[id].off=false;PL[id].n=String(n||"Jugador").slice(0,14);bc();
+}
+function secure(p){const c=cnt(p.vis);if(c){p.safe+=c;Object.keys(p.vis).forEach(k=>{if(p.vis[k]>0)p.mx=Math.max(p.mx,+k)})}p.vis={}}
+function startGame(){
+  if(test)for(let k=1;k<=2;k++)PL["bot"+k]={id:"bot"+k,n:"Bot "+k,safe:0,vis:{},mx:0,off:false,bot:true,next:0};
+  const ps=Object.values(PL).filter(p=>!p.off);if(ps.length<2)return;
+  D=makeDeck();H.seq=sh(ps.map(p=>p.id));ps.forEach(p=>{p.safe=0;p.vis={};p.mx=0});
+  H.log=[];H.last=null;H.ph="play";H.cur=H.seq[0];startTurn();
+}
+function startTurn(){const p=PL[H.cur];secure(p);H.drawn=0;if(p.bot){p.next=0;p.th=3+Math.floor(Math.random()*3)}log("Turno de "+p.n);bc()}
+function nextTurn(){
+  if(!D.length||activeSeq().length<2)return endGame();
+  const a=H.seq,i=a.indexOf(H.cur);
+  for(let k=1;k<=a.length;k++){const id=a[(i+k)%a.length];if(PL[id]&&!PL[id].off){H.cur=id;break}}
+  startTurn();
+}
+function draw(id){
+  if(H.ph!=="play"||id!==H.cur||!D.length)return;
+  const p=PL[id],c=D.pop();H.drawn++;
+  if(H.drawn>=3&&p.vis[c]>0){   /* repetida a partir de la tercera: pierde todo lo del turno */
+    const lost=cnt(p.vis);p.vis={};H.last={v:c,by:p.n,k:"bust"};log("💥 "+p.n+" repite el "+c+" y pierde "+lost+" pelusa"+(lost===1?"":"s"));return nextTurn();
+  }
+  let st=0;const from=[];
+  Object.values(PL).forEach(o=>{if(o.id!==id&&o.vis[c]>0){st+=o.vis[c];o.vis[c]=0;from.push(o.n)}});
+  p.vis[c]=(p.vis[c]||0)+1+st;H.last={v:c,by:p.n,k:st?"steal":"ok"};
+  log(st?"🧲 "+p.n+" roba "+st+" del "+c+" a "+from.join(", "):p.n+" roba un "+c);
+  if(!D.length)return endGame();
+  bc();
+}
+function stop(id){
+  if(H.ph!=="play"||id!==H.cur||H.drawn<2)return;
+  const p=PL[id];log("✋ "+p.n+" se planta con "+cnt(p.vis));nextTurn();
+}
+function endGame(){H.ph="end";Object.values(PL).forEach(secure);H.last=null;bc()}
+function dropPlayer(id){
+  const p=PL[id];if(!p)return;p.off=true;
+  if(H.ph==="play"){p.vis={};if(activeSeq().length<2)return endGame();if(H.cur===id)return nextTurn()}
+  bc();
+}
+function snap(){
+  let risk=null;
+  if(H.cfg.risk&&H.ph==="play"&&H.drawn>=2&&D.length){const ns=Object.keys(PL[H.cur].vis).filter(k=>PL[H.cur].vis[k]>0);risk=Math.round(D.filter(c=>ns.includes(String(c))).length/D.length*100)}
+  return{ph:H.ph,cur:H.cur,drawn:H.drawn,deck:D.length,last:H.last,log:H.log,risk,cfg:H.cfg,
+    pl:Object.values(PL).map(p=>({id:p.id,n:p.n,safe:p.safe,vis:p.vis,mx:p.mx,off:p.off,inn:H.seq.includes(p.id)}))};
+}
+function bc(){const s=snap();apply(s);conns.forEach(c=>{try{c.open&&c.send({t:"s",s})}catch(e){}})}
+function hostLoop(){
+  if(!test||H.ph!=="play")return;const p=PL[H.cur];if(!p||!p.bot)return;const now=Date.now();
+  if(!p.next)p.next=now+900+Math.random()*700;
+  if(now>=p.next){p.next=0;const k=Object.keys(p.vis).filter(x=>p.vis[x]>0).length;if(H.drawn<2||k<p.th)draw(p.id);else stop(p.id)}
+}
+/* ---------- Red (PeerJS: el anfitrión es el servidor de la sala) ---------- */
+function apply(s){V=s;render()}
+const newCode=()=>{const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
+function setName(){const n=$("nm").value.trim();if(!n){$("jm").textContent="Pon tu nombre.";return false}name=n.slice(0,14);return true}
+function createRoom(tries){
+  const c=newCode();peer=new Peer(PFX+c);
+  peer.on("open",id=>{myId=id;code=c;host=true;join(id,name);enter();
+    peer.on("connection",cn=>{
+      cn.on("open",()=>{conns=conns.filter(x=>x.peer!==cn.peer);conns.push(cn);cn.send({t:"s",s:snap()})});
+      cn.on("data",m=>{if(!m)return;if(m.t==="j")join(cn.peer,m.n);else if(m.t==="d")draw(cn.peer);else if(m.t==="p")stop(cn.peer)});
+      cn.on("close",()=>{conns=conns.filter(x=>x!==cn);dropPlayer(cn.peer)});
+    });
+  });
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(e.type==="unavailable-id"&&tries<5){peer.destroy();createRoom(tries+1)}else if(!started)$("jm").textContent="No se pudo crear la sala ("+e.type+")."});
+}
+function joinRoom(c){
+  joinCode=c;peer=new Peer();
+  peer.on("open",id=>{myId=id;connectHost()});
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(started)retry();else $("jm").textContent=e.type==="peer-unavailable"?"Esa sala no existe.":"Error de conexión ("+e.type+")."});
+}
+function connectHost(){
+  const c=peer.connect(PFX+joinCode,{reliable:true});hostConn=c;
+  c.on("open",()=>{retries=0;code=joinCode;msg="";c.send({t:"j",n:name});enter()});
+  c.on("data",m=>{if(m&&m.t==="s"&&m.s)apply(m.s)});
+  c.on("close",()=>{if(c===hostConn)retry()});
+}
+function retry(){
+  if(gone||retryP)return;
+  if(retries>=8){gone=true;msg="El anfitrión se ha desconectado.";render();return}
+  retries++;retryP=true;msg="Reconectando… ("+retries+"/8)";render();
+  setTimeout(()=>{retryP=false;try{if(peer.disconnected)peer.reconnect();connectHost()}catch(e){retry()}},3000);
+}
+function enter(){if(started)return;started=true;setInterval(()=>{if(host)hostLoop()},400);render()}
+const send=m=>{if(hostConn&&hostConn.open)hostConn.send(m)};
+const A={
+  draw(){if(host)draw(myId);else send({t:"d"})},
+  stop(){if(host)stop(myId);else send({t:"p"})},
+  start(){if(host)startGame()},
+  cfg(k,v){if(host&&k in H.cfg){H.cfg[k]=+v;bc()}},
+  again(){if(!host)return;H.ph="lobby";H.cur=null;H.seq=[];H.last=null;H.log=[];D=[];Object.keys(PL).forEach(k=>{if(PL[k].bot)delete PL[k];else{PL[k].safe=0;PL[k].vis={};PL[k].mx=0}});bc()},
+  copy(){navigator.clipboard&&navigator.clipboard.writeText(location.origin+location.pathname+"?sala="+code).then(()=>{$("cp").textContent="¡Enlace copiado!"}).catch(()=>{})}
+};
+/* ---------- Pantallas ---------- */
+function home(){
+  const qs=new URLSearchParams(location.search).get("sala")||"";
+  $("s").innerHTML='<div class="panel"><p style="margin-top:0">En tu turno robas pelusas de una en una. Puedes seguir o plantarte, pero si sacas un <b>número que ya tienes</b> (a partir de la tercera carta), lo pierdes todo. Y si sacas un número que un rival tiene a la vista, <b>se lo robas</b>.</p>'
+   +'<label>Tu nombre</label><input id="nm" maxlength="14" autocomplete="off"><label>Código de sala (vacío si vas a crear una)</label><input id="cd" maxlength="6" autocapitalize="characters" value="'+esc(qs.toUpperCase())+'" placeholder="p. ej. K7QX">'
+   +'<button class="btn" id="bj">Unirme a la sala</button><button class="btn g" id="bm">Crear sala nueva</button><button class="btn g" id="bt">Modo prueba (tú + 2 bots)</button><p class="mut" id="jm"></p></div>';
+  $("bj").onclick=()=>{if(!setName())return;const c=$("cd").value.trim().toUpperCase();if(!c){$("jm").textContent="Escribe el código.";return}$("jm").textContent="Conectando…";joinRoom(c)};
+  $("bm").onclick=()=>{if(!setName())return;$("jm").textContent="Creando sala…";createRoom(0)};
+  $("bt").onclick=()=>{name=($("nm").value.trim()||"Tú").slice(0,14);test=true;host=true;myId="me";code="PRUEBA";join(myId,name);enter()};
+}
+const pcard=(n,k,big,cls)=>'<span class="pc'+(big?" big":"")+(cls?" "+cls:"")+'" style="background:'+COL[n-1]+'">'+n+(k>1?'<i>×'+k+'</i>':"")+'</span>';
+function stack(p){const ks=Object.keys(p.vis).filter(k=>p.vis[k]>0).sort((a,b)=>a-b);return ks.length?ks.map(k=>pcard(+k,p.vis[k])).join(""):'<span class="mut">Sin pelusas a la vista</span>'}
+function lobby(){
+  const n=V.pl.filter(p=>!p.off).length,c=V.cfg;
+  const opt=(arr,cur)=>arr.map(([v,t])=>'<option value="'+v+'"'+(+v===cur?" selected":"")+'>'+t+'</option>').join("");
+  $("s").innerHTML='<div class="panel"><div class="mut c">Código de sala</div><div class="code">'+esc(code)+'</div>'+(test?"":'<button class="btn g" data-a="copy" id="cp">Copiar enlace</button>')+'</div>'
+   +'<div class="panel"><b>Jugadores ('+n+'/6)</b><div class="stk">'+V.pl.map(p=>'<span class="mut" style="margin-right:12px">'+(p.off?"⏸ ":"🐰 ")+esc(p.n)+(p.id===myId?" (tú)":"")+'</span>').join("")+'</div>'
+   +(n<2?'<p class="mut">Hacen falta de 2 a 6 jugadores.</p>':"")+'</div>'
+   +'<div class="panel"><b>Opciones</b>'+(host?'<div class="row"><div><label>Mazo</label><select id="c1">'+opt([[0,"Completo (110)"],[1,"Corto (60)"]],c.short)+'</select></div><div><label>Ayuda de riesgo</label><select id="c2">'+opt([[0,"No"],[1,"Sí, mostrar %"]],c.risk)+'</select></div></div>'
+     :'<p class="mut" style="margin:6px 0 0">Mazo '+(c.short?"corto (60)":"completo (110)")+' · ayuda de riesgo: '+(c.risk?"sí":"no")+'</p>')+'</div>'
+   +(host?'<button class="btn" data-a="start"'+(n<2&&!test?" disabled":"")+'>Empezar</button>':'<p class="mut c">El anfitrión empezará la partida.</p>');
+  if(host){$("c1").onchange=e=>A.cfg("short",e.target.value);$("c2").onchange=e=>A.cfg("risk",e.target.value)}
+}
+function play_(){
+  const cur=V.pl.find(p=>p.id===V.cur),mine=V.cur===myId,l=V.last;
+  const lastHtml=l?pcard(l.v,0,true,l.k==="bust"?"bust":"")+'<div class="mut" style="margin-top:6px">'+(l.k==="bust"?"💥 ":l.k==="steal"?"🧲 ":"")+esc(l.by)+' roba un '+l.v+'</div>':'<span class="mut">Aún no se ha robado ninguna pelusa</span>';
+  $("s").innerHTML='<div class="bar"><span>Turno de '+esc(cur?cur.n:"")+(mine?" (tú)":"")+'</span><span>🂠 '+V.deck+'</span></div>'
+   +'<div class="table">'+lastHtml+'</div><div class="log">'+V.log.map(t=>"<div>"+esc(t)+"</div>").join("")+'</div>'
+   +(mine?(V.risk!==null?'<div class="risk">Riesgo de repetir: '+V.risk+' %</div>':"")+'<button class="btn" data-a="draw">Robar pelusa</button><button class="btn s" data-a="stop"'+(V.drawn<2?" disabled":"")+'>Plantarme'+(V.drawn<2?" (roba al menos 2)":"")+'</button>':'')
+   +V.pl.filter(p=>p.inn||p.id===myId).map(p=>'<div class="pp'+(p.id===V.cur?" cur":"")+(p.off?" off":"")+'"><div class="ph"><b>'+esc(p.n)+(p.id===myId?" (tú)":"")+'</b><span>⭐ '+p.safe+'</span></div><div class="stk">'+stack(p)+'</div></div>').join("")
+   +(V.pl.find(p=>p.id===myId&&!p.inn)?'<p class="mut c">Estás de espectador; jugarás en la próxima partida.</p>':'');
+}
+function end(){
+  const r=V.pl.filter(p=>p.inn).sort((a,b)=>b.safe-a.safe||b.mx-a.mx),w=r[0],tie=r.length>1&&r[0].safe===r[1].safe;
+  $("s").innerHTML='<div class="panel c"><div style="font-size:60px">🏆</div><div class="big-t">Gana '+esc(w?w.n:"nadie")+'</div><p class="mut">'+(w?w.safe+" pelusas"+(tie?" (desempate por la carta más alta: "+w.mx+")":""):"")+'</p></div>'
+   +'<div class="panel">'+r.map((p,i)=>'<div class="rk"><span>'+(["🥇","🥈","🥉"][i]||i+1)+'</span><b>'+esc(p.n)+(p.id===myId?" (tú)":"")+'</b><span>⭐ '+p.safe+'</span></div>').join("")+'</div>'
+   +(host?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="mut c">El anfitrión puede empezar otra partida.</p>');
+}
+function render(){
+  if(!started){if(!$("nm"))home();return}
+  if(!V)return;
+  if(V.ph==="lobby")lobby();else if(V.ph==="play")play_();else end();
+  if(msg)$("s").insertAdjacentHTML("afterbegin",'<div class="panel" style="background:var(--no);color:#fff">'+esc(msg)+'</div>');
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b&&A[b.dataset.a])A[b.dataset.a]()});
+render();
+</script></main></body></html>

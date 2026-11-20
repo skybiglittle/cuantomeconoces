@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Duelo de caras</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#1b1830;color:#fff;font-family:system-ui,sans-serif;min-height:100vh}
+#g{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;min-height:100vh}
+#sc{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-weight:700;font-size:1.05em}
+#pr{font-size:clamp(1.3em,5vw,2.3em);font-weight:800;color:#ffd166;text-align:center;min-height:2.6em}
+#tm{font-size:2em;font-weight:800;min-height:1.2em}
+#vs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%}
+.v{position:relative;width:min(46vw,360px);aspect-ratio:4/3;background:#000;border-radius:14px;overflow:hidden}
+.v video,.v img{width:100%;height:100%;object-fit:cover}
+.v video{transform:scaleX(-1)}
+.v b{position:absolute;left:8px;top:6px;background:rgba(0,0,0,.65);padding:2px 10px;border-radius:12px;font-size:.85em}
+#bw{width:min(92vw,500px);height:16px;background:#333;border-radius:8px;overflow:hidden;display:none}
+#bar{height:100%;width:0;background:#06d6a0}
+#st{color:#ff8fa3;min-height:1.3em}#ld{opacity:.7;font-size:.85em}
+#m{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center;background:#1b1830}
+h1{margin:0;font-size:2.3em;color:#ffd166}
+input,button{font:inherit;padding:10px 16px;border-radius:10px;border:0}
+input{width:200px;text-align:center}
+button{background:#ef476f;color:#fff;font-weight:700;cursor:pointer}button.b{background:#118ab2}
+.r{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+small{opacity:.75;max-width:440px}
+</style></head><body>
+<div id="g">
+ <div id="sc"></div><div id="pr"></div><div id="tm"></div>
+ <div id="vs">
+  <div class="v"><video id="vm" muted autoplay playsinline></video><canvas id="ov" width="480" height="360" style="position:absolute;inset:0;width:100%;height:100%"></canvas><b>Tú</b></div>
+  <div class="v"><video id="vr" muted autoplay playsinline></video><b id="rn">Rival</b></div>
+  <div class="v" id="tr" style="display:none"><img id="ref"><b>Cara a copiar</b></div>
+ </div>
+ <div id="bw"><div id="bar"></div></div>
+ <div id="st"></div><div id="ld">Cargando detector de caras…</div>
+</div>
+<div id="m"></div>
+<script>
+const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+/* gestos: [emoji, nombre, función → ≥1 significa conseguido] (sin izquierda/derecha para evitar líos de espejo) */
+const GS=[
+['😮','Boca abierta',b=>b.jawOpen/.5],
+['🤨','Cejas arriba',b=>(b.browInnerUp+(b.browOuterUpLeft+b.browOuterUpRight)/2)/2/.4],
+['😛','Lengua fuera',b=>b.tongueOut/.35],
+['😤','Infla las mejillas',b=>b.cheekPuff/.4],
+['😉','Guiño',b=>Math.max(b.eyeBlinkLeft,b.eyeBlinkRight)>.6&&Math.min(b.eyeBlinkLeft,b.eyeBlinkRight)<.35?1:0],
+['😁','Sonrisa enorme',b=>(b.mouthSmileLeft+b.mouthSmileRight)/2/.65],
+['😗','Morritos',b=>b.mouthPucker/.6],
+['😳','Ojos muy abiertos',b=>(b.eyeWideLeft+b.eyeWideRight)/2/.5],
+['🫤','Boca torcida',b=>Math.max(b.mouthLeft,b.mouthRight)/.5],
+['🤔','Inclina la cabeza',(b,p)=>Math.abs(p.r)/14],
+['⬆️','Mira arriba',(b,p)=>-p.p/.1],
+['⬇️','Mira abajo',(b,p)=>p.p/.1],
+['↔️','Gira la cabeza',(b,p)=>Math.abs(p.y)/.12]];
+const CB=[[4,2],[0,1],[3,4],[5,1],[6,4],[7,0],[9,4],[10,0],[12,2],[11,5],[9,3]];
+const NG=8,NE=6,Zb=o=>new Proxy(o,{get:(t,k)=>Math.max(0,(t[k]||0)-(NB[k]||0))});
+let peer,host=false,me=0,conn=null,code='',name='',stream=null,S=null,G=null,lm=null,BS=null,face=false,buf=[],REF=null;
+let best=0,ema=0,doneRid=-1,lastRid=-1,rt=0,okc=0,sentR='',lastVT=-1,prevPh='',refSrc='';
+let NB={},NEU=null,PO={r:0,y:0,p:0},LM=null,AL=null,cnt=0,TG=[];
+/* ---------- detección ---------- */
+async function initModel(){
+ const V='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',{FaceLandmarker:F,FilesetResolver:R}=await import(V+'/vision_bundle.mjs');
+ const fs=await R.forVisionTasks(V+'/wasm'),mk=d=>F.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:d},runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true});
+ try{lm=await mk('GPU')}catch(e){lm=await mk('CPU')}
+ $('ld').textContent='✅ Detector listo';sendRdy();
+}
+function detect(){
+ const v=$('vm');if(!lm||v.readyState<2||v.currentTime==lastVT)return;lastVT=v.currentTime;
+ const r=lm.detectForVideo(v,performance.now()),c=r.faceBlendshapes&&r.faceBlendshapes[0],t=performance.now();
+ if(c){const o={};c.categories.forEach(k=>o[k.categoryName]=k.score);BS=o;face=true;
+  LM=r.faceLandmarks[0];AL=align(LM,v.videoWidth,v.videoHeight);
+  PO=NEU?{r:AL.roll-NEU.roll,y:AL.sh[0]-NEU.sh[0],p:AL.sh[1]-NEU.sh[1]}:{r:0,y:0,p:0};
+  buf.push({t,v:o,sh:AL.sh,roll:AL.roll});while(buf[0].t<t-1500)buf.shift()}else{BS=LM=AL=null;face=false}
+}
+const sat=ids=>!!BS&&!!NEU&&ids.every(i=>GS[i][2](Zb(BS),PO)>=1);
+function sim(a,b){let mn=0,mx=0;for(const k in a){if(k=='_neutral')continue;const x=a[k]<.08?0:a[k],y=(b[k]||0)<.08?0:b[k];mn+=Math.min(x,y);mx+=Math.max(x,y)}return mx<.2?1:Math.pow(mn/mx,.7)}
+function capture(){const n=performance.now(),a=buf.filter(e=>e.t>n-1200);if(!a.length||!NEU)return{};
+ const v={};for(const k in a[0].v)v[k]=+Math.max(0,a.reduce((s,e)=>s+(e.v[k]||0),0)/a.length-(NB[k]||0)).toFixed(2);
+ const d=NEU.sh.map((b,i)=>+(a.reduce((s,e)=>s+e.sh[i],0)/a.length-b).toFixed(3));
+ return{v,d,p:{r:+(a.reduce((s,e)=>s+e.roll,0)/a.length-NEU.roll).toFixed(1),y:d[0],p:d[1]}}}
+function snapImg(){const c=document.createElement('canvas');c.width=240;c.height=180;const x=c.getContext('2d');x.translate(240,0);x.scale(-1,1);x.drawImage($('vm'),0,0,240,180);return c.toDataURL('image/jpeg',.6)}
+/* ---------- puntos de la cara (landmarks) ---------- */
+const GR=[
+[[61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185],1],
+[[78,95,88,178,87,14,317,402,318,324,308,415,310,311,312,13,82,81,80,191],1],
+[[263,249,390,373,374,380,381,382,362,398,384,385,386,387,388,466],1],
+[[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246],1],
+[[70,63,105,66,107],0],[[336,296,334,293,300],0],
+[[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109],1],
+[[168,6,197,195,5,4],0]];
+const SEL=[1],GI=GR.map(([a,c])=>({p:a.map(i=>{SEL.push(i);return SEL.length-1}),c,l:a}));
+/* alinea la cara: origen = entre los ojos, escala = distancia entre ojos, sin giro → expresión comparable entre personas */
+function align(lm,W,H){
+ const a=lm[33],b=lm[263],ax=a.x*W,ay=a.y*H,dx=b.x*W-ax,dy=b.y*H-ay,s=Math.hypot(dx,dy),c=dx/s,sn=dy/s,ox=ax+dx/2,oy=ay+dy/2,sh=[];
+ for(const i of SEL){const x=lm[i].x*W-ox,y=lm[i].y*H-oy;sh.push((x*c+y*sn)/s,(-x*sn+y*c)/s)}
+ return{sh,ox,oy,s,c,sn,roll:Math.atan2(dy,dx)*57.3}
+}
+function calibrate(){
+ const n=performance.now(),a=buf.filter(e=>e.t>n-1200);
+ if(a.length>4){NB={};for(const k in a[0].v)NB[k]=a.reduce((s,e)=>s+(e.v[k]||0),0)/a.length;
+  NEU={sh:a[0].sh.map((_,i)=>a.reduce((s,e)=>s+e.sh[i],0)/a.length),roll:a.reduce((s,e)=>s+e.roll,0)/a.length}}
+ else if(!NEU)NEU={sh:SEL.map(()=>[0,0]).flat(),roll:0};
+}
+function sim2(R,bs,sh,po){
+ if(!R.v||!R.d||!NEU)return .3;
+ const bd={};for(const k in bs)bd[k]=Math.max(0,bs[k]-(NB[k]||0));
+ let e=0,m=0;for(let i=0;i<R.d.length;i++){const c=sh[i]-NEU.sh[i];e+=(c-R.d[i])**2;m+=R.d[i]**2}
+ const n=R.d.length,sg=Math.max(0,1-Math.sqrt(e/n)/(Math.sqrt(m/n)+.03)),
+ sp=1-Math.min(1,(Math.abs(po.r-R.p.r)/30+Math.abs(po.y-R.p.y)/.25+Math.abs(po.p-R.p.p)/.2)/2);
+ return Math.pow(.45*sim(R.v,bd)+.4*sg+.15*sp,.8)
+}
+function mkTG(seed){let a=seed;const r=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+ TG=Array.from({length:80},(_,i)=>({x:.15+.7*r(),y:.2+.6*r(),e:i%3==2}))}
+function chkHit(){
+ if(!LM||!BS||!TG[cnt])return;const g=TG[cnt];
+ if(Math.hypot((1-LM[1].x-g.x)*480,(LM[1].y-g.y)*360)<42&&(!g.e||BS.jawOpen-(NB.jawOpen||0)>.4)){cnt++;emit({t:'hit',n:cnt})}
+}
+function drawOv(){
+ const x=$('ov').getContext('2d');x.clearRect(0,0,480,360);if(!S||S.ph=='lobby')return;
+ if(S.ph=='nz'&&TG[cnt]){const g=TG[cnt];x.beginPath();x.arc(g.x*480,g.y*360,42,0,7);x.fillStyle='rgba(255,209,102,.35)';x.fill();x.font='44px serif';x.textAlign='center';x.textBaseline='middle';x.fillText(g.e?'🍩':'🎯',g.x*480,g.y*360);
+  if(g.e){x.font='700 13px system-ui';x.fillStyle='#fff';x.fillText('¡abre la boca!',g.x*480,g.y*360+34)}}
+ if(!LM)return;
+ const line=(pts,c,col,w)=>{x.beginPath();pts.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));if(c)x.closePath();x.strokeStyle=col;x.lineWidth=w;x.stroke()};
+ GI.forEach(g=>line(g.l.map(i=>[480*(1-LM[i].x),360*LM[i].y]),g.c,'rgba(0,255,230,.55)',1.5));
+ x.fillStyle='#ff4d6d';x.beginPath();x.arc(480*(1-LM[1].x),360*LM[1].y,5,0,7);x.fill();
+ if(S.ph=='cop'&&S.copier==me&&REF&&REF.d&&NEU&&AL){
+  const W=$('vm').videoWidth,H=$('vm').videoHeight;
+  GI.slice(0,6).forEach(g=>line(g.p.map(k=>{const u=NEU.sh[2*k]+REF.d[2*k],v=NEU.sh[2*k+1]+REF.d[2*k+1];
+   return[480*(1-(AL.ox+AL.s*(u*AL.c-v*AL.sn))/W),360*(AL.oy+AL.s*(u*AL.sn+v*AL.c))/H]}),g.c,'#ffd166',3.5));
+ }
+}
+/* ---------- salas ---------- */
+const nm=()=>{name=($('nm')?.value||'').trim().slice(0,12)||'Jugador'+rnd(99)};
+async function setup(){
+ nm();
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{width:480,height:360,facingMode:'user'},audio:false});$('vm').srcObject=stream;await $('vm').play().catch(()=>{})}
+ catch(e){alert('Necesito acceso a la cámara (y abrir la página con https).');return false}
+ initModel().catch(e=>$('ld').textContent='Error cargando el detector: '+e.message);return true
+}
+async function crear(){if(await setup()){host=true;hostInit()}}
+async function unirse(){
+ const c=($('cd').value||'').trim().toUpperCase();if(c.length<4)return alert('Escribe el código de 4 letras');
+ if(!await setup())return;host=false;code=c;$('m').innerHTML='<h1>Conectando…</h1>';
+ peer=new Peer();
+ peer.on('open',()=>{conn=peer.connect('dcaras-'+c);
+  conn.on('open',()=>{conn.send({t:'hi',n:name});sendRdy();const k=peer.call('dcaras-'+c,stream);k.on('stream',s=>$('vr').srcObject=s)});
+  conn.on('data',onHost);conn.on('close',()=>{alert('Se cerró la sala');location.reload()})});
+ peer.on('error',()=>{alert('No se pudo entrar en la sala '+c);location.reload()});
+}
+function sendRdy(){if(!host&&lm&&conn&&conn.open)conn.send({t:'rdy'})}
+function onHost(m){
+ if(m.t=='s'){S=m;S.at=performance.now()}
+ else if(m.t=='w')me=m.i;
+ else if(m.t=='cap')conn.send({t:'vec',c:capture(),img:snapImg()});
+ else if(m.t=='ref'){REF=m;best=ema=0}
+ else if(m.t=='full'){alert(m.m);location.reload()}
+}
+function hostInit(){
+ code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[rnd(24)]).join('');
+ G={ph:'lobby',until:1e15,r:0,rid:0,inv:0,copier:1,g:[],msg:'',pct:0,win:-1,g1:[0,0],e1:[0,0],seed:0,nz:[0,0],pl:[{n:name}],c:null};
+ if(peer)try{peer.destroy()}catch(e){}
+ peer=new Peer('dcaras-'+code);me=0;
+ peer.on('error',e=>{if(e.type=='unavailable-id')hostInit();else alert('Error de conexión: '+e.type)});
+ peer.on('call',c=>{c.answer(stream);c.on('stream',s=>$('vr').srcObject=s)});
+ peer.on('connection',c=>{
+  if(G.c&&G.c.open){c.on('open',()=>{c.send({t:'full',m:'Sala llena (2 jugadores)'});setTimeout(()=>c.close(),300)});return}
+  c.on('data',m=>{if(m.t=='hi'){G.c=c;G.pl[1]={n:String(m.n).slice(0,12),rdy:false};c.send({t:'w',i:1})}else onMsg(m,1)});
+  c.on('close',()=>{if(G.c==c){G.c=null;G.pl.length=1;G.ph='lobby';G.until=1e15}});
+ });
+}
+/* ---------- lógica del anfitrión ---------- */
+const snapS=()=>({t:'s',ph:G.ph,rem:Math.max(0,G.until-performance.now()),r:G.r,rid:G.rid,inv:G.inv,copier:G.copier,g:G.g,msg:G.msg,pct:G.pct,win:G.win,g1:G.g1,e1:G.e1,seed:G.seed,nz:G.nz,code,pl:G.pl.map((p,i)=>({n:p.n,rdy:i?!!p.rdy:!!lm}))});
+const push=()=>{if(G.c&&G.c.open)G.c.send(snapS())};
+function enter(ph,d){G.ph=ph;G.until=performance.now()+d;push()}
+function empezar(){if(!host||!G.c||!G.pl[1].rdy||!lm||(G.ph!='lobby'&&G.ph!='end'))return;G.g1=[0,0];G.e1=[0,0];G.nz=[0,0];G.r=0;G.msg='';enter('calib',3500)}
+function nextG(){G.rid++;G.win=-1;G.msg='';let g;do{g=G.r<5?[rnd(GS.length)]:CB[rnd(CB.length)]}while(JSON.stringify(g)==JSON.stringify(G.g));G.g=g;enter('gr',Math.max(4000,9000-G.r*600))}
+function nextTurn(){G.inv=G.r%2;G.copier=1-G.inv;G.msg='';enter('inv',5000)}
+function setRef(c,img){REF=Object.assign({},c,{img});best=ema=0;if(G.c&&G.c.open)G.c.send(Object.assign({t:'ref'},REF));enter('cop',5000)}
+function onMsg(m,p){
+ if(m.t=='rdy'&&G.pl[1])G.pl[1].rdy=true;
+ else if(m.t=='done'){if(G.ph=='gr'&&m.rid==G.rid&&G.win<0){G.win=p;G.g1[p]++;G.msg='¡Punto para '+G.pl[p].n+'!';enter('grres',1800)}}
+ else if(m.t=='hit'){if(G.ph=='nz')G.nz[p]=Math.max(G.nz[p],+m.n||0)}
+ else if(m.t=='vec'){if(G.ph=='cap'&&p==G.inv)setRef(m.c||{},m.img||'')}
+ else if(m.t=='pct'){if(G.ph=='sub'&&p==G.copier)endTurn(Math.max(0,Math.min(100,+m.p||0)))}
+}
+function endTurn(v){G.pct=v;G.e1[G.copier]+=v;enter('res',3500)}
+function tick(){
+ if(performance.now()<G.until)return;
+ switch(G.ph){
+  case'calib':enter('intro1',3500);break;
+  case'intro1':G.r=0;nextG();break;
+  case'gr':G.msg='Nadie lo logró…';enter('grres',1800);break;
+  case'grres':G.r++;G.r<NG?nextG():enter('intro2',4500);break;
+  case'intro2':G.r=0;nextTurn();break;
+  case'inv':if(G.inv==0)setRef(capture(),snapImg());else{G.c&&G.c.send({t:'cap'});enter('cap',2500)}break;
+  case'cap':setRef({},'');break;
+  case'cop':enter('sub',1500);break;
+  case'sub':endTurn(0);break;
+  case'res':G.r++;G.r<NE?nextTurn():enter('intro3',4500);break;
+  case'intro3':G.seed=1+rnd(1e9);G.nz=[0,0];enter('nz',20000);break;
+  case'nz':enter('nzres',3500);break;
+  case'nzres':enter('end',1e15);break;
+ }
+}
+setInterval(()=>{if(host&&G)push()},150);
+/* ---------- interfaz ---------- */
+const menuH='<h1>Duelo de caras</h1><small>2 jugadores, cámara y gestos de la cara. Gesto rápido y Espejo. Colócate de frente y con buena luz.</small><input id="nm" placeholder="Tu nombre" maxlength="12"><button onclick="crear()">Crear sala</button><div class="r"><input id="cd" placeholder="Código" maxlength="4" style="text-transform:uppercase;width:130px"><button class="b" onclick="unirse()">Unirse</button></div>';
+let ovk='';
+function ov(){
+ let k,h;
+ if(!S){if(host||conn||ovk=='c')return;k='m';h=menuH;if(!ovk){}}
+ else if(S.ph=='lobby'){const n=S.pl.map(p=>esc(p.n)+(p.rdy?' ✅':' ⏳')).join(' &nbsp;vs&nbsp; ');k='l'+n+host;
+  h='<h1>Sala '+S.code+'</h1><div style="font-size:1.2em">'+n+(S.pl.length<2?' &nbsp;vs&nbsp; …':'')+'</div><small>Dile el código a tu rival. ✅ = cámara y detector listos (el primer arranque puede tardar unos segundos).</small>'+(host?'<button onclick="empezar()">¡Empezar!</button>':'<small>Esperando al anfitrión…</small>')}
+ else if(S.ph=='end'){const w=(a)=>a[0]>a[1]?0:a[1]>a[0]?1:-1,x=w(S.g1),y=w(S.e1),z=w(S.nz),c=[0,0];if(x>=0)c[x]++;if(y>=0)c[y]++;if(z>=0)c[z]++;
+  const r=c[0]>c[1]?0:c[1]>c[0]?1:-1;k='e'+S.g1+S.e1+S.nz+host;
+  h='<h1>'+(r<0?'¡Empate!':'🏆 '+esc(S.pl[r].n))+'</h1><div>Gesto rápido: '+S.g1[0]+' – '+S.g1[1]+'<br>Espejo: '+S.e1[0]+' – '+S.e1[1]+' (suma de %)<br>Caza con la nariz: '+S.nz[0]+' – '+S.nz[1]+'</div>'+(host?'<button onclick="empezar()">Revancha</button>':'<small>Esperando al anfitrión…</small>')}
+ else{k='';h=''}
+ if(k!=ovk){ovk=k;const o=$('m');o.innerHTML=h;o.style.display=h?'flex':'none'}
+}
+const com=p=>p>=90?'¡Igualitas!':p>=70?'Muy buena copia':p>=45?'Con cariño se parece':p>=20?'Eso se parece lejanísimamente':'¡Eso no era ni una cara!';
+function ui(){
+ const n=S.pl.map(p=>esc(p.n)),ph=S.ph,rem=S.rem-(performance.now()-S.at),imInv=S.inv==me,imCop=S.copier==me;let t='';
+ $('rn').textContent=S.pl[1-me]?S.pl[1-me].n:'Rival';
+ $('sc').innerHTML='<span>Gesto rápido: '+n[0]+' '+S.g1[0]+' – '+S.g1[1]+' '+(n[1]||'')+'</span><span>Espejo: '+S.e1[0]+' – '+S.e1[1]+'</span><span>Nariz: '+S.nz[0]+' – '+S.nz[1]+'</span>';
+ if(ph=='intro1')t='🎯 Parte 1: GESTO RÁPIDO<br>Haz el gesto antes que tu rival';
+ else if(ph=='gr')t='Ronda '+(S.r+1)+'/'+NG+'<br>'+S.g.map(i=>GS[i][0]+' '+GS[i][1]).join(' + ');
+ else if(ph=='grres')t=esc(S.msg);
+ else if(ph=='intro2')t='🪞 Parte 2: ESPEJO<br>Uno inventa una cara rara y el otro la copia';
+ else if(ph=='inv')t=imInv?'🎭 ¡Pon tu cara más rara y mantenla!':'👀 Mira la cara de '+n[S.inv]+' y memorízala…';
+ else if(ph=='cap')t='📸 ¡Congelando la cara!';
+ else if(ph=='cop')t=imCop?'¡Copia esa cara! Sigue la silueta amarilla · '+Math.round(ema*100)+'%':'Tu rival intenta copiar tu cara…';
+ else if(ph=='sub')t='Calculando…';
+ else if(ph=='res')t=S.pct+'% de parecido<br>'+com(S.pct);
+ else if(ph=='calib')t='😐 Cara neutra, mira a cámara<br>y quédate quieto (calibrando tus puntos)';
+ else if(ph=='intro3')t='👃 Parte 3: CAZA CON LA NARIZ<br>Toca los objetivos con la nariz. Los 🍩 piden abrir la boca';
+ else if(ph=='nz')t='👃 Tú '+S.nz[me]+' – '+S.nz[1-me]+' Rival';
+ else if(ph=='nzres')t=S.nz[0]==S.nz[1]?'Empate a '+S.nz[0]:'¡'+n[S.nz[0]>S.nz[1]?0:1]+' gana la caza!';
+ $('pr').innerHTML=t;
+ $('tm').textContent=['gr','inv','cop','calib','nz'].includes(ph)?Math.ceil(Math.max(0,rem)/1000):'';
+ $('st').textContent=['gr','inv','cop','calib','nz'].includes(ph)&&!face?'No veo tu cara 👀 Colócate de frente':'';
+ $('bw').style.display=ph=='cop'&&imCop?'block':'none';$('bar').style.width=Math.round(ema*100)+'%';
+ const sr=['cop','sub','res'].includes(ph)&&REF&&REF.img;$('tr').style.display=sr?'block':'none';
+ if(sr&&REF.img!=refSrc){refSrc=REF.img;$('ref').src=refSrc}
+}
+function emit(m){host?onMsg(m,0):conn&&conn.open&&conn.send(m)}
+function loop(){
+ detect();
+ if(host&&G){tick();S=snapS();S.at=performance.now()}
+ if(S){
+  const now=performance.now();
+  if(S.ph=='gr'){
+   if(S.rid!=lastRid){lastRid=S.rid;rt=now;okc=0}
+   if(S.rid!=doneRid&&now-rt>500&&sat(S.g)){if(++okc>=3){doneRid=S.rid;emit({t:'done',rid:S.rid})}}else if(S.rid!=doneRid)okc=0;
+  }
+  if(S.ph=='cop'&&S.copier==me&&REF&&BS&&AL&&NEU){ema=ema*.6+sim2(REF,BS,AL.sh,PO)*.4;best=Math.max(best,ema)}
+  if(S.ph=='sub'&&S.copier==me&&sentR!=S.r){sentR=S.r;emit({t:'pct',p:Math.round(best*100)})}
+  if(S.ph=='intro2')sentR='';
+  if(prevPh=='calib'&&S.ph!='calib')calibrate();
+  if(S.ph=='nz'&&prevPh!='nz'){cnt=0;mkTG(S.seed)}
+  if(S.ph=='nz')chkHit();
+  prevPh=S.ph;ui();
+ }
+ drawOv();ov();requestAnimationFrame(loop);
+}
+ov();loop();
+</script></body></html>

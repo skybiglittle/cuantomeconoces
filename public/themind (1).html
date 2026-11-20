@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1226">
+<title>Mente colectiva</title>
+<style>
+:root{--bg:#0e1226;--bg2:#1b2150;--card:#171d3d;--ink:#eef1ff;--mut:#9aa3d1;--gold:#ffd166;--ok:#2fd18b;--no:#ff5d73;--blue:#6cb6ff;--ln:#2d3668;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(110% 70% at 50% 0,var(--bg2) 0,var(--bg) 62%) fixed;min-height:100dvh}
+main{max-width:520px;margin:0 auto;padding:14px 14px 40px}
+h1{margin:4px 0 2px;text-align:center;font-size:clamp(28px,8vw,40px);letter-spacing:.04em}
+h1 span{color:var(--gold)}.sub{text-align:center;color:var(--mut);font-size:14px;margin:0 0 12px}
+.panel{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px;margin:12px 0}
+label{display:block;font-size:13px;color:var(--mut);font-weight:700;margin:10px 0 4px}
+input{width:100%;padding:12px;border:1px solid var(--ln);border-radius:12px;background:#0b0f26;color:var(--ink);font:inherit}
+.btn{display:block;width:100%;margin-top:10px;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#ffd166,#ff9f43);color:#241500;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+.btn:active{transform:scale(.98)}.btn.g{background:#232b5a;color:var(--ink);border:1px solid var(--ln)}.btn:disabled{opacity:.4}
+.mut{color:var(--mut);font-size:14px}.c{text-align:center}.row{display:flex;gap:8px}.row>*{flex:1}
+.hud{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:18px;background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:10px 14px}
+.table{position:relative;margin:12px 0;padding:18px 10px 12px;border-radius:18px;border:1px solid var(--ln);background:radial-gradient(circle at 50% 40%,#232c66,#12183a);text-align:center;min-height:210px}
+.card{display:inline-flex;align-items:center;justify-content:center;width:64px;height:92px;border-radius:12px;background:linear-gradient(160deg,#fff,#dfe5ff);color:#12183a;font-weight:900;font-size:30px;box-shadow:0 6px 16px #0006;border:2px solid #fff}
+.card.big{width:110px;height:154px;font-size:56px;border-radius:16px;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.card.sm{width:34px;height:48px;font-size:16px;border-radius:7px;box-shadow:none;margin:0 2px;opacity:.7}
+.card.low{box-shadow:0 0 0 4px var(--gold),0 8px 22px #ffd16666;transform:translateY(-6px)}
+.card.empty{background:transparent;border:2px dashed var(--ln);color:var(--mut);box-shadow:none;animation:none}
+@keyframes pop{0%{transform:scale(.5) translateY(-30px);opacity:0}100%{transform:none;opacity:1}}
+.by{margin-top:8px;color:var(--mut);font-size:14px;min-height:20px}.pile{margin-top:8px;min-height:50px}
+.pls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.pl{padding:5px 11px;border-radius:99px;background:#232b5a;border:1px solid var(--ln);font-size:14px}.pl.me{border-color:var(--gold)}.pl.off{opacity:.4}.pl b{color:var(--gold)}
+.hand{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 6px;min-height:100px}
+.ev{border-radius:12px;padding:10px 12px;margin:10px 0;font-weight:700}.ev.err{background:#4a1b27;border:1px solid var(--no);color:#ffb3bd}.ev.ok{background:#12372b;border:1px solid var(--ok);color:#a6f0cf}.ev.star{background:#1b3250;border:1px solid var(--blue);color:#b9dcff}
+.sk{background:#1b3250;border:1px solid var(--blue);border-radius:14px;padding:12px;margin:10px 0}
+.big-t{font-size:clamp(26px,8vw,38px);font-weight:900;text-align:center;margin:6px 0}
+.code{font-size:32px;font-weight:900;letter-spacing:.2em;color:var(--gold);text-align:center}
+.rv{margin:8px 0;font-size:14px}.rv .card{margin:2px}
+</style></head><body><main>
+<h1>MENTE <span>COLECTIVA</span></h1>
+<p class="sub">Cooperativo · sin hablar · inspirado en The Mind</p>
+<div id="s"></div>
+<div id="ev"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id),PFX="mind-",esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={2:12,3:10,4:8,5:7,6:6,7:5,8:5};
+let peer=null,myId=null,hostConn=null,conns=[],code="",host=false,test=false,name="",V=null,started=false,msg="",retries=0,retryP=false,gone=false,joinCode="",lastEv=0,evUntil=0,evTxt="",evK="";
+/* ---------- Anfitrión: reglas del juego ---------- */
+const PL={},H={ph:"lobby",lvl:0,max:10,lives:0,stars:0,hands:{},pile:[],sk:null,ev:null,evId:0,lastT:0,
+  cfg:{start:1,step:1,lv:0,rnd:0}};   /* start: cartas iniciales · step: subida por nivel · lv: niveles (0 = auto) · rnd: reparto al azar */
+/* Cartas "base" de un nivel: empieza en cfg.start y sube cfg.step por nivel (1, 0.5 o 2) */
+const cardsFor=(level,c)=>Math.max(1,c.start+Math.floor((level-1)*c.step));
+/* Cartas que recibe cada jugador en un nivel (array de n cantidades).
+   Igual para todos, o al azar con una cantidad distinta para cada jugador. Las cartas del mazo (1-100) nunca se repiten. */
+function cardsPerPlayer(level,n){
+  const b=Math.min(cardsFor(level,H.cfg),Math.floor(100/n));
+  if(!H.cfg.rnd)return Array(n).fill(b);
+  let lo=Math.max(1,b-Math.floor(n/2));while(lo>1&&n*lo+n*(n-1)/2>100)lo--;
+  return sh([...Array(n)].map((_,i)=>lo+i));
+}
+const act=()=>Object.values(PL).filter(p=>p.in&&!p.off);
+const empty=()=>act().every(p=>!(H.hands[p.id]||[]).length);
+const touch=()=>{H.lastT=Date.now();Object.values(PL).forEach(p=>p.next=0)};
+const say=(k,txt)=>{H.ev={id:++H.evId,k,txt}};
+function join(id,n){
+  if(!PL[id]){
+    const nm=String(n||"Jugador").slice(0,14),old=Object.values(PL).find(p=>p.off&&p.n===nm&&!p.bot);
+    if(old){delete PL[old.id];old.id=id;old.off=false;PL[id]=old;if(H.hands[old.id])H.hands[id]=H.hands[old.id]}
+    else if(Object.keys(PL).length>=8)return;
+    else PL[id]={id,n:nm,rdy:false,off:false,in:false,next:0};
+  }
+  PL[id].off=false;PL[id].n=String(n||"Jugador").slice(0,14);bc();
+}
+function startGame(){
+  if(test)for(let k=1;k<=2;k++)PL["bot"+k]={id:"bot"+k,n:"Bot "+k,rdy:false,off:false,in:false,bot:true,next:0};
+  const ps=Object.values(PL).filter(p=>!p.off);if(ps.length<2)return;
+  H.max=H.cfg.lv||LV[ps.length];H.lives=Math.max(2,ps.length);H.stars=1;H.lvl=1;H.hands={};H.pile=[];H.sk=null;H.ev=null;
+  readyPhase();
+}
+function readyPhase(){H.ph="ready";H.pile=[];H.sk=null;Object.values(PL).forEach(p=>{p.in=!p.off;p.rdy=false;p.next=0});bc()}
+function ready(id){const p=PL[id];if(!p||H.ph!=="ready"||!p.in)return;p.rdy=true;if(act().every(x=>x.rdy))deal();else bc()}
+function deal(){
+  const deck=sh([...Array(100)].map((_,i)=>i+1));H.hands={};
+  const ps=act(),cnt=cardsPerPlayer(H.lvl,ps.length);
+  ps.forEach((p,i)=>{H.hands[p.id]=deck.splice(0,cnt[i]).sort((a,b)=>a-b)});
+  H.pile=[];H.sk=null;H.ph="play";H.ev=null;touch();bc();
+}
+function play(id){
+  if(H.ph!=="play"||!(H.hands[id]||[]).length)return;
+  const v=H.hands[id].shift(),lost=[];
+  Object.keys(H.hands).forEach(k=>{const low=H.hands[k].filter(c=>c<v);if(low.length){H.hands[k]=H.hands[k].filter(c=>c>v);low.forEach(c=>lost.push([PL[k].n,c]))}});
+  H.pile.push({v,by:PL[id].n});H.sk=null;
+  if(lost.length){H.lives--;say("err","💥 "+PL[id].n+" jugó el "+v+" pero había menores: "+lost.sort((a,b)=>a[1]-b[1]).map(l=>l[1]+" ("+l[0]+")").join(", ")+". Pierdes una vida.")}
+  touch();after();
+}
+function after(){
+  if(H.lives<=0){H.ph="over";bc();return}
+  if(empty())return clear();
+  bc();
+}
+function clear(){
+  let r="";if([2,5,8].includes(H.lvl)){H.stars++;r=" ⭐ +1 estrella"}if([3,6,9].includes(H.lvl)){H.lives++;r=" ❤️ +1 vida"}
+  if(H.lvl>=H.max){H.ph="win";say("ok","🏆 ¡Último nivel superado!");bc();return}
+  say("ok","✅ Nivel "+H.lvl+" superado."+r);H.lvl++;readyPhase();
+}
+function skProp(id){if(H.ph!=="play"||H.stars<1||H.sk)return;const p=PL[id];if(!p||!p.in)return;H.sk={by:p.n,ok:{[id]:1}};checkSk();bc()}
+function skVote(id,ok){if(!H.sk)return;if(!ok){H.sk=null;say("star","⭐ Estrella rechazada.");bc();return}H.sk.ok[id]=1;checkSk();bc()}
+function checkSk(){
+  if(!H.sk||!act().every(p=>H.sk.ok[p.id]))return;
+  const d=[];act().forEach(p=>{const h=H.hands[p.id]||[];if(h.length)d.push([p.n,h.shift()])});
+  H.stars--;H.sk=null;say("star","⭐ Estrella: se descartan "+d.map(x=>x[1]+" ("+x[0]+")").join(", ")+".");touch();after();
+}
+function snap(id){
+  const end=H.ph==="over"||H.ph==="win";
+  return{ph:H.ph,lvl:H.lvl,max:H.max,lives:H.lives,stars:H.stars,pile:H.pile.slice(-8),
+    pl:Object.values(PL).map(p=>({id:p.id,n:p.n,cnt:(H.hands[p.id]||[]).length,rdy:p.rdy,off:p.off,in:p.in})),
+    h:H.hands[id]||[],rev:end?Object.keys(H.hands).map(k=>[PL[k].n,H.hands[k]]):null,
+    sk:H.sk?{by:H.sk.by,ok:Object.keys(H.sk.ok)}:null,ev:H.ev,np:Object.values(PL).filter(p=>!p.off).length,cfg:H.cfg,
+    cc:Math.min(cardsFor(H.lvl||1,H.cfg),Math.floor(100/Math.max(2,Object.values(PL).filter(p=>!p.off).length)))};
+}
+function bc(){apply(snap(myId));conns.forEach(c=>{try{c.open&&c.send({t:"s",s:snap(c.peer)})}catch(e){}})}
+function hostLoop(){
+  if(!test)return;const now=Date.now();
+  Object.values(PL).forEach(p=>{
+    if(!p.bot||!p.in)return;
+    if(H.ph==="ready"&&!p.rdy){if(!p.next)p.next=now+700+Math.random()*900;if(now>=p.next)ready(p.id)}
+    else if(H.ph==="play"){
+      if(H.sk&&!H.sk.ok[p.id]&&Math.random()<.3){skVote(p.id,true);return}
+      const h=H.hands[p.id]||[];if(!h.length)return;
+      const top=H.pile.length?H.pile[H.pile.length-1].v:0;
+      if(!p.next)p.next=Math.max(H.lastT+800,H.lastT+(h[0]-top)*330)+Math.random()*600-150;
+      if(now>=p.next)play(p.id);
+    }
+  });
+}
+function dropPlayer(id){
+  const p=PL[id];if(!p)return;p.off=true;
+  if(H.ph==="play"||H.ph==="ready"){
+    H.hands[id]=[];
+    if(act().length<2){H.ph="over";bc();return}
+    if(H.ph==="ready"&&act().every(x=>x.rdy))return deal();
+    if(H.ph==="play"){if(H.sk)checkSk();if(empty())return clear()}
+  }
+  bc();
+}
+/* ---------- Red (PeerJS: el anfitrión es el servidor de la sala) ---------- */
+function apply(s){
+  V=s;
+  if(s.ev&&s.ev.id!==lastEv){const first=lastEv===0&&s.ph==="lobby";lastEv=s.ev.id;if(!first){evTxt=s.ev.txt;evK=s.ev.k;evUntil=Date.now()+7000;if(s.ev.k==="err")try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}}
+  render();
+}
+const newCode=()=>{const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
+function setName(){const n=$("nm").value.trim();if(!n){$("jm").textContent="Pon tu nombre.";return false}name=n.slice(0,14);return true}
+function createRoom(tries){
+  const c=newCode();peer=new Peer(PFX+c);
+  peer.on("open",id=>{myId=id;code=c;host=true;join(id,name);enter();
+    peer.on("connection",cn=>{
+      cn.on("open",()=>{conns=conns.filter(x=>x.peer!==cn.peer);conns.push(cn);cn.send({t:"s",s:snap(cn.peer)})});
+      cn.on("data",m=>{if(!m)return;const i=cn.peer;
+        if(m.t==="j")join(i,m.n);else if(m.t==="p")play(i);else if(m.t==="r")ready(i);else if(m.t==="sk")skProp(i);else if(m.t==="sv")skVote(i,!!m.ok)});
+      cn.on("close",()=>{conns=conns.filter(x=>x!==cn);dropPlayer(cn.peer)});
+    });
+  });
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(e.type==="unavailable-id"&&tries<5){peer.destroy();createRoom(tries+1)}else if(!started)$("jm").textContent="No se pudo crear la sala ("+e.type+")."});
+}
+function joinRoom(c){
+  joinCode=c;peer=new Peer();
+  peer.on("open",id=>{myId=id;connectHost()});
+  peer.on("disconnected",()=>{try{peer.reconnect()}catch(e){}});
+  peer.on("error",e=>{if(started)retry();else $("jm").textContent=e.type==="peer-unavailable"?"Esa sala no existe.":"Error de conexión ("+e.type+")."});
+}
+function connectHost(){
+  const c=peer.connect(PFX+joinCode,{reliable:true});hostConn=c;
+  c.on("open",()=>{retries=0;code=joinCode;msg="";c.send({t:"j",n:name});enter()});
+  c.on("data",m=>{if(m&&m.t==="s"&&m.s)apply(m.s)});
+  c.on("close",()=>{if(c===hostConn)retry()});
+}
+function retry(){
+  if(gone||retryP)return;
+  if(retries>=8){gone=true;msg="El anfitrión se ha desconectado.";render();return}
+  retries++;retryP=true;msg="Reconectando… ("+retries+"/8)";render();
+  setTimeout(()=>{retryP=false;try{if(peer.disconnected)peer.reconnect();connectHost()}catch(e){retry()}},3000);
+}
+function enter(){if(started)return;started=true;setInterval(()=>{if(host)hostLoop();const e=$("ev");if(e&&Date.now()>evUntil)e.style.display="none"},400);render()}
+const send=m=>{if(hostConn&&hostConn.open)hostConn.send(m)};
+const A={
+  play(){if(host)play(myId);else send({t:"p"})},
+  ready(){if(host)ready(myId);else send({t:"r"})},
+  star(){if(host)skProp(myId);else send({t:"sk"})},
+  yes(){if(host)skVote(myId,true);else send({t:"sv",ok:true})},
+  no(){if(host)skVote(myId,false);else send({t:"sv",ok:false})},
+  start(){if(host)startGame()},
+  cfg(k,v){if(host&&k in H.cfg){H.cfg[k]=+v;bc()}},
+  again(){if(!host)return;H.ph="lobby";H.hands={};H.pile=[];H.sk=null;H.ev=null;Object.keys(PL).forEach(k=>{if(PL[k].bot)delete PL[k];else{PL[k].in=false;PL[k].rdy=false}});bc()},
+  copy(){navigator.clipboard&&navigator.clipboard.writeText(location.origin+location.pathname+"?sala="+code).then(()=>{$("cp").textContent="¡Enlace copiado!"}).catch(()=>{})}
+};
+/* ---------- Pantallas ---------- */
+function home(){
+  const qs=new URLSearchParams(location.search).get("sala")||"";
+  $("s").innerHTML='<div class="panel"><p style="margin-top:0">Todos reciben cartas del 1 al 100. Hay que jugarlas <b>en orden ascendente entre todos, sin hablar ni hacer señas</b>: cada uno decide cuándo le toca por pura intuición del tiempo. Si alguien juega una carta mientras otro tiene una menor, se pierde una vida.</p>'
+   +'<label>Tu nombre</label><input id="nm" maxlength="14" autocomplete="off"><label>Código de sala (vacío si vas a crear una)</label><input id="cd" maxlength="6" autocapitalize="characters" value="'+esc(qs.toUpperCase())+'" placeholder="p. ej. K7QX">'
+   +'<button class="btn" id="bj">Unirme a la sala</button><button class="btn g" id="bm">Crear sala nueva</button><button class="btn g" id="bt">Modo prueba (tú + 2 bots)</button><p class="mut" id="jm"></p></div>';
+  $("bj").onclick=()=>{if(!setName())return;const c=$("cd").value.trim().toUpperCase();if(!c){$("jm").textContent="Escribe el código.";return}$("jm").textContent="Conectando…";joinRoom(c)};
+  $("bm").onclick=()=>{if(!setName())return;$("jm").textContent="Creando sala…";createRoom(0)};
+  $("bt").onclick=()=>{name=($("nm").value.trim()||"Tú").slice(0,14);test=true;host=true;myId="me";code="PRUEBA";join(myId,name);enter()};
+}
+const pls=()=>'<div class="pls">'+V.pl.map(p=>'<span class="pl'+(p.id===myId?" me":"")+(p.off?" off":"")+'">'+esc(p.n)+(V.ph==="play"&&p.in?' · <b>'+p.cnt+'</b> 🂠':'')+(V.ph==="ready"&&p.in?(p.rdy?" ✔":" …"):"")+'</span>').join("")+'</div>';
+const hud=()=>'<div class="hud"><span>Nivel '+V.lvl+'/'+V.max+'</span><span>❤️ '+V.lives+'</span><span>⭐ '+V.stars+'</span></div>';
+function lobby(){
+  const n=V.np,c=V.cfg,pn=Math.max(2,Math.min(8,n)),mx=c.lv||LV[pn],cap=Math.floor(100/pn);
+  const prog=[...Array(Math.min(mx,8))].map((_,i)=>Math.min(cardsFor(i+1,c),cap)).join(" · ")+(mx>8?" …":"");
+  const opt=(arr,cur)=>arr.map(([v,t])=>'<option value="'+v+'"'+(+v===cur?" selected":"")+'>'+t+'</option>').join("");
+  $("s").innerHTML='<div class="panel"><div class="mut c">Código de sala</div><div class="code">'+esc(code)+'</div>'+(test?"":'<button class="btn g" data-a="copy" id="cp">Copiar enlace</button>')+'</div><div class="panel"><b>Jugadores ('+n+')</b>'+pls()
+   +(n>=2?'<p class="mut">Con '+n+' jugadores: '+Math.max(2,n)+' vidas y 1 estrella.</p>':'<p class="mut">Hacen falta al menos 2 jugadores (hasta 8).</p>')+'</div>'
+   +'<div class="panel"><b>Nivel y reparto</b>'
+   +(host?'<div class="row"><div><label>Cartas iniciales</label><select id="c1">'+opt([[1,"1"],[2,"2"],[3,"3"],[4,"4"]],c.start)+'</select></div><div><label>Subida</label><select id="c2">'+opt([[1,"+1 por nivel"],[0.5,"+1 cada 2 niveles"],[2,"+2 por nivel"]],c.step)+'</select></div></div>'
+     +'<div class="row"><div><label>Niveles</label><select id="c3">'+opt([[0,"Auto"],[6,"6"],[10,"10"],[15,"15"],[20,"20"]],c.lv)+'</select></div><div><label>Reparto</label><select id="c4">'+opt([[0,"Igual para todos"],[1,"Al azar, distinto"]],c.rnd)+'</select></div></div>'
+    :'<p class="mut" style="margin:6px 0 0">'+(c.rnd?"Reparto al azar, cada jugador una cantidad distinta.":"Mismo número de cartas para todos.")+'</p>')
+   +'<p class="mut" style="margin-bottom:0">Niveles: <b>'+mx+'</b> · cartas por jugador: <b>'+prog+'</b>'+(c.rnd?" (media aproximada)":"")+'. Las cartas nunca se repiten entre jugadores.</p></div>'
+   +(host?'<button class="btn" data-a="start"'+(n<2&&!test?" disabled":"")+'>Empezar</button>':'<p class="mut c">El anfitrión empezará la partida.</p>');
+  if(host){$("c1").onchange=e=>A.cfg("start",e.target.value);$("c2").onchange=e=>A.cfg("step",e.target.value);$("c3").onchange=e=>A.cfg("lv",e.target.value);$("c4").onchange=e=>A.cfg("rnd",e.target.value)}
+}
+function ready_(){
+  const me=V.pl.find(p=>p.id===myId);
+  $("s").innerHTML=hud()+'<div class="panel c"><div class="big-t">Nivel '+V.lvl+'</div><p class="mut">'+(V.cfg.rnd?'Cada jugador recibirá una cantidad distinta de cartas, al azar (en torno a '+V.cc+').':'Cada uno recibirá '+V.cc+' carta'+(V.cc>1?"s":"")+'.')+' Respirad, concentraos y pulsad cuando estéis listos. Desde ahora, <b>nada de hablar ni hacer gestos</b>.</p>'+pls()
+   +(me&&me.in&&!me.rdy?'<button class="btn" data-a="ready">Estoy listo</button>':me&&me.in?'<p class="mut">Esperando al resto…</p>':'<p class="mut">Entrarás en este nivel cuando empiece.</p>')+'</div>';
+}
+function play_(){
+  const top=V.pile[V.pile.length-1],me=V.pl.find(p=>p.id===myId),h=V.h,sk=V.sk,voted=sk&&sk.ok.includes(myId);
+  $("s").innerHTML=hud()+'<div class="table"><div class="card big'+(top?"":" empty")+'">'+(top?top.v:"—")+'</div><div class="by">'+(top?"Jugada por "+esc(top.by):"Aún no se ha jugado nada")+'</div><div class="pile">'+V.pile.slice(0,-1).map(c=>'<span class="card sm">'+c.v+'</span>').join("")+'</div></div>'+pls()
+   +(sk?'<div class="sk">⭐ <b>'+esc(sk.by)+'</b> propone usar la estrella: cada uno descarta su carta más baja, a la vista de todos.'+(me&&me.in&&!voted?'<div class="row"><button class="btn" data-a="yes">De acuerdo</button><button class="btn g" data-a="no">No</button></div>':'<p class="mut" style="margin-bottom:0">Esperando a los demás… ('+sk.ok.length+')</p>')+'</div>':"")
+   +(me&&me.in?'<div class="hand">'+(h.length?h.map((c,i)=>'<span class="card'+(i===0?" low":"")+'">'+c+'</span>').join(""):'<span class="mut" style="align-self:center">Ya no te quedan cartas. Esperad al resto.</span>')+'</div>'
+     +(h.length?'<button class="btn" data-a="play">Jugar mi carta más baja ('+h[0]+')</button>':"")
+     +(V.stars>0&&!sk?'<button class="btn g" data-a="star">⭐ Proponer estrella</button>':""):'<p class="mut c">Estás de espectador; entrarás en el próximo nivel.</p>');
+}
+function end(){
+  const win=V.ph==="win";
+  $("s").innerHTML='<div class="panel c"><div style="font-size:64px">'+(win?"🏆":"💔")+'</div><div class="big-t">'+(win?"¡Lo habéis conseguido!":"Fin de la partida")+'</div><p class="mut">'+(win?"Superasteis los "+V.max+" niveles con una sola mente.":"Llegasteis al nivel "+V.lvl+" de "+V.max+".")+'</p></div>'
+   +(win?"":'<div class="panel"><b>Cartas que quedaban</b>'+(V.rev||[]).map(r=>'<div class="rv"><b>'+esc(r[0])+'</b> '+(r[1].length?r[1].map(c=>'<span class="card sm" style="opacity:1">'+c+'</span>').join(""):'<span class="mut">ninguna</span>')+'</div>').join("")+'</div>')
+   +(host?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="mut c">El anfitrión puede empezar otra partida.</p>');
+}
+function render(){
+  if(!started){if(!$("nm"))home();return}
+  if(!V)return;
+  if(V.ph==="lobby")lobby();else if(V.ph==="ready")ready_();else if(V.ph==="play")play_();else end();
+  if(msg)$("s").insertAdjacentHTML("afterbegin",'<div class="ev err">'+esc(msg)+'</div>');
+  const e=$("ev");
+  if(Date.now()<evUntil&&evTxt){e.className="ev "+evK;e.textContent=evTxt;e.style.display="block"}else e.style.display="none";
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(b&&A[b.dataset.a])A[b.dataset.a]()});
+document.addEventListener("keydown",e=>{if(e.code==="Space"&&started&&V&&V.ph==="play"&&V.h.length&&e.target.tagName!=="BUTTON"){e.preventDefault();A.play()}});
+render();
+</script></main></body></html>

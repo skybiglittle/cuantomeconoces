@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recomendados Prime Video</title>
+<style>
+:root{--bg:#0f171e;--card:#1a242f;--fg:#e8eef5;--mut:#8b9bab;--ac:#00a8e1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f6f9;--card:#fff;--fg:#14202b;--mut:#5b6b7a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:900px;margin:0 auto;padding:12px}
+h1{font-size:20px;margin:6px 0;display:flex;justify-content:space-between;align-items:center}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:8px;padding:9px 12px;background:var(--ac);color:#fff}
+button.s{background:var(--card);color:var(--fg);border:1px solid #3a4a5a}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #3a4a5a;background:var(--card)}
+.tabs{display:flex;gap:6px;margin:8px 0}.tabs button{flex:1;background:var(--card);color:var(--fg);border:1px solid #3a4a5a}.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{padding:6px 10px;border-radius:16px;background:var(--card);color:var(--fg);border:1px solid #3a4a5a;font-size:13px}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#sug{background:var(--card);border-radius:8px;margin-top:4px}#sug div{padding:9px 10px;cursor:pointer;border-bottom:1px solid #2a3846}
+.g{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}@media(min-width:640px){.g{grid-template-columns:1fr 1fr}}
+.c{display:flex;gap:10px;background:var(--card);border-radius:10px;overflow:hidden}
+.c img{width:92px;min-height:138px;object-fit:cover;background:#2a3846;flex:none}
+.i{padding:8px 8px 8px 0;font-size:13px;min-width:0}.i b{font-size:15px}.i span,.m{color:var(--mut)}.i p{margin:4px 0;color:var(--mut)}
+.i .b{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.i .b a,.i .b button{font-size:12px;padding:6px 9px;border-radius:7px;text-decoration:none;background:var(--ac);color:#fff;border:0}.i .b .s{background:transparent;color:var(--fg);border:1px solid #3a4a5a}
+.why{color:#4cc38a;font-size:12px}
+#msg{margin:12px 0;color:var(--mut)}#msg.e{color:#f87171}
+.set{background:var(--card);border-radius:10px;padding:12px;margin:8px 0}.set p{margin:4px 0;font-size:13px;color:var(--mut)}
+footer{font-size:11px;color:var(--mut);margin:20px 0 10px}
+</style></head><body><div class="w">
+<h1>🎬 Recomendados Prime Video <button class="s" id="cfg">⚙️</button></h1>
+<div class="set" id="set" style="display:none">
+<p><b>Fuente de datos:</b></p>
+<select id="api"><option value="sa">Streaming Availability (Movie of the Night)</option><option value="tm">TMDB (The Movie Database)</option></select>
+<select id="src" style="margin-top:6px"><option value="dev">Clave de developers.movieofthenight.com</option><option value="rapid">Clave de RapidAPI</option></select>
+<p id="help"></p>
+<input id="key" placeholder="Tu clave" autocomplete="off">
+<p>País del catálogo de Prime Video:</p>
+<select id="reg"><option value="ES">España</option><option value="MX">México</option><option value="AR">Argentina</option><option value="CO">Colombia</option><option value="CL">Chile</option><option value="US">Estados Unidos</option><option value="GB">Reino Unido</option><option value="FR">Francia</option><option value="DE">Alemania</option><option value="IT">Italia</option></select>
+<p><button id="save">Guardar</button></p></div>
+<div class="tabs"><button class="on" data-t="sim">Similares a…</button><button data-t="dis">Descubrir</button><button data-t="lst">Mi lista</button></div>
+<div id="p-sim"><input id="q" placeholder="Escribe una peli que te gustó…" autocomplete="off"><div id="sug"></div>
+<div class="chips"><button class="chip" data-q="Little Bone Lodge">Como El frío en los huesos</button><button class="chip" data-q="Don't Breathe">Como No respires</button><button class="chip" data-q="Misery">Como Misery</button></div></div>
+<div id="p-dis" style="display:none"><div class="chips" id="gen"></div>
+<select id="ord"><option value="pop">Más populares</option><option value="vote">Mejor valoradas</option><option value="new">Más recientes</option></select>
+<p><button id="go">Buscar en Prime</button> <button class="s" id="rnd">🎲 Sorpréndeme</button></p></div>
+<div id="msg"></div><div class="g" id="out"></div>
+<footer id="foot"></footer>
+</div>
+<script>
+const $=id=>document.getElementById(id),LS=(()=>{try{return localStorage}catch(e){return{getItem:()=>null,setItem(){}}}})();
+const TMA='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/w342',PRIME=119;
+let API_=LS.getItem('api')||'sa',SRC=LS.getItem('src')||'dev',REG=LS.getItem('reg')||'ES',KEYS={tm:LS.getItem('tmdbKey')||'',sa:LS.getItem('saKey')||''},LIST=JSON.parse(LS.getItem('lista')||'[]'),GEN={},SEL=new Set(),tab='sim',cur={},timer;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const msg=(t,e)=>{$('msg').textContent=t||'';$('msg').className=e?'e':''};
+const key=()=>KEYS[API_],rc=()=>REG.toLowerCase();
+/* ---------- TMDB ---------- */
+async function tm(path,p={}){
+  const u=new URL(TMA+path),h={};
+  if(key().length>40)h.Authorization='Bearer '+key();else u.searchParams.set('api_key',key());
+  u.searchParams.set('language','es-ES');
+  for(const k in p)if(p[k]!==''&&p[k]!=null)u.searchParams.set(k,p[k]);
+  let r;try{r=await fetch(u,{headers:h})}catch(e){throw new Error('NET')}
+  if(r.status===401)throw new Error('KEY');if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+}
+const tmN=m=>({id:m.id,title:m.title,year:(m.release_date||'').slice(0,4),poster:m.poster_path?IMG+m.poster_path:'',vote:m.vote_average||0,gn:(m.genre_ids||[]).map(i=>GEN[i]).filter(Boolean),gids:m.genre_ids||[],overview:m.overview||'',link:'',info:'https://www.themoviedb.org/movie/'+m.id});
+const tmBase=()=>({with_watch_providers:PRIME,watch_region:REG,watch_monetization_types:'flatrate','vote_count.gte':100});
+/* ---------- Streaming Availability (Movie of the Night) ---------- */
+async function sa(path,p={}){
+  const u=new URL((SRC==='rapid'?'https://streaming-availability.p.rapidapi.com':'https://api.movieofthenight.com/v4')+path);
+  for(const k in p)if(p[k]!==''&&p[k]!=null)u.searchParams.set(k,p[k]);
+  const h=SRC==='rapid'?{'X-RapidAPI-Key':key(),'X-RapidAPI-Host':'streaming-availability.p.rapidapi.com'}:{'X-API-Key':key()};
+  let r;try{r=await fetch(u,{headers:h})}catch(e){throw new Error('NET')}
+  if(r.status===401||r.status===403)throw new Error('KEY');if(r.status===429)throw new Error('QUOTA');if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+}
+const pl=s=>{const o=((s.streamingOptions||{})[rc()]||[]).filter(o=>o.service&&o.service.id==='prime');const x=o.find(o=>o.type==='subscription')||o[0];return x?x.link:''};
+const saN=s=>({id:s.imdbId||s.id,title:s.title,year:s.releaseYear||'',poster:(s.imageSet&&s.imageSet.verticalPoster&&s.imageSet.verticalPoster.w360)||'',vote:(s.rating||0)/10,gn:(s.genres||[]).map(g=>g.name),gids:(s.genres||[]).map(g=>g.id),overview:s.overview||'',link:pl(s),info:'https://www.imdb.com/title/'+(s.imdbId||s.id)+'/'});
+const saB=()=>({country:rc(),catalogs:'prime.subscription',show_type:'movie',output_language:'es'});
+/* ---------- interfaz ---------- */
+function fail(e){const m=e.message;msg(m==='KEY'?'La clave no es válida. Revísala en ⚙️.':m==='QUOTA'?'Has agotado las peticiones gratuitas de esta API. Espera o cambia de fuente en ⚙️.':m==='NET'?'No hay conexión o el servicio bloquea las peticiones desde este archivo. Prueba con la otra fuente en ⚙️.':'Error: '+m,1);$('out').innerHTML=''}
+function card(m,why){
+  const on=LIST.some(x=>x.id===m.id);cur[m.id]=m;
+  return `<div class="c"><img loading="lazy" alt="" src="${esc(m.poster)}"><div class="i"><b>${esc(m.title)}</b> <span>${esc(m.year)}</span>
+<div class="m">⭐ ${(m.vote||0).toFixed(1)}${m.gn.length?' · '+esc(m.gn.slice(0,3).join(', ')):''}</div>${why?`<div class="why">${esc(why)}</div>`:''}
+<p>${esc((m.overview||'Sin sinopsis en español.').slice(0,150))}${(m.overview||'').length>150?'…':''}</p>
+<div class="b"><a target="_blank" rel="noopener" href="${esc(m.link||'https://www.primevideo.com/search?phrase='+encodeURIComponent(m.title))}">▶ Ver en Prime</a><a class="s" target="_blank" rel="noopener" href="${esc(m.info||'#')}">Ficha</a><button class="s" data-l="${esc(m.id)}">${on?'✓ En mi lista':'+ Mi lista'}</button></div></div></div>`;
+}
+const show=(arr,w)=>{$('out').innerHTML=arr.map(m=>card(m,w&&w(m))).join('');if(!arr.length)msg('No he encontrado nada en el catálogo de Prime de tu país con esos criterios.')};
+const sharedG=(m,g)=>m.gids.filter(x=>g.includes(x));
+const whyG=(g,rec)=>m=>{const s=sharedG(m,g).map(x=>m.gn[m.gids.indexOf(x)]).filter(Boolean).slice(0,3);return(rec&&rec.has(m.id)?'Recomendada por TMDB · ':'')+(s.length?'Comparte: '+s.join(', '):'')};
+async function similares(seed){
+  $('sug').innerHTML='';$('q').value=seed.title;msg('Buscando en el catálogo de Prime Video de '+REG+'…');$('out').innerHTML='';
+  try{
+    let arr,g,rec=null;
+    if(API_==='tm'){
+      const [d,kw,rr]=await Promise.all([tm('/movie/'+seed.id),tm('/movie/'+seed.id+'/keywords'),tm('/movie/'+seed.id+'/recommendations')]);
+      g=d.genres.map(x=>x.id);const kws=(kw.keywords||[]).slice(0,8).map(k=>k.id),b=tmBase(),top=g.slice(0,2).join(',');
+      const checks=await Promise.all(rr.results.slice(0,15).map(r=>tm('/movie/'+r.id+'/watch/providers').then(w=>[r,(((w.results||{})[REG]||{}).flatrate||[]).some(p=>p.provider_id===PRIME)]).catch(()=>[r,false])));
+      const disc=await Promise.all([tm('/discover/movie',{...b,with_keywords:kws.join('|'),sort_by:'popularity.desc'}),tm('/discover/movie',{...b,with_genres:top,sort_by:'popularity.desc'}),tm('/discover/movie',{...b,with_genres:top,sort_by:'popularity.desc',page:2})]);
+      rec=new Set(rr.results.map(r=>r.id));const map=new Map();
+      checks.forEach(([r,ok])=>ok&&map.set(r.id,r));disc.forEach(x=>x.results.forEach(m=>map.set(m.id,map.get(m.id)||m)));map.delete(seed.id);arr=[...map.values()].map(tmN);
+    }else{
+      g=seed.gids;const b={...saB(),order_by:'popularity_1year'};
+      const rs=await Promise.all([sa('/shows/search/filters',{...b,genres:g.slice(0,2).join(','),genres_relation:'and'}),sa('/shows/search/filters',{...b,genres:g.join(','),genres_relation:'or'})]);
+      if(rs[1].hasMore)rs.push(await sa('/shows/search/filters',{...b,genres:g.join(','),genres_relation:'or',cursor:rs[1].nextCursor}));
+      const map=new Map();rs.forEach(x=>x.shows.forEach(s=>{if(s.imdbId!==seed.id&&s.id!==seed.id)map.set(s.id,s)}));arr=[...map.values()].map(saN);
+    }
+    arr=arr.filter(m=>sharedG(m,g).length).sort((a,b)=>(sharedG(b,g).length*2+(rec&&rec.has(b.id)?4:0)+b.vote/2)-(sharedG(a,g).length*2+(rec&&rec.has(a.id)?4:0)+a.vote/2)).slice(0,24);
+    msg(arr.length?'Pelis en Prime Video parecidas a «'+seed.title+'»:':'');show(arr,whyG(g,rec));
+  }catch(e){fail(e)}
+}
+async function buscar(q,auto){
+  if(!key()){$('set').style.display='block';return}
+  if(q.length<2){$('sug').innerHTML='';return}
+  try{const rs=API_==='tm'?(await tm('/search/movie',{query:q})).results.slice(0,6).map(m=>{const n=tmN(m);n.gids=m.genre_ids||[];return n}):(await sa('/shows/search/title',{title:q,country:rc(),show_type:'movie',output_language:'es'})).slice(0,6).map(saN);
+    if(auto&&rs[0])return similares(rs[0]);
+    $('sug').innerHTML=rs.map(m=>`<div data-s="${esc(m.id)}">${esc(m.title)} <span class="m">${esc(m.year)}</span></div>`).join('');rs.forEach(m=>cur[m.id]=m);
+  }catch(e){fail(e)}
+}
+async function descubrir(rand){
+  msg('Buscando…');$('out').innerHTML='';const o=$('ord').value;
+  try{let arr;
+    if(API_==='tm'){const p={...tmBase(),with_genres:[...SEL].join(','),sort_by:o==='pop'?'popularity.desc':o==='vote'?'vote_average.desc':'primary_release_date.desc'};if(o!=='pop')p['vote_count.gte']=300;if(rand)p.page=1+Math.floor(Math.random()*5);arr=(await tm('/discover/movie',p)).results.map(tmN)}
+    else{const p={...saB(),genres:[...SEL].join(','),genres_relation:'and',order_by:o==='pop'?'popularity_1year':o==='vote'?'rating':'release_date',order_direction:'desc'};if(o==='vote')p.rating_min=50;
+      if(rand){const y=1980+10*Math.floor(Math.random()*5);p.year_min=y;p.year_max=y+9;p.order_by='popularity_alltime'}arr=(await sa('/shows/search/filters',p)).shows.map(saN)}
+    if(rand)arr=arr.sort(()=>Math.random()-.5).slice(0,6);msg('');show(arr)}catch(e){fail(e)}
+}
+function lista(){msg(LIST.length?'Tu lista guardada:':'Todavía no has guardado nada. Pulsa «+ Mi lista» en cualquier peli.');$('out').innerHTML=LIST.map(m=>card(m)).join('')}
+function tabTo(t){tab=t;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  $('p-sim').style.display=t==='sim'?'':'none';$('p-dis').style.display=t==='dis'?'':'none';$('out').innerHTML='';msg('');if(t==='lst')lista()}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tabTo(b.dataset.t));
+$('q').oninput=e=>{clearTimeout(timer);const v=e.target.value.trim();timer=setTimeout(()=>buscar(v),350)};
+$('q').onkeydown=e=>{if(e.key==='Enter'){clearTimeout(timer);buscar($('q').value.trim(),1)}};
+document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{$('q').value=b.dataset.q;buscar(b.dataset.q,1)});
+$('sug').onclick=e=>{const d=e.target.closest('[data-s]');if(d)similares(cur[d.dataset.s])};
+$('out').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;const id=b.dataset.l,i=LIST.findIndex(x=>String(x.id)===id);
+  if(i>=0)LIST.splice(i,1);else LIST.push(cur[id]);LS.setItem('lista',JSON.stringify(LIST));if(tab==='lst')lista();else b.textContent=i>=0?'+ Mi lista':'✓ En mi lista'};
+$('gen').onclick=e=>{const c=e.target.closest('[data-g]');if(!c)return;const g=c.dataset.g;SEL.has(g)?SEL.delete(g):SEL.add(g);c.classList.toggle('on')};
+const need=f=>()=>key()?f():($('set').style.display='block');
+$('go').onclick=need(()=>descubrir(0));$('rnd').onclick=need(()=>descubrir(1));
+$('cfg').onclick=()=>{$('set').style.display=$('set').style.display==='none'?'block':'none'};
+const HELP={sa:'Regístrate gratis en developers.movieofthenight.com (o en RapidAPI) y copia tu API key. Esta fuente filtra directamente el catálogo de Prime Video (suscripción) de tu país. El plan gratuito tiene un número limitado de peticiones al mes.',tm:'Crea una cuenta gratis en themoviedb.org → Ajustes → API → copia la «API Key» (o el «Token de lectura»). Comprueba la disponibilidad en Prime con datos de JustWatch.'};
+function setUI(){const a=$('api').value;$('help').textContent=HELP[a];$('src').style.display=a==='sa'?'':'none';$('key').value=KEYS[a]||''}
+$('api').onchange=setUI;
+$('save').onclick=()=>{API_=$('api').value;SRC=$('src').value;REG=$('reg').value;KEYS[API_]=$('key').value.trim();LS.setItem('api',API_);LS.setItem('src',SRC);LS.setItem('reg',REG);LS.setItem(API_==='tm'?'tmdbKey':'saKey',KEYS[API_]);$('set').style.display='none';init()};
+async function init(){
+  $('api').value=API_;$('src').value=SRC;$('reg').value=REG;setUI();
+  $('foot').textContent=API_==='tm'?'Este producto usa la API de TMDB pero no está respaldado ni certificado por TMDB. Datos de disponibilidad: JustWatch. No está afiliado a Amazon. La disponibilidad depende del país y puede cambiar.':'Datos de Streaming Availability API (Movie of the Night). No está afiliado a Amazon. La disponibilidad depende del país y puede cambiar.';
+  GEN={};SEL.clear();$('gen').innerHTML='';
+  if(!key()){$('set').style.display='block';msg('Para conectar con internet necesito una clave gratuita (⚙️).');return}
+  try{
+    if(API_==='tm'){const g=await tm('/genre/movie/list');g.genres.forEach(x=>GEN[x.id]=x.name);$('gen').innerHTML=g.genres.map(x=>`<button class="chip" data-g="${x.id}">${esc(x.name)}</button>`).join('')}
+    else{const g=await sa('/genres',{output_language:'es'});$('gen').innerHTML=g.map(x=>`<button class="chip" data-g="${esc(x.id)}">${esc(x.name)}</button>`).join('')}
+    msg('');
+  }catch(e){fail(e)}
+}
+init();
+</script></body></html>

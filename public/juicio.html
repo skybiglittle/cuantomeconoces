@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>El Juicio</title>
 <style>
-:root{--wood:#22140d;--wood2:#3a2417;--felt:#14402d;--brass:#d8ad4b;--ink:#f5eddc;--mut:#c2b49a;--red:#d9543f;--grn:#4fbf87}
+:root{--wood:#22140d;--wood2:#3a2417;--felt:#14402d;--brass:#d8ad4b;--ink:#f5eddc;--mut:#c2b49a;--red:#d9543f;--grn:#4fbf87;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,var(--wood2),var(--wood) 70%);color:var(--ink);font:16px/1.45 system-ui,"Segoe UI",sans-serif}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,var(--wood2),var(--wood) 70%) var(--wood);color:var(--ink);font:16px/1.45 system-ui,"Segoe UI",sans-serif}
 #app{max-width:1020px;margin:0 auto;padding:12px}
 h1,h2,h3,.stamp{font-family:"Palatino Linotype","Book Antiqua",Palatino,serif;margin:0 0 6px}
 header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-bottom:10px}
@@ -26,12 +26,14 @@ button{background:var(--brass);color:#2a1a0c;font-weight:700;padding:10px 16px;c
 button.sec{background:#2a1a10;color:var(--ink)}button.bad{background:var(--red);color:#fff}button.good{background:var(--grn);color:#08241a}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:2px}
 input,select{background:#0d2a1d;color:var(--ink);padding:9px 12px}
+input[type=checkbox]{width:24px;height:24px;padding:0;flex:none}
 .pl{display:flex;gap:6px;margin-bottom:6px}.pl input{flex:1}
 .row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:8px}
 .seat{background:#0d2a1d;border:1px solid #7a5d2a;border-radius:10px;padding:6px 12px;text-align:center;min-width:110px}
 .seat small{display:block;color:var(--mut);font-size:12px}
 .seat.acu{border-color:var(--brass);border-width:2px;min-width:150px}
 .stamp{font-size:clamp(26px,6vw,46px);color:var(--brass);letter-spacing:3px}
+.stamp.gi{color:var(--red)}
 .rk{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed #3d6b55}
 .pr{margin:8px 0;padding:8px;background:#0d2a1d;border-left:4px solid var(--brass);border-radius:6px}
 .res{display:inline-block;font:700 clamp(34px,9vw,70px) "Palatino Linotype",serif;border:6px solid;padding:4px 22px;border-radius:10px;animation:st .7s both;margin:10px 0}
@@ -40,16 +42,16 @@ input,select{background:#0d2a1d;color:var(--ink);padding:9px 12px}
 #mo{position:fixed;inset:0;background:#000c;display:grid;place-items:center;padding:14px;z-index:9}
 #mo .card{max-width:520px;width:100%;max-height:90vh;overflow:auto;margin:0}
 label{display:block;margin:8px 0 2px;text-align:left}select{width:100%}
+.ml{display:flex;gap:10px;align-items:center;margin:8px 0}
+body.tv{font-size:22px}body.tv .big{font-size:30px}body.tv .seat{font-size:20px}body.tv .pr{font-size:20px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// <LOGIC>
 const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const roleCounts=n=>{const w=n>=9?2:n>=7?1:0;return{w,j:n-3-w}};
-// Reparto de papeles: gana quien menos veces ha tenido ese papel; se evita repetir papel importante dos rondas seguidas.
 function assign(P){
   const n=P.length,{w}=roleCounts(n),left=P.map((_,i)=>i);
   const pick=k=>{const s=left.map(i=>({i,v:P[i][k]*10+(['acu','fis','abo'].includes(P[i].last)?3:0)+Math.random()})).sort((x,y)=>x.v-y.v)[0].i;left.splice(left.indexOf(s),1);return s};
@@ -61,56 +63,104 @@ function assign(P){
   return{acu,fis,abo,tes,jur:left.slice()};
 }
 const verdict=v=>{const c=v.filter(x=>x==='C').length,i=v.length-c;return c>i?'C':i>c?'I':'N'};
-function score(r,ver,sp){
+function score(r,ver,sp,mp){
   const o=[],add=(i,p,t)=>o.push([i,p,t]);
-  if(ver==='C')add(r.fis,3,'Condena lograda');
-  else if(ver==='I'){add(r.acu,3,'Absuelto');add(r.abo,3,'Absolución lograda')}
+  if(ver==='C')add(r.fis,4,'Condena lograda');
+  else if(ver==='I'){add(r.acu,2,'Absuelto');add(r.abo,2,'Absolución lograda')}
   else[r.acu,r.fis,r.abo].forEach(i=>add(i,1,'Juicio nulo'));
-  r.jur.forEach((i,k)=>{if(ver!=='N'&&r.votes[k]===ver)add(i,1,'Voto acertado')});
+  if(!r.quick)r.vot.forEach((i,k)=>{if(ver!=='N'&&r.votes[k]===ver)add(i,1,'Voto acertado')});r.tes.forEach(i=>{if(ver!=='N')add(i,1,'Declaración prestada')});
   const c={};sp.forEach(i=>c[i]=(c[i]||0)+1);
   Object.keys(c).forEach(i=>add(+i,c[i],c[i]+(c[i]>1?' votos especiales':' voto especial')));
+  mp.forEach(i=>add(i,2,'Misión cumplida'));
   return o;
 }
-// </LOGIC>
 
-// ---- Casos: [delito, descripción, info acusado, info fiscal, info abogado, [3 pistas para testigos]] ({a} = nombre del acusado)
+// Casos: [delito, descripción, info acusado, info fiscal, info abogado, pistas testigos (null = genéricas), dilema?]  ({a} = acusado)
 const CASOS=[
 ['haber sustituido 300 kilos de croquetas por brócoli','La cena de la comunidad de vecinos terminó en una crisis nacional de verduras.','Compraste el brócoli, pero fue por «salud». Las croquetas ya habían desaparecido cuando llegaste.','Sabes que {a} salió de la tienda con 12 bolsas y una sonrisa que nadie había visto antes.','Tu cliente es alérgico a la bechamel. Úsalo con elegancia, aunque nadie lo crea.',['Vi a {a} entrar en la cocina con guantes de horno a las 3:00.','Esa noche olía a verdura hervida desde la calle, y {a} estaba durmiendo en casa.','Un pato con gafas de sol vigilaba la puerta de la cocina.']],
-['haber enseñado a hablar a las palomas para que reclamen impuestos','Desde el lunes, las palomas de la plaza exigen el 21 % de cada bocadillo.','Solo enseñaste a una paloma a decir «buenos días». Las demás aprendieron solas.','Hay un vídeo en el que {a} susurra «tú puedes» a una paloma. No sabes qué prueba, pero suena fatal.','Tu cliente dio miguitas a las palomas durante años. Eso es cariño, no una conspiración.',['Oí a una paloma decir «tienes que declarar los ingresos» con el acento de {a}.','Las palomas ya hablaban así antes de que {a} llegara al barrio.','La paloma más gorda lleva un maletín y nadie sabe de dónde lo ha sacado.']],
-['haber cambiado el himno nacional por la canción del Mercadona','El partido de gala empezó con una voz anunciando «hacendado, hacendado».','Solo querías probar el altavoz nuevo. Tenías la lista de reproducción en aleatorio.','El móvil de {a} tiene una playlist llamada «Himno Oficial v2 definitivo».','Tu cliente tiene un oído tan fino que confundió los dos cantos. Cualquiera se equivoca.',['{a} se levantó a cantar con la mano en el pecho y los ojos cerrados.','El técnico de sonido estaba dormido, y {a} no estaba ni cerca.','Había una cesta de la compra junto al micrófono, llena de aceitunas.']],
-['haber cambiado el nombre del wifi de todo el edificio a «Aquí vive un fantasma»','Los vecinos del segundo no vuelven a conectarse ni por favor.','Solo cambiaste el tuyo. El resto se contagió, como un resfriado.','El router del portal guarda un registro a nombre de {a} a las 2:47 de la madrugada.','Tu cliente no sabe ni reiniciar un router. Haz que ese desconocimiento sea evidente.',['Vi a {a} bajar al trastero con una linterna y una sábana.','El wifi empezó a llamarse así cuando {a} estaba de viaje.','Cada noche, a las 2:47, se oyen arrastrar cadenas hechas de cables de red.']],
-['haber convencido a 40 turistas de que la fuente de la plaza era un cenote sagrado','Los turistas llevaban incienso y bañador y cantaban en un idioma inventado.','Dijiste «es una fuente muy especial». Lo del cenote lo añadieron ellos.','Hay un cartel pintado a mano: «CENOTE · ENTRADA 5 €». La letra se parece mucho a la de {a}.','Tu cliente es guía sin licencia pero con una pasión desbordante. Eso no es delito, es entusiasmo.',['{a} cobraba la entrada con una hucha en forma de cerdito.','Los turistas aseguran que {a} solo señaló la fuente y se encogió de hombros.','El agua de la fuente brillaba, seguramente por culpa de un exceso de purpurina.']],
-['haber patentado «el abrazo en conserva»','Ya hay 2.000 latas a la venta con una etiqueta que dice «abrir cuando lo necesites».','Solo dabas abrazos de muestra. La fábrica la montó tu primo.','En la primera lata aparece la huella de {a} y la frase «gracias por la inspiración».','Tu cliente es un incomprendido: los abrazos de verdad no caducan. Eso es una buena noticia.',['Compré una lata y estaba vacía, pero me sentí raramente reconfortado.','{a} me dijo que las latas se abren con cariño y no se devuelven.','La fecha de caducidad de la lata dice «cuando te acuerdes».']],
+['haber enseñado a hablar a las palomas para que reclamen impuestos','Desde el lunes, las palomas de la plaza exigen el 21 % de cada bocadillo.','Solo enseñaste a una paloma a decir «buenos días». Las demás aprendieron solas.','Hay un vídeo en el que {a} susurra «tú puedes» a una paloma. Suena fatal.','Tu cliente dio miguitas a las palomas durante años. Eso es cariño, no una conspiración.',['Oí a una paloma decir «tienes que declarar los ingresos» con el acento de {a}.','Las palomas ya hablaban así antes de que {a} llegara al barrio.','La paloma más gorda lleva un maletín y nadie sabe de dónde lo ha sacado.']],
+['haber cambiado el himno por la canción del Mercadona','El partido de gala empezó con una voz anunciando «hacendado, hacendado».','Solo querías probar el altavoz nuevo. Tenías la lista de reproducción en aleatorio.','El móvil de {a} tiene una playlist llamada «Himno Oficial v2 definitivo».','Tu cliente tiene un oído tan fino que confundió los dos cantos. Cualquiera se equivoca.',['{a} se levantó a cantar con la mano en el pecho y los ojos cerrados.','El técnico de sonido estaba dormido, y {a} no estaba ni cerca.','Había una cesta de la compra junto al micrófono, llena de aceitunas.']],
+['haber cambiado el nombre del wifi de todo el edificio a «Aquí vive un dragón»','Los vecinos del segundo no vuelven a conectarse ni por favor.','Solo cambiaste el tuyo. El resto se contagió, como un resfriado.','El router del portal guarda un registro a nombre de {a} a las 2:47 de la madrugada.','Tu cliente no sabe ni reiniciar un router. Haz que ese desconocimiento sea evidente.',['Vi a {a} bajar al trastero con una linterna y una capa.','El wifi empezó a llamarse así cuando {a} estaba de viaje.','Cada noche, a las 2:47, se oyen arrastrar cables de red por el pasillo.']],
+['haber convencido a 40 turistas de que la estatua de la plaza era un famoso cantante','Los turistas le pedían autógrafos y le lanzaban claveles.','Solo dijiste «qué bien se conserva». Lo del cantante lo añadieron ellos.','Hay un cartel pintado a mano: «FIRMA AUTÓGRAFOS · 5 €». La letra se parece mucho a la de {a}.','Tu cliente es guía sin licencia pero con una pasión desbordante. Eso es entusiasmo.',['{a} cobraba el autógrafo con una hucha en forma de cerdito.','Los turistas aseguran que {a} solo señaló la estatua y se encogió de hombros.','La estatua llevaba gafas de sol y una bufanda, seguramente por culpa de {a}.']],
+['haber patentado «el abrazo en conserva»','Ya hay 2.000 latas a la venta con una etiqueta que dice «abrir cuando lo necesites».','Solo dabas abrazos de muestra. La fábrica la montó tu primo.','En la primera lata aparece la huella de {a} y la frase «gracias por la inspiración».','Tu cliente es un incomprendido: los abrazos de verdad no caducan.',['Compré una lata y estaba vacía, pero me sentí raramente reconfortado.','{a} me dijo que las latas se abren con cariño y no se devuelven.','La fecha de caducidad de la lata dice «cuando te acuerdes».']],
 ['haber escondido todos los mandos de la televisión del barrio','Cuarenta salones llevan tres días con el mismo canal y nadie puede cambiarlo.','Hiciste una colecta de mandos «para reciclar». Se te olvidó devolverlos.','En el trastero de {a} hay 38 mandos y una mantita para cada uno.','Tu cliente quería que sus vecinos probaran el silencio. Sé creativo.',['Vi a {a} salir de un portal con una bolsa que sonaba a pilas.','El mando de mi tele apareció dentro de una maceta, con una pegatina de corazón.','Un gato con bufanda lleva dos días maullando exactamente «canal 7».']],
-['haber convencido a un grupo de jubilados para fundar una banda de rock','Se hacen llamar «Los Reumas del Infierno» y han reventado la sala de bingo.','Solo diste una clase de guitarra. Ellos eligieron el nombre, el maquillaje y el volumen.','Existe una carta de {a} al grupo que dice «ni se os ocurra parar».','Tu cliente cree en el rock a cualquier edad. Lo que importa es el ruido bien hecho.',['La batería la tocaba Pepita, 84 años, con los ojos cerrados y mucho sentimiento.','Fue {a} quien sugirió que el concierto fuera «de pie y con andador».','Se encontró una guitarra eléctrica envuelta en una mantita de ganchillo.']]
+['haber convencido a un grupo de jubilados para fundar una banda de rock','Se hacen llamar «Los Reumas Eléctricos» y han reventado la sala de bingo.','Solo diste una clase de guitarra. Ellos eligieron el nombre, el maquillaje y el volumen.','Existe una carta de {a} al grupo que dice «ni se os ocurra parar».','Tu cliente cree en el rock a cualquier edad. Lo que importa es el ruido bien hecho.',['La batería la tocaba Pepita, 84 años, con los ojos cerrados y mucho sentimiento.','Fue {a} quien sugirió que el concierto fuera «de pie y con andador».','Se encontró una guitarra eléctrica envuelta en una mantita de ganchillo.']],
+['haber cambiado todos los relojes de la ciudad para que siempre sean las 17:43','Nadie llega tarde, pero nadie sabe cuándo toca comer.','Solo arreglaste el reloj de la plaza. Los demás se unieron por solidaridad.','Sabes que {a} compró 200 pilas el día anterior «para una sorpresa».','Tu cliente siempre llega tarde a todo. Solo quería un día sin prisas.',null],
+['haber contratado a 25 personas para aplaudir cada vez que alguien aparca bien','El barrio se siente observado y también un poco campeón.','Los contrataste «para animar». No sabías que cobraban por aplauso.','Hay un recibo de 25 pares de guantes con una pegatina que pone «ovación».','Tu cliente cree en reconocer los pequeños logros. Eso es amabilidad.',null],
+['haber sustituido las fotos de un museo por fotos de tu gato','El museo exhibe «Retrato de Bigotes con sombrero» en 40 salas.','Solo cambiaste una foto. Tu gato es muy fotogénico y las demás aparecieron solas.','En el móvil de {a} hay 3.000 fotos de gato y una carpeta llamada «Exposición».','Tu cliente es un artista incomprendido y su gato, una obra maestra.',null],
+['haber falsificado 300 diplomas de «experto en croquetas»','Hay 300 expertos croqueteros con diploma y ninguno sabe freír.','Solo imprimiste uno para tu abuela. Los demás salieron de una impresora rebelde.','La impresora de {a} sigue caliente y con tinta marrón.','Tu cliente cree que todos merecen ser expertos en algo. Es pedagogía creativa.',null],
+['haber convencido a un pueblo de que los martes duran 26 horas','Los vecinos duermen siesta doble y los martes ya no terminan.','Dijiste «hoy el martes se me hace largo». El pueblo lo exageró.','Existe un calendario con los martes dibujados el doble de largos, con la letra de {a}.','Tu cliente solo quería más tiempo para disfrutar. Eso es poesía, no estafa.',null],
+['haber organizado una manifestación para que los semáforos tengan música','Cuatrocientas personas bailaron en el paso de cebra con pancartas.','Solo preguntaste en voz alta «¿y si sonara una canción?». Se lo tomaron muy en serio.','{a} llevaba un altavoz y una pancarta: «Verde, pero con ritmo».','Tu cliente es un ciudadano comprometido con la cultura vial.',null],
+['haber alquilado una plaza de garaje a una familia de pingüinos de peluche','Los pingüinos pagan puntualmente, con billetes de juguete.','Les dejaste dormir una noche y se quedaron. Son muy educados.','En el contrato firmado por {a} aparece «inquilino: Pingüino Grande, 40 cm».','Tu cliente tiene un gran corazón y poco sitio. Eso es solidaridad textil.',null],
+['haber cambiado todas las señales de tráfico por instrucciones de recetas','La rotonda dice «añadir sal al gusto» y nadie sabe a dónde ir.','Solo cambiaste una señal, por una receta de tortilla. El resto fue un malentendido.','En el coche de {a} hay 60 señales y un libro de cocina muy manchado.','Tu cliente quería que el tráfico fuera más sabroso.',null],
+['haber creado una empresa que cobra por guardar secretos durante 24 horas','Tiene 500 clientes y ningún secreto ha durado más de dos horas.','Cobrabas con sinceridad: guardabas el secreto 24 horas, ni un minuto más.','La web de {a} ofrece «tu secreto, bien protegido y un poquito comentado».','Tu cliente nunca ha contado un secreto, salvo los que le gustan.',null],
+['haber enviado 500 cartas anónimas felicitando a desconocidos por su cumpleaños','Ahora todo el barrio celebra cumpleaños que no tiene.','Solo escribiste cinco cartas. Las otras 495 fueron efecto contagio.','El buzón de {a} está lleno de sellos y confeti.','Tu cliente solo quería hacer feliz a la gente. Eso es lo contrario de un delito.',null],
+['haber mentido a 200 personas para que una abuela ganara un concurso de belleza','Ella ganó, lloró de felicidad y la anterior campeona aún no se lo cree.','Mentiste, sí, pero por una buena causa y con mucho cariño.','{a} repartió 200 notas falsas con el nombre de la abuela. Mentir está mal.','Tu cliente mintió por amor. Convence al jurado de que a veces la mentira abriga.',null,1],
+['haber robado el último trozo de tarta para que otra persona no se lo comiera','Nadie ha vuelto a ver la tarta, ni al «sacrificado».','Lo hiciste por el bien ajeno. Te lo comiste tú, claro, para que no se desperdiciara.','{a} se manchó de nata al salir corriendo. Eso es robo y glotonería.','Tu cliente es un héroe que se sacrifica con cuchara.',null,1],
+['haber falsificado una nota para que un compañero faltara a una reunión aburridísima','La reunión duró cuatro horas y el compañero estaba en el cine.','Fue un acto de amistad. La nota tenía una letra preciosa.','{a} usó papel con membrete falso y una firma muy artística.','Tu cliente salvó una tarde. Eso es amistad, no falsificación.',null,1],
+['haber organizado una fiesta sorpresa que nadie quería, obligando a todos a fingir entusiasmo','Hubo globos, tarta y 40 personas fingiendo asombro con muy mala actuación.','Solo querías que todos se divirtieran. Por eso pusiste una alarma de aplausos.','{a} amenazó a los invitados con quitarles la tarta si no gritaban.','Tu cliente lo hizo con todo el corazón. El problema es que no preguntó.',null,1],
+['haber confesado un delito que no cometiste para que tu amigo no perdiera su puesto en el equipo','Ahora eres un criminal confeso del torneo de petanca.','Fue una decisión noble. El delito era de los más tontos del mundo.','{a} firmó una confesión con una caligrafía sospechosamente alegre.','Tu cliente sacrificó su reputación por amistad. Eso es heroico.',null,1],
+['haber pintado de rosa la casa de tu vecino para que dejara de estar triste','Ahora está muy contento y muy rosa.','Solo querías animarlo. El tono se llama «alegría suave».','En el garaje de {a} hay 30 botes de pintura rosa y una escalera.','Tu cliente actuó con buena intención. Nadie sonríe tanto como un vecino rosa.',null,1],
+['haber contratado a un mariachi para despertar a toda la comunidad un lunes','Todos se levantaron de buen humor y muy confundidos.','Era una serenata para tu vecina. El resto se despertó por contagio.','{a} dejó un recibo del mariachi con la nota «para todos».','Tu cliente solo quería alegrar el lunes. Eso es un acto social.',null],
+['haber repartido «multas» de broma pagables con billetes del Monopoly','Los vecinos pagaron con puntualidad y mucha sorpresa.','Eran notas de broma. Nadie dijo que hubiera que pagarlas.','En el coche de {a} hay un talonario y un sello hecho con una patata.','Tu cliente tiene sentido del humor. Si alguien pagó, fue por voluntad.',null],
+['haber puesto nombre a las 200 palomas del parque','Cada paloma responde solo a su nombre y a nadie más.','Solo nombraste a doce. Las otras se presentaron solas.','Tienes un cuaderno con 200 nombres: «Gómez», «Paloma Pérez»…','Tu cliente es un amante de los animales y de los apellidos.',null],
+['haber cambiado el premio de las cajas de cereales por una factura de la luz','Los niños abren la caja y encuentran una cifra muy seria.','Solo cambiaste una caja, como experimento educativo.','En el trastero de {a} hay 40 cajas y un cargamento de facturas.','Tu cliente enseñó a los niños la realidad con mucho cariño.',null]
 ];
-// ---- Pruebas sorpresa: [categoría, texto]. Sin interpretación correcta: los jugadores improvisan.
+const GEN=['Vi a {a} cerca del lugar, pero llevaba unas gafas enormes y no sé si era {a}.','Oí a {a} decir «yo no he sido» antes de que nadie preguntara.','Todo el mundo miraba a otro lado cuando ocurrió, menos un loro.','Alguien muy parecido a {a} compró cinta adhesiva, plumas y un megáfono.','Vi una sombra con un carrito de la compra. Podía ser {a} o un señor muy grande.','{a} estuvo conmigo esa tarde, aunque ahora no estoy seguro de qué tarde.'];
+GEN.push('Cuando todo ocurrió, {a} estaba muy callado. Demasiado callado.','Vi a {a} comprando material justo antes de lo ocurrido.','Alguien susurró «fue idea de {a}», pero nunca vi quién.','{a} me pidió que no hablara de esto. Pero yo hablo igual.','Estaba allí y {a} aplaudía. O se tapaba la cara. No lo tengo claro.','Mi vecino jura que {a} lo ensayó en su salón. Mi vecino miente mucho.');
+// Evidencia propia de cada caso: siempre aparece una al empezar el interrogatorio
+const CP=[['📋 Informe policial','El informe señala a {a} como principal sospechoso de {d}.'],['📷 Foto de la escena','Una foto de la escena. En una esquina aparece algo que se parece mucho a {a}.'],['✉️ Carta anónima','«{a} sabe más de lo que dice sobre este caso. Fdo.: un vecino».'],['🧾 Ticket sospechoso','Un ticket fechado el día del delito, firmado por «{a}» con letra temblorosa.'],['📞 Llamada anónima','«Aquí pasa algo raro y creo que {a} lo sabe».']];
+// Pruebas sorpresa [categoría, texto]: sin explicación, los jugadores improvisan
 const PRUEBAS=[
 ['📷 Fotografía','Una foto borrosa de {a} sosteniendo una bolsa enorme y sospechosamente llena de patatas.'],
 ['📷 Fotografía','Una foto de {a} saludando con mucha complicidad a un pato.'],
 ['📷 Fotografía','Una selfie de {a} con la fecha del delito y una cara de «yo no he sido» demasiado ensayada.'],
+['📷 Fotografía','{a} aparece detrás de una pancarta que dice «Yo no fui».'],
+['📷 Fotografía','Una foto de {a} disfrazado de farola, haciendo como que no pasa nada.'],
 ['🧤 Objeto encontrado','Una patata con las iniciales de {a} grabadas con cariño.'],
 ['🧤 Objeto encontrado','Un calcetín con una nota: «Perdón por lo del jueves».'],
 ['🧤 Objeto encontrado','Un silbato de árbitro con las huellas de {a}.'],
+['🧤 Objeto encontrado','Una llave que no abre ninguna puerta conocida.'],
 ['💬 Mensaje','Una nota que dice: «La operación Croqueta comienza a las 22:00».'],
 ['💬 Mensaje','Un mensaje de {a} a las 4:12: «ya está hecho, no se lo digas a mamá».'],
 ['💬 Mensaje','Un chat de grupo llamado «Los Inocentes» donde {a} escribe «borrad esto».'],
+['💬 Mensaje','Un SMS que dice: «La fase dos comienza cuando termine el recreo».'],
 ['🧾 Recibo','Un recibo por 450 kilos de algo ilegible, a nombre de {a}.'],
 ['🧾 Recibo','Una factura por 12 disfraces de langosta, pagada por {a} en efectivo.'],
-['📄 Documento oficial','Un permiso firmado por «El Excelentísimo Señor de las Cuatro de la Tarde».'],
-['📄 Documento oficial','Un carnet de socio del Club de Amigos de la Confusión, con la foto de {a}.'],
+['🧾 Recibo','Una compra de 80 paraguas en un día completamente soleado.'],
+['📄 Documento','Un carnet de socio del Club de Amigos de la Confusión, con la foto de {a}.'],
+['📄 Documento','Una lista de 47 nombres en la que todos aparecen tachados menos el de {a}.'],
 ['🎙️ Grabación','Una grabación de 9 segundos donde alguien se ríe y dice «¡ahora ya no hay vuelta atrás!».'],
 ['🎙️ Grabación','Un audio de {a} tarareando con muchísima concentración.'],
-['🎙️ Grabación','Una cinta con ruido de fondo de ollas, un pato y alguien susurrando «tranquilo, tranquilo».'],
+['🎙️ Grabación','Una voz dice: «Si alguien pregunta, nunca hemos estado aquí».'],
 ['👣 Rastro','Huellas de zapato del número 43 con un trozo de papel higiénico pegado.'],
 ['👣 Rastro','Un rastro de purpurina que va desde la escena hasta la casa de {a}.'],
-['👣 Rastro','Una miga de pan con forma sospechosa, justo debajo de la silla de {a}.'],
+['👤 Testigo inesperado','Un vecino asegura que oyó a {a} ensayar una disculpa durante tres horas.'],
+['👤 Testigo inesperado','Un repartidor jura que {a} le pidió que mirara hacia otro lado «un momentito».'],
 ['🤪 Absurda','Un loro que solo repite «¡pregunta a Mari Carmen!».'],
-['🤪 Absurda','Una carta de un vecino que asegura haber visto a {a} hablando con una paloma.'],
 ['🤪 Absurda','Una cámara de seguridad muestra a alguien huyendo con un carrito de supermercado.'],
 ['🤪 Absurda','Un dibujo infantil titulado «Mi tío {a} y el gran secreto».'],
-['🤪 Absurda','Un horóscopo recortado que dice: «hoy cometerás un error. Y {a} también».']
+['🤪 Absurda','Un plano arquitectónico dibujado por un niño de cuatro años, con la casa de {a}.'],
+['🤪 Absurda','Un recorte de la previsión del tiempo con un círculo rojo y la firma de {a}.']
 ];
+// Giros: eventos aleatorios que cambian las reglas en pleno juicio [título, texto, segundos extra]
+const EVT=[
+['🔇 Silencio en la sala','El acusado solo puede responder «sí», «no» o «depende» durante los próximos 20 segundos.'],
+['🎵 Rima obligatoria','El fiscal debe hablar en rima hasta que termine esta fase.'],
+['🙇 Con todos mis respetos','El abogado debe acabar cada frase con «con todos mis respetos» hasta que termine la fase.'],
+['🤫 Susurros','Todos hablan en susurros hasta el final de la fase.'],
+['🔄 Mundo al revés','Durante 20 segundos, el fiscal defiende al acusado y el abogado lo acusa.'],
+['⏱️ Prórroga del juez','El juez concede 15 segundos más. ¡Aprovechadlos!',15],
+['🎭 Ofendidísimo','El acusado debe responder como si estuviera profundamente ofendido.'],
+['🕵️ Dato nuevo','Quien esté en el jurado más cerca de la ventana debe aportar un dato nuevo y absurdo sobre el caso.'],
+['📣 ¡Protesto!','Cualquiera puede gritar «¡Protesto!» una vez: quien hablaba debe repetir su última frase con otras palabras.'],
+['🐌 Cámara lenta','Todos hablan muy despacio durante los próximos 20 segundos.']
+];
+EVT.push(['🙋 Pregunta del jurado','{j} hace una pregunta al acusado, que debe responder con total sinceridad… o casi.'],['🔎 Careo','El fiscal y el abogado se hacen una pregunta el uno al otro y deben responder sin mentir.'],['🗣️ Testigo de última hora','{j} entra como testigo sorpresa y tiene 15 segundos para contar algo que «vio». Puede inventarlo.'],['🎬 Repetición','El acusado debe repetir su última frase, pero exagerando mucho más.'],['🚨 Sospecha','{j} señala a una persona de la sala y dice por qué sospecha de ella. Esa persona debe defenderse.']);
+// Fases en las que tiene sentido cada giro (mismo orden que EVT)
+const EVP=[['int','alc'],['int','tes','alf'],['int','tes','ala'],['int','tes','alf','ala','alc'],['int','tes'],['int','tes','alf','ala','alc'],['int','alc'],['int','tes'],['int','tes'],['int','tes','alf','ala','alc'],['int','tes'],['int','tes'],['tes','alf'],['int','alc'],['tes','alf','ala']];
+// Misiones secretas (+2 puntos si se cumplen sin que nadie sospeche)
+const MIS=['Consigue decir la palabra «patata» sin que nadie sospeche.','Haz reír a alguien sin contar ningún chiste.','Menciona un animal que no haya salido en el juicio.','Termina una frase con «y esa es la verdad».','Consigue que alguien asienta con la cabeza dos veces.','Pide permiso para beber agua en mitad de tu intervención.','Usa la palabra «evidentemente» tres veces.','Guiña un ojo al jurado una sola vez, con disimulo.'];
 const PH=[
 {k:'del',g:0,n:'El delito',d:0},
 {k:'pre',g:1,n:'Preparación',d:45,i:'El acusado y su abogado preparan la defensa. El fiscal prepara la acusación.'},
@@ -123,30 +173,33 @@ const PH=[
 const GR=['El delito','Defensa','Interrogatorio','Testigos','Alegatos','Veredicto'];
 const VER={C:'CULPABLE',I:'INOCENTE',N:'JUICIO NULO'};
 
-// ---- Estado ----
-const $a=document.getElementById('app'),KEY='juicio-partida-v1';
+const $a=document.getElementById('app'),KEY='juicio-partida-v3';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let G=null,S={names:['','','',''],R:5},M=null,AC;
+let G=null,S={names:['','','',''],R:5,T:1},M=null,AC,LT=Date.now();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(G))}catch(e){}};
 const saved=()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}};
 const beep=(f=660,d=.15)=>{try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}};
 const nm=i=>esc(G.P[i].n);
-const fill=s=>s.replace(/\{a\}/g,G.P[G.r.acu].n);
+const fill=s=>s.replace(/\{a\}/g,G.P[G.r.acu].n).replace(/\{d\}/g,CASOS[G.r.caso][0]);
 const rem=r=>r.rem!=null?r.rem:r.dur-(Date.now()-r.t0);
 function pickUnused(n,used){let c=[...Array(n).keys()].filter(i=>!used.includes(i));if(!c.length){used.length=0;c=[...Array(n).keys()]}const i=c[Math.floor(Math.random()*c.length)];used.push(i);return i}
 
 function newRound(){
   const ci=pickUnused(CASOS.length,G.used.c),roles=assign(G.P);
-  const r={...roles,caso:ci,ph:0,votes:[],sp:[],proofs:[],queue:[roles.acu,roles.fis,roles.abo,...roles.tes],q:0,show:false,t0:0,dur:0,rem:null};
-  r.pist=sh(CASOS[ci][5]).slice(0,roles.tes.length);
-  const slots=sh(['int','int','tes','alf','ala']).filter(s=>s!=='tes'||roles.tes.length).slice(0,2+(Math.random()<.5?1:0));
+  const r={...roles,caso:ci,ph:0,votes:[],vot:sh([roles.fis,roles.abo,...roles.tes,...roles.jur]),sp:[],mp:[],proofs:[],queue:[roles.acu,roles.fis,roles.abo,...roles.tes],q:0,show:false,t0:0,dur:0,rem:null,mis:{}};
+  r.pist=sh(CASOS[ci][5]||GEN).slice(0,roles.tes.length);
+  const ms=sh(MIS);r.queue.forEach((i,k)=>r.mis[i]=ms[k]);
+  const ok=['int','tes','alf','ala','alc'].filter(k=>k!=='tes'||roles.tes.length);
+  const slots=['int',roles.tes.length?'tes':'alf','ala'];
   G.r=r;
-  for(const s of slots){const pi=PH.findIndex(p=>p.k===s),pr=pickUnused(PRUEBAS.length,G.used.p);r.proofs.push({c:PRUEBAS[pr][0],t:PRUEBAS[pr][1],ph:pi,at:5+Math.random()*(PH[pi].d-12),sh:0})}
+  for(const [n,s] of slots.entries()){const pi=PH.findIndex(p=>p.k===s),pr=pickUnused(PRUEBAS.length,G.used.p),pe=n?PRUEBAS[pr]:sh(CP)[0];r.proofs.push({c:pe[0],t:pe[1],ph:pi,at:n?5+Math.random()*(PH[pi].d-12):2,sh:0})}
+  const ne=Math.random()<.75?(Math.random()<.4?2:1):0;
+  sh(EVT.map((e,k)=>[e,EVP[k].filter(x=>ok.includes(x))])).filter(x=>x[1].length).slice(0,ne).forEach(([ev,ks])=>{const pi=PH.findIndex(p=>p.k===sh(ks)[0]);r.proofs.push({c:ev[0],t:ev[1].replace(/\{j\}/g,G.P[sh(roles.jur.length?roles.jur:[roles.fis])[0]].n),x:ev[2]||0,e:1,ph:pi,at:3+Math.random()*Math.max(3,PH[pi].d-10),sh:0})});
   G.scr='phase';save();render();
 }
-function startPh(){const r=G.r;r.t0=Date.now();r.dur=PH[r.ph].d*1000;r.rem=null;beep(520,.2)}
+function startPh(){const r=G.r;r.t0=Date.now();r.dur=PH[r.ph].d*1000*(G.T||1);r.rem=null;beep(520,.2)}
 function nextPh(){
-  const r=G.r;r.ph++;
+  const r=G.r;r.proofs.forEach(p=>{if(p.ph===r.ph&&!p.sh&&!p.e)p.sh=1});r.ph++;
   if(PH[r.ph]&&PH[r.ph].k==='tes'&&!r.tes.length)r.ph++;
   if(r.ph>=PH.length){G.scr='vote';r.q=0;r.show=false}else startPh();
   save();render();
@@ -155,7 +208,7 @@ function startGame(){
   let names=S.names.map(x=>x.trim()).filter(Boolean);
   if(names.length<4){alert('Hacen falta al menos 4 jugadores con nombre.');return}
   const seen={};names=names.map(n=>{seen[n]=(seen[n]||0)+1;return seen[n]>1?n+' '+seen[n]:n});
-  G={P:names.map(n=>({n,s:0,acu:0,fis:0,abo:0,tes:0,last:''})),R:S.R,k:1,used:{c:[],p:[]},hist:[],scr:'phase'};
+  G={P:names.map(n=>({n,s:0,acu:0,fis:0,abo:0,tes:0,last:''})),R:S.R,T:S.T,k:1,used:{c:[],p:[]},hist:[],scr:'phase'};
   newRound();
 }
 function finishRound(skipped){
@@ -175,25 +228,30 @@ function act(a,v,i){
   case 'show':r.show=true;break;
   case 'hide':r.show=false;r.q++;if(r.q>=r.queue.length){G.scr='phase';r.ph=1;startPh()}break;
   case 'pz':if(r.rem==null)r.rem=r.dur-(Date.now()-r.t0);else{r.t0=Date.now()-(r.dur-r.rem);r.rem=null}break;
+  case 'p15':r.dur+=15000;break;
   case 'nx':return nextPh();
   case 'skip':if(!confirm('¿Saltar esta ronda? No se darán puntos.'))return;return finishRound(true);
   case 'vt':if(v!=='C'&&v!=='I')return;r.votes.push(v);r.show=false;r.q++;
-    if(r.q>=r.jur.length){r.ver=verdict(r.votes);G.scr='verdict'}break;
+    if(r.q>=r.vot.length){r.ver=verdict(r.votes);G.scr='verdict'}break;
+  case 'qv0':G.scr='qv';break;
+  case 'qv':{const c=+document.getElementById('qc').value||0,n=+document.getElementById('qi').value||0;if(c+n<2){alert('Hace falta al menos 2 votos.');return}r.votes=[...Array(c).fill('C'),...Array(n).fill('I')];r.quick=1;r.ver=verdict(r.votes);G.scr='verdict';break}
   case 'spgo':G.scr='special';r.q=0;r.show=false;break;
   case 'sp':{
     const p=r.q;[0,1,2].forEach(c=>{const el=document.getElementById('sp'+c);if(!el||el.value==='')return;const t=+el.value;
-      if(t===p||t<0||t>=G.P.length||(c===2&&!r.tes.includes(t)))return;r.sp.push(t)});   // no se puede votar a uno mismo
+      if(t===p||t<0||t>=G.P.length||(c===2&&!r.tes.includes(t)))return;r.sp.push(t);G.P[t]['k'+c]=(G.P[t]['k'+c]||0)+1});
     r.show=false;r.q++;
-    if(r.q>=G.P.length){r.pts=score(r,r.ver,r.sp);r.pts.forEach(([j,p])=>G.P[j].s+=p);return finishRound(false)}break}
+    if(r.q>=G.P.length)G.scr='mis';break}
+  case 'mi':{r.mp=r.queue.filter(j=>{const e=document.getElementById('mi'+j);return e&&e.checked});
+    if(r.ver==='C')G.P[r.acu].cnd=(G.P[r.acu].cnd||0)+1;r.pts=score(r,r.ver,r.sp,r.mp);r.pts.forEach(([j,p])=>G.P[j].s+=p);return finishRound(false)}
   case 'next':if(G.k>=G.R)G.scr='final';else{G.k++;return newRound()}break;
   case 'new':G=null;try{localStorage.removeItem(KEY)}catch(e){}break;
   case 'm':M={k:v};break;
   case 'mc':M=null;break;
+  case 'tv':document.body.classList.toggle('tv');break;
   }
   save();render();
 }
 
-// ---- Pantallas ----
 const priv=i=>{const r=G.r,c=CASOS[r.caso];return i===r.acu?c[2]:i===r.fis?c[3]:i===r.abo?c[4]:r.pist[r.tes.indexOf(i)]};
 const roleName=i=>{const r=G.r;return i===r.acu?'🔒 Eres el ACUSADO':i===r.fis?'⚖️ Eres el FISCAL':i===r.abo?'🛡️ Eres el ABOGADO DEFENSOR':'🎤 Eres TESTIGO'};
 const skipBtn=()=>'<button class="sec" data-a="skip">⏭ Saltar ronda</button>';
@@ -205,31 +263,31 @@ function court(){
 }
 const board=()=>`<div class="card"><h3>🏆 Ranking</h3>${G.P.map(p=>[p.n,p.s]).sort((a,b)=>b[1]-a[1]).map(([n,s],k)=>`<div class="rk"><span>${k+1}. ${esc(n)}</span><b>${s}</b></div>`).join('')}</div>`;
 function side(){
-  const vis=G.r.proofs.filter(p=>p.sh);
-  return `<div class="card"><h3>🔎 Pruebas</h3>${vis.length?vis.map(p=>`<div class="pr"><small>${p.c}</small><br>${esc(fill(p.t))}</div>`).join(''):'<p class="mut">Aún no ha aparecido ninguna prueba…</p>'}</div>`+board();
+  const vis=G.r.proofs.filter(p=>p.sh&&!p.e);
+  return `<div class="card"><h3>🔎 Pruebas</h3>${vis.length?vis.map(p=>`<div class="pr"><small>${p.c}</small><br>${esc(fill(p.t))}</div>`).join(''):'<p class="mut">Pronto aparecerá la primera prueba del caso…</p>'}<p class="mut small">⚡ En cualquier momento puede haber un giro inesperado.</p></div>`+board();
 }
 function setup(){
   const sv=saved();
-  return `<div class="card"><h2>Jugadores</h2><p class="mut">De 4 a 12. Jugáis en persona y usáis la web para repartir papeles, tiempos y votos: cada uno ve su información secreta cuando le pasáis el móvil.</p>`+
+  return `<div class="card"><h2>Jugadores</h2><p class="mut">De 4 a 12 (mejor 5 o más). Jugáis en persona y usáis la web para repartir papeles, misiones secretas, tiempos, giros y votos: cada uno ve su información secreta cuando le pasáis el móvil.</p>`+
   S.names.map((n,i)=>`<div class="pl"><input data-n="${i}" value="${esc(n)}" placeholder="Jugador ${i+1}" maxlength="16">${S.names.length>4?`<button class="sec" data-a="del" data-i="${i}" aria-label="Quitar">✕</button>`:''}</div>`).join('')+
-  `<button class="sec" data-a="add">+ Jugador</button><p>Rondas: <select data-r="1" style="width:auto">${[3,5,8,10].map(x=>`<option ${x===S.R?'selected':''}>${x}</option>`).join('')}</select></p><button data-a="start">Abrir la sesión ▶</button>${sv&&sv.scr?'<button class="sec" data-a="cont">Continuar partida guardada</button>':''}</div>`;
+  `<button class="sec" data-a="add">+ Jugador</button><p>Rondas: <select data-r="1" style="width:auto">${[3,5,8,10].map(x=>`<option ${x===S.R?'selected':''}>${x}</option>`).join('')}</select> · Ritmo: <select data-t="1" style="width:auto">${[['Rápido',.7],['Normal',1],['Largo',1.5]].map(([l,x])=>`<option value="${x}" ${x===S.T?'selected':''}>${l}</option>`).join('')}</select></p><button data-a="start">Abrir la sesión ▶</button>${sv&&sv.scr?'<button class="sec" data-a="cont">Continuar partida guardada</button>':''}</div>`;
 }
 function opening(){
   const r=G.r,c=CASOS[r.caso];
-  return `<div class="card center"><div class="stamp">SE ABRE LA SESIÓN</div><p class="big">Se acusa a <b>${nm(r.acu)}</b> de <b>${esc(c[0])}</b>.</p><p class="mut">${esc(c[1])}</p></div>${court()}<div class="card"><p>Ahora cada jugador con papel secreto verá su información <b>en privado</b>. Pasad el móvil cuando se indique.</p><button data-a="rev">Repartir papeles ▶</button>${skipBtn()}</div>`;
+  return `<div class="card center"><div class="stamp">SE ABRE LA SESIÓN</div><p class="big">Se acusa a <b>${nm(r.acu)}</b> de <b>${esc(c[0])}</b>.</p><p class="mut">${esc(c[1])}</p>${c[6]?'<div class="pr">🧠 <b>Caso con dilema:</b> no basta con saber qué pasó. El jurado debe decidir si estuvo bien o mal.</div>':''}</div>${court()}<div class="card"><p>Ahora cada jugador con papel secreto verá su información y su <b>misión secreta</b> en privado. Pasad el móvil cuando se indique.</p><button data-a="rev">Repartir papeles ▶</button>${skipBtn()}</div>`;
 }
 function timed(){
   const r=G.r,p=PH[r.ph];
-  return `<div class="grid"><div>${court()}<div class="card center"><h2>${p.n}</h2><p class="big">${esc(p.i)}</p><button class="sec" data-a="pz">${r.rem!=null?'▶ Reanudar':'⏸ Pausa'}</button><button data-a="nx">Siguiente fase ▶</button>${skipBtn()}</div></div><div>${side()}</div></div>`;
+  return `<div class="grid"><div>${court()}<div class="card center"><h2>${p.n}</h2><p class="big">${esc(p.i)}</p><button class="sec" data-a="pz">${r.rem!=null?'▶ Reanudar':'⏸ Pausa'}</button><button class="sec" data-a="p15">+15 s</button><button data-a="nx">Siguiente fase ▶</button>${skipBtn()}</div></div><div>${side()}</div></div>`;
 }
 const pass=(i,a,t)=>`<div class="card center"><p>Pasa el móvil a</p><h2 class="big">${nm(i)}</h2><p class="mut">El resto, mirad a otro lado 👀</p><button data-a="${a}">Soy ${nm(i)} · ${t}</button></div>`;
 function reveal(){
   const r=G.r,i=r.queue[r.q];
-  return r.show?`<div class="card center"><h3>${roleName(i)}</h3><p class="big">${esc(fill(priv(i)))}</p><p class="mut">Solo tú puedes ver esto.</p><button data-a="hide">Ya lo leí · ocultar</button></div>`:pass(i,'show','ver mi papel');
+  return r.show?`<div class="card center"><h3>${roleName(i)}</h3><p class="big">${esc(fill(priv(i)))}</p><div class="pr">🎯 <b>Misión secreta (+2 puntos):</b> ${esc(r.mis[i])}</div><p class="mut">Solo tú puedes ver esto.</p><button data-a="hide">Ya lo leí · ocultar</button></div>`:pass(i,'show','ver mi papel');
 }
 function voteScr(){
-  const r=G.r,i=r.jur[r.q];
-  return r.show?`<div class="card center"><h3>Tu voto es secreto</h3><p class="big">¿${esc(G.P[r.acu].n)} es culpable?</p><button class="bad" data-a="vt" data-v="C">CULPABLE</button><button class="good" data-a="vt" data-v="I">INOCENTE</button></div>`:pass(i,'show','votar');
+  const r=G.r,i=r.vot[r.q],c=CASOS[r.caso];
+  return r.show?`<div class="card center"><h3>Tu voto es secreto</h3><p class="big">¿${esc(G.P[r.acu].n)} es culpable?</p>${c[6]?'<p class="mut">Piensa: ¿estuvo bien o mal lo que hizo?</p>':''}<button class="bad" data-a="vt" data-v="C">CULPABLE</button><button class="good" data-a="vt" data-v="I">INOCENTE</button></div>`:pass(i,'show','votar')+'<div class="center"><button class="sec" data-a="qv0">⚡ Votación rápida (todos a la vez)</button></div>';
 }
 function verdictScr(){
   const r=G.r,c=r.votes.filter(x=>x==='C').length;
@@ -242,43 +300,48 @@ function specialScr(){
   const all=G.P.map((_,j)=>j);
   return `<div class="card"><h3 class="center">Votaciones especiales</h3><p class="mut center">Cada voto recibido vale 1 punto. No puedes votarte a ti mismo.</p><label>🎭 Mejor actuación<select id="sp0">${opts(all)}</select></label><label>💡 Mejor argumento<select id="sp1">${opts(all)}</select></label>${r.tes.length?`<label>🤪 Testimonio más absurdo<select id="sp2">${opts(r.tes)}</select></label>`:''}<div class="center"><button data-a="sp">Enviar y pasar</button></div></div>`;
 }
+function qvScr(){return `<div class="card center"><h3>⚡ Votación rápida</h3><p class="mut">Todos cierran los ojos, el acusado se tapa los oídos y quien lleve el móvil cuenta las manos alzadas (máximo ${G.r.vot.length} votos). Esta forma no da puntos por voto acertado.</p><label>Culpable<input id="qc" type="number" min="0" value="0"></label><label>Inocente<input id="qi" type="number" min="0" value="0"></label><button data-a="qv">Ver veredicto ▶</button></div>`}
+function misScr(){
+  const r=G.r;
+  return `<div class="card"><h3 class="center">🎯 Misiones secretas</h3><p class="mut center">Cada uno revela su misión. Cuenta si lo hizo y la mayoría lo admite al revelarlo; si hay dudas, se vota a mano alzada. Marca las cumplidas (+2 puntos).</p>${r.queue.map(i=>`<label class="ml"><input type="checkbox" id="mi${i}"><span><b>${nm(i)}</b>: ${esc(r.mis[i])}</span></label>`).join('')}<div class="center"><button data-a="mi">Contar puntos ▶</button></div></div>`;
+}
 function summary(){
   const r=G.r,by={};(r.pts||[]).forEach(([i,p,t])=>{(by[i]=by[i]||[]).push([p,t])});
   const rows=Object.keys(by).map(i=>`<div class="rk"><span>${nm(i)}: ${by[i].map(x=>esc(x[1])).join(', ')}</span><b>+${by[i].reduce((s,x)=>s+x[0],0)}</b></div>`).join('')||'<p class="mut">Sin puntos esta ronda.</p>';
   return `<div class="grid"><div class="card"><h2>${r.ver?'Veredicto: '+VER[r.ver]:'Ronda saltada'}</h2>${rows}<button data-a="next">${G.k>=G.R?'Ver ranking final ▶':'Siguiente juicio ▶'}</button></div><div>${board()}</div></div>`;
 }
 function final(){
-  const m=['🥇','🥈','🥉'];
-  return `<div class="card center"><div class="stamp">SE LEVANTA LA SESIÓN</div>${G.P.map(p=>[p.n,p.s]).sort((a,b)=>b[1]-a[1]).map(([n,s],k)=>`<div class="rk big"><span>${m[k]||k+1+'.'} ${esc(n)}</span><b>${s}</b></div>`).join('')}<button data-a="new">Nueva partida</button></div>`;
+  const m=['🥇','🥈','🥉'],T=[['🎭 Mejor actor','k0'],['💡 Mejor orador','k1'],['🤪 Rey del absurdo','k2'],['🚨 El más condenado','cnd']].map(([t,k])=>{const b=G.P.slice().sort((x,y)=>(y[k]||0)-(x[k]||0))[0];return b[k]?`<div class="pr">${t}: <b>${esc(b.n)}</b> (${b[k]})</div>`:''}).join('');
+  return `<div class="card center"><div class="stamp">SE LEVANTA LA SESIÓN</div>${T}${G.P.map(p=>[p.n,p.s]).sort((a,b)=>b[1]-a[1]).map(([n,s],k)=>`<div class="rk big"><span>${m[k]||k+1+'.'} ${esc(n)}</span><b>${s}</b></div>`).join('')}<button data-a="new">Nueva partida</button></div>`;
 }
-function tools(){return `<div class="center"><button class="sec" data-a="m" data-v="tut">Tutorial</button>${G?'<button class="sec" data-a="m" data-v="hist">Historial</button><button class="sec" data-a="new">Salir</button>':''}</div>`}
+function tools(){return `<div class="center"><button class="sec" data-a="m" data-v="tut">Tutorial</button><button class="sec" data-a="tv">📺 Modo tele</button>${G?'<button class="sec" data-a="m" data-v="hist">Historial</button><button class="sec" data-a="new">Salir</button>':''}</div>`}
 function modal(){
   if(!M)return '';
   let h='';
-  if(M.k==='proof')h=`<div class="center"><div class="stamp">NUEVA PRUEBA</div><p class="mut">${M.t.c}</p><p class="big">${esc(fill(M.t.t))}</p><p class="mut">Nadie sabe qué significa. Interpretadla a vuestro favor.</p></div>`;
+  if(M.k==='proof'){const e=M.t.e;h=`<div class="center"><div class="stamp ${e?'gi':''}">${e?'⚡ ¡GIRO!':'NUEVA PRUEBA'}</div><p class="mut">${esc(M.t.c)}</p><p class="big">${esc(e?M.t.t:fill(M.t.t))}</p><p class="mut">${e?'Se aplica desde ya.':'Nadie sabe qué significa. Interpretadla a vuestro favor.'}</p></div>`}
   else if(M.k==='hist')h=`<h2>Historial</h2>`+(G.hist.length?G.hist.map(x=>`<div class="pr"><b>Juicio ${x.k}:</b> ${esc(x.a)} · ${esc(x.d)}<br><b>${esc(x.v)}</b></div>`).join(''):'<p class="mut">Todavía no hay juicios.</p>');
-  else h=`<h2>Cómo se juega</h2><p>Cada ronda se juzga un delito absurdo. Se reparten papeles: <b>acusado, fiscal, abogado, testigos y jurado</b>.</p><p>Hablad en persona; la web reparte la información secreta, marca los tiempos, lanza <b>pruebas sorpresa</b> (no tienen explicación: ¡improvisad!) y cuenta los votos.</p><p>El jurado vota en secreto culpable o inocente. Después todos dan votos especiales (mejor actuación, argumento y testimonio más absurdo).</p><p class="mut">Los papeles rotan solos para que todos pasen por el estrado.</p>`;
+  else h=`<h2>Cómo se juega</h2><p>Cada ronda se juzga un delito absurdo. Se reparten papeles: <b>acusado, fiscal, abogado, testigos y jurado</b>.</p><p>Hablad en persona; la web reparte la información secreta, marca los tiempos y cuenta los votos.</p><p><b>⚡ Pruebas y giros:</b> en cualquier momento puede aparecer una prueba absurda (improvisad su significado) o un giro que cambia las reglas. Puede que no aparezca nada… o que aparezca todo.</p><p><b>🎯 Misiones:</b> cada papel recibe una misión secreta que vale 2 puntos si la cumple sin que lo noten.</p><p><b>🧠 Dilemas:</b> algunos casos obligan al jurado a decidir si algo estuvo bien o mal.</p><p class="mut">Los papeles rotan solos para que todos pasen por el estrado.</p>`;
   return `<div id="mo"><div class="card">${h}<div class="center"><button data-a="mc">${M.k==='proof'?'Entendido':'Cerrar'}</button></div></div></div>`;
 }
 function render(){
   const timedNow=G&&G.scr==='phase'&&G.r.ph>0;
   const g=!G?0:G.scr==='reveal'?0:G.scr==='phase'?PH[G.r.ph].g:5;
-  const body=!G?setup():({phase:()=>G.r.ph===0?opening():timed(),reveal,vote:voteScr,verdict:verdictScr,special:specialScr,summary,final})[G.scr]();
+  const body=!G?setup():({phase:()=>G.r.ph===0?opening():timed(),reveal,vote:voteScr,verdict:verdictScr,special:specialScr,mis:misScr,qv:qvScr,summary,final})[G.scr]();
   $a.innerHTML=`<header><h1>⚖️ EL JUICIO</h1>${G&&G.scr!=='final'?`<div id="steps">${GR.map((x,i)=>`<span class="${i===g?'on':''}">${x}</span>`).join('')}</div>${timedNow?'<div id="clock"></div>':''}`:''}</header>${G?`<p class="mut small">Juicio ${G.k} de ${G.R}</p>`:''}${body}${tools()}${modal()}`;
   tick(true);
 }
 function tick(noAdvance){
   if(!G||G.scr!=='phase'||G.r.ph<1)return;
-  const r=G.r,t=rem(r),c=document.getElementById('clock');
+  const r=G.r,now=Date.now();if(M&&r.rem==null)r.t0+=Math.min(now-LT,1000);LT=now;const t=rem(r),c=document.getElementById('clock');
   if(c){const s=Math.max(0,Math.ceil(t/1000));c.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');c.classList.toggle('low',s<=10)}
   if(noAdvance||r.rem!=null||M)return;
   const el=r.dur-t;
-  for(const p of r.proofs)if(!p.sh&&p.ph===r.ph&&el>=p.at*1000){p.sh=1;M={k:'proof',t:p};beep(880,.12);setTimeout(()=>beep(1175,.2),140);save();render();return}
+  for(const p of r.proofs)if(!p.sh&&p.ph===r.ph&&el>=p.at*1000){p.sh=1;if(p.x)r.dur+=p.x*1000;M={k:'proof',t:p};beep(p.e?220:880,.12);setTimeout(()=>beep(p.e?330:1175,.2),140);save();render();return}
   if(t<=0){beep(300,.4);nextPh()}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset.a,b.dataset.v,b.dataset.i)});
 document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.n!==undefined)S.names[+e.target.dataset.n]=e.target.value});
-document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.r)S.R=+e.target.value});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.r)S.R=+e.target.value;if(e.target.dataset&&e.target.dataset.t)S.T=+e.target.value});
 setInterval(()=>tick(false),250);
 render();
 </script>

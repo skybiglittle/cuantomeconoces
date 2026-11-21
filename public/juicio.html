@@ -228,6 +228,9 @@ function act(a,v,i){
   case 'show':r.show=true;break;
   case 'hide':r.show=false;r.q++;if(r.q>=r.queue.length){G.scr='phase';r.ph=1;startPh()}break;
   case 'pz':if(r.rem==null)r.rem=r.dur-(Date.now()-r.t0);else{r.t0=Date.now()-(r.dur-r.rem);r.rem=null}break;
+  case 'pp':if(r.rem==null){r.rem=r.dur-(Date.now()-r.t0);r.pkp=1}else r.pkp=0;r.pk=null;G.scr='peek';break;
+  case 'pk':r.pk=+i;break;
+  case 'pkx':if(r.pkp){r.t0=Date.now()-(r.dur-r.rem);r.rem=null;r.pkp=0}r.pk=null;G.scr='phase';break;
   case 'p15':r.dur+=15000;break;
   case 'nx':return nextPh();
   case 'skip':if(!confirm('¿Saltar esta ronda? No se darán puntos.'))return;return finishRound(true);
@@ -278,7 +281,7 @@ function opening(){
 }
 function timed(){
   const r=G.r,p=PH[r.ph];
-  return `<div class="grid"><div>${court()}<div class="card center"><h2>${p.n}</h2><p class="big">${esc(p.i)}</p><button class="sec" data-a="pz">${r.rem!=null?'▶ Reanudar':'⏸ Pausa'}</button><button class="sec" data-a="p15">+15 s</button><button data-a="nx">Siguiente fase ▶</button>${skipBtn()}</div></div><div>${side()}</div></div>`;
+  return `<div class="grid"><div>${court()}${r.ev&&r.ev.ph===r.ph?`<div class="card center" style="border-color:var(--red)"><b>⚡ ${esc(r.ev.c)}</b><br>${esc(r.ev.t)}</div>`:''}<div class="card center"><h2>${p.n}</h2><p class="big">${esc(p.i)}</p><button class="sec" data-a="pz">${r.rem!=null?'▶ Reanudar':'⏸ Pausa'}</button><button class="sec" data-a="pp">🔒 Ver mi papel</button><button class="sec" data-a="p15">+15 s</button><button data-a="nx">Siguiente fase ▶</button>${skipBtn()}</div></div><div>${side()}</div></div>`;
 }
 const pass=(i,a,t)=>`<div class="card center"><p>Pasa el móvil a</p><h2 class="big">${nm(i)}</h2><p class="mut">El resto, mirad a otro lado 👀</p><button data-a="${a}">Soy ${nm(i)} · ${t}</button></div>`;
 function reveal(){
@@ -300,6 +303,7 @@ function specialScr(){
   const all=G.P.map((_,j)=>j);
   return `<div class="card"><h3 class="center">Votaciones especiales</h3><p class="mut center">Cada voto recibido vale 1 punto. No puedes votarte a ti mismo.</p><label>🎭 Mejor actuación<select id="sp0">${opts(all)}</select></label><label>💡 Mejor argumento<select id="sp1">${opts(all)}</select></label>${r.tes.length?`<label>🤪 Testimonio más absurdo<select id="sp2">${opts(r.tes)}</select></label>`:''}<div class="center"><button data-a="sp">Enviar y pasar</button></div></div>`;
 }
+function peekScr(){const r=G.r;if(r.pk==null)return `<div class="card center"><h3>🔒 Ver mi papel</h3><p class="mut">El tiempo está en pausa. Pulsa tu nombre; el resto, mirad a otro lado 👀</p>${r.queue.map((j,k)=>`<button data-a="pk" data-i="${k}">Soy ${nm(j)}</button>`).join('')}<br><button class="sec" data-a="pkx">Volver</button></div>`;const i=r.queue[r.pk];return `<div class="card center"><h3>${roleName(i)}</h3><p class="big">${esc(fill(priv(i)))}</p><div class="pr">🎯 <b>Misión secreta (+2 puntos):</b> ${esc(r.mis[i])}</div><button data-a="pkx">Ocultar y volver</button></div>`}
 function qvScr(){return `<div class="card center"><h3>⚡ Votación rápida</h3><p class="mut">Todos cierran los ojos, el acusado se tapa los oídos y quien lleve el móvil cuenta las manos alzadas (máximo ${G.r.vot.length} votos). Esta forma no da puntos por voto acertado.</p><label>Culpable<input id="qc" type="number" min="0" value="0"></label><label>Inocente<input id="qi" type="number" min="0" value="0"></label><button data-a="qv">Ver veredicto ▶</button></div>`}
 function misScr(){
   const r=G.r;
@@ -325,9 +329,10 @@ function modal(){
 }
 function render(){
   const timedNow=G&&G.scr==='phase'&&G.r.ph>0;
-  const g=!G?0:G.scr==='reveal'?0:G.scr==='phase'?PH[G.r.ph].g:5;
-  const body=!G?setup():({phase:()=>G.r.ph===0?opening():timed(),reveal,vote:voteScr,verdict:verdictScr,special:specialScr,mis:misScr,qv:qvScr,summary,final})[G.scr]();
-  $a.innerHTML=`<header><h1>⚖️ EL JUICIO</h1>${G&&G.scr!=='final'?`<div id="steps">${GR.map((x,i)=>`<span class="${i===g?'on':''}">${x}</span>`).join('')}</div>${timedNow?'<div id="clock"></div>':''}`:''}</header>${G?`<p class="mut small">Juicio ${G.k} de ${G.R}</p>`:''}${body}${tools()}${modal()}`;
+  const g=!G?0:G.scr==='reveal'?0:G.scr==='phase'||G.scr==='peek'?PH[G.r.ph].g:5;
+  const body=!G?setup():({phase:()=>G.r.ph===0?opening():timed(),reveal,vote:voteScr,verdict:verdictScr,special:specialScr,mis:misScr,qv:qvScr,peek:peekScr,summary,final})[G.scr]();
+  const bar=G&&G.r&&((G.scr==='phase'&&G.r.ph>=1)||['vote','verdict','special','mis','qv'].includes(G.scr))?`<div class="card center" style="position:sticky;top:env(safe-area-inset-top,0px);z-index:5;padding:8px 12px"><small class="mut">⚖️ Se acusa a</small> <b>${nm(G.r.acu)}</b> <small class="mut">de</small> <b>${esc(CASOS[G.r.caso][0])}</b></div>`:'';
+  $a.innerHTML=`<header><h1>⚖️ EL JUICIO</h1>${G&&G.scr!=='final'?`<div id="steps">${GR.map((x,i)=>`<span class="${i===g?'on':''}">${x}</span>`).join('')}</div>${timedNow?'<div id="clock"></div>':''}`:''}</header>${G?`<p class="mut small">Juicio ${G.k} de ${G.R}</p>`:''}${bar}${body}${tools()}${modal()}`;
   tick(true);
 }
 function tick(noAdvance){
@@ -336,7 +341,7 @@ function tick(noAdvance){
   if(c){const s=Math.max(0,Math.ceil(t/1000));c.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');c.classList.toggle('low',s<=10)}
   if(noAdvance||r.rem!=null||M)return;
   const el=r.dur-t;
-  for(const p of r.proofs)if(!p.sh&&p.ph===r.ph&&el>=p.at*1000){p.sh=1;if(p.x)r.dur+=p.x*1000;M={k:'proof',t:p};beep(p.e?220:880,.12);setTimeout(()=>beep(p.e?330:1175,.2),140);save();render();return}
+  for(const p of r.proofs)if(!p.sh&&p.ph===r.ph&&el>=p.at*1000){p.sh=1;if(p.x)r.dur+=p.x*1000;if(p.e)r.ev={c:p.c,t:p.t,ph:r.ph};M={k:'proof',t:p};beep(p.e?220:880,.12);setTimeout(()=>beep(p.e?330:1175,.2),140);save();render();return}
   if(t<=0){beep(300,.4);nextPh()}
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset.a,b.dataset.v,b.dataset.i)});

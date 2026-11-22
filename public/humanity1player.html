@@ -1320,7 +1320,7 @@ function soloRenderPick(){
 function soloSubmit(){
  const chosen=SOLO.selected.map(i=>SOLO.hands[0][i]);SOLO.hands[0]=SOLO.hands[0].filter((_,i)=>!SOLO.selected.includes(i));
  SOLO.answers[0].cards=chosen;
- for(let p=1;p<8;p++){
+ for(let p=1;p<4;p++){
    const h=SOLO.hands[p],cards=[];
    for(let j=0;j<SOLO.need;j++){const ix=Math.random()*h.length|0;cards.push(h.splice(ix,1)[0]);}
    SOLO.answers.push({owner:p,cards});

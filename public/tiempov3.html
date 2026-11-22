@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>☆El tiempoℹ️📱</title>
+<style>
+:root{--bg:#eef3f8;--card:#fff;--ink:#14243a;--mut:#5b6c80;--line:#d7e0ea;--bar:#e4ebf3;--ac:#2f7de1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1621;--card:#16222f;--ink:#eaf1f8;--mut:#93a5b8;--line:#263646;--bar:#223244}}
+:root[data-theme="dark"]{--bg:#0d1621;--card:#16222f;--ink:#eaf1f8;--mut:#93a5b8;--line:#263646;--bar:#223244}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:14px 14px 40px}
+.bar{display:flex;gap:8px;margin-bottom:12px}
+.bar input{flex:1;min-width:0;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit}
+.bar button,.sug button{padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.bar button:active{transform:scale(.97)}
+.sug{display:flex;flex-direction:column;gap:6px;margin:-4px 0 12px}
+.sug button{text-align:left}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.hero{border-radius:24px;padding:22px 20px;color:#fff;background:var(--sky,linear-gradient(160deg,#3b8cf0,#8fc8ff));box-shadow:0 10px 30px #0003}
+.hero .pl{font-size:15px;opacity:.9}
+.hero .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
+.hero .t{font-size:76px;font-weight:200;line-height:1;letter-spacing:-.04em}
+.hero .e{font-size:76px;line-height:1}
+.hero .d{font-size:20px;font-weight:600}
+.hero .m{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:14px;opacity:.95}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:22px 4px 8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
+.card .n{font-weight:700;margin-bottom:2px}
+.card .big{font-size:34px;line-height:1.1}
+.card .s{font-size:14px;color:var(--mut)}
+.card .s b{color:var(--ink)}
+.hour-note{font-size:13px;color:var(--mut);margin:0 4px 8px}
+.hour-day{font-size:13px;font-weight:700;margin:10px 4px 6px}
+.hours{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.h{flex:none;width:68px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;font-size:14px}
+.h.now{border:2px solid var(--ac)}
+.h .e{font-size:24px;display:block}.h small{color:var(--mut);display:block;font-size:12px}
+.h .rain{font-size:12px;color:var(--ac)}
+.day{display:grid;grid-template-columns:78px 30px 44px 1fr;align-items:center;gap:8px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.day:last-child{border:0}
+.day .e{font-size:24px}.day .r{color:var(--ac);font-size:13px}
+.rng{display:flex;align-items:center;gap:6px;font-size:14px}
+.rng .tr{position:relative;flex:1;height:7px;border-radius:7px;background:var(--bar)}
+.rng .tr i{position:absolute;top:0;bottom:0;border-radius:7px;background:linear-gradient(90deg,#4aa3ff,#ffb347)}
+.rng span{width:30px;text-align:right}.rng span:first-child{color:var(--mut)}
+.msg{text-align:center;padding:40px 10px;color:var(--mut)}
+.msg button{margin-top:12px;padding:10px 18px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.src{font-size:12px;color:var(--mut);text-align:center;margin-top:18px}
+.src a{color:inherit}
+/* Aviso de lluvia y voz */
+.alert{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-size:15px}
+.alert.wet{border-color:var(--ac)}
+.alert span{flex:1}
+.alert button,.vbtns button{padding:10px 14px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.vbtns{display:flex;gap:8px;margin-top:6px}
+.vbtns button{flex:1}
+.vbtns .stop{background:var(--bar);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.chips button{padding:8px 12px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.chips button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.vrow{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mut);margin-bottom:12px}
+.vrow select{padding:7px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+#vs{font-size:13px;color:var(--mut);margin-top:8px;min-height:18px}
+/* Animación del día */
+.scene{position:relative;overflow:hidden;border-radius:20px;padding:16px;color:#fff;background:var(--sky,linear-gradient(160deg,#2f7de1,#8fc8ff));margin:4px 0 8px;min-height:150px}
+.fx{position:absolute;inset:0;pointer-events:none;opacity:.75}
+.fx.rain{background-image:repeating-linear-gradient(100deg,transparent 0 7px,#ffffff88 7px 8px);background-size:44px 64px;animation:fall .5s linear infinite}
+.fx.snow{background-image:radial-gradient(circle,#fff 2px,transparent 3px);background-size:34px 34px;animation:snow 3s linear infinite}
+@keyframes fall{to{background-position:-22px 64px}}
+@keyframes snow{to{background-position:12px 34px}}
+.sc{position:relative}
+.sl{font-size:13px;opacity:.9}
+.srow{display:flex;justify-content:space-between;align-items:center}
+.sh{font-size:22px;font-weight:700}
+.st{font-size:56px;font-weight:200;line-height:1}
+.se{font-size:64px;line-height:1}
+.sd{font-size:18px;font-weight:600}
+.sm{display:flex;gap:12px;flex-wrap:wrap;font-size:14px;margin-top:6px}
+.curve svg{display:block;width:100%;height:auto}
+input[type=range]{width:100%;accent-color:var(--ac);height:32px;margin:2px 0;background:none;border:0;padding:0}
+.rl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:6px}
+.h3t{font-size:15px;font-weight:700;margin:10px 0 2px}
+.tip{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.tip:last-child{border:0}
+.tip span:first-child{font-size:22px;width:28px;text-align:center;flex:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar"><input id="q" type="search" placeholder="Buscar otra ciudad…" autocomplete="off" aria-label="Buscar ciudad"><button id="bq" aria-label="Buscar">🔍</button><button id="bg" aria-label="Mi ubicación">📍</button></div>
+  <div class="sug" id="sug"></div>
+  <div id="out"><div class="msg">Buscando tu ubicación…</div></div>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)};
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+/* Códigos WMO de Open-Meteo → texto y emoji */
+function wc(c,day){
+  var m={0:['Despejado',day?'☀️':'🌙'],1:['Casi despejado',day?'🌤️':'🌙'],2:['Parcialmente nublado','⛅'],3:['Nublado','☁️'],45:['Niebla','🌫️'],48:['Niebla con escarcha','🌫️'],51:['Llovizna débil','🌦️'],53:['Llovizna','🌦️'],55:['Llovizna fuerte','🌧️'],56:['Llovizna helada','🌧️'],57:['Llovizna helada','🌧️'],61:['Lluvia débil','🌦️'],63:['Lluvia','🌧️'],65:['Lluvia fuerte','🌧️'],66:['Lluvia helada','🌧️'],67:['Lluvia helada fuerte','🌧️'],71:['Nieve débil','🌨️'],73:['Nieve','🌨️'],75:['Nieve fuerte','❄️'],77:['Granizo fino','🌨️'],80:['Chubascos débiles','🌦️'],81:['Chubascos','🌧️'],82:['Chubascos fuertes','⛈️'],85:['Chubascos de nieve','🌨️'],86:['Chubascos de nieve fuertes','❄️'],95:['Tormenta','⛈️'],96:['Tormenta con granizo','⛈️'],99:['Tormenta con granizo fuerte','⛈️']};
+  return m[c]||['—','🌡️'];
+}
+function sky(c,day){
+  if(c>=95)return'linear-gradient(160deg,#4a3a6e,#7a6aa8)';
+  if(c>=71&&c<=77||c===85||c===86)return day?'linear-gradient(160deg,#7f9bb8,#cfdbe8)':'linear-gradient(160deg,#2b3c52,#566b84)';
+  if(c>=51)return day?'linear-gradient(160deg,#4f6a85,#8aa2b9)':'linear-gradient(160deg,#1f2d3f,#3d5068)';
+  if(c===45||c===48||c===3)return day?'linear-gradient(160deg,#7d93a8,#b3c2d0)':'linear-gradient(160deg,#27374a,#4a5d72)';
+  if(c===2)return day?'linear-gradient(160deg,#4a8fd8,#a9cdee)':'linear-gradient(160deg,#16294a,#3a5380)';
+  return day?'linear-gradient(160deg,#2f7de1,#8fc8ff)':'linear-gradient(160deg,#0c1a3a,#2a3f78)';
+}
+function r(n){return Math.round(n)}
+function pad(n){return(n<10?'0':'')+n}
+function dayName(iso,i){
+  if(i===0)return'Hoy';if(i===1)return'Mañana';
+  var d=new Date(iso+'T12:00:00'),s=d.toLocaleDateString('es-ES',{weekday:'long'});return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function hm(iso){return iso.slice(11,16)}
+function fmtDate(iso){return new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'})}
+function saveLoc(l){try{localStorage.setItem('tiempo-loc',JSON.stringify(l))}catch(e){}}
+function loadLoc(){try{return JSON.parse(localStorage.getItem('tiempo-loc'))}catch(e){return null}}
+
+/* ===== VOZ ===== */
+var W=null; /* último dato cargado: {loc,d,from} */
+var VS={days:{0:true},modes:{res:true,llu:true,hor:false},step:3};
+var synth=window.speechSynthesis,voice=null,tok=0;
+function pickVoice(){if(!synth)return;var v=synth.getVoices();voice=v.filter(function(x){return/^es-ES/i.test(x.lang)})[0]||v.filter(function(x){return/^es/i.test(x.lang)})[0]||null}
+if(synth){pickVoice();synth.onvoiceschanged=pickVoice}
+function setStatus(t){var e=$('vs');if(e)e.textContent=t||''}
+function stopVoice(){tok++;if(synth)synth.cancel();setStatus('')}
+function say(list){
+  if(!synth){setStatus('Tu navegador no admite voz.');return}
+  list=list.filter(Boolean);if(!list.length)return;
+  tok++;var my=tok,k=0;synth.cancel();
+  function next(){
+    if(my!==tok)return;
+    if(k>=list.length){setStatus('');return}
+    setStatus('🔊 Hablando… ('+(k+1)+'/'+list.length+')');
+    var u=new SpeechSynthesisUtterance(list[k++]);
+    u.lang='es-ES';if(voice)u.voice=voice;u.rate=.98;
+    u.onend=next;u.onerror=function(){if(my===tok)setStatus('')};
+    synth.speak(u);
+  }
+  next();
+}
+function tt(n){n=r(n);return n<0?'menos '+Math.abs(n):String(n)}
+function dayHours(i){ /* índices horarios de un día (hoy: desde ahora) */
+  var H=W.d.hourly,date=W.d.daily.time[i],out=[];
+  for(var k=(i===0?W.from:0);k<H.time.length;k++){if(H.time[k].slice(0,10)===date)out.push(k)}
+  return out;
+}
+function rainRanges(idx,withDay){ /* franjas con probabilidad >= 50 % */
+  var H=W.d.hourly,res=[],a=null,prev=null,mx=0,today=H.time[W.from].slice(0,10);
+  function close(){
+    if(a===null)return;
+    var s=+H.time[a].slice(11,13),e=(+H.time[prev].slice(11,13)+1)%24;
+    var lab=withDay?(H.time[a].slice(0,10)===today?'hoy ':'mañana '):'';
+    res.push(lab+'de las '+s+' a las '+e+' horas, con hasta un '+mx+' por ciento');
+    a=null;mx=0;
+  }
+  idx.forEach(function(k){
+    var p=H.precipitation_probability[k]||0;
+    if(p>=50){if(a===null||k!==prev+1){close();a=k;mx=0}prev=k;mx=Math.max(mx,p)}else close();
+  });
+  close();return res;
+}
+function rainText(i){
+  var n=dayName(W.d.daily.time[i],i),rg=rainRanges(dayHours(i),false);
+  var pm=W.d.daily.precipitation_probability_max[i];
+  if(!rg.length)return n+': no se espera lluvia importante'+(pm!=null?'. La probabilidad máxima es del '+pm+' por ciento':'')+'.';
+  return n+': aviso de lluvia. Se espera lluvia '+rg.join(', y ')+'.';
+}
+function sumText(i){
+  var D=W.d.daily,n=dayName(D.time[i],i),pm=D.precipitation_probability_max[i];
+  return n+': '+wc(D.weather_code[i],true)[0]+'. Máxima de '+tt(D.temperature_2m_max[i])+' grados y mínima de '+tt(D.temperature_2m_min[i])+'. '
+   +(pm!=null?'Probabilidad de lluvia del '+pm+' por ciento'+(D.precipitation_sum[i]>0?', unos '+D.precipitation_sum[i]+' milímetros':'')+'. ':'')
+   +'Viento de hasta '+r(D.wind_speed_10m_max[i])+' kilómetros por hora. Índice UV '+r(D.uv_index_max[i])+'.';
+}
+function hourTexts(i){
+  var H=W.d.hourly,idx=dayHours(i),out=[],n=dayName(W.d.daily.time[i],i);
+  out.push(n+', por horas.');
+  for(var j=0;j<idx.length;j+=VS.step){
+    var k=idx[j],p=H.precipitation_probability[k]||0,hh=+H.time[k].slice(11,13);
+    out.push((j===0&&i===0?'Ahora':'A las '+hh+' horas')+': '+wc(H.weather_code[k],H.is_day[k]===1)[0]+', '+tt(H.temperature_2m[k])+' grados'+(p>=30?', lluvia '+p+' por ciento':'')+'.');
+  }
+  return out;
+}
+function soonRain(){ /* próximas 24 h */
+  var idx=[];for(var k=W.from;k<Math.min(W.from+24,W.d.hourly.time.length);k++)idx.push(k);
+  return rainRanges(idx,true);
+}
+function soonText(){
+  var rg=soonRain();
+  return rg.length?'Aviso de lluvia en '+W.loc.name+': se espera lluvia '+rg.join(', y ')+'. Lleva paraguas.':'No se espera lluvia importante en las próximas 24 horas en '+W.loc.name+'.';
+}
+function listen(){
+  if(!W)return;
+  var days=Object.keys(VS.days).filter(function(k){return VS.days[k]}).map(Number).sort(function(a,b){return a-b});
+  if(!days.length){setStatus('Elige al menos un día.');return}
+  if(!VS.modes.res&&!VS.modes.llu&&!VS.modes.hor){setStatus('Elige qué quieres oír.');return}
+  var list=['El tiempo en '+W.loc.name+'.'];
+  days.forEach(function(i){
+    if(VS.modes.res)list.push(sumText(i));
+    if(VS.modes.llu)list.push(rainText(i));
+    if(VS.modes.hor)list=list.concat(hourTexts(i));
+  });
+  say(list);
+}
+function voicePanel(){
+  var D=W.d.daily,h='<h2>🔊 Escuchar el tiempo</h2><div class="card"><div class="s">Días (puedes elegir varios)</div><div class="chips" id="vd">';
+  for(var i=0;i<D.time.length;i++)h+='<button type="button" data-d="'+i+'" aria-pressed="'+(!!VS.days[i])+'" class="'+(VS.days[i]?'on':'')+'">'+dayName(D.time[i],i)+'</button>';
+  h+='</div><div class="s">Qué quieres oír</div><div class="chips" id="vm">';
+  [['res','Resumen del día'],['hor','Por horas'],['llu','Aviso de lluvia']].forEach(function(m){
+    h+='<button type="button" data-m="'+m[0]+'" aria-pressed="'+(!!VS.modes[m[0]])+'" class="'+(VS.modes[m[0]]?'on':'')+'">'+m[1]+'</button>';
+  });
+  h+='</div><div class="vrow"><label for="vstep">Por horas: una cada</label><select id="vstep">';
+  [1,2,3].forEach(function(n){h+='<option value="'+n+'"'+(VS.step===n?' selected':'')+'>'+n+(n===1?' hora':' horas')+'</option>'});
+  h+='</select></div><div class="vbtns"><button type="button" id="vgo">▶ Escuchar</button><button type="button" class="stop" id="vstop">⏹ Parar</button></div><div id="vs" aria-live="polite"></div></div>';
+  return h;
+}
+function alertBox(){
+  var rg=soonRain(),wet=rg.length>0;
+  return '<div class="alert'+(wet?' wet':'')+'"><span>'+(wet?'☔ <b>Lluvia prevista</b> '+esc(rg.join(', y ')):'🌤️ Sin lluvia prevista en las próximas 24 h')+'</span><button type="button" id="va" aria-label="Escuchar aviso">🔊</button></div>';
+}
+function bindVoice(){
+  [].forEach.call($('vd').querySelectorAll('button'),function(b){b.onclick=function(){var i=+b.getAttribute('data-d');VS.days[i]=!VS.days[i];b.classList.toggle('on',VS.days[i]);b.setAttribute('aria-pressed',VS.days[i])}});
+  [].forEach.call($('vm').querySelectorAll('button'),function(b){b.onclick=function(){var m=b.getAttribute('data-m');VS.modes[m]=!VS.modes[m];b.classList.toggle('on',VS.modes[m]);b.setAttribute('aria-pressed',VS.modes[m])}});
+  $('vstep').onchange=function(){VS.step=+this.value};
+  $('vgo').onclick=listen;$('vstop').onclick=stopVoice;
+  $('va').onclick=function(){say([soonText()])};
+}
+
+/* ===== ANIMACIÓN DEL DÍA, DESLIZADOR Y CONSEJOS ===== */
+var AN={day:0,h:0,play:false,speed:1,loop:false,t:null,pts:[]};
+function hk(i,h){ /* índice horario del día i a la hora h */
+  var T=W.d.hourly.time,date=W.d.daily.time[i],k=i*24+h;
+  if(T[k]&&T[k].slice(0,10)===date&&+T[k].slice(11,13)===h)return k;
+  for(var j=0;j<T.length;j++)if(T[j].slice(0,10)===date&&+T[j].slice(11,13)===h)return j;
+  return -1;
+}
+function nowHour(){return +W.d.hourly.time[W.from].slice(11,13)}
+function stopAnim(){AN.play=false;if(AN.t){clearInterval(AN.t);AN.t=null}var b=$('ap');if(b)b.textContent='▶ Mostrar animación'}
+function startAnim(){
+  if(AN.t)clearInterval(AN.t);
+  if(AN.h>=23)AN.h=0;
+  AN.play=true;$('ap').textContent='⏸ Pausa';drawScene();
+  AN.t=setInterval(function(){
+    if(AN.h>=23){if(AN.loop)AN.h=0;else{stopAnim();return}}else AN.h++;
+    drawScene();
+  },1000/AN.speed);
+}
+function fxClass(c){return(c>=71&&c<=77||c===85||c===86)?' snow':(c>=51&&c<=67||c>=80&&c<=82||c>=95)?' rain':''}
+function hourTip(k){
+  var H=W.d.hourly,ap=H.apparent_temperature[k],p=H.precipitation_probability[k]||0,s=[];
+  if(p>=50)s.push('☂️ paraguas');
+  if(ap<=2)s.push('🧣 abrigo, gorro y guantes');else if(ap<=9)s.push('🧥 abrigo');else if(ap<=15)s.push('🧶 sudadera o chaqueta');else if(ap>=30)s.push('🥵 busca sombra y bebe agua');else if(ap>=25)s.push('👕 ropa ligera');
+  return 'A esta hora: '+(s.length?s.join(' · '):'sin nada especial');
+}
+function drawScene(){
+  var H=W.d.hourly,D=W.d.daily,k=hk(AN.day,AN.h);if(k<0)return;
+  var code=H.weather_code[k],isDay=H.is_day[k]===1,w=wc(code,isDay),p=H.precipitation_probability[k],T=H.temperature_2m[k];
+  $('as').style.setProperty('--sky',sky(code,isDay));
+  $('afx').className='fx'+fxClass(code);
+  $('al').textContent=dayName(D.time[AN.day],AN.day)+' · '+fmtDate(D.time[AN.day]);
+  $('ah').textContent=pad(AN.h)+':00'+(AN.day===0&&AN.h===nowHour()?' · ahora':'');
+  $('at2').textContent=r(T)+'°';$('ae').textContent=w[1];$('ad2').textContent=w[0];
+  $('ax').innerHTML='<span>Sens. '+r(H.apparent_temperature[k])+'°</span><span>☔ '+(p==null?'—':p+'%')+'</span><span>💨 '+r(H.wind_speed_10m[k])+' km/h</span><span>💧 '+H.relative_humidity_2m[k]+'%</span>';
+  $('ar').value=AN.h;$('ar').setAttribute('aria-valuetext',pad(AN.h)+':00, '+w[0]+', '+r(T)+' grados');
+  var m=$('am'),pt=AN.pts[AN.h];if(m&&pt){m.setAttribute('cx',pt[0]);m.setAttribute('cy',pt[1])}
+  $('atip').textContent=hourTip(k);
+}
+function curve(){
+  var i=AN.day,T=[],mn=999,mx=-999,h,k;
+  for(h=0;h<24;h++){k=hk(i,h);var t=k<0?null:W.d.hourly.temperature_2m[k];T.push(t);if(t!=null){mn=Math.min(mn,t);mx=Math.max(mx,t)}}
+  var sp=(mx-mn)||1;AN.pts=T.map(function(t,h){return[+(8+h*(224/23)).toFixed(1),+(56-((t==null?mn:t)-mn)/sp*44).toFixed(1)]});
+  $('ac').innerHTML='<svg viewBox="0 0 240 66" role="img" aria-label="Curva de temperatura del día"><polyline points="'+AN.pts.map(function(p){return p.join(',')}).join(' ')+'" fill="none" stroke="var(--ac)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle id="am" r="5.5" fill="var(--ac)" stroke="#fff" stroke-width="2"/></svg><div class="s" style="text-align:center">Mín <b>'+r(mn)+'°</b> · Máx <b>'+r(mx)+'°</b></div>';
+}
+function tips(i){
+  var D=W.d.daily,mx=D.temperature_2m_max[i],mn=D.temperature_2m_min[i],uv=D.uv_index_max[i]||0,pm=D.precipitation_probability_max[i]||0,mm=D.precipitation_sum[i]||0,wd=D.wind_speed_10m_max[i]||0,c=D.weather_code[i],o=[];
+  function a(e,t){o.push([e,t])}
+  if(pm>=50||mm>=1)a('☂️','Paraguas: hay bastante probabilidad de lluvia ('+pm+'%).');else if(pm>=30)a('🌂','Un paraguas pequeño por si acaso ('+pm+'% de lluvia).');
+  if(mm>=10)a('🥾','Calzado que aguante el agua: se esperan unos '+r(mm)+' mm.');
+  if(c>=95)a('⛈️','Posibles tormentas: evita parques y zonas abiertas si truena.');
+  if(c>=71&&c<=77||c===85||c===86)a('❄️','Nieve: calzado con buen agarre y ve con calma.');
+  if(uv>=8)a('🧴','Crema solar de factor alto, gafas de sol y gorra. Evita el sol fuerte de 12 a 16 h.');
+  else if(uv>=3){a('🧴','Crema solar: el índice UV llega a '+r(uv)+'.');if(c<=2)a('🕶️','Gafas de sol: va a haber mucho sol.')}
+  if(mx>=33)a('🥵','Mucho calor ('+r(mx)+'°): lleva agua, ropa ligera y evita las horas centrales.');
+  else if(mx>=27)a('👕','Ropa ligera y una botella de agua ('+r(mx)+'° de máxima).');
+  else if(mx>=20&&mn>8)a('😎','Temperatura agradable: camiseta y algo fino por si refresca.');
+  if(mn<=0)a('🧣','Hará frío de verdad (mínima '+r(mn)+'°): abrigo, gorro, bufanda y guantes.');
+  else if(mx<=12)a('🧥','Abrigo: la mínima es de '+r(mn)+'° y la máxima de '+r(mx)+'°.');
+  else if(mx<=17)a('🧥','Chaqueta o abrigo ligero ('+r(mn)+'° a '+r(mx)+'°).');
+  else if(mn<=8)a('🧥','Chaqueta para la mañana y la noche (mínima de '+r(mn)+'°).');
+  else if(mn<=15&&mx>=20)a('🧶','Lleva sudadera para la mañana y la noche ('+r(mn)+'° de mínima).');
+  if(mx-mn>=10&&mx>=15)a('🧅','Hay '+r(mx-mn)+'° de diferencia en el día: mejor ropa por capas.');
+  if(wd>=40)a('💨','Mucho viento ('+r(wd)+' km/h): cortavientos y cuidado con el paraguas.');
+  else if(wd>=25)a('🌬️','Viento moderado: un cortavientos ligero te vendrá bien.');
+  if(!o.length)a('😌','Día tranquilo: no necesitas nada especial.');
+  return o;
+}
+function drawTips(){$('atips').innerHTML=tips(AN.day).map(function(x){return '<div class="tip"><span>'+x[0]+'</span><span>'+esc(x[1])+'</span></div>'}).join('')}
+function markDay(){[].forEach.call($('ad').querySelectorAll('button'),function(b){var on=+b.getAttribute('data-d')===AN.day;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
+function animPanel(){
+  var D=W.d.daily,h='<h2>🎞️ El día hora a hora</h2><div class="card"><div class="chips" id="ad">';
+  for(var i=0;i<D.time.length;i++)h+='<button type="button" data-d="'+i+'" aria-pressed="'+(AN.day===i)+'" class="'+(AN.day===i?'on':'')+'">'+dayName(D.time[i],i)+'</button>';
+  h+='</div><div class="scene" id="as"><div class="fx" id="afx"></div><div class="sc"><div class="sl" id="al"></div><div class="srow"><div><div class="sh" id="ah"></div><div class="st" id="at2"></div></div><div class="se" id="ae"></div></div><div class="sd" id="ad2"></div><div class="sm" id="ax"></div></div></div>';
+  h+='<div class="curve" id="ac"></div><input type="range" id="ar" min="0" max="23" step="1" value="'+AN.h+'" aria-label="Hora del día"><div class="rl"><span>0 h</span><span>6 h</span><span>12 h</span><span>18 h</span><span>23 h</span></div>';
+  h+='<div class="vbtns"><button type="button" id="ap">▶ Mostrar animación</button><button type="button" class="stop" id="an">Ahora</button></div>';
+  h+='<div class="vrow" style="margin-top:10px"><label for="asp">Velocidad</label><select id="asp">';
+  [[.5,'0,5×'],[1,'1×'],[2,'2×']].forEach(function(s){h+='<option value="'+s[0]+'"'+(AN.speed===s[0]?' selected':'')+'>'+s[1]+'</option>'});
+  h+='</select><label><input type="checkbox" id="alp"'+(AN.loop?' checked':'')+'> Repetir</label></div>';
+  h+='<div class="s" id="atip" style="margin-bottom:6px"></div><div class="h3t">🎒 Qué llevar este día</div><div id="atips"></div><div class="vbtns"><button type="button" class="stop" id="atv">🔊 Leer consejos</button></div></div>';
+  return h;
+}
+function bindAnim(){
+  function refresh(){markDay();curve();drawScene();drawTips()}
+  [].forEach.call($('ad').querySelectorAll('button'),function(b){b.onclick=function(){stopAnim();AN.day=+b.getAttribute('data-d');refresh()}});
+  $('ar').oninput=function(){stopAnim();AN.h=+this.value;drawScene()};
+  $('ap').onclick=function(){if(AN.play)stopAnim();else startAnim()};
+  $('an').onclick=function(){stopAnim();AN.day=0;AN.h=nowHour();refresh()};
+  $('asp').onchange=function(){AN.speed=+this.value;if(AN.play)startAnim()};
+  $('alp').onchange=function(){AN.loop=this.checked};
+  $('atv').onclick=function(){say(['Consejos para '+dayName(W.d.daily.time[AN.day],AN.day).toLowerCase()+' en '+W.loc.name+'.'].concat(tips(AN.day).map(function(x){return x[1].replace(/°/g,' grados').replace(/%/g,' por ciento')})))};
+  refresh();
+}
+
+/* --- Datos: Open-Meteo (gratis, sin clave) --- */
+function getWeather(loc){
+  stopVoice();stopAnim();
+  $('out').innerHTML='<div class="msg">Cargando el tiempo en '+esc(loc.name)+'…</div>';
+  var u='https://api.open-meteo.com/v1/forecast?latitude='+loc.lat+'&longitude='+loc.lon
+   +'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day'
+   +'&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code,is_day,wind_speed_10m,relative_humidity_2m'
+   +'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max'
+   +'&timezone=auto&forecast_days=8&wind_speed_unit=kmh';
+  fetch(u).then(function(res){if(!res.ok)throw 0;return res.json()}).then(function(d){show(loc,d)}).catch(function(){
+    $('out').innerHTML='<div class="msg">No se pudo cargar el tiempo. Comprueba tu conexión.<br><button id="rt">Reintentar</button></div>';$('rt').onclick=function(){getWeather(loc)};
+  });
+}
+function show(loc,d){
+  var c=d.current,day=c.is_day===1,w=wc(c.weather_code,day),D=d.daily,H=d.hourly;
+  var from=H.time.findIndex(function(t){return t.slice(0,13)>=c.time.slice(0,13)});if(from<0)from=0;
+  W={loc:loc,d:d,from:from};
+  AN.day=0;AN.h=nowHour();
+  var gmin=Math.min.apply(null,D.temperature_2m_min),gmax=Math.max.apply(null,D.temperature_2m_max),span=Math.max(gmax-gmin,1);
+  var h='<div class="hero" style="--sky:'+sky(c.weather_code,day)+'"><div class="pl">📍 '+esc(loc.name)+'</div><div class="row"><div class="t">'+r(c.temperature_2m)+'°</div><div class="e">'+w[1]+'</div></div><div class="d">'+w[0]+'</div><div class="m"><span>Sensación '+r(c.apparent_temperature)+'°</span><span>💧 '+c.relative_humidity_2m+'%</span><span>💨 '+r(c.wind_speed_10m)+' km/h</span></div></div>';
+  h+=alertBox();
+  h+=animPanel();
+  h+=voicePanel();
+  function card(i){return '<div class="card"><div class="n">'+dayName(D.time[i],i)+'</div><div class="big">'+wc(D.weather_code[i],true)[1]+' '+r(D.temperature_2m_max[i])+'° <span class="s">/ '+r(D.temperature_2m_min[i])+'°</span></div><div class="s">'+wc(D.weather_code[i],true)[0]+'</div><div class="s" style="margin-top:6px">☔ <b>'+(D.precipitation_probability_max[i]==null?'—':D.precipitation_probability_max[i]+'%')+'</b> · '+D.precipitation_sum[i]+' mm<br>💨 '+r(D.wind_speed_10m_max[i])+' km/h · UV '+r(D.uv_index_max[i])+'<br>🌅 '+hm(D.sunrise[i])+' · 🌇 '+hm(D.sunset[i])+'</div></div>'}
+  h+='<h2>Hoy y mañana</h2><div class="two">'+card(0)+card(1)+'</div>';
+  var end=Math.min(from+48,H.time.length),lastDay='',dayLabel;
+  h+='<h2>Previsión por horas</h2><div class="hour-note">Desliza horizontalmente para ver las próximas 48 horas. La hora actual aparece resaltada.</div><div class="hours">';
+  for(var i=from;i<end;i++){
+    var hour=H.time[i].slice(11,13),date=H.time[i].slice(0,10);
+    if(date!==lastDay){
+      dayLabel=date===H.time[from].slice(0,10)?'Hoy':(function(){var z=new Date(date+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long'});return z.charAt(0).toUpperCase()+z.slice(1)})();
+      h+='</div><div class="hour-day">'+dayLabel+' · '+fmtDate(date)+'</div><div class="hours">';
+      lastDay=date;
+    }
+    var rain=H.precipitation_probability[i]==null?'—':H.precipitation_probability[i]+'%';
+    var wind=H.wind_speed_10m? r(H.wind_speed_10m[i]):'—';
+    var humidity=H.relative_humidity_2m? r(H.relative_humidity_2m[i]):'—';
+    h+='<div class="h '+(i===from?'now':'')+'"><small>'+(i===from?'AHORA':hour+':00')+'</small><span class="e">'+wc(H.weather_code[i],H.is_day[i]===1)[1]+'</span><span class="temp">'+r(H.temperature_2m[i])+'°</span><small>Sens. '+(H.apparent_temperature?r(H.apparent_temperature[i])+'°':'—')+'</small><div class="rain">☔ '+rain+'</div><small>💨 '+wind+' km/h</small><small>💧 '+humidity+'%</small></div>';
+  }
+  h+='</div><h2>Próximos 7 días</h2><div class="card" style="padding:0">';
+  for(var j=1;j<D.time.length;j++){
+    var l=(D.temperature_2m_min[j]-gmin)/span*100,wd=Math.max((D.temperature_2m_max[j]-D.temperature_2m_min[j])/span*100,6);
+    h+='<div class="day"><div><b>'+dayName(D.time[j],j)+'</b><br><span class="s" style="font-size:12px;color:var(--mut)">'+fmtDate(D.time[j])+'</span></div><div class="e" title="'+wc(D.weather_code[j],true)[0]+'">'+wc(D.weather_code[j],true)[1]+'</div><div class="r">☔ '+(D.precipitation_probability_max[j]==null?'—':D.precipitation_probability_max[j]+'%')+'</div><div class="rng"><span>'+r(D.temperature_2m_min[j])+'°</span><div class="tr"><i style="left:'+l+'%;width:'+wd+'%"></i></div><span>'+r(D.temperature_2m_max[j])+'°</span></div></div>';
+  }
+  h+='</div><div class="src">Datos: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Actualizado '+c.time.slice(11,16)+'</div>';
+  $('out').innerHTML=h;
+  bindVoice();
+  bindAnim();
+}
+/* --- Ubicación --- */
+function placeName(lat,lon){
+  return fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lon+'&localityLanguage=es').then(function(r){return r.json()}).then(function(j){
+    return j.city||j.locality||j.principalSubdivision||'Tu ubicación';}).catch(function(){return'Tu ubicación'});
+}
+function useGeo(fallback){
+  if(!navigator.geolocation){return fallback()}
+  $('out').innerHTML='<div class="msg">Buscando tu ubicación…<br><small>Acepta el permiso del navegador.</small></div>';
+  navigator.geolocation.getCurrentPosition(function(p){
+    var lat=+p.coords.latitude.toFixed(3),lon=+p.coords.longitude.toFixed(3);
+    placeName(lat,lon).then(function(n){var l={lat:lat,lon:lon,name:n};saveLoc(l);getWeather(l)});
+  },function(){fallback()},{timeout:10000,maximumAge:600000});
+}
+function fallback(){
+  var l=loadLoc()||{lat:40.416,lon:-3.703,name:'Madrid'};
+  getWeather(l);
+}
+function search(){
+  var q=$('q').value.trim();if(q.length<2)return;
+  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=5&language=es').then(function(r){return r.json()}).then(function(j){
+    var res=j.results||[];
+    $('sug').innerHTML=res.length?res.map(function(x,i){return '<button data-i="'+i+'">'+esc(x.name)+(x.admin1?', '+esc(x.admin1):'')+(x.country?' · '+esc(x.country):'')+'</button>'}).join(''):'<div class="msg" style="padding:6px">No se encontró «'+esc(q)+'».</div>';
+    [].forEach.call($('sug').querySelectorAll('button'),function(b){b.onclick=function(){var x=res[+b.getAttribute('data-i')],l={lat:x.latitude,lon:x.longitude,name:x.name};saveLoc(l);$('sug').innerHTML='';$('q').value='';getWeather(l)}});
+  }).catch(function(){$('sug').innerHTML='<div class="msg" style="padding:6px">No se pudo buscar. Revisa tu conexión.</div>'});
+}
+$('bq').onclick=search;$('q').addEventListener('keydown',function(e){if(e.key==='Enter')search()});
+$('bg').onclick=function(){useGeo(function(){$('out').innerHTML='<div class="msg">No se pudo obtener tu ubicación. Busca tu ciudad arriba.</div>'})};
+useGeo(fallback);
+</script>
+</body>
+</html>

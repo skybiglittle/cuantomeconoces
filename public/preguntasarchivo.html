@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trivial desde tu texto</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff;min-height:100vh;display:flex;justify-content:center;padding:16px}
+#app{width:100%;max-width:640px}h1{text-align:center;margin:8px 0 18px}h2{margin-top:0}
+.card{background:rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:14px}
+label{display:block;font-size:.85rem;opacity:.8;margin:10px 0 4px}
+input,textarea,select{width:100%;padding:11px;border-radius:10px;border:0;font-size:1rem;background:#fff;color:#111}
+textarea{min-height:200px;resize:vertical}
+button{background:#f59e0b;color:#111;border:0;border-radius:10px;padding:12px 16px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:10px;width:100%}
+button.sec{background:rgba(255,255,255,.18);color:#fff}button:disabled{opacity:.5}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.opt{background:#fff;color:#111;text-align:left;margin-top:8px}.opt.sel{outline:4px solid #6366f1}.opt.ok{background:#22c55e;color:#fff}.opt.bad{background:#ef4444;color:#fff}.opt:disabled{opacity:1}
+#bar{height:8px;background:#f59e0b;border-radius:4px;transition:width .1s linear}
+.rank{display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.08);margin-top:6px}
+.code{font-size:2.4rem;letter-spacing:6px;text-align:center;font-weight:800}
+.muted{opacity:.75;font-size:.9rem}.q{font-size:1.25rem;font-weight:700;margin:12px 0}
+</style></head><body><div id="app">
+<h1>🧠 Trivial desde tu texto</h1>
+
+<div class="s card" id="menu">
+  <button onclick="show('setup')">📝 Crear trivial (solo o con sala)</button>
+  <hr style="opacity:.2;margin:18px 0">
+  <h2>Unirme a una sala</h2>
+  <label>Tu nombre</label><input id="jname" maxlength="16">
+  <label>Código de sala</label><input id="jcode" maxlength="4" style="text-transform:uppercase">
+  <button class="sec" onclick="joinRoom()">Unirme</button>
+</div>
+
+<div class="s card" id="setup" hidden>
+  <h2>Generar preguntas</h2>
+  <label>API key de OpenAI (sk-...)</label><input id="key" type="password" autocomplete="off">
+  <label class="muted"><input type="checkbox" id="rem" style="width:auto"> Recordar la clave en este navegador</label>
+  <div class="row"><div><label>Modelo</label><select id="model"><option>gpt-4o-mini</option><option>gpt-4o</option><option>gpt-4.1-mini</option><option>gpt-4.1</option></select></div>
+  <div><label>Nº de preguntas</label><input id="n" type="number" min="1" max="200" value="10"></div>
+  <div><label>Segundos</label><input id="secs" type="number" min="5" max="120" value="20"></div></div>
+  <label>Tu nombre</label><input id="hname" maxlength="16" value="Anfitrión">
+  <label>Texto (sin límite de caracteres)</label><textarea id="text" placeholder="Pega aquí tu texto..."></textarea>
+  <label>…o carga un archivo .txt / .md</label><input type="file" id="file" accept=".txt,.md,.csv,.json,.html">
+  <button id="gen" onclick="generate()">✨ Generar preguntas</button>
+  <p id="status" class="muted"></p>
+  <div id="ready" hidden>
+    <button onclick="startSolo()">🎮 Jugar solo</button>
+    <button class="sec" onclick="openRoom()">👥 Abrir sala multijugador</button>
+  </div>
+  <button class="sec" onclick="show('menu')">← Volver</button>
+</div>
+
+<div class="s card" id="lobby" hidden>
+  <h2>Sala</h2><div class="code" id="rcode"></div>
+  <p class="muted" style="text-align:center">Comparte este código. Los demás entran con "Unirme a una sala".</p>
+  <div id="plist"></div>
+  <button id="startbtn" onclick="startGame()">▶ Empezar</button>
+  <button class="sec" onclick="location.reload()">Salir</button>
+</div>
+
+<div class="s card" id="game" hidden>
+  <div class="muted" id="gh"></div>
+  <div style="background:rgba(255,255,255,.15);border-radius:4px;margin-top:6px"><div id="bar" style="width:100%"></div></div>
+  <div class="q" id="qt"></div><div id="opts"></div>
+  <div id="rank"></div>
+  <button id="nextbtn" hidden onclick="next()">Siguiente ▶</button>
+  <p id="wait" class="muted" hidden></p>
+</div>
+
+<div class="s card" id="end" hidden>
+  <h2>🏆 Resultados finales</h2><div id="frank"></div>
+  <button id="again" hidden onclick="startGame()">🔁 Repetir</button>
+  <button class="sec" onclick="location.reload()">Salir</button>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function show(id){document.querySelectorAll('.s').forEach(e=>e.hidden=e.id!==id)}
+let Q=[],isHost=false,solo=false,peer=null,hostConn=null,conns={},players={},cur=-1,secs=20,phase='',started=false,qStart=0,timer=null,tick=null,myAns=null,code='';
+
+try{const k=localStorage.getItem('oaikey');if(k){$('key').value=k;$('rem').checked=true}}catch(e){}
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('text').value=r.result};r.readAsText(f)};
+
+/* ---------- Generación de preguntas ---------- */
+const SYS='Eres un generador de preguntas de trivial. Respondes SOLO con JSON: {"preguntas":[{"pregunta":"...","opciones":["...","...","...","..."],"correcta":0}]}. Reglas: usa únicamente información del texto; cada pregunta debe entenderse sin ver el texto (no digas "según el texto"); 4 opciones plausibles, solo una correcta; "correcta" es el índice 0-3; no repitas preguntas; escribe en el mismo idioma del texto.';
+function chunkText(t,max=12000){const out=[];let cur='';for(let p of t.split(/\n+/)){while(p.length>max){if(cur){out.push(cur);cur=''}out.push(p.slice(0,max));p=p.slice(max)}
+ if(cur&&(cur+'\n'+p).length>max){out.push(cur);cur=p}else cur+=(cur?'\n':'')+p}
+ if(cur)out.push(cur);return out}
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+async function askAI(key,model,chunk,count){
+ const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+  body:JSON.stringify({model,temperature:0.7,response_format:{type:'json_object'},messages:[{role:'system',content:SYS},{role:'user',content:`Crea ${count} preguntas de este texto.\n\nTEXTO:\n${chunk}`}]})});
+ if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||('Error '+r.status))}
+ const d=await r.json();return (JSON.parse(d.choices[0].message.content).preguntas)||[]}
+async function generate(){
+ const key=$('key').value.trim(),text=$('text').value.trim(),model=$('model').value,n=Math.max(1,Math.min(200,+$('n').value||10));
+ if(!key||!text){alert('Falta la API key o el texto');return}
+ try{rem=$('rem').checked;rem?localStorage.setItem('oaikey',key):localStorage.removeItem('oaikey')}catch(e){}
+ $('gen').disabled=true;$('ready').hidden=true;Q=[];
+ let chunks=chunkText(text);
+ if(chunks.length>n)chunks=Array.from({length:n},(_,i)=>chunks[Math.floor(i*chunks.length/n)]);
+ const base=Math.floor(n/chunks.length),extra=n%chunks.length;
+ try{
+  for(let i=0;i<chunks.length;i++){
+   $('status').textContent=`Generando… parte ${i+1} de ${chunks.length}`;
+   const res=await askAI(key,model,chunks[i],base+(i<extra?1:0));
+   for(const p of res){if(!p.pregunta||!Array.isArray(p.opciones)||p.opciones.length!==4||!(p.correcta>=0&&p.correcta<4))continue;
+    const o=p.opciones.map((t,j)=>({t:String(t),ok:j===p.correcta}));shuffle(o);
+    Q.push({q:String(p.pregunta),o:o.map(x=>x.t),c:o.findIndex(x=>x.ok)})}}
+  shuffle(Q);
+  if(!Q.length)throw new Error('No se generó ninguna pregunta válida');
+  secs=Math.max(5,+$('secs').value||20);
+  $('status').textContent=`✅ ${Q.length} preguntas listas`+(chunks.length<chunkText(text).length?' (el texto es largo: sube el nº de preguntas para cubrirlo todo)':'');
+  $('ready').hidden=false;
+ }catch(e){$('status').textContent='❌ '+e.message}
+ $('gen').disabled=false}
+
+/* ---------- Motor (anfitrión) ---------- */
+function newPlayer(name){return{name,score:0,ans:null,t:0,gain:0}}
+function send(m){for(const c of Object.values(conns))if(c.open)c.send(m);handle(m)}
+function sendLobby(){send({t:'lobby',code,names:Object.values(players).map(p=>p.name)})}
+function startSolo(){isHost=true;solo=true;players={host:newPlayer($('hname').value||'Tú')};startGame()}
+function openRoom(){
+ isHost=true;solo=false;players={host:newPlayer($('hname').value||'Anfitrión')};
+ code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+ peer=new Peer('pregarch-'+code);
+ peer.on('open',()=>{show('lobby');sendLobby()});
+ peer.on('error',e=>{if(e.type==='unavailable-id')openRoom();else alert('Error de conexión: '+e.type)});
+ peer.on('connection',c=>{
+  c.on('data',m=>{
+   if(m.t==='join'){if(started){c.send({t:'err',m:'La partida ya ha empezado'});setTimeout(()=>c.close(),300);return}
+    conns[c.peer]=c;players[c.peer]=newPlayer((m.name||'Jugador').slice(0,16));sendLobby()}
+   else if(m.t==='ans'&&phase==='q'&&players[c.peer]&&players[c.peer].ans===null){const p=players[c.peer];p.ans=m.i;p.t=Date.now()-qStart;checkAll()}});
+  c.on('close',()=>{delete conns[c.peer];delete players[c.peer];if(!started)sendLobby();else if(phase==='q')checkAll()})})}
+function startGame(){started=true;cur=-1;Object.values(players).forEach(p=>p.score=0);next()}
+function next(){
+ clearTimeout(timer);cur++;
+ if(cur>=Q.length){started=false;phase='';send({t:'end',list:ranking()});return}
+ Object.values(players).forEach(p=>{p.ans=null;p.gain=0});
+ phase='q';qStart=Date.now();
+ send({t:'q',i:cur,n:Q.length,q:Q[cur].q,o:Q[cur].o,s:secs});
+ timer=setTimeout(reveal,secs*1000+400)}
+function checkAll(){if(Object.values(players).every(p=>p.ans!==null))reveal()}
+function reveal(){
+ if(phase!=='q')return;phase='r';clearTimeout(timer);const c=Q[cur].c;
+ for(const p of Object.values(players)){p.gain=0;if(p.ans===c){p.gain=500+Math.round(500*Math.max(0,secs*1000-p.t)/(secs*1000));p.score+=p.gain}}
+ send({t:'r',c,list:ranking(c),last:cur===Q.length-1})}
+function ranking(c){return Object.values(players).map(p=>({n:p.name,s:p.score,g:p.gain,ok:p.ans===c})).sort((a,b)=>b.s-a.s)}
+
+/* ---------- Cliente ---------- */
+function joinRoom(){
+ const name=$('jname').value.trim()||'Jugador',cd=$('jcode').value.trim().toUpperCase();
+ if(cd.length!==4){alert('Código de 4 letras');return}
+ isHost=false;peer=new Peer();
+ peer.on('open',()=>{hostConn=peer.connect('pregarch-'+cd,{reliable:true});
+  hostConn.on('open',()=>hostConn.send({t:'join',name}));
+  hostConn.on('data',handle);
+  hostConn.on('close',()=>{alert('Se perdió la conexión con la sala');location.reload()})});
+ peer.on('error',e=>alert(e.type==='peer-unavailable'?'No existe esa sala':'Error de conexión: '+e.type))}
+function answer(i){
+ if(myAns!==null||phase!=='q')return;myAns=i;
+ document.querySelectorAll('.opt').forEach((b,j)=>{if(j===i)b.classList.add('sel')});
+ $('wait').hidden=false;$('wait').textContent='Respuesta enviada… esperando al resto';
+ if(isHost){const p=players.host;p.ans=i;p.t=Date.now()-qStart;checkAll()}else hostConn.send({t:'ans',i})}
+
+/* ---------- Pantallas (todos) ---------- */
+function rankHTML(list,withGain){return list.map((p,i)=>`<div class="rank"><span>${i+1}. ${esc(p.n)} ${withGain?(p.ok?'✅':'❌'):''}</span><b>${p.s}${withGain&&p.g?` <span style="color:#86efac">+${p.g}</span>`:''}</b></div>`).join('')}
+function handle(m){
+ if(m.t==='err'){alert(m.m);location.reload()}
+ else if(m.t==='lobby'){show('lobby');code=m.code;$('rcode').textContent=m.code;
+  $('plist').innerHTML=m.names.map(n=>`<div class="rank">👤 ${esc(n)}</div>`).join('');
+  $('startbtn').hidden=!isHost;if(isHost)$('startbtn').disabled=false}
+ else if(m.t==='q'){phase='q';myAns=null;show('game');
+  $('gh').textContent=`Pregunta ${m.i+1} de ${m.n}`;$('qt').textContent=m.q;$('rank').innerHTML='';
+  $('nextbtn').hidden=true;$('wait').hidden=true;
+  $('opts').innerHTML=m.o.map((t,i)=>`<button class="opt" onclick="answer(${i})">${esc(t)}</button>`).join('');
+  const end=Date.now()+m.s*1000;clearInterval(tick);
+  tick=setInterval(()=>{const f=Math.max(0,(end-Date.now())/(m.s*1000));$('bar').style.width=(f*100)+'%';if(f<=0)clearInterval(tick)},100)}
+ else if(m.t==='r'){phase='r';clearInterval(tick);
+  document.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;b.classList.remove('sel');if(j===m.c)b.classList.add('ok');else if(j===myAns)b.classList.add('bad')});
+  $('rank').innerHTML='<h3>Clasificación</h3>'+rankHTML(m.list,true);
+  if(isHost){$('nextbtn').hidden=false;$('nextbtn').textContent=m.last?'Ver resultados finales 🏆':'Siguiente ▶';$('wait').hidden=true}
+  else{$('wait').hidden=false;$('wait').textContent='Esperando al anfitrión…'}}
+ else if(m.t==='end'){clearInterval(tick);show('end');$('frank').innerHTML=rankHTML(m.list,false);$('again').hidden=!isHost}}
+</script></body></html>

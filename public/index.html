@@ -39,6 +39,8 @@ a.it small{color:var(--mut)}
     <button type="button" data-n="1" aria-pressed="true">☆</button>
     <button type="button" data-n="2" aria-pressed="false">☆☆</button>
     <button type="button" data-n="3" aria-pressed="false">☆☆☆</button>
+    <button type="button" data-n="4" aria-pressed="false">☆☆☆☆</button>
+    <button type="button" data-n="5" aria-pressed="false">☆☆☆☆☆</button>
   </div>
   <div id="list"></div>
   <form class="unlock" id="form" autocomplete="off">
@@ -58,7 +60,7 @@ a.it small{color:var(--mut)}
   var filt=document.getElementById('filters');
   var items=[],all=false,lvl=1;
   try{all=sessionStorage.getItem(KEY)==='1'}catch(e){}
-  try{var s=parseInt(sessionStorage.getItem(LKEY),10);if(s>=1&&s<=3)lvl=s}catch(e){}
+  try{var s=parseInt(sessionStorage.getItem(LKEY),10);if(s>=1&&s<=5)lvl=s}catch(e){}
 
   function stars(t){return (String(t||'').match(/☆/g)||[]).length}
   function here(href){

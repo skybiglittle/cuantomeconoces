@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retos con trampa</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#241636;--bg2:#32204a;--ink:#fff4e0;--mut:#b9a6d3;--sun:#ffd23f;--wat:#ff5d73;--mint:#4ee1c1;--line:#4a3568}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif}
+body{min-height:100vh;padding:16px;max-width:760px;margin:0 auto}
+h1{font-size:2.4rem;line-height:1;margin:.2em 0 .1em;letter-spacing:-.02em;transform:rotate(-1.5deg)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--sun)}
+p{color:var(--mut);margin:.3em 0 1em}
+.panel{background:var(--bg2);border:2px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+input,textarea,select{width:100%;background:#1a0f29;color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:12px;font:inherit}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 16px;cursor:pointer;background:var(--sun);color:#2a1a00}
+button.alt{background:transparent;color:var(--ink);border:2px solid var(--line)}
+button.bad{background:var(--wat);color:#fff}
+button.ok{background:var(--mint);color:#06332a}
+button:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:999px;border:2px solid var(--line);background:transparent;color:var(--ink);font-weight:600;flex:none}
+.chip.on{background:var(--mint);color:#06332a;border-color:var(--mint)}
+.pl{display:flex;justify-content:space-between;gap:8px}
+.pl .chip{cursor:default}.pl .me{border-color:var(--sun)}
+.code{font-size:2rem;font-weight:900;letter-spacing:.25em;color:var(--sun)}
+.card{border:3px dashed var(--sun);border-radius:18px;padding:18px;margin-bottom:14px;background:#2a1a40}
+.card.trap{border-color:var(--wat);border-style:solid;animation:shake .5s}
+.card .txt{font-size:1.35rem;font-weight:800;line-height:1.25;margin:6px 0 14px}
+.who{color:var(--mut);font-size:.95rem}
+.tag{display:inline-block;background:var(--wat);color:#fff;border-radius:8px;padding:4px 10px;font-weight:800;margin-bottom:8px}
+.feed{max-height:220px;overflow:auto;font-size:.95rem}.feed div{padding:6px 0;border-bottom:1px solid var(--line)}
+.hostbox{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.sw{position:relative;width:58px;height:32px;flex:none}
+.sw input{opacity:0;position:absolute;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw i{position:absolute;inset:0;border-radius:999px;background:#1a0f29;border:2px solid var(--line);transition:.2s}
+.sw i:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--mut);transition:.2s}
+.sw input:checked+i{background:var(--wat);border-color:var(--wat)}
+.sw input:checked+i:after{left:29px;background:#fff}
+.sw input:focus-visible+i{outline:3px solid var(--mint);outline-offset:2px}
+.hide{display:none!important}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--wat);color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:.3s}
+#toast.on{opacity:1}
+@keyframes shake{0%,100%{transform:none}20%{transform:rotate(-1.5deg) translateX(-6px)}40%{transform:rotate(1.5deg) translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.card.trap{animation:none}.sw i,.sw i:after{transition:none}}
+</style>
+</head>
+<body>
+<h1>Retos con trampa</h1>
+
+<section id="home">
+  <p>Lanza retos a tus amigos… y reza para que no te rebote.</p>
+  <div class="panel">
+    <label for="name" class="who">Tu nombre</label>
+    <input id="name" maxlength="14" autocomplete="off" placeholder="Ej: Dani">
+    <div class="row" style="margin-top:12px">
+      <button id="create">Crear sala</button>
+    </div>
+  </div>
+  <div class="panel">
+    <label for="code" class="who">¿Ya tienes un código?</label>
+    <div class="row">
+      <input id="code" maxlength="4" autocomplete="off" placeholder="ABCD" style="text-transform:uppercase">
+      <button id="join" class="alt">Entrar a la sala</button>
+    </div>
+  </div>
+</section>
+
+<section id="game" class="hide">
+  <div class="panel">
+    <div class="pl"><div><span class="who">Código de sala</span><div class="code" id="roomcode"></div></div>
+    <button class="alt" id="copy" style="flex:none;align-self:center">Copiar</button></div>
+    <div class="chips" id="players" style="margin-top:10px"></div>
+  </div>
+
+  <div id="host" class="panel hide">
+    <div class="hostbox">
+      <div><h2 style="margin:0">Modo trampa (solo tú lo ves)</h2>
+      <span class="who">Activado: el reto que alguien envía le toca a quien lo envía. Cámbialo cuando quieras.</span></div>
+      <label class="sw"><input type="checkbox" id="trap" aria-label="Modo trampa"><i></i></label>
+    </div>
+  </div>
+
+  <div id="mine"></div>
+
+  <div class="panel">
+    <h2>Lanzar un reto</h2>
+    <div class="who">¿A quién?</div>
+    <div class="chips" id="targets" style="margin:8px 0 12px"></div>
+    <div class="who">Categoría</div>
+    <div class="chips" id="cats" style="margin:8px 0 12px"></div>
+    <textarea id="text" maxlength="200" placeholder="Escribe tu reto o pulsa el dado…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="alt" id="dice">🎲 Reto al azar</button>
+      <button id="send">Enviar reto</button>
+    </div>
+  </div>
+
+  <div class="panel"><h2>Lo que pasa en la sala</h2><div class="feed" id="feed"></div></div>
+</section>
+<div id="toast" role="status"></div>
+
+<script>
+const BANK={
+"Contactos":[
+"Escribe a tu último contacto de WhatsApp: «Acabo de soñar contigo y tengo que contarte algo».",
+"Manda a alguien de tu agenda un audio de 10 segundos cantando «Cumpleaños feliz», aunque no sea su cumple.",
+"Escribe a un amigo: «¿Te acuerdas de lo del otro día?» y no expliques nada más durante 10 minutos.",
+"Envía a un contacto al azar solo la palabra «Jamás» y espera su respuesta.",
+"Pide a un familiar que te recomiende una película y dile que la has visto ya, pero que quieres su opinión.",
+"Manda un meme a tu contacto número 7 de la lista sin ningún comentario.",
+"Escribe a alguien con quien no hablas hace más de un año: «Estaba pensando en ti. ¿Todo bien?».",
+"Envía una nota de voz a un amigo diciéndole un cumplido exagerado, como si fuera un discurso de premios.",
+"Escribe a un contacto: «Tenemos que hablar de tu futuro» y manda un «tranqui, es broma» a los 2 minutos.",
+"Cambia tu foto de perfil por una foto cutre que elija el grupo durante 10 minutos."],
+"Cuerpo":[
+"Haz 15 sentadillas mientras el resto cuenta en voz alta.",
+"Camina como un pingüino hasta el otro lado de la habitación y vuelve.",
+"Aguanta 30 segundos en la postura del árbol sin reírte.",
+"Baila durante 20 segundos sin música como si nadie te mirara.",
+"Haz 10 flexiones. Si no puedes, las haces con las rodillas y con orgullo.",
+"Quédate en una pierna hasta que acabe la siguiente ronda de reto.",
+"Imita a un robot que se está quedando sin batería durante 20 segundos.",
+"Haz la ola con los brazos como si fueras una medusa.",
+"Intenta tocarte la oreja con el pie. Cuenta como hecho si lo intentas con dignidad.",
+"Camina hacia atrás por toda la sala con los ojos cerrados (con un guía)."],
+"Voz":[
+"Habla como un presentador de telediario durante todo tu próximo turno.",
+"Canta el estribillo de una canción famosa con voz de ópera.",
+"Cuenta el argumento de una película con la voz de un abuelo que ha perdido las gafas.",
+"Di un trabalenguas tres veces seguidas sin fallar. Si fallas, empiezas de nuevo.",
+"Habla susurrando durante los próximos 3 minutos.",
+"Haz un anuncio de 15 segundos para vender una cuchara como si fuera un coche de lujo.",
+"Imita a alguien de la sala hasta que adivinen quién es.",
+"Narra lo que hace la persona de tu derecha como si fuera un documental de la naturaleza.",
+"Recita el abecedario hacia atrás. Tienes dos intentos.",
+"Termina todas tus frases con «…y eso cambió mi vida» durante 3 minutos."],
+"Social":[
+"Cuenta una anécdota vergonzosa tuya de cuando eras pequeño.",
+"Di algo que admiras de cada persona de la sala, en 10 segundos cada una.",
+"Deja que el grupo te haga un peinado nuevo con lo que haya a mano.",
+"Intercambia un objeto personal con otro jugador durante el resto de la partida.",
+"Confiesa tu pequeño vicio más inconfesable (apto para menores).",
+"Ofrece un brindis solemne por algo absurdo, como los calcetines desparejados.",
+"Deja que otro jugador te cambie el nombre en la partida por el que quiera durante 5 minutos.",
+"Elige a alguien de la sala y cuéntale qué superpoder le darías y por qué.",
+"Haz una pregunta a la sala y elige la respuesta más rara como ganadora.",
+"Pon cara de sorpresa extrema cada vez que alguien diga tu nombre en los próximos 5 minutos."],
+"Ingenio":[
+"Inventa una excusa muy creativa para llegar tarde a una cita con un dinosaurio.",
+"Dibuja un retrato de la persona a tu izquierda en 30 segundos. Sin mirar el papel.",
+"Inventa un eslogan para tu móvil y vende su mejor característica en 15 segundos.",
+"Crea una palabra nueva, define su significado y úsala en una frase.",
+"Describe tu día de ayer como si fuera un tráiler de película épica.",
+"Di 5 usos nuevos para un calcetín en menos de 20 segundos.",
+"Inventa un récord Guinness absurdo y defiéndelo ante el jurado.",
+"Haz un poema de cuatro versos sobre lo primero que veas en la mesa.",
+"Cuenta una historia de miedo que acabe con una moraleja sobre ordenar la casa.",
+"Haz una pregunta imposible y deja que el grupo la responda con seriedad científica."]
+};
+const FRASES=[
+"Lo que das, lo recibes. 😈","Karma instantáneo. Servido fresco.","Quien lanza retos, recoge retos.",
+"El tiro te salió por la culata. 🎯","Tu propia medicina, bien servida.","Querías repartir y te tocó a ti. 🍀",
+"Lo que siembras en el grupo, lo cosechas en la cara.","El reto vuelve a casa. 🏠","Boomerang activado. 🪃"];
+const $=s=>document.querySelector(s);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+let peer,hostConn,conns={},isHost=false,me={id:null,name:''};
+let S={players:[],pending:[],feed:[],trap:false,code:''},selTo=null,selCat=Object.keys(BANK)[0],uid=0;
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2800)}
+function code4(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let s='';for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
+const find=id=>S.players.find(p=>p.id===id);
+
+/* ---------- Anfitrión ---------- */
+function hostStart(name){
+  isHost=true;me={id:'host',name};
+  const code=code4();
+  peer=new Peer('retosdani-'+code);
+  peer.on('open',()=>{S.code=code;S.players=[{id:'host',name,score:0}];feed('🎪 Sala creada. ¡Que empiece el caos!');enter();render()});
+  peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();hostStart(name)}else toast('Error de conexión: '+e.type)});
+  peer.on('connection',c=>{
+    conns[c.peer]=c;
+    c.on('data',m=>handle(c.peer,m));
+    c.on('close',()=>{delete conns[c.peer];drop(c.peer)});
+  });
+}
+function feed(t){S.feed.unshift(t);S.feed=S.feed.slice(0,40)}
+function drop(id){
+  const p=find(id);if(!p)return;
+  S.players=S.players.filter(x=>x.id!==id);
+  S.pending=S.pending.filter(x=>x.target!==id);
+  feed('👋 '+p.name+' se fue');sync();
+}
+function handle(from,m){
+  if(m.t==='join'){
+    if(!find(from)){const n=String(m.name||'Anónimo').slice(0,14);S.players.push({id:from,name:n,score:0});feed('🎉 '+n+' entró en la sala')}
+  }
+  if(m.t==='send'){
+    const f=find(from),t=find(m.to),txt=String(m.text||'').trim().slice(0,200);
+    if(!f||!t||!txt||t.id===f.id)return;
+    const trap=S.trap;
+    const item={id:++uid,from:f.id,to:t.id,target:trap?f.id:t.id,text:txt,trap};
+    S.pending.push(item);
+    feed(trap?'💥 '+f.name+' le lanzó un reto a '+t.name+'… ¡y le rebotó!':'🎯 '+f.name+' lanzó un reto a '+t.name);
+  }
+  if(m.t==='resolve'){
+    const i=S.pending.findIndex(x=>x.id===m.id&&x.target===from);if(i<0)return;
+    const it=S.pending.splice(i,1)[0],p=find(from);
+    if(m.ok){p.score+=1;feed('✅ '+p.name+' cumplió el reto')}else{p.score-=1;feed('🙈 '+p.name+' se rajó')}
+  }
+  sync();
+}
+function sync(){
+  const pub=JSON.stringify({t:'state',s:{...S,trap:false}});
+  Object.values(conns).forEach(c=>{try{c.send(JSON.parse(pub))}catch(e){}});
+  render();
+}
+
+/* ---------- Invitado ---------- */
+function join(name,code){
+  peer=new Peer();
+  peer.on('open',id=>{
+    me={id,name};
+    hostConn=peer.connect('retosdani-'+code,{reliable:true});
+    hostConn.on('open',()=>hostConn.send({t:'join',name}));
+    hostConn.on('data',m=>{if(m.t==='state'){S=m.s;enter();render()}});
+    hostConn.on('close',()=>toast('La sala se ha cerrado'));
+  });
+  peer.on('error',()=>toast('No encuentro esa sala. Revisa el código.'));
+}
+
+/* ---------- Acciones ---------- */
+function act(m){if(isHost)handle('host',m);else if(hostConn&&hostConn.open)hostConn.send(m)}
+
+/* ---------- Interfaz ---------- */
+function enter(){$('#home').classList.add('hide');$('#game').classList.remove('hide');$('#roomcode').textContent=S.code;$('#host').classList.toggle('hide',!isHost)}
+function render(){
+  $('#players').innerHTML='';
+  S.players.forEach(p=>{const e=document.createElement('span');e.className='chip'+(p.id===me.id?' me':'');e.textContent=p.name+' · '+p.score;$('#players').append(e)});
+  if(isHost)$('#trap').checked=S.trap;
+  const mine=S.pending.filter(x=>x.target===me.id)[0],box=$('#mine');box.innerHTML='';
+  if(mine){
+    const from=find(mine.from),d=document.createElement('div');d.className='card'+(mine.trap?' trap':'');
+    if(mine.trap){const g=document.createElement('div');g.className='tag';g.textContent=mine.frase||rnd(FRASES);mine.frase=g.textContent;d.append(g)}
+    const w=document.createElement('div');w.className='who';
+    w.textContent=mine.trap?'Tu propio reto ha vuelto a ti':(from?from.name:'Alguien')+' te lanza un reto';d.append(w);
+    const t=document.createElement('div');t.className='txt';t.textContent=mine.text;d.append(t);
+    const r=document.createElement('div');r.className='row';
+    const ok=document.createElement('button');ok.className='ok';ok.textContent='Hecho (+1)';ok.onclick=()=>act({t:'resolve',id:mine.id,ok:true});
+    const no=document.createElement('button');no.className='bad';no.textContent='Paso (−1)';no.onclick=()=>act({t:'resolve',id:mine.id,ok:false});
+    r.append(ok,no);d.append(r);box.append(d);
+  }
+  const others=S.players.filter(p=>p.id!==me.id);
+  if(!others.find(p=>p.id===selTo))selTo=others.length?others[0].id:null;
+  const tg=$('#targets');tg.innerHTML='';
+  if(!others.length){tg.innerHTML='<span class="who">Esperando a más jugadores… pásales el código.</span>'}
+  others.forEach(p=>{const b=document.createElement('button');b.className='chip'+(p.id===selTo?' on':'');b.textContent=p.name;b.onclick=()=>{selTo=p.id;render()};tg.append(b)});
+  $('#send').disabled=!selTo;
+  $('#feed').innerHTML='';S.feed.forEach(t=>{const e=document.createElement('div');e.textContent=t;$('#feed').append(e)});
+}
+function buildCats(){
+  const c=$('#cats');c.innerHTML='';
+  Object.keys(BANK).forEach(k=>{const b=document.createElement('button');b.className='chip'+(k===selCat?' on':'');b.textContent=k;b.onclick=()=>{selCat=k;buildCats()};c.append(b)});
+}
+buildCats();
+
+$('#create').onclick=()=>{const n=$('#name').value.trim();if(!n)return toast('Pon tu nombre primero');hostStart(n)};
+$('#join').onclick=()=>{const n=$('#name').value.trim(),c=$('#code').value.trim().toUpperCase();if(!n)return toast('Pon tu nombre primero');if(c.length!==4)return toast('El código tiene 4 letras');join(n,c)};
+$('#trap').onchange=e=>{S.trap=e.target.checked;toast(S.trap?'Trampa activada 😈':'Trampa desactivada');sync()};
+$('#dice').onclick=()=>{$('#text').value=rnd(BANK[selCat])};
+$('#send').onclick=()=>{const t=$('#text').value.trim();if(!t)return toast('Escribe un reto o pulsa el dado');if(!selTo)return;act({t:'send',to:selTo,text:t});$('#text').value='';toast('Reto enviado 🎯')};
+$('#copy').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(S.code).then(()=>toast('Código copiado'))};
+</script>
+</body>
+</html>

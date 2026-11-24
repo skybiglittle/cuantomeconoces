@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cadena de palabras</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap">
+<style>
+:root{--paper:#eef3f8;--grid:#cfdcea;--ink:#14213d;--muted:#5b6b86;--red:#e63946;--hl:#ffd60a;--card:#fff;--ok:#16854c;--line:#b9c8da;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0f1626;--grid:#1c2943;--ink:#eef3f8;--muted:#9fb0cc;--card:#18233c;--ok:#5fd596;--line:#34476b;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#0f1626;--grid:#1c2943;--ink:#eef3f8;--muted:#9fb0cc;--card:#18233c;--ok:#5fd596;--line:#34476b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Rubik,system-ui,sans-serif;color:var(--ink);background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;min-height:100vh}
+#app{max-width:520px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:1.9rem;font-weight:800;margin:6px 0 4px;line-height:1.1}
+h2{font-size:1.15rem;font-weight:800;margin:18px 0 8px}
+p{line-height:1.45}.m{color:var(--muted)}.er{color:var(--red);font-weight:600}.ok{color:var(--ok);font-weight:800}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input{width:100%;font:inherit;padding:12px;border:2px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--hl);outline-offset:2px}
+.btn{display:block;width:100%;margin:10px 0;padding:13px;font:inherit;font-weight:800;border:2px solid var(--ink);border-radius:10px;background:var(--red);color:#fff;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--ink)}
+.btn.sel{background:var(--hl);color:#14213d}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px}.row input{flex:1}.row .btn{width:auto;margin:0;padding:12px 16px}
+.or{text-align:center;color:var(--muted);margin:16px 0 0}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:600;color:var(--muted)}
+.top b{color:var(--ink);font-size:1.4rem;letter-spacing:.12em;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips span{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:4px 12px;font-weight:600}
+.ch{list-style:none;margin:10px 0;padding:0 0 0 14px;border-left:3px solid var(--line)}
+.ch li{margin:8px 0;min-height:2.3em;display:flex;align-items:center}
+.t{display:inline-grid;place-items:center;width:1.5em;height:1.9em;margin:0 2px;border-bottom:3px solid var(--ink);font-weight:800;font-size:1.3rem}
+.sp{display:inline-block;width:.8em}
+.c .t.f{background:var(--hl);color:#14213d;border-radius:4px 4px 0 0}
+.d .t{color:var(--ok);border-color:var(--ok)}
+.n .ph{color:var(--muted);border:2px dashed var(--line);border-radius:8px;padding:3px 22px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:2px solid var(--ink);border-radius:10px;overflow:hidden;font-size:.95rem}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left;padding-left:10px}
+th{font-weight:600;color:var(--muted);font-size:.8rem}
+.note{min-height:1.4em;font-weight:600}
+</style></head>
+<body><div id="app"></div>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const $app=document.getElementById('app');
+const ME=Math.random().toString(36).slice(2,8);
+let room=null,V=null,S=null,chains={},isHost=false,code='',nm='',cd='',err='',draft=['','','','',''],gdraft='',last='';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+const mask=(w,r)=>[...w].map((c,i)=>i<r||c===' '?c:'_').join('');
+let peer=null,conns=[],hostConn=null;
+const send=(t,d)=>{try{if(isHost)conns.forEach(c=>{if(c.open)c.send({t,d})});else if(hostConn&&hostConn.open)hostConn.send({t,d})}catch(e){}};
+const genCode=()=>{const L='ABCDEFGHJKMNPQRSTUVWXYZ';let c='';for(let i=0;i<4;i++)c+=L[Math.floor(Math.random()*L.length)];return c};
+const nameOf=id=>(V.players.find(p=>p.id===id)||{name:'?'}).name;
+
+/* ---------- lógica del anfitrión ---------- */
+const mk=(g,o)=>({id:g,guesser:g,owner:o,idx:0,rev:1,cur:0,asked:0,solved:0,pts:0,done:false});
+const shownOf=a=>{const w=chains[a.owner]||[];return w.map((x,i)=>i<a.idx?x:(i===a.idx&&!a.done?mask(x,a.rev):null))};
+function bc(){const v={...S,asg:S.asg.map(a=>({...a,shown:shownOf(a)}))};V=v;paint();send('state',v)}
+function cleanWords(a){if(!Array.isArray(a)||a.length!==5)return null;const w=a.map(x=>String(x).trim().replace(/\s+/g,' ').slice(0,30));return w.every(x=>norm(x).length>0)?w:null}
+function start(){
+  if(S.mode==='team'){if(!chains[ME]||S.players.length<2)return;S.asg=[mk('team',ME)]}
+  else{const n=S.players.length;if(n<2||!S.players.every(p=>chains[p.id]))return;S.asg=S.players.map((p,i)=>mk(p.id,S.players[(i+1)%n].id))}
+  S.phase='play';S.note=null;bc()}
+function onAct(m){
+  if(!isHost)return;const d=m.data||{},t=d.t,pid=String(d.pid||'').slice(0,12);
+  if(t==='join'){const n=String(d.name||'Jugador').trim().slice(0,16)||'Jugador';const p=S.players.find(x=>x.id===pid);
+    if(p)p.name=n;else if((S.phase==='lobby'||S.phase==='write'||S.mode==='team')&&S.players.length<12)S.players.push({id:pid,name:n,ok:false});
+    return bc()}
+  const p=S.players.find(x=>x.id===pid);if(!p)return;
+  if(t==='words'){if(S.phase==='write'&&S.mode==='comp'){const w=cleanWords(d.words);if(w){chains[pid]=w;p.ok=true;bc()}}return}
+  if(S.phase!=='play')return;
+  const a=S.asg.find(x=>x.id===d.aid);if(!a||a.done)return;
+  if(!(a.guesser==='team'?pid!==ME:a.guesser===pid))return;
+  const w=chains[a.owner][a.idx];
+  if(t==='letter'){
+    if(a.rev<w.length-1){a.rev++;while(w[a.rev-1]===' '&&a.rev<w.length-1)a.rev++;a.asked++;a.cur++}
+  }else if(t==='guess'){
+    const g=String(d.text||'').slice(0,40);
+    if(norm(g)&&norm(g)===norm(w)){
+      a.pts+=Math.max(1,10-2*a.cur);a.solved++;a.idx++;a.rev=1;a.cur=0;
+      if(a.idx>=5){a.done=true}
+      S.note={aid:a.id,ok:true,by:p.name,text:w}
+    }else S.note={aid:a.id,ok:false,by:p.name,text:g}
+  }else return;
+  if(S.asg.every(x=>x.done))S.phase='end';
+  bc()}
+function act(d){d.pid=ME;if(isHost)onAct({data:d});else send('act',d)}
+
+/* ---------- conexión ---------- */
+function enter(c,host){
+  err='';
+  if(!nm.trim()){err='Escribe tu nombre.';last='';return paint()}
+  if(typeof Peer==='undefined'){err='No se ha podido cargar la conexión. Revisa tu internet.';last='';return paint()}
+  code=c;isHost=host;const id='cadpal-'+c.toLowerCase();
+  if(host){
+    peer=new Peer(id);
+    peer.on('open',()=>{room=true;S={phase:'lobby',mode:'team',code:c,hostId:ME,note:null,asg:[],players:[{id:ME,name:nm.trim().slice(0,16),ok:false}]};bc();setInterval(bc,4000)});
+    peer.on('connection',cn=>{conns.push(cn);cn.on('data',m=>{if(m&&m.t==='act')onAct({data:m.d})});cn.on('open',()=>bc());cn.on('close',()=>{conns=conns.filter(x=>x!==cn)})});
+    peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();enter(genCode(),true)}else{err='Error de conexión: '+e.type;room=null;last='';paint()}})
+  }else{
+    peer=new Peer();
+    peer.on('open',()=>{room=true;paint();
+      hostConn=peer.connect(id,{reliable:true});
+      hostConn.on('data',m=>{if(m&&m.t==='state'){V=m.d;paint()}});
+      const j=()=>{if(!V||!V.players.find(p=>p.id===ME))send('act',{t:'join',pid:ME,name:nm.trim()})};
+      hostConn.on('open',j);setInterval(j,2500)});
+    peer.on('error',e=>{err=e.type==='peer-unavailable'?'No existe esa sala.':'Error de conexión: '+e.type;room=null;V=null;last='';paint()})
+  }
+  paint()}
+
+/* ---------- vistas ---------- */
+const tiles=s=>[...s].map(c=>c===' '?'<i class="sp"></i>':c==='_'?'<b class="t"></b>':'<b class="t f">'+esc(c.toUpperCase())+'</b>').join('');
+function chain(a){return '<ol class="ch">'+a.shown.map((s,i)=>'<li class="'+(s&&i<a.idx?'d':i===a.idx&&!a.done?'c':'n')+'">'+(s?tiles(s):'<span class="ph">?</span>')+'</li>').join('')+'</ol>'}
+function board(){
+  const rows=[...V.asg].sort((x,y)=>y.pts-x.pts||y.solved-x.solved).map(a=>'<tr><td>'+esc(a.guesser==='team'?'Equipo':nameOf(a.guesser))+'</td><td>'+a.solved+'/5</td><td>'+a.asked+'</td><td><b>'+a.pts+'</b></td></tr>').join('');
+  return '<h2>Puntuación</h2><table><tr><th>Jugador</th><th>Aciertos sin contar letras</th><th>Letras pedidas</th><th>Puntos contando letras</th></tr>'+rows+'</table><p class="m">Cada acierto vale 10 puntos y cada letra pedida resta 2 (mínimo 1 punto por palabra). Los aciertos no tienen en cuenta las letras.</p>'}
+function head(){return '<div class="top"><span>Sala <b>'+esc(code.toUpperCase())+'</b></span><span>'+(V.mode==='team'?'Equipo':'Competición')+'</span></div>'}
+function home(){return '<h1>Cadena de palabras</h1><p class="m">Adivina cinco palabras relacionadas entre sí. De cada una solo se ve la primera letra.</p><label for="nm">Tu nombre</label><input id="nm" maxlength="16" value="'+esc(nm)+'" autocomplete="off"><button class="btn" data-a="create">Crear sala</button><div class="or">o entra en una sala</div><label for="cd">Código de sala</label><input id="cd" maxlength="4" value="'+esc(cd)+'" autocapitalize="characters" autocomplete="off"><button class="btn alt" data-a="join">Entrar</button>'+(err?'<p class="er">'+esc(err)+'</p>':'')}
+function lobby(){
+  let h=head()+'<h2>Jugadores</h2><div class="chips">'+V.players.map(p=>'<span>'+esc(p.name)+(p.id===V.hostId?' (anfitrión)':'')+'</span>').join('')+'</div>';
+  if(isHost){h+='<h2>Modo de juego</h2><button class="btn alt '+(V.mode==='team'?'sel':'')+'" data-a="mt">Equipo: todos adivinan tu cadena</button><button class="btn alt '+(V.mode==='comp'?'sel':'')+'" data-a="mc">Competición: cada uno escribe su cadena para otro</button><button class="btn" data-a="towrite" '+(V.players.length<2?'disabled':'')+'>Escribir palabras</button>'+(V.players.length<2?'<p class="m">Necesitas al menos otro jugador. Comparte el código de sala.</p>':'')}
+  else h+='<p class="m">Esperando a que el anfitrión elija el modo y empiece.</p>';
+  return h}
+function write(){
+  const comp=V.mode==='comp',me=V.players.find(p=>p.id===ME)||{};
+  let h=head();
+  if(!comp&&!isHost)return h+'<h2>Preparando la cadena</h2><p class="m">El anfitrión está escribiendo las cinco palabras. Cada una tiene que estar relacionada con la anterior.</p>';
+  h+='<h2>'+(comp?'Escribe tu cadena de 5 palabras':'Escribe la cadena de 5 palabras')+'</h2><p class="m">Cada palabra debe estar relacionada con la anterior. Esa relación no se comprueba.</p>';
+  for(let i=0;i<5;i++)h+='<input id="w'+i+'" data-w="'+i+'" maxlength="30" autocomplete="off" placeholder="'+(i?'Palabra '+(i+1)+', relacionada con la anterior':'Palabra 1, por ejemplo agua')+'" value="'+esc(draft[i])+'" style="margin:5px 0">';
+  const ok=cleanWords(draft)!==null;
+  if(comp){h+='<button class="btn alt" data-a="sendwords" '+(ok?'':'disabled')+'>'+(me.ok?'Actualizar mis palabras':'Guardar mis palabras')+'</button><h2>Quién está listo</h2><div class="chips">'+V.players.map(p=>'<span>'+esc(p.name)+(p.ok?' ✓':'')+'</span>').join('')+'</div>';
+    if(isHost)h+='<button class="btn" data-a="start" '+(V.players.length>=2&&V.players.every(p=>p.ok)?'':'disabled')+'>Empezar partida</button>'}
+  else h+='<button class="btn" data-a="start" '+(ok&&V.players.length>=2?'':'disabled')+'>Empezar partida</button>'+(V.players.length<2?'<p class="m">Espera a que entre algún jugador.</p>':'');
+  return h}
+function noteOf(a){const n=V.note;if(!n||n.aid!==a.id)return '<p class="note"></p>';
+  return '<p class="note '+(n.ok?'ok':'er')+'">'+(n.ok?esc(n.by)+' ha acertado: '+esc(n.text):esc(n.by)+' ha probado «'+esc(n.text)+'»: no es')+'</p>'}
+function play(){
+  const team=V.mode==='team',a=team?V.asg[0]:V.asg.find(x=>x.guesser===ME);
+  let h=head();
+  if(!a)return h+'<p class="m">Estás mirando la partida.</p>'+board();
+  h+='<h2>'+(team?'Todo el equipo contra la cadena':'Tu cadena, escrita por '+esc(nameOf(a.owner)))+'</h2>'+chain(a)+noteOf(a);
+  if(a.done)h+='<p class="ok">¡Cadena completada!</p>';
+  else if(team&&isHost)h+='<p class="m">Tú has escrito la cadena: '+esc((chains[ME]||[]).join(' · '))+'</p>';
+  else{const u=((a.shown[a.idx]||'').match(/_/g)||[]).length;
+    h+='<div class="row"><input id="g" placeholder="Escribe la palabra" autocomplete="off" value="'+esc(gdraft)+'"><button class="btn" data-a="guess">Adivinar</button></div><button class="btn alt" data-a="letter" '+(u<=1?'disabled':'')+'>Pedir una letra</button><p class="m">Letras pedidas: '+a.asked+'</p>'}
+  return h+board()}
+function end(){return head()+'<h1>Fin de la partida</h1>'+board()+(isHost?'<button class="btn" data-a="again">Jugar otra vez</button>':'<p class="m">El anfitrión puede empezar otra partida.</p>')}
+function view(){
+  if(!room)return home();
+  if(!V)return '<h1>Sala '+esc(code.toUpperCase())+'</h1><p class="m">Buscando la sala… Comprueba que el código es correcto.</p>';
+  return V.phase==='lobby'?lobby():V.phase==='write'?write():V.phase==='play'?play():end()}
+function paint(){
+  const h=view();if(h===last)return;last=h;
+  const ae=document.activeElement,id=ae&&ae.id,ss=ae&&ae.selectionStart;
+  $app.innerHTML=h;
+  if(id){const e=document.getElementById(id);if(e){e.focus();try{e.setSelectionRange(ss,ss)}catch(_){}}}}
+
+/* ---------- eventos ---------- */
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.w!==undefined){draft[+t.dataset.w]=t.value;const b=document.querySelector('[data-a=sendwords],[data-a=start]');if(b&&V)last='',paint()}
+  else if(t.id==='g')gdraft=t.value;else if(t.id==='nm')nm=t.value;else if(t.id==='cd')cd=t.value.toUpperCase().replace(/[^A-Z]/g,'')});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='g')doGuess()});
+function doGuess(){const a=V&&(V.mode==='team'?V.asg[0]:V.asg.find(x=>x.guesser===ME));if(!a||!gdraft.trim())return;act({t:'guess',aid:a.id,text:gdraft});gdraft='';last='';paint()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a;
+  if(a==='create'){enter(genCode(),true)}
+  else if(a==='join'){if(cd.length!==4){err='El código tiene 4 letras.';last='';paint()}else enter(cd,false)}
+  else if(a==='mt'||a==='mc'){S.mode=a==='mt'?'team':'comp';bc()}
+  else if(a==='towrite'){S.phase='write';bc()}
+  else if(a==='sendwords'){const w=cleanWords(draft);if(w){if(isHost){chains[ME]=w;S.players.find(p=>p.id===ME).ok=true;bc()}else send('act',{t:'words',pid:ME,words:w})}}
+  else if(a==='start'){const w=cleanWords(draft);if(S.mode==='team'&&w){chains[ME]=w;S.players.find(p=>p.id===ME).ok=true}start()}
+  else if(a==='guess')doGuess();
+  else if(a==='letter'){const x=V.mode==='team'?V.asg[0]:V.asg.find(q=>q.guesser===ME);if(x)act({t:'letter',aid:x.id})}
+  else if(a==='again'){chains={};draft=['','','','',''];S={phase:'lobby',mode:S.mode,code,hostId:ME,note:null,asg:[],players:S.players.map(p=>({...p,ok:false}))};bc()}});
+paint();
+</script></body></html>

@@ -90,12 +90,83 @@ function bestWords(letters){const c=new Array(26).fill(0);letters.forEach(l=>c[l
  return{len:bl,w:best.map(x=>x.toUpperCase())}}
 
 /* ---------- solver de cifras ---------- */
-function solve(nums,target){let best={d:1e9,e:'',v:0};
-const go=a=>{for(const x of a){const d=Math.abs(x.v-target);if(d<best.d)best={d,e:x.e,v:x.v}}if(best.d===0)return;
-for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const r=a.filter((_,k)=>k!==i&&k!==j),p=a[i].v>=a[j].v?a[i]:a[j],q=p===a[i]?a[j]:a[i],ops=[[p.v+q.v,'+'],[p.v*q.v,'×']];
-if(p.v-q.v>0)ops.push([p.v-q.v,'−']);if(q.v>0&&p.v%q.v===0)ops.push([p.v/q.v,'÷']);
-for(const[v,o]of ops){go(r.concat({v,e:'('+p.e+' '+o+' '+q.e+')'}));if(best.d===0)return}}};
-go(nums.map(n=>({v:n,e:String(n)})));best.e=best.e.replace(/^\((.*)\)$/,'$1');return best}
+
+function solve(nums, target) {
+  let best = {
+    d: 1e9,
+    e: '',
+    v: 0,
+    steps: []
+  };
+
+  const go = (a, steps) => {
+    for (const x of a) {
+      const d = Math.abs(x.v - target);
+
+      if (d < best.d) {
+        best = {
+          d,
+          e: x.e,
+          v: x.v,
+          steps: steps
+        };
+      }
+    }
+
+    if (best.d === 0) return;
+
+    for (let i = 0; i < a.length; i++) {
+      for (let j = i + 1; j < a.length; j++) {
+        const r = a.filter((_, k) => k !== i && k !== j);
+
+        const p = a[i].v >= a[j].v ? a[i] : a[j];
+        const q = p === a[i] ? a[j] : a[i];
+
+        const ops = [
+          [p.v + q.v, '+'],
+          [p.v * q.v, '×']
+        ];
+
+        if (p.v - q.v > 0) {
+          ops.push([p.v - q.v, '−']);
+        }
+
+        if (q.v > 0 && p.v % q.v === 0) {
+          ops.push([p.v / q.v, '÷']);
+        }
+
+        for (const [v, o] of ops) {
+          const newStep = {
+            a: p.v,
+            o: o,
+            b: q.v,
+            v: v
+          };
+
+          go(
+            r.concat({
+              v,
+              e: '(' + p.e + ' ' + o + ' ' + q.e + ')'
+            }),
+            steps.concat(newStep)
+          );
+
+          if (best.d === 0) return;
+        }
+      }
+    }
+  };
+
+  go(
+    nums.map(n => ({ v: n, e: String(n) })),
+    []
+  );
+
+  best.e = best.e.replace(/^\(*(.+)\)*$/, '$1');
+
+  return best;
+}
+
 
 /* ---------- estado ---------- */
 let G={},L={},timer=null;
@@ -246,7 +317,45 @@ function finish(it){
  const r=G.r,tp=G.tp;
  setTimeout(()=>{const ex=$('ex');if(!ex||G.r!==r||G.ph!=='result')return;
   if(tp==='L'){if(DREADY){const b=bestWords(G.lt);ex.innerHTML=b.len?'<div class="notice good">Mejor palabra posible: <b>'+esc(b.w.join(', '))+'</b> ('+b.len+' letras)</div>':''}}
-  else{const s=solve(G.nums,G.target);ex.innerHTML='<div class="notice good">Una solución: <b>'+esc(s.e)+' = '+s.v+'</b>'+(s.d?' (a '+s.d+' del objetivo)':'')+'</div>'}},30)}
+ 
+  
+  
+else {
+  const s = solve(G.nums, G.target);
+
+  const steps = s.steps.map((step, i) => `
+    <div style="
+      padding:10px 12px;
+      margin:8px 0;
+      background:#101a2e;
+      border:1px solid var(--l);
+      border-radius:12px;
+    ">
+      <div class="small">PASO ${i + 1}</div>
+      <div style="font-size:20px;font-weight:850;margin-top:3px">
+        ${step.a} ${step.o} ${step.b} = 
+        <span style="color:var(--b)">${step.v}</span>
+      </div>
+    </div>
+  `).join('');
+
+  ex.innerHTML = `
+    <div class="notice good">
+      <b>Así se llega al resultado:</b>
+      ${steps || '<p>No hace falta realizar operaciones: uno de los números ya es la mejor solución.</p>'}
+
+      <div style="margin-top:14px;font-size:18px">
+        Resultado final: <b>${s.v}</b>
+      </div>
+
+      <div class="small">
+        ${s.d === 0
+          ? '¡Objetivo conseguido!'
+          : 'Te has quedado a ' + s.d + ' del objetivo.'}
+      </div>
+    </div>
+  `;
+}
 
 function endGame(){
  G.ph='end';const max=G.res.reduce((a,x)=>a+(x.tp==='L'?10:10),0);

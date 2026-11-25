@@ -341,12 +341,13 @@ Reglas:
 Responde solo con el JSON pedido.`;
   }
 
-  async function callGemini(){
+  async function callGemini(sinPensar){
     const url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(state.model) + ":generateContent";
     const body = {
       contents:[{role:"user",parts:[{text:buildPrompt()}]}],
       generationConfig:{
         temperature:1.2,
+        ...(sinPensar ? {} : {thinkingConfig:{thinkingLevel:"low"}}),
         responseMimeType:"application/json",
         responseSchema:{
           type:"OBJECT",
@@ -367,6 +368,7 @@ Responde solo con el JSON pedido.`;
     if(!res.ok){
       let detail = "";
       try{ const j = await res.json(); detail = j.error && j.error.message ? j.error.message : ""; }catch(e){}
+      if(res.status===400 && !sinPensar && /think/i.test(detail)) return callGemini(true);
       if(res.status===400 && /API key/i.test(detail)) throw new Error("La clave de API no es válida. Revísala en Ajustes.");
       if(res.status===403) throw new Error("Gemini rechazó la clave (403). Comprueba que sea correcta y esté activa.");
       if(res.status===404){

@@ -356,7 +356,8 @@ else {
     </div>
   `;
 }
-
+  },30);
+}
 function endGame(){
  G.ph='end';const max=G.res.reduce((a,x)=>a+(x.tp==='L'?10:10),0);
  let best=0,note='';try{best=+localStorage.getItem(bestKey())||0;if(G.score>best){localStorage.setItem(bestKey(),String(G.score));note=best?'🎉 Nuevo récord (antes: '+best+').':'🎉 Primer récord guardado.'}else note='Tu mejor partida de '+G.max+' rondas: '+best+' puntos.'}catch(e){}

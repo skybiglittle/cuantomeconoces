@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta cuatro pistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDF0F6;
+    --paper:#FFFFFF;
+    --ink:#18223B;
+    --muted:#5E6A86;
+    --line:#D3D9E6;
+    --c1:#1B998B;   /* verde azulado */
+    --c2:#E8A317;   /* mostaza */
+    --c3:#C2336F;   /* frambuesa */
+    --c4:#3856D6;   /* azul */
+    --ok:#1B998B;
+    --bad:#C2336F;
+    --font:"Bricolage Grotesque","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font);
+    font-size:17px;
+    line-height:1.45;
+    min-height:100vh;
+    padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:720px;margin:0 auto}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;min-height:40px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}
+  .dots{display:grid;grid-template-columns:repeat(2,10px);gap:3px}
+  .dots i{width:10px;height:10px;border-radius:50%;display:block}
+  .dots i:nth-child(1){background:var(--c1)}
+  .dots i:nth-child(2){background:var(--c2)}
+  .dots i:nth-child(3){background:var(--c3)}
+  .dots i:nth-child(4){background:var(--c4)}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .btn{
+    border:2px solid var(--ink);background:var(--ink);color:#fff;
+    padding:12px 20px;border-radius:12px;font-weight:600;
+    transition:transform .08s ease, background .15s ease;
+  }
+  .btn:hover{background:#2a3860}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.ghost:hover{background:rgba(24,34,59,.07)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .icon-btn{border:0;background:transparent;padding:8px 10px;border-radius:10px;color:var(--muted);font-weight:600}
+  .icon-btn:hover{background:rgba(24,34,59,.07);color:var(--ink)}
+  :focus-visible{outline:3px solid var(--c4);outline-offset:2px}
+
+  /* Portada */
+  .hero h1{
+    font-size:clamp(2.4rem,9vw,4.4rem);
+    line-height:.98;letter-spacing:-.035em;font-weight:800;margin:8px 0 14px;
+  }
+  .hero h1 span{display:block}
+  .hero h1 span:nth-child(1){color:var(--c1)}
+  .hero h1 span:nth-child(2){color:var(--c2)}
+  .hero h1 span:nth-child(3){color:var(--c3)}
+  .hero h1 span:nth-child(4){color:var(--c4)}
+  .hero p{max-width:46ch;color:var(--muted);margin:0 0 24px}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .row{display:flex;flex-wrap:wrap;gap:20px;margin-bottom:20px}
+  .field{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .field > label,.field > .lbl{font-weight:600;font-size:.95rem}
+  .seg{display:inline-flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+  .seg button{border:0;background:transparent;padding:9px 16px;font-weight:600}
+  .seg button + button{border-left:2px solid var(--ink)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .hint{color:var(--muted);font-size:.9rem}
+  .record{margin-top:16px}
+
+  /* Juego */
+  .status{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;color:var(--muted);font-weight:600}
+  .status b{color:var(--ink);font-weight:800}
+  .clues{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+  .clue{
+    background:var(--paper);border:1px solid var(--line);border-radius:16px;
+    padding:16px 16px 16px 20px;min-height:104px;position:relative;overflow:hidden;
+    display:flex;align-items:center;
+  }
+  .clue::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--col)}
+  .clue.locked{background:transparent;border-style:dashed;color:var(--muted)}
+  .clue.locked::before{opacity:.35}
+  .clue .txt{font-size:1.12rem;font-weight:600;letter-spacing:-.005em}
+  .clue.pop{animation:pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+  .answer{display:flex;flex-wrap:wrap;gap:10px}
+  .answer input{
+    flex:1 1 220px;min-width:0;font:inherit;font-size:1.2rem;font-weight:600;
+    padding:14px 16px;border-radius:12px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);
+  }
+  .answer input.shake{animation:shake .35s}
+  @keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+  .msg{min-height:1.5em;margin-top:12px;color:var(--bad);font-weight:600}
+
+  /* Resultado */
+  .result{text-align:left}
+  .result .verdict{font-weight:600;color:var(--muted);margin:0 0 6px}
+  .word{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 16px}
+  .word span{
+    min-width:1.05em;padding:2px 8px;border-radius:10px;background:var(--col);color:#fff;
+    font-size:clamp(1.8rem,7vw,3rem);font-weight:800;text-align:center;line-height:1.25;
+    animation:pop .4s cubic-bezier(.2,.9,.3,1.2) backwards;animation-delay:var(--d);
+  }
+  .word.fail span{background:var(--muted)}
+  .pts{font-weight:800;font-size:1.1rem;margin-bottom:16px}
+
+  /* Cargando */
+  .loading{text-align:center;padding:48px 0;color:var(--muted);font-weight:600}
+  .loading .dots{display:inline-grid;margin-bottom:14px;grid-template-columns:repeat(4,14px)}
+  .loading .dots i{width:14px;height:14px;animation:bounce 1s infinite ease-in-out}
+  .loading .dots i:nth-child(2){animation-delay:.12s}
+  .loading .dots i:nth-child(3){animation-delay:.24s}
+  .loading .dots i:nth-child(4){animation-delay:.36s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}}
+
+  /* Fin */
+  .final-score{font-size:clamp(3rem,14vw,5.5rem);font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0}
+  .recap{list-style:none;padding:0;margin:16px 0 22px;display:grid;gap:6px}
+  .recap li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0}
+
+  dialog{border:0;border-radius:18px;padding:22px;max-width:460px;width:calc(100% - 32px);background:var(--paper);color:var(--ink)}
+  dialog::backdrop{background:rgba(24,34,59,.5)}
+  dialog h2{margin:0 0 14px;font-size:1.3rem}
+  dialog input[type=text],dialog input[type=password]{
+    width:100%;font:inherit;padding:11px 13px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--ink)
+  }
+  dialog input:focus{border-color:var(--c4);outline:none}
+  dialog .field{margin-bottom:14px}
+  dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+  a{color:var(--c4)}
+
+  [hidden]{display:none !important}
+  @media (max-width:520px){
+    .clues{grid-template-columns:1fr}
+    .clue{min-height:72px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Conecta cuatro pistas</div>
+    <button class="icon-btn" id="btnSettings" type="button">Ajustes</button>
+  </header>
+
+  <!-- Portada -->
+  <section id="screenStart" class="hero">
+    <h1><span>Cuatro pistas.</span><span>Ninguna se parece.</span><span>Una sola</span><span>palabra.</span></h1>
+    <p>Gemini se inventa las pistas en el momento, cada una desde un tema distinto. Descubre la palabra que las une con el menor número de pistas posible.</p>
+
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <span class="lbl" id="lblDiff">Dificultad</span>
+          <div class="seg" role="group" aria-labelledby="lblDiff" id="segDiff">
+            <button type="button" data-v="facil" aria-pressed="false">Fácil</button>
+            <button type="button" data-v="media" aria-pressed="true">Media</button>
+            <button type="button" data-v="dificil" aria-pressed="false">Difícil</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl" id="lblRounds">Rondas</span>
+          <div class="seg" role="group" aria-labelledby="lblRounds" id="segRounds">
+            <button type="button" data-v="3" aria-pressed="false">3</button>
+            <button type="button" data-v="5" aria-pressed="true">5</button>
+            <button type="button" data-v="10" aria-pressed="false">10</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="btnStart" type="button">Empezar</button>
+      <div class="msg" id="startMsg" role="alert"></div>
+      <div class="hint record" id="recordTxt"></div>
+    </div>
+  </section>
+
+  <!-- Cargando -->
+  <section id="screenLoading" class="loading" hidden>
+    <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div id="loadingTxt">Gemini está pensando una palabra…</div>
+    <div class="msg" id="loadMsg" role="alert"></div>
+    <div class="tools" style="justify-content:center" id="loadActions" hidden>
+      <button class="btn" id="btnRetry" type="button">Reintentar</button>
+      <button class="btn ghost" id="btnLoadSettings" type="button">Revisar ajustes</button>
+      <button class="btn ghost" id="btnLoadBack" type="button">Volver al inicio</button>
+    </div>
+  </section>
+
+  <!-- Juego -->
+  <section id="screenPlay" hidden>
+    <div class="status">
+      <span id="roundTxt"></span>
+      <span>Puntos: <b id="scoreTxt">0</b></span>
+    </div>
+    <div class="clues" id="clues"></div>
+    <form class="answer" id="form" autocomplete="off">
+      <input id="guess" type="text" placeholder="Escribe la palabra" aria-label="Tu respuesta" autocapitalize="none" spellcheck="false">
+      <button class="btn" type="submit">Comprobar</button>
+    </form>
+    <div class="msg" id="playMsg" role="alert"></div>
+    <div class="tools">
+      <button class="btn ghost" id="btnMore" type="button">Otra pista</button>
+      <button class="btn ghost" id="btnGive" type="button">Me rindo</button>
+      <span class="hint" id="lenHint"></span>
+    </div>
+  </section>
+
+  <!-- Resultado de ronda -->
+  <section id="screenResult" class="result" hidden>
+    <div class="clues" id="cluesDone"></div>
+    <div class="panel">
+      <p class="verdict" id="verdict"></p>
+      <div class="word" id="wordOut" aria-live="polite"></div>
+      <div class="pts" id="ptsOut"></div>
+      <button class="btn" id="btnNext" type="button">Siguiente ronda</button>
+    </div>
+  </section>
+
+  <!-- Final -->
+  <section id="screenEnd" hidden>
+    <div class="panel">
+      <p class="verdict" style="margin:0;color:var(--muted);font-weight:600">Partida terminada</p>
+      <div class="final-score" id="finalScore"></div>
+      <div class="hint" id="finalNote"></div>
+      <ul class="recap" id="recap"></ul>
+      <button class="btn" id="btnAgain" type="button">Jugar otra vez</button>
+    </div>
+  </section>
+
+</div>
+
+<dialog id="dlg">
+  <h2>Ajustes de Gemini</h2>
+  <div class="field">
+    <label for="inKey">Clave de API</label>
+    <input id="inKey" type="password" placeholder="Pega aquí tu clave" autocomplete="off">
+    <span class="hint">Consíguela gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Se guarda solo en este navegador.</span>
+  </div>
+  <div class="field">
+    <label for="inModel">Modelo</label>
+    <input id="inModel" type="text" placeholder="gemini-2.5-flash" autocomplete="off">
+    <span class="hint">Si Google cambia el nombre del modelo, edítalo aquí.</span>
+  </div>
+  <div class="actions">
+    <button class="btn ghost" id="dlgCancel" type="button">Cancelar</button>
+    <button class="btn" id="dlgSave" type="button">Guardar</button>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  "use strict";
+
+  const $ = s => document.querySelector(s);
+  const COLORS = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
+  const DEFAULT_MODEL = "gemini-2.5-flash";
+
+  const store = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  };
+
+  const state = {
+    key: store.get("c4p_key") || "",
+    model: store.get("c4p_model") || DEFAULT_MODEL,
+    diff: "media",
+    total: 5,
+    idx: 0,
+    score: 0,
+    revealed: 1,
+    round: null,
+    used: [],
+    results: [],
+    next: null,
+    gen: 0
+  };
+
+  /* ---------- utilidades ---------- */
+  const norm = s => String(s||"").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();
+
+  function lev(a,b){
+    if(a===b) return 0;
+    const m=a.length,n=b.length;
+    if(!m) return n; if(!n) return m;
+    let prev=Array.from({length:n+1},(_,i)=>i);
+    for(let i=1;i<=m;i++){
+      const cur=[i];
+      for(let j=1;j<=n;j++){
+        cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+      }
+      prev=cur;
+    }
+    return prev[n];
+  }
+
+  function show(id){
+    ["screenStart","screenLoading","screenPlay","screenResult","screenEnd"].forEach(s=>{
+      $("#"+s).hidden = (s!==id);
+    });
+    window.scrollTo({top:0});
+  }
+
+  /* ---------- Gemini ---------- */
+  const DIFF_TXT = {
+    facil: "FÁCIL: una palabra muy cotidiana y conocida por cualquiera; las pistas son claras y directas.",
+    media: "MEDIA: una palabra común pero algo menos obvia; las pistas requieren pensar un poco.",
+    dificil:"DIFÍCIL: una palabra más sorprendente o abstracta; las pistas son sutiles, con dobles sentidos y referencias menos evidentes."
+  };
+
+  function buildPrompt(){
+    const evitar = state.used.length ? `\nNo repitas ninguna de estas palabras ya usadas: ${state.used.join(", ")}.` : "";
+    const semilla = Math.floor(Math.random()*100000);
+    return `Eres el creador de un juego de adivinanzas en español llamado "Conecta cuatro pistas".
+Inventa una ronda nueva (semilla de variedad: ${semilla}).
+
+Reglas:
+- Elige UNA palabra en español (un solo término, sin espacios), que sea un sustantivo o un concepto reconocible.
+- Escribe exactamente 4 pistas. Cada pista debe venir de un ámbito totalmente distinto (por ejemplo: cocina, historia, deporte, ciencia, música, cine, naturaleza, tecnología, refranes, geografía, vida cotidiana), de modo que por separado parezcan no tener relación entre sí, pero juntas lleven a la palabra.
+- Ordénalas de la más vaga a la más reveladora.
+- Ninguna pista puede contener la palabra ni sus derivados.
+- Cada pista tiene un máximo de 14 palabras y se entiende sin necesitar las demás.
+- Dificultad ${DIFF_TXT[state.diff]}
+- En "aceptadas" incluye otras formas válidas de la misma respuesta (plural, sinónimo exacto, variante sin tilde). Puede ir vacío.${evitar}
+
+Responde solo con el JSON pedido.`;
+  }
+
+  async function callGemini(){
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(state.model) + ":generateContent";
+    const body = {
+      contents:[{role:"user",parts:[{text:buildPrompt()}]}],
+      generationConfig:{
+        temperature:1.2,
+        responseMimeType:"application/json",
+        responseSchema:{
+          type:"OBJECT",
+          properties:{
+            palabra:{type:"STRING"},
+            aceptadas:{type:"ARRAY",items:{type:"STRING"}},
+            pistas:{type:"ARRAY",items:{type:"STRING"}}
+          },
+          required:["palabra","pistas"]
+        }
+      }
+    };
+    const res = await fetch(url,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-goog-api-key":state.key},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok){
+      let detail = "";
+      try{ const j = await res.json(); detail = j.error && j.error.message ? j.error.message : ""; }catch(e){}
+      if(res.status===400 && /API key/i.test(detail)) throw new Error("La clave de API no es válida. Revísala en Ajustes.");
+      if(res.status===403) throw new Error("Gemini rechazó la clave (403). Comprueba que sea correcta y esté activa.");
+      if(res.status===404) throw new Error("No existe el modelo «"+state.model+"». Cámbialo en Ajustes.");
+      if(res.status===429) throw new Error("Has superado el límite de peticiones. Espera un momento y reintenta.");
+      throw new Error("Error de Gemini ("+res.status+")."+(detail?" "+detail:""));
+    }
+    const data = await res.json();
+    const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+    if(!parts) throw new Error("Gemini no devolvió contenido. Reintenta.");
+    let txt = parts.map(p=>p.text||"").join("").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+    let obj;
+    try{ obj = JSON.parse(txt); }catch(e){ throw new Error("La respuesta de Gemini no se pudo leer. Reintenta."); }
+    return obj;
+  }
+
+  function validate(o){
+    if(!o || typeof o.palabra!=="string" || !Array.isArray(o.pistas)) return null;
+    const palabra = o.palabra.trim();
+    const pistas = o.pistas.map(p=>String(p).trim()).filter(Boolean).slice(0,4);
+    if(!palabra || pistas.length<4) return null;
+    const np = norm(palabra);
+    if(!np) return null;
+    // ninguna pista debe contener la palabra
+    const raiz = np.length>5 ? np.slice(0,np.length-1) : np;
+    if(pistas.some(p=>norm(p).includes(raiz))) return null;
+    const aceptadas = Array.isArray(o.aceptadas) ? o.aceptadas.map(String).filter(Boolean) : [];
+    return {palabra, pistas, aceptadas};
+  }
+
+  async function fetchRound(){
+    let lastErr = null;
+    for(let i=0;i<3;i++){
+      try{
+        const r = validate(await callGemini());
+        if(r){
+          state.used.push(r.palabra);
+          return r;
+        }
+        lastErr = new Error("Gemini devolvió una ronda con pistas que delataban la palabra. Reintenta.");
+      }catch(e){
+        lastErr = e;
+        // errores de clave/modelo/límite no se arreglan reintentando solo
+        if(/clave|403|modelo|límite/i.test(e.message)) break;
+      }
+    }
+    throw lastErr || new Error("No se pudo crear la ronda.");
+  }
+
+  function prefetch(){
+    const g = state.gen;
+    state.next = fetchRound().then(r=>({ok:r,g}),e=>({err:e,g}));
+  }
+
+  /* ---------- flujo ---------- */
+  function updateRecord(){
+    const best = store.get("c4p_best");
+    $("#recordTxt").textContent = best ? "Tu mejor partida: "+best+" puntos." : "";
+  }
+
+  function start(){
+    if(!state.key){
+      $("#startMsg").textContent = "Necesitas una clave de API de Gemini. Añádela en Ajustes.";
+      openSettings();
+      return;
+    }
+    $("#startMsg").textContent = "";
+    state.gen++;
+    state.idx = 0; state.score = 0; state.used = []; state.results = []; state.next = null;
+    loadRound();
+  }
+
+  async function loadRound(){
+    show("screenLoading");
+    $("#loadMsg").textContent = "";
+    $("#loadActions").hidden = true;
+    $("#loadingTxt").hidden = false;
+    $("#loadingTxt").textContent = "Gemini está pensando una palabra…";
+    const g = state.gen;
+    let res;
+    if(state.next){
+      res = await state.next;
+      state.next = null;
+    }else{
+      res = await fetchRound().then(r=>({ok:r,g}),e=>({err:e,g}));
+    }
+    if(res.g!==g) return; // partida reiniciada
+    if(res.err){
+      $("#loadingTxt").hidden = true;
+      $("#loadMsg").textContent = res.err.message;
+      $("#loadActions").hidden = false;
+      return;
+    }
+    state.round = res.ok;
+    state.revealed = 1;
+    renderPlay(true);
+    // precarga la siguiente mientras juegas
+    if(state.idx < state.total-1) prefetch();
+  }
+
+  function clueEl(i, text, revealed, pop){
+    const d = document.createElement("div");
+    d.className = "clue" + (revealed ? "" : " locked") + (pop ? " pop" : "");
+    d.style.setProperty("--col", COLORS[i]);
+    const t = document.createElement("span");
+    t.className = "txt";
+    t.textContent = revealed ? text : "Pista sin descubrir";
+    d.appendChild(t);
+    return d;
+  }
+
+  function renderPlay(fresh){
+    show("screenPlay");
+    $("#roundTxt").textContent = "Ronda "+(state.idx+1)+" de "+state.total;
+    $("#scoreTxt").textContent = state.score;
+    $("#playMsg").textContent = "";
+    const box = $("#clues");
+    box.innerHTML = "";
+    state.round.pistas.forEach((p,i)=>{
+      box.appendChild(clueEl(i,p,i<state.revealed, !fresh && i===state.revealed-1));
+    });
+    const len = state.round.palabra.replace(/\s/g,"").length;
+    $("#lenHint").textContent = state.revealed>=3 ? "La palabra tiene "+len+" letras." : "";
+    $("#btnMore").disabled = state.revealed>=4;
+    if(fresh){
+      $("#guess").value = "";
+      setTimeout(()=>{ try{ $("#guess").focus(); }catch(e){} },50);
+    }
+  }
+
+  function isCorrect(g){
+    const ng = norm(g);
+    if(!ng) return false;
+    const targets = [state.round.palabra].concat(state.round.aceptadas).map(norm).filter(Boolean);
+    return targets.some(t=>{
+      if(t===ng) return true;
+      return t.length>=6 && ng.length>=6 && lev(t,ng)<=1;
+    });
+  }
+
+  function pointsFor(rev){ return 5 - rev; } // 1 pista:4 ... 4 pistas:1
+
+  function finishRound(won){
+    const pts = won ? pointsFor(state.revealed) : 0;
+    state.score += pts;
+    state.results.push({palabra:state.round.palabra, pts, pistas:won?state.revealed:null});
+
+    const done = $("#cluesDone");
+    done.innerHTML = "";
+    state.round.pistas.forEach((p,i)=> done.appendChild(clueEl(i,p,true,false)));
+
+    $("#verdict").textContent = won ? "¡Correcto! La palabra era:" : "Te has rendido. La palabra era:";
+    const out = $("#wordOut");
+    out.innerHTML = "";
+    out.className = "word" + (won ? "" : " fail");
+    [...state.round.palabra].forEach((ch,i)=>{
+      const s = document.createElement("span");
+      s.textContent = ch.toUpperCase();
+      s.style.setProperty("--col", COLORS[i%4]);
+      s.style.setProperty("--d", (i*50)+"ms");
+      out.appendChild(s);
+    });
+    $("#ptsOut").textContent = won
+      ? "+"+pts+" "+(pts===1?"punto":"puntos")+" ("+state.revealed+(state.revealed===1?" pista":" pistas")+")"
+      : "0 puntos";
+    $("#btnNext").textContent = (state.idx>=state.total-1) ? "Ver resultado" : "Siguiente ronda";
+    show("screenResult");
+  }
+
+  function endGame(){
+    show("screenEnd");
+    const max = state.total*4;
+    $("#finalScore").textContent = state.score+" / "+max;
+    const best = parseInt(store.get("c4p_best")||"0",10);
+    let note = "";
+    if(state.score>best && state.total>=5){
+      store.set("c4p_best", String(state.score));
+      note = best ? "Nuevo récord (antes: "+best+")." : "Primer récord guardado.";
+    }else if(best){
+      note = "Tu mejor partida: "+best+" puntos.";
+    }
+    $("#finalNote").textContent = note;
+    const ul = $("#recap");
+    ul.innerHTML = "";
+    state.results.forEach(r=>{
+      const li = document.createElement("li");
+      const a = document.createElement("span");
+      a.textContent = r.palabra;
+      const b = document.createElement("span");
+      b.textContent = r.pistas ? r.pts+" pts · "+r.pistas+(r.pistas===1?" pista":" pistas") : "sin acertar";
+      li.append(a,b);
+      ul.appendChild(li);
+    });
+    updateRecord();
+  }
+
+  /* ---------- eventos ---------- */
+  $("#segDiff").addEventListener("click",e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    state.diff = b.dataset.v;
+    [...$("#segDiff").children].forEach(x=>x.setAttribute("aria-pressed", x===b ? "true":"false"));
+  });
+  $("#segRounds").addEventListener("click",e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    state.total = parseInt(b.dataset.v,10);
+    [...$("#segRounds").children].forEach(x=>x.setAttribute("aria-pressed", x===b ? "true":"false"));
+  });
+
+  $("#btnStart").addEventListener("click", start);
+  $("#btnAgain").addEventListener("click", ()=>{ state.gen++; show("screenStart"); updateRecord(); });
+
+  $("#btnMore").addEventListener("click",()=>{
+    if(state.revealed<4){
+      state.revealed++;
+      renderPlay(false);
+    }
+  });
+
+  $("#btnGive").addEventListener("click",()=> finishRound(false));
+
+  $("#form").addEventListener("submit",e=>{
+    e.preventDefault();
+    const v = $("#guess").value;
+    if(!norm(v)) return;
+    if(isCorrect(v)){
+      finishRound(true);
+    }else{
+      const inp = $("#guess");
+      inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake");
+      $("#playMsg").textContent = "No es esa. Prueba otra o pide otra pista.";
+      inp.select();
+    }
+  });
+
+  $("#btnNext").addEventListener("click",()=>{
+    state.idx++;
+    if(state.idx>=state.total) endGame();
+    else loadRound();
+  });
+
+  $("#btnRetry").addEventListener("click", loadRound);
+  $("#btnLoadSettings").addEventListener("click", openSettings);
+  $("#btnLoadBack").addEventListener("click",()=>{ state.gen++; state.next=null; show("screenStart"); });
+
+  /* ---------- ajustes ---------- */
+  const dlg = $("#dlg");
+  function openSettings(){
+    $("#inKey").value = state.key;
+    $("#inModel").value = state.model;
+    if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open","");
+  }
+  $("#btnSettings").addEventListener("click", openSettings);
+  $("#dlgCancel").addEventListener("click",()=> dlg.close());
+  $("#dlgSave").addEventListener("click",()=>{
+    state.key = $("#inKey").value.trim();
+    state.model = $("#inModel").value.trim() || DEFAULT_MODEL;
+    store.set("c4p_key", state.key);
+    store.set("c4p_model", state.model);
+    $("#startMsg").textContent = "";
+    dlg.close();
+  });
+
+  updateRecord();
+})();
+</script>
+</body>
+</html>

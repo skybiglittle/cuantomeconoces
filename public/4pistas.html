@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta cuatro pistas</title>
+<style>
+  :root{--bg:#EDF0F6;--ink:#18223B;--muted:#5E6A86;--line:#D3D9E6;--c1:#1B998B;--c2:#E8A317;--c3:#C2336F;--c4:#3856D6}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 16px 28px}
+  .wrap{max-width:640px;margin:0 auto}
+  h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.02em}
+  p{margin:0 0 14px;color:var(--muted)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+  button{font:inherit;cursor:pointer;border:2px solid var(--ink);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-weight:600}
+  button.g{background:transparent;color:var(--ink)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  :focus-visible{outline:3px solid var(--c4);outline-offset:2px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  .seg{display:inline-flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+  .seg button{border:0;border-radius:0;background:transparent;color:var(--ink);padding:9px 16px}
+  .seg button + button{border-left:2px solid var(--ink)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .lbl{display:block;font-weight:600;margin:0 0 6px}
+  .msg{color:var(--c3);font-weight:600;min-height:1.4em;margin-top:10px}
+  .hint{color:var(--muted);font-size:.9rem}
+  .top{display:flex;justify-content:space-between;color:var(--muted);font-weight:600;margin-bottom:12px}
+  .top b{color:var(--ink)}
+  .clues{display:grid;gap:10px;margin-bottom:14px}
+  .clue{background:#fff;border:1px solid var(--line);border-left:7px solid var(--col);border-radius:14px;padding:14px 16px;min-height:64px;display:flex;align-items:center;font-weight:600}
+  .clue.off{background:transparent;border-style:dashed;border-left-style:solid;color:var(--muted);font-weight:400;opacity:.8}
+  .clue.new{animation:pop .3s ease-out}
+  @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+  .answer{display:flex;gap:10px}
+  input{width:100%;font:inherit;padding:12px 14px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font-size:1.15rem;font-weight:600;min-width:0}
+  input:focus{outline:none;border-color:var(--c4)}
+  .shake{animation:sh .3s}
+  @keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .word{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 10px}
+  .word span{min-width:1em;padding:1px 8px;border-radius:9px;background:var(--col);color:#fff;font-size:1.9rem;font-weight:800;text-align:center}
+  .word.fail span{background:var(--muted)}
+  .big{font-size:3.2rem;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:4px 0}
+  ul{list-style:none;padding:0;margin:12px 0 16px}
+  li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+  [hidden]{display:none !important}
+  @media (prefers-reduced-motion:reduce){*{animation:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Conecta cuatro pistas</h1>
+  <p>Cuatro pistas de temas distintos, una sola palabra. Cuantas menos pistas necesites, más puntos.</p>
+
+  <section id="sStart" class="card">
+    <span class="lbl" id="lR">Rondas</span>
+    <div class="seg" role="group" aria-labelledby="lR" id="segR">
+      <button type="button" data-v="5" aria-pressed="false">5</button>
+      <button type="button" data-v="10" aria-pressed="true">10</button>
+      <button type="button" data-v="20" aria-pressed="false">20</button>
+    </div>
+    <div class="row"><button id="bStart" type="button">Empezar</button></div>
+    <div class="hint" style="margin-top:12px" id="hInfo"></div>
+  </section>
+
+  <section id="sPlay" hidden>
+    <div class="top"><span id="tRound"></span><span>Puntos: <b id="tScore">0</b></span></div>
+    <div class="clues" id="clues"></div>
+    <form id="form" class="answer" autocomplete="off">
+      <input id="guess" type="text" placeholder="Escribe la palabra" aria-label="Tu respuesta" autocapitalize="none" spellcheck="false">
+      <button type="submit" id="bGuess">Comprobar</button>
+    </form>
+    <div class="msg" id="mPlay" role="alert"></div>
+    <div class="row" id="rTools">
+      <button type="button" class="g" id="bMore">Otra pista</button>
+      <button type="button" class="g" id="bGive">Me rindo</button>
+      <span class="hint" id="hLen"></span>
+    </div>
+    <div class="card" id="res" hidden style="margin-top:14px">
+      <div id="rVerdict" style="color:var(--muted);font-weight:600"></div>
+      <div class="word" id="rWord"></div>
+      <div id="rDef" style="margin-bottom:6px"></div>
+      <div class="hint" id="rCat" style="margin-bottom:10px"></div>
+      <div style="font-weight:800;margin-bottom:12px" id="rPts"></div>
+      <button type="button" id="bNext">Siguiente</button>
+    </div>
+  </section>
+
+  <section id="sEnd" class="card" hidden>
+    <div class="hint">Partida terminada</div>
+    <div class="big" id="eScore"></div>
+    <div class="hint" id="eNote"></div>
+    <ul id="eList"></ul>
+    <div class="row"><button id="bAgain" type="button">Jugar otra vez</button><button id="bHome" type="button" class="g">Inicio</button></div>
+  </section>
+</div>
+
+<script>
+/* Banco de preguntas: [palabra, categoría, [4 pistas, de la más vaga a la más clara], definición, [respuestas alternativas]] */
+const BANCO = [
+["presa","Ingeniería y geografía",["Su presencia puede alterar durante décadas el equilibrio de un valle.","En ocasiones, su construcción obliga a trasladar poblaciones enteras.","Puede modificar el caudal de un río y retener sedimentos.","Se construye para contener agua y formar un embalse."],"Una presa retiene o regula el agua de un río."],
+["diamante","Minerales",["Durante siglos, algunas piezas excepcionales simbolizaron poder y riqueza.","Está formado por átomos de carbono ordenados en una estructura cristalina.","Su dureza permite utilizarlo en herramientas industriales de corte.","Es una gema muy apreciada en joyería."],"El diamante es una forma cristalina del carbono."],
+["brújula","Navegación",["Su utilidad depende de una propiedad física del planeta.","Su lectura puede alterarse cerca de grandes masas metálicas.","Una aguja imantada se alinea con el campo magnético terrestre.","Se utiliza para orientarse indicando el norte magnético."],"La brújula utiliza el magnetismo terrestre para orientar."],
+["faro","Navegación",["Su señal puede reconocerse por un patrón característico de destellos.","Ayudó a reducir accidentes en costas y entradas de puertos.","Suele levantarse en lugares elevados y expuestos al mar.","Emite luz para orientar a los barcos."],"Un faro emite señales luminosas para la navegación."],
+["volcán","Geología",["Su actividad puede crear nuevas superficies terrestres y alterar la atmósfera.","Algunos permanecen inactivos durante siglos antes de reactivarse.","Expulsa materiales procedentes del interior terrestre.","Puede emitir lava, ceniza y gases."],"Un volcán permite la salida de materiales del interior de la Tierra."],
+["eclipse","Astronomía",["Su observación depende de una alineación precisa de cuerpos celestes.","Puede ser total o parcial, según la posición relativa de los astros.","En uno de sus tipos, la Luna proyecta su sombra sobre la Tierra.","Un astro oculta total o parcialmente a otro."],"Un eclipse ocurre cuando un cuerpo celeste oculta a otro."],
+["glaciar","Geología",["Su movimiento puede ser lento, pero modifica valles y montañas.","Sus huellas permiten reconstruir climas de épocas pasadas.","Se forma por acumulación y compactación de nieve durante mucho tiempo.","Es una gran masa de hielo que se desplaza lentamente."],"Un glaciar es una masa de hielo persistente que fluye por gravedad."],
+["acueducto","Historia e ingeniería",["Su trazado podía recorrer grandes distancias manteniendo una pendiente muy pequeña.","Algunos de sus tramos más reconocibles utilizan arcos superpuestos.","En la antigua Roma fue esencial para abastecer ciudades y termas.","Transporta agua desde un lugar hasta otro."],"Un acueducto es una construcción para conducir agua."],
+["bronce","Materiales",["Su composición puede variar y modificar notablemente sus propiedades.","Su uso marcó una etapa tecnológica de la prehistoria.","Se obtiene tradicionalmente combinando cobre y estaño.","Es una aleación metálica usada en campanas y esculturas."],"El bronce es una aleación cuyo componente principal es el cobre."],
+["papel","Materiales",["Su difusión transformó la administración, la educación y la transmisión del conocimiento.","Su fabricación tradicional aprovecha fibras vegetales.","Puede fabricarse a partir de celulosa.","Se utiliza para escribir, imprimir y dibujar."],"El papel es una lámina hecha principalmente de fibras de celulosa."],
+["telescopio","Astronomía",["Su capacidad depende de recoger luz y resolver detalles, no solo de aumentar la imagen.","Algunos diseños utilizan espejos en vez de lentes principales.","Permitió observar lunas de otros planetas y detalles de la Luna.","Sirve para observar objetos muy lejanos en el cielo."],"Un telescopio recoge y permite observar la luz de objetos distantes."],
+["microscopio","Ciencia",["Su desarrollo cambió la comprensión de enfermedades y tejidos vivos.","Puede combinar varias lentes para ampliar detalles diminutos.","Permite estudiar estructuras que el ojo no distingue.","Se utiliza para observar objetos muy pequeños."],"Un microscopio amplía imágenes de objetos diminutos."],
+["termómetro","Ciencia",["Sus escalas no siempre utilizan el mismo punto de referencia.","Algunos modelos detectan radiación infrarroja sin tocar el objeto.","Permite cuantificar una propiedad relacionada con el movimiento de las partículas.","Mide la temperatura."],"Un termómetro mide la temperatura."],
+["espejo","Objetos y ciencia",["Su acabado depende de controlar cómo interactúa la luz con una superficie.","En algunos telescopios sustituye a las lentes para recoger y enfocar luz.","Devuelve la luz de forma que permite formar una imagen reconocible.","Permite ver reflejado nuestro aspecto."],"Un espejo refleja la luz y forma imágenes."],
+["paraguas","Objetos cotidianos",["Su diseño debe equilibrar ligereza, resistencia y facilidad de plegado.","En algunas culturas fue durante mucho tiempo un símbolo de rango.","Su estructura suele combinar varillas articuladas y una tela impermeable.","Se abre sobre la cabeza para protegerse de la lluvia."],"El paraguas protege de la lluvia y, en algunos modelos, del sol."],
+["reloj de arena","Medición",["Su precisión depende de la forma del recipiente y del tamaño de los granos.","Fue útil para medir intervalos sin mecanismos complejos.","La cantidad de material que cae no cambia el tiempo total si el diseño es correcto.","Mide un intervalo mediante arena que pasa de un bulbo a otro."],"El reloj de arena mide el tiempo mediante el flujo de arena."],
+["candado","Seguridad",["Su mecanismo puede funcionar con combinaciones, llaves o sistemas electrónicos.","Se utiliza para asegurar objetos sin instalar una cerradura fija.","Suele tener un arco metálico móvil.","Es un cierre portátil que se abre con llave o combinación."],"Un candado es un dispositivo portátil de cierre."],
+["llave","Objetos cotidianos",["Su forma codifica una combinación mecánica concreta.","En sistemas tradicionales, sus cortes levantan elementos internos de una cerradura.","Se utiliza junto a un mecanismo de cierre.","Sirve para abrir o cerrar una cerradura."],"Una llave acciona una cerradura."],
+["ancla","Navegación",["Su forma está diseñada para agarrarse al fondo y resistir el arrastre.","El tipo de fondo marino influye en su eficacia.","Se conecta a una cadena o cabo de gran resistencia.","Se utiliza para mantener un barco en una posición."],"Un ancla sujeta una embarcación al fondo."],
+["vela","Navegación",["Su rendimiento depende del ángulo respecto al viento y de la forma del tejido.","Puede transformar la energía del viento en movimiento útil.","Se iza en un mástil y se ajusta mediante cabos.","Impulsa un barco aprovechando el viento."],"La vela permite propulsar embarcaciones con el viento."],
+["puente","Ingeniería",["Su diseño debe distribuir cargas y controlar vibraciones y deformaciones.","Puede salvar ríos, barrancos, vías o carreteras.","Existen modelos colgantes, atirantados, de arco y de vigas.","Permite cruzar un obstáculo."],"Un puente es una estructura que permite salvar un obstáculo."],
+["túnel","Ingeniería",["Su construcción exige estudiar el terreno, el agua subterránea y la ventilación.","Puede atravesar montañas o pasar bajo ciudades y masas de agua.","Se excava o construye bajo una superficie.","Permite atravesar un obstáculo por debajo."],"Un túnel es una vía subterránea que atraviesa un terreno u obstáculo."],
+["isla","Geografía",["Su aislamiento puede favorecer especies que no existen en otros lugares.","Puede surgir por actividad volcánica, movimientos tectónicos o cambios del nivel del mar.","Está rodeada de agua por todas partes.","Es una porción de tierra rodeada de agua."],"Una isla es una extensión de tierra rodeada de agua."],
+["delta","Geografía",["Su forma depende de la relación entre el aporte de sedimentos, las mareas y las corrientes.","Puede formar humedales de gran valor ecológico.","Se desarrolla donde un río pierde velocidad al llegar a una masa de agua.","Es un terreno de sedimentos en la desembocadura de un río."],"Un delta se forma por acumulación de sedimentos en una desembocadura."],
+["oasis","Geografía",["Su existencia puede determinar rutas comerciales en regiones áridas.","La disponibilidad de agua permite vegetación en un entorno muy seco.","Puede formarse alrededor de manantiales o aguas subterráneas.","Es un lugar fértil con agua en medio del desierto."],"Un oasis es un lugar con agua y vegetación en una zona árida."],
+["bruma","Meteorología",["Su presencia reduce el contraste de los objetos a distancia.","Se produce cuando diminutas gotas de agua quedan suspendidas cerca del suelo.","Puede confundirse con niebla, aunque suele ser menos densa.","Es una especie de neblina que reduce la visibilidad."],"La bruma es una suspensión de gotitas que reduce la visibilidad."],
+["arcoíris","Meteorología y óptica",["Su posición aparente depende de la posición del observador respecto al Sol y las gotas.","Los colores aparecen por refracción, reflexión y dispersión de la luz.","Suele verse cuando hay gotas de agua y luz solar.","Es un arco de colores que aparece en el cielo."],"El arcoíris se produce por la interacción de la luz solar con gotas de agua.",["arco iris"]],
+["aurora boreal","Astronomía",["Su intensidad está relacionada con la actividad del Sol y el campo magnético terrestre.","Las partículas cargadas excitan gases de la atmósfera y producen luz.","Es más habitual en latitudes cercanas al círculo polar ártico.","Es un espectáculo de luces naturales en el cielo del norte."],"La aurora boreal es un fenómeno luminoso de la atmósfera polar.",["aurora"]],
+["marea","Oceanografía",["Su ritmo está relacionado principalmente con la atracción gravitatoria de la Luna y el Sol.","Su amplitud varía según la costa, la forma de las bahías y la posición de los astros.","Hace que el nivel del mar suba y baje periódicamente.","Es la subida y bajada periódica del nivel del mar."],"Las mareas son variaciones periódicas del nivel del mar."],
+["terremoto","Geología",["Su localización y profundidad ayudan a comprender el movimiento de las fallas.","La energía acumulada en las rocas se libera de forma repentina.","Puede generar ondas sísmicas que se registran con instrumentos.","Es un movimiento brusco de la corteza terrestre."],"Un terremoto es una sacudida del terreno causada por la liberación de energía.",["seismo","sismo"]],
+["meteorito","Astronomía",["Su análisis puede aportar información sobre los primeros tiempos del sistema solar.","A diferencia de un meteoro, llega a alcanzar la superficie terrestre.","Puede dejar un cráter si impacta con suficiente energía.","Es un fragmento de roca o metal espacial que cae a la Tierra."],"Un meteorito es un cuerpo natural extraterrestre que alcanza la superficie terrestre."],
+["cometa","Astronomía",["Su órbita puede ser muy alargada y hacer que tarde décadas o siglos en regresar.","Al acercarse al Sol, parte de sus hielos se transforma en gas y polvo.","Puede desarrollar una cola que apunta aproximadamente en dirección opuesta al Sol.","Es un cuerpo celeste helado que puede mostrar una cola luminosa."],"Un cometa es un cuerpo de hielo, polvo y roca que orbita el Sol."],
+["saturno","Astronomía",["Su baja densidad media es menor que la del agua, aunque no podría colocarse en una bañera.","Su sistema de anillos está formado por innumerables fragmentos de hielo y roca.","Es uno de los gigantes gaseosos del sistema solar.","Es el planeta famoso por sus anillos."],"Saturno es un planeta gigante gaseoso conocido por su sistema de anillos."],
+["marte","Astronomía",["Su geología conserva señales de una historia en la que pudo haber agua líquida en superficie.","Una enorme estructura volcánica de su superficie supera ampliamente a los volcanes terrestres.","Su color rojizo se debe a minerales de hierro oxidados.","Es el planeta conocido como el planeta rojo."],"Marte es el cuarto planeta del sistema solar."],
+["venus","Astronomía",["Su rotación es extremadamente lenta y ocurre en sentido contrario al de la mayoría de los planetas.","Su atmósfera densa produce un intenso efecto invernadero.","Aunque no es el planeta más cercano al Sol, es el más caliente.","Es el segundo planeta del sistema solar."],"Venus es un planeta rocoso con una atmósfera muy densa y caliente."],
+["fotosíntesis","Biología",["Transforma energía luminosa en energía química almacenada en moléculas orgánicas.","En las plantas, los cloroplastos desempeñan un papel central en el proceso.","Utiliza agua y dióxido de carbono y libera oxígeno en la fotosíntesis oxigénica.","Es el proceso por el que las plantas fabrican materia orgánica usando luz."],"La fotosíntesis convierte energía luminosa en energía química."],
+["polinización","Biología",["Es esencial para la reproducción de muchas plantas con flores y para numerosos cultivos.","Puede realizarse mediante animales, viento o agua.","Consiste en trasladar el polen hasta la parte receptora de una flor.","Es el proceso que permite que el polen llegue a otra flor o a otra parte de la misma."],"La polinización es la transferencia del polen."],
+["camuflaje","Biología",["Puede servir tanto para evitar ser detectado como para acercarse a una presa.","Algunas especies modifican color, textura o comportamiento para confundirse con el entorno.","Su eficacia depende del fondo y de la percepción del observador.","Es una estrategia para pasar desapercibido."],"El camuflaje ayuda a un organismo a confundirse con su entorno."],
+["hibernación","Biología",["No es simplemente dormir durante mucho tiempo: implica cambios fisiológicos profundos.","Durante este estado disminuyen notablemente el metabolismo y la temperatura corporal en muchas especies.","Ayuda a superar periodos de frío y escasez de alimento.","Es un estado de actividad muy reducida durante una época desfavorable."],"La hibernación es un estado fisiológico de actividad y metabolismo reducidos."],
+["metamorfosis","Biología",["Implica cambios profundos en la estructura corporal durante el desarrollo.","En algunos insectos, una fase inmóvil separa dos etapas muy distintas.","La oruga y la mariposa son etapas de un mismo ciclo vital.","Es la transformación que experimentan ciertos animales al desarrollarse."],"La metamorfosis es un cambio importante en la forma corporal durante el desarrollo."],
+["murciélago","Animales",["Su orientación nocturna puede apoyarse en la ecolocalización.","Es el único grupo de mamíferos capaz de vuelo activo sostenido.","Desempeña funciones ecológicas como controlar insectos o dispersar semillas.","Es un mamífero volador que suele estar activo de noche."],"Los murciélagos son mamíferos voladores."],
+["pulpo","Animales",["Su sistema nervioso está distribuido en parte por sus brazos.","Puede cambiar de color y textura gracias a células especializadas de la piel.","Tiene tres corazones y sangre azulada por la hemocianina.","Es un animal marino con ocho brazos."],"El pulpo es un molusco cefalópodo de ocho brazos."],
+["camello","Animales",["Sus adaptaciones reducen la pérdida de agua en ambientes extremos.","Sus jorobas almacenan grasa, no agua.","Puede soportar grandes variaciones de temperatura y largos periodos sin beber.","Es un mamífero asociado a los desiertos y con jorobas."],"Los camellos son mamíferos adaptados a ambientes áridos."],
+["pingüino","Animales",["Sus alas evolucionaron para funcionar como aletas bajo el agua.","Su cuerpo está adaptado a nadar, aunque no puede volar.","Varias especies viven en el hemisferio sur, no solo en la Antártida.","Es un ave marina que camina erguida y no vuela."],"Los pingüinos son aves no voladoras adaptadas al medio acuático."],
+["abeja","Animales",["La comunicación de algunas especies incluye movimientos que transmiten dirección y distancia.","Su actividad es importante para la reproducción de muchas plantas.","Vive en colonias organizadas en las que hay distintas funciones.","Es un insecto que produce miel y puede polinizar flores."],"Las abejas son insectos polinizadores; algunas especies producen miel."],
+["castor","Animales",["Sus construcciones pueden modificar el flujo del agua y crear humedales.","Utiliza ramas, barro y troncos para construir diques.","Sus incisivos crecen continuamente y le permiten roer madera.","Es un roedor conocido por construir presas."],"El castor es un roedor que construye diques y refugios."],
+["camaleón","Animales",["El cambio de color puede comunicar estados y regular la temperatura, no solo ocultarse.","Sus ojos pueden moverse de forma independiente.","Tiene una lengua proyectable para capturar presas.","Es un reptil conocido por cambiar de color."],"Los camaleones son reptiles con ojos móviles y capacidad de cambiar de color."],
+["jirafa","Animales",["Su sistema circulatorio debe gestionar grandes diferencias de presión entre corazón y cabeza.","Su lengua larga le ayuda a alcanzar hojas entre espinas.","Es el animal terrestre más alto.","Es un mamífero africano de cuello muy largo."],"La jirafa es el animal terrestre más alto."],
+["erizo","Animales",["Sus púas son pelos modificados y no pueden lanzarse.","Ante una amenaza puede enrollarse para proteger las partes vulnerables.","Se alimenta de pequeños invertebrados, entre otros alimentos.","Es un pequeño mamífero cubierto de púas."],"El erizo utiliza sus púas como defensa."],
+["dromedario","Animales",["Está especialmente adaptado a perder y recuperar agua sin sufrir daños graves.","Su reserva energética se concentra en una sola joroba.","Es común en regiones áridas del norte de África y Oriente Próximo.","Es un camélido con una sola joroba."],"El dromedario es un camélido de una sola joroba."],
+["secuoya","Plantas",["Algunos ejemplares figuran entre los organismos más voluminosos del planeta.","Su corteza gruesa ofrece cierta protección frente al fuego.","Crece de forma natural en regiones de la costa oeste de Norteamérica.","Es un árbol gigantesco y muy longevo."],"Las secuoyas son árboles de gran tamaño y longevidad.",["sequoia"]],
+["baobab","Plantas",["Su tronco puede almacenar grandes cantidades de agua.","Sus ramas desnudas recuerdan a raíces que apuntan al cielo.","Es característico de paisajes africanos y de Madagascar.","Es un árbol de tronco muy grueso."],"El baobab es un árbol adaptado a climas estacionales secos."],
+["bambú","Plantas",["Algunas especies presentan crecimientos diarios extraordinarios.","Pertenece a la familia de las gramíneas, no a la de los árboles leñosos.","Sus tallos huecos se utilizan en construcción y fabricación de objetos.","Es una planta alta y flexible de tallos segmentados."],"El bambú es una gramínea de tallos leñosos."],
+["cactus","Plantas",["Muchas especies florecen pocos días al año tras largas sequías.","Sus espinas son hojas modificadas que reducen la pérdida de agua.","Sus tallos carnosos almacenan agua para las épocas secas.","Es una planta espinosa típica de los desiertos."],"Los cactus son plantas adaptadas a ambientes áridos.",["cacto"]],
+["pirámide","Historia",["Su orientación y proporciones han inspirado siglos de teorías sobre sus constructores.","Algunas servían como monumentos funerarios para gobernantes.","Las más famosas se levantaron a orillas del Nilo.","Es una construcción de base cuadrada y caras triangulares."],"Una pirámide es un monumento de caras triangulares que convergen en un vértice.",["piramide"]],
+["castillo","Historia",["Su ubicación solía elegirse por motivos estratégicos más que por comodidad.","En la Edad Media combinaba función militar y residencia de un señor.","Tenía murallas, torres y a veces un foso.","Es una fortaleza medieval con torres y almenas."],"Un castillo es una construcción fortificada."],
+["espada","Historia",["Su forma y longitud variaron mucho según la época y el tipo de combate.","Muchas leyendas de caballeros giran en torno a una famosa.","Se compone de hoja, empuñadura y guarda.","Es un arma blanca de hoja larga y afilada."],"Una espada es un arma de hoja metálica larga."],
+["tambor","Música",["Su sonido depende de la tensión de su superficie y del tamaño de la caja.","En muchas culturas sirvió para enviar señales a distancia.","Se toca golpeándolo con las manos o con baquetas.","Es un instrumento de percusión con una membrana tensa."],"Un tambor es un instrumento de percusión de membrana."],
+["guitarra","Música",["Su caja de resonancia amplifica el sonido de sus cuerdas sin necesidad de electricidad.","Existen versiones clásicas, acústicas y eléctricas.","Tiene un mástil con trastes y normalmente seis cuerdas.","Es un instrumento de cuerda que se toca punteando o rasgueando."],"La guitarra es un instrumento de cuerda pulsada."],
+["piano","Música",["Su mecanismo interno transforma el golpe de un dedo en el de un pequeño martillo.","Su rango abarca más de siete octavas.","Tiene teclas blancas y negras.","Es un instrumento de teclado con cuerdas golpeadas por macillos."],"El piano es un instrumento de teclado y cuerdas percutidas."],
+["violín","Música",["Su sonido depende de la forma y la madera de una caja de resonancia muy delicada.","Algunos ejemplares antiguos de ciertos artesanos italianos alcanzan precios enormes.","Se apoya en el hombro y se toca con un arco.","Es un instrumento de cuerda frotada de tamaño pequeño."],"El violín es el instrumento agudo de la familia de cuerda frotada.",["violin"]],
+["ajedrez","Juegos",["Se ha utilizado como ejemplo en el estudio de la inteligencia artificial.","Existen aperturas y finales estudiados durante siglos.","Se juega en un tablero de 64 casillas con piezas de dos colores.","Su objetivo es dar jaque mate al rey rival."],"El ajedrez es un juego de estrategia para dos jugadores."],
+["dado","Juegos",["Su equilibrio es clave para que ningún resultado sea más probable que otro.","Se ha usado desde la antigüedad en juegos de azar.","Tiene seis caras con puntos.","Se lanza para obtener un número al azar."],"Un dado es un cubo marcado que se lanza para generar un resultado aleatorio."],
+["maratón","Deporte",["Su nombre recuerda una leyenda sobre un mensajero de la antigua Grecia.","Su distancia oficial es de poco más de cuarenta y dos kilómetros.","Exige resistencia, hidratación y dosificar el esfuerzo.","Es una carrera a pie de larga distancia."],"El maratón es una carrera de 42,195 kilómetros.",["maraton"]],
+["café","Comida y bebida",["Su sabor depende de la altitud, el tueste y la forma de preparación.","Es una de las materias primas más comercializadas del mundo.","Se obtiene de los granos de un arbusto tropical.","Es una bebida estimulante que muchos toman por la mañana."],"El café es una bebida hecha con granos tostados y molidos.",["cafe"]],
+["chocolate","Comida y bebida",["Su origen está ligado a culturas mesoamericanas que lo tomaban como bebida.","Se elabora a partir de semillas fermentadas, secadas y tostadas.","Puede ser negro, con leche o blanco.","Se obtiene del cacao y suele ser dulce."],"El chocolate se elabora con pasta y manteca de cacao."],
+["miel","Comida y bebida",["Puede cristalizar con el tiempo sin estropearse.","Su sabor cambia según las flores de las que proceda.","Es un alimento dulce y viscoso.","La elaboran las abejas."],"La miel es una sustancia dulce elaborada por las abejas."],
+["queso","Comida y bebida",["Existen miles de variedades según la leche, el proceso y el tiempo de maduración.","Su elaboración implica separar el suero de una parte sólida.","Puede ser fresco, curado o azul.","Se hace a partir de leche cuajada."],"El queso es un alimento que se obtiene por cuajado de la leche."],
+["pan","Comida y bebida",["Su aparición está ligada al desarrollo de la agricultura.","Su aroma al hornearse es muy característico.","La masa necesita fermentar con levadura en la mayoría de variedades.","Se hace con harina, agua y sal."],"El pan es un alimento básico hecho con masa de harina cocida al horno."],
+["corazón","Cuerpo humano",["Late más de cien mil veces al día sin que tengamos que pensarlo.","Tiene cuatro cavidades y válvulas que evitan el retroceso de la sangre.","Es un músculo que no se detiene mientras vivimos.","Bombea la sangre por todo el cuerpo."],"El corazón es el órgano que impulsa la sangre.",["corazon"]],
+["pulmón","Cuerpo humano",["Su superficie interior, desplegada, ocuparía una extensión enorme.","Está dentro de la caja torácica, protegido por las costillas.","Tenemos dos y no son exactamente iguales.","Es el órgano con el que respiramos."],"Los pulmones permiten el intercambio de gases al respirar.",["pulmon","pulmones"]],
+["esqueleto","Cuerpo humano",["Su estructura se renueva continuamente aunque parezca inmutable.","En un adulto se compone de más de doscientos huesos.","Sostiene el cuerpo y protege órganos vitales.","Es el conjunto de huesos del cuerpo."],"El esqueleto es la estructura de huesos que sostiene el cuerpo."],
+["vacuna","Salud",["Su idea nació al observar que una enfermedad leve podía proteger frente a otra grave.","Entrena al sistema inmune sin causar la enfermedad completa.","Se administra normalmente con una inyección.","Protege frente a enfermedades preparando las defensas."],"Una vacuna estimula la inmunidad frente a un patógeno."],
+["biblioteca","Cultura",["Una de las más famosas de la antigüedad se encontraba en Alejandría.","Su organización permite encontrar un título entre miles.","Se puede pedir prestado material con un carné.","Es un lugar con muchos libros para leer o consultar."],"Una biblioteca es un lugar donde se guardan y prestan libros."],
+["mapa","Geografía",["Siempre implica elegir qué se muestra y qué se omite de la realidad.","Su escala indica cuánto se ha reducido el terreno representado.","Puede ser político, físico, de carreteras o del tiempo.","Es una representación de un territorio sobre una superficie."],"Un mapa es una representación gráfica de un territorio."],
+["satélite","Tecnología",["Algunos llevan décadas girando sin necesitar combustible para mantener su movimiento.","Puede servir para comunicaciones, observación o posicionamiento.","Los hay naturales y artificiales.","Es un objeto que orbita alrededor de un planeta."],"Un satélite es un cuerpo que orbita otro, natural o artificial.",["satelite"]],
+["cohete","Tecnología",["Su funcionamiento se basa en que a toda acción corresponde una reacción.","La mayor parte de su masa al despegar es combustible.","Se construye por etapas que se desprenden durante el vuelo.","Es el vehículo que lleva naves y astronautas al espacio."],"Un cohete es un vehículo propulsado por la expulsión de gases."],
+["submarino","Tecnología",["Su flotabilidad se controla llenando o vaciando unos depósitos.","Un periscopio le permite ver el exterior sin salir a la superficie.","Algunos pueden pasar meses sin emerger.","Es un barco capaz de navegar bajo el agua."],"Un submarino es una embarcación que puede sumergirse."],
+["paracaídas","Tecnología",["Su eficacia depende de aumentar la resistencia del aire sobre el cuerpo.","Suele llevarse plegado en una mochila hasta que hace falta.","Se abre tirando de una anilla.","Frena la caída de una persona desde un avión."],"Un paracaídas frena la caída mediante una gran superficie de tela.",["paracaidas"]],
+["escalera","Objetos cotidianos",["Su inclinación es un equilibrio entre comodidad y espacio disponible.","Los bomberos la usan de forma extensible para llegar a pisos altos.","Está formada por peldaños.","Sirve para subir o bajar entre distintos niveles."],"Una escalera es una serie de peldaños para salvar desniveles."],
+["lupa","Objetos cotidianos",["Su funcionamiento se basa en cómo se curva la luz al atravesar un material.","Con luz solar puede concentrar tanta energía que llega a quemar papel.","Suele tener un mango y una lente.","Hace que las cosas pequeñas se vean más grandes."],"Una lupa es una lente de aumento."],
+["imán","Ciencia",["Algunos animales parecen usar su misma fuerza para orientarse en sus viajes.","Atrae materiales como el hierro sin necesidad de tocarlos.","Tiene dos polos, norte y sur.","Es un objeto que se pega a la nevera."],"Un imán es un cuerpo que genera un campo magnético.",["iman"]],
+["semáforo","Ciudad",["Su ritmo se coordina a veces con el de los cruces vecinos para mejorar el tráfico.","Existen versiones especiales con sonido para personas con discapacidad visual.","Funciona con tres luces.","Cambia de verde a ámbar y a rojo."],"Un semáforo regula el paso de vehículos y peatones.",["semaforo"]],
+["tren","Transporte",["Su idea de circular sobre carriles reduce el rozamiento y ahorra energía.","Su aparición transformó el comercio y la forma de viajar en el siglo XIX.","Circula por vías y se detiene en estaciones.","Es un transporte formado por vagones tirados por una locomotora."],"Un tren es un vehículo que circula por vías férreas."],
+["bicicleta","Transporte",["Su eficiencia es de las mayores entre los medios de transporte movidos por personas.","Se mantiene en equilibrio gracias al movimiento hacia delante.","Se mueve con pedales y una cadena.","Tiene dos ruedas y se conduce con un manillar."],"La bicicleta es un vehículo de dos ruedas accionado por pedales."],
+["enchufe","Objetos cotidianos",["Su forma cambia según el país, lo que obliga a veces a usar adaptadores.","Suele llevar una conexión de tierra por seguridad.","Tiene clavijas metálicas que encajan en una base.","Conecta un aparato a la corriente eléctrica."],"Un enchufe conecta un aparato a la red eléctrica."],
+];
+
+(function(){
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const COL = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
+  const ls = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  };
+  const norm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();
+  const key = s => norm(s).replace(/ /g,"");
+  const sing = s => s.replace(/(es|s)$/,"");
+  function lev(a,b){
+    if(a===b) return 0;
+    let p = Array.from({length:b.length+1},(_,i)=>i);
+    for(let i=1;i<=a.length;i++){
+      const c=[i];
+      for(let j=1;j<=b.length;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));
+      p=c;
+    }
+    return p[b.length];
+  }
+  function shuffle(a){
+    a=a.slice();
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+  function show(id){ ["sStart","sPlay","sEnd"].forEach(x=>{ $("#"+x).hidden = x!==id; }); window.scrollTo({top:0}); }
+
+  const st = {total:10, rounds:[], i:0, score:0, rev:1, over:false, results:[]};
+  $("#hInfo").textContent = BANCO.length+" preguntas en total.";
+
+  function seenList(){ try{ return JSON.parse(ls.get("c4o_seen")||"[]"); }catch(e){ return []; } }
+
+  function pick(n){
+    n = Math.min(n, BANCO.length);
+    let seen = seenList();
+    let fresh = BANCO.filter(q=>!seen.includes(q[0]));
+    if(fresh.length < n){ seen = []; fresh = BANCO.slice(); }   // se han visto casi todas: se reinicia
+    const chosen = shuffle(fresh).slice(0,n);
+    ls.set("c4o_seen", JSON.stringify(seen.concat(chosen.map(q=>q[0]))));
+    return chosen;
+  }
+
+  function begin(){
+    st.rounds = pick(st.total);
+    st.i = 0; st.score = 0; st.results = [];
+    round();
+  }
+
+  function round(){
+    st.rev = 1; st.over = false;
+    show("sPlay");
+    $("#res").hidden = true;
+    $("#guess").value = ""; $("#guess").disabled = false; $("#bGuess").disabled = false;
+    $("#rTools").hidden = false;
+    draw(false);
+    setTimeout(()=>{ try{ $("#guess").focus(); }catch(e){} },30);
+  }
+
+  function draw(pop){
+    const q = st.rounds[st.i];
+    $("#tRound").textContent = "Ronda "+(st.i+1)+" de "+st.rounds.length;
+    $("#tScore").textContent = st.score;
+    $("#mPlay").textContent = "";
+    const box = $("#clues"); box.innerHTML = "";
+    q[2].forEach((p,i)=>{
+      const d = document.createElement("div");
+      const on = i<st.rev;
+      d.className = "clue"+(on?"":" off")+(pop && on && i===st.rev-1 ? " new":"");
+      d.style.setProperty("--col",COL[i]);
+      d.textContent = on ? p : "Pista sin descubrir";
+      box.appendChild(d);
+    });
+    const letters = key(q[0]).length;
+    $("#hLen").textContent = st.rev>=3 ? "La palabra tiene "+letters+" letras." : "";
+    $("#bMore").disabled = st.rev>=4;
+  }
+
+  function correct(g){
+    const a = key(g); if(!a) return false;
+    const q = st.rounds[st.i];
+    const opts = [q[0]].concat(q[4]||[]).map(key);
+    return opts.some(b => a===b || sing(a)===sing(b) || (b.length>=6 && a.length>=6 && lev(a,b)<=1));
+  }
+
+  function finish(won){
+    st.over = true;
+    const q = st.rounds[st.i];
+    const pts = won ? 5-st.rev : 0;
+    st.score += pts;
+    st.results.push({w:q[0],pts,rev:won?st.rev:0});
+    st.rev = 4; draw(false);
+    $("#tScore").textContent = st.score;
+    $("#guess").disabled = true; $("#bGuess").disabled = true;
+    $("#rTools").hidden = true;
+    $("#rVerdict").textContent = won ? "¡Correcto! La palabra era:" : "Te has rendido. La palabra era:";
+    const w = $("#rWord"); w.innerHTML = ""; w.className = "word"+(won?"":" fail");
+    [...q[0]].forEach((ch,i)=>{ const s=document.createElement("span"); s.textContent=ch.toUpperCase(); s.style.setProperty("--col",COL[i%4]); w.appendChild(s); });
+    $("#rDef").textContent = q[3];
+    $("#rCat").textContent = "Categoría: "+q[1];
+    $("#rPts").textContent = won ? "+"+pts+(pts===1?" punto":" puntos") : "0 puntos";
+    $("#bNext").textContent = st.i>=st.rounds.length-1 ? "Ver resultado" : "Siguiente";
+    $("#res").hidden = false;
+    $("#bNext").focus();
+  }
+
+  function end(){
+    show("sEnd");
+    const max = st.rounds.length*4;
+    $("#eScore").textContent = st.score+" / "+max;
+    const bk = "c4o_best"+st.total;
+    const best = parseInt(ls.get(bk)||"0",10);
+    let note = "";
+    if(st.score>best){ ls.set(bk,String(st.score)); note = best ? "Nuevo récord en partidas de "+st.total+" (antes: "+best+")." : "Primer récord guardado para partidas de "+st.total+"."; }
+    else note = "Tu mejor partida de "+st.total+" rondas: "+best+" puntos.";
+    $("#eNote").textContent = note;
+    const ul = $("#eList"); ul.innerHTML = "";
+    st.results.forEach(x=>{
+      const li = document.createElement("li");
+      const a = document.createElement("span"); a.textContent = x.w;
+      const b = document.createElement("span"); b.textContent = x.rev ? x.pts+" pts · "+x.rev+(x.rev===1?" pista":" pistas") : "sin acertar";
+      li.append(a,b); ul.appendChild(li);
+    });
+  }
+
+  $("#segR").addEventListener("click",e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    st.total = parseInt(b.dataset.v,10);
+    [...$("#segR").children].forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false"));
+  });
+  $("#bStart").addEventListener("click",begin);
+  $("#bAgain").addEventListener("click",begin);
+  $("#bHome").addEventListener("click",()=>show("sStart"));
+  $("#bMore").addEventListener("click",()=>{ if(st.rev<4 && !st.over){ st.rev++; draw(true); } });
+  $("#bGive").addEventListener("click",()=>{ if(!st.over) finish(false); });
+  $("#bNext").addEventListener("click",()=>{ st.i++; if(st.i>=st.rounds.length) end(); else round(); });
+  $("#form").addEventListener("submit",e=>{
+    e.preventDefault();
+    if(st.over) return;
+    const v = $("#guess").value;
+    if(!norm(v)) return;
+    if(correct(v)) finish(true);
+    else{
+      const g = $("#guess"); g.classList.remove("shake"); void g.offsetWidth; g.classList.add("shake");
+      $("#mPlay").textContent = "No es esa. Prueba otra o pide otra pista.";
+      g.select();
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -253,8 +253,8 @@
   </div>
   <div class="field">
     <label for="inModel">Modelo</label>
-    <input id="inModel" type="text" placeholder="gemini-2.5-flash" autocomplete="off">
-    <span class="hint">Si Google cambia el nombre del modelo, edítalo aquí.</span>
+    <input id="inModel" type="text" placeholder="gemini-3.8-flash" autocomplete="off">
+    <span class="hint">Si falla, prueba con gemini-flash-latest, que siempre apunta al Flash más reciente.</span>
   </div>
   <div class="actions">
     <button class="btn ghost" id="dlgCancel" type="button">Cancelar</button>
@@ -268,7 +268,7 @@
 
   const $ = s => document.querySelector(s);
   const COLORS = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
-  const DEFAULT_MODEL = "gemini-2.5-flash";
+  const DEFAULT_MODEL = "gemini-3.8-flash";
 
   const store = {
     get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
@@ -277,7 +277,7 @@
 
   const state = {
     key: store.get("c4p_key") || "",
-    model: store.get("c4p_model") || DEFAULT_MODEL,
+    model: store.get("c4p_model2") || DEFAULT_MODEL,
     diff: "media",
     total: 5,
     idx: 0,
@@ -369,7 +369,10 @@ Responde solo con el JSON pedido.`;
       try{ const j = await res.json(); detail = j.error && j.error.message ? j.error.message : ""; }catch(e){}
       if(res.status===400 && /API key/i.test(detail)) throw new Error("La clave de API no es válida. Revísala en Ajustes.");
       if(res.status===403) throw new Error("Gemini rechazó la clave (403). Comprueba que sea correcta y esté activa.");
-      if(res.status===404) throw new Error("No existe el modelo «"+state.model+"». Cámbialo en Ajustes.");
+      if(res.status===404){
+        if(state.model!=="gemini-flash-latest"){ state.model="gemini-flash-latest"; return callGemini(); }
+        throw new Error("No existe el modelo «"+state.model+"». Cámbialo en Ajustes.");
+      }
       if(res.status===429) throw new Error("Has superado el límite de peticiones. Espera un momento y reintenta.");
       throw new Error("Error de Gemini ("+res.status+")."+(detail?" "+detail:""));
     }
@@ -623,7 +626,7 @@ Responde solo con el JSON pedido.`;
     state.key = $("#inKey").value.trim();
     state.model = $("#inModel").value.trim() || DEFAULT_MODEL;
     store.set("c4p_key", state.key);
-    store.set("c4p_model", state.model);
+    store.set("c4p_model2", state.model);
     $("#startMsg").textContent = "";
     dlg.close();
   });

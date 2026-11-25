@@ -352,13 +352,16 @@ else {
         ${s.d === 0
           ? '¡Objetivo conseguido!'
           : 'Te has quedado a ' + s.d + ' del objetivo.'}
-      </div>
+    
     </div>
   `;
+  }
+},30);
 }
-  },30);
-}
+
 function endGame(){
+
+ 
  G.ph='end';const max=G.res.reduce((a,x)=>a+(x.tp==='L'?10:10),0);
  let best=0,note='';try{best=+localStorage.getItem(bestKey())||0;if(G.score>best){localStorage.setItem(bestKey(),String(G.score));note=best?'🎉 Nuevo récord (antes: '+best+').':'🎉 Primer récord guardado.'}else note='Tu mejor partida de '+G.max+' rondas: '+best+' puntos.'}catch(e){}
  $('game').innerHTML='<span class="pill">PARTIDA TERMINADA</span><h2>Resultado final</h2><div class="big-score">'+G.score+' pts</div><p class="m">'+note+'</p>'+

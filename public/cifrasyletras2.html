@@ -151,6 +151,59 @@ addEventListener('keydown',e=>{if(G.ph!=='play'||G.tp!=='L'||!L.lp||!$('ap')||e.
  else if(e.key===' '){e.preventDefault();L.lp=shuf(L.lp);drawW()}
  else if(e.key.length===1){const n=normW(e.key);if(!n)return;const x=L.lp.find(t=>t.c===n);if(x)lPick(x.id)}});
 
+addEventListener('keydown', e => {
+  if (G.ph !== 'play' || G.tp !== 'C') return;
+
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+  // Seleccionar fichas con 1-6
+  if (/^[1-6]$/.test(e.key)) {
+    e.preventDefault();
+    const tile = L.pool[Number(e.key) - 1];
+    if (tile) tileClick(tile.id);
+    return;
+  }
+
+  // Operaciones
+  const operations = {
+    '+': '+',
+    '-': '−',
+    '*': '×',
+    'x': '×',
+    'X': '×',
+    '/': '÷'
+  };
+
+  if (operations[e.key]) {
+    e.preventDefault();
+    opClick(operations[e.key]);
+    return;
+  }
+
+  // Deshacer
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    undoC();
+    return;
+  }
+
+  // Cancelar selección
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    L.sel = null;
+    L.op = null;
+    drawC();
+    return;
+  }
+
+  // Enviar
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    submit();
+  }
+});
+
 /* ---------- render y resultado ---------- */
 const rn=()=>'RONDA '+G.r+' / '+G.max+' · '+(G.tp==='L'?'LETRAS':'CIFRAS');
 function renderPlay(){show('game');const g=$('game');

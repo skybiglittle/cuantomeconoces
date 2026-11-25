@@ -125,6 +125,12 @@
   .loading .dots i:nth-child(4){animation-delay:.36s}
   @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}}
 
+  .bar{height:8px;max-width:340px;margin:16px auto 10px;background:var(--line);border-radius:6px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--c1);border-radius:6px;transition:width .25s linear}
+  .testres{min-height:1.4em;font-weight:600;margin:0 0 10px;font-size:.95rem}
+  .testres.ok{color:var(--ok)}
+  .testres.err{color:var(--bad)}
+
   /* Fin */
   .final-score{font-size:clamp(3rem,14vw,5.5rem);font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0}
   .recap{list-style:none;padding:0;margin:16px 0 22px;display:grid;gap:6px}
@@ -193,6 +199,8 @@
   <section id="screenLoading" class="loading" hidden>
     <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <div id="loadingTxt">Gemini está pensando una palabra…</div>
+    <div class="bar" id="loadBar" aria-hidden="true"><i id="loadFill"></i></div>
+    <div class="hint" id="loadTime"></div>
     <div class="msg" id="loadMsg" role="alert"></div>
     <div class="tools" style="justify-content:center" id="loadActions" hidden>
       <button class="btn" id="btnRetry" type="button">Reintentar</button>
@@ -256,7 +264,9 @@
     <input id="inModel" type="text" placeholder="gemini-3.8-flash" autocomplete="off">
     <span class="hint">Si falla, prueba con gemini-flash-latest, que siempre apunta al Flash más reciente.</span>
   </div>
+  <div class="testres" id="testRes" role="status"></div>
   <div class="actions">
+    <button class="btn ghost" id="dlgTest" type="button">Probar conexión</button>
     <button class="btn ghost" id="dlgCancel" type="button">Cancelar</button>
     <button class="btn" id="dlgSave" type="button">Guardar</button>
   </div>
@@ -341,13 +351,43 @@ Reglas:
 Responde solo con el JSON pedido.`;
   }
 
-  async function callGemini(sinPensar){
+  const LATEST = "gemini-flash-latest";
+  const ERR_RED = "No se pudo conectar con Gemini. Revisa tu conexión a internet o si algún bloqueador o antivirus impide la petición.";
+
+  async function post(makeBody, sinPensar){
     const url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(state.model) + ":generateContent";
-    const body = {
-      contents:[{role:"user",parts:[{text:buildPrompt()}]}],
+    let res;
+    try{
+      res = await fetch(url,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-goog-api-key":state.key},
+        body:JSON.stringify(makeBody(!!sinPensar))
+      });
+    }catch(e){
+      throw new Error(ERR_RED);
+    }
+    if(res.ok) return res.json();
+    let detail = "";
+    try{ const j = await res.json(); detail = j.error && j.error.message ? j.error.message : ""; }catch(e){}
+    if(res.status===400 && !sinPensar && /think/i.test(detail)) return post(makeBody,true);
+    if((res.status===400 && /API.?KEY/i.test(detail)) || res.status===401) throw new Error("La clave de API no es válida. Revísala en Ajustes.");
+    if(res.status===403) throw new Error("Gemini rechazó la clave (403). Comprueba que sea correcta y esté activa.");
+    if(res.status===404){
+      if(state.model!==LATEST){ state.model = LATEST; return post(makeBody,sinPensar); }
+      throw new Error("No existe el modelo «"+state.model+"». Cámbialo en Ajustes.");
+    }
+    if(res.status===429) throw new Error("Has superado el límite de peticiones. Espera un momento y reintenta.");
+    if(res.status>=500) throw new Error("Gemini está saturado ("+res.status+"). Espera un momento y reintenta.");
+    throw new Error("Error de Gemini ("+res.status+")."+(detail?" "+detail:""));
+  }
+
+  async function callGemini(){
+    const prompt = buildPrompt();
+    const makeBody = sp => ({
+      contents:[{role:"user",parts:[{text:prompt}]}],
       generationConfig:{
         temperature:1.2,
-        ...(sinPensar ? {} : {thinkingConfig:{thinkingLevel:"low"}}),
+        ...(sp ? {} : {thinkingConfig:{thinkingLevel:"low"}}),
         responseMimeType:"application/json",
         responseSchema:{
           type:"OBJECT",
@@ -359,32 +399,23 @@ Responde solo con el JSON pedido.`;
           required:["palabra","pistas"]
         }
       }
-    };
-    const res = await fetch(url,{
-      method:"POST",
-      headers:{"Content-Type":"application/json","x-goog-api-key":state.key},
-      body:JSON.stringify(body)
     });
-    if(!res.ok){
-      let detail = "";
-      try{ const j = await res.json(); detail = j.error && j.error.message ? j.error.message : ""; }catch(e){}
-      if(res.status===400 && !sinPensar && /think/i.test(detail)) return callGemini(true);
-      if(res.status===400 && /API key/i.test(detail)) throw new Error("La clave de API no es válida. Revísala en Ajustes.");
-      if(res.status===403) throw new Error("Gemini rechazó la clave (403). Comprueba que sea correcta y esté activa.");
-      if(res.status===404){
-        if(state.model!=="gemini-flash-latest"){ state.model="gemini-flash-latest"; return callGemini(); }
-        throw new Error("No existe el modelo «"+state.model+"». Cámbialo en Ajustes.");
-      }
-      if(res.status===429) throw new Error("Has superado el límite de peticiones. Espera un momento y reintenta.");
-      throw new Error("Error de Gemini ("+res.status+")."+(detail?" "+detail:""));
-    }
-    const data = await res.json();
+    const data = await post(makeBody,false);
     const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
     if(!parts) throw new Error("Gemini no devolvió contenido. Reintenta.");
     let txt = parts.map(p=>p.text||"").join("").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
     let obj;
     try{ obj = JSON.parse(txt); }catch(e){ throw new Error("La respuesta de Gemini no se pudo leer. Reintenta."); }
     return obj;
+  }
+
+  async function probarConexion(){
+    const t0 = performance.now();
+    await post(sp=>({
+      contents:[{role:"user",parts:[{text:"Responde solo con la palabra OK."}]}],
+      generationConfig: sp ? {} : {thinkingConfig:{thinkingLevel:"low"}}
+    }),false);
+    return performance.now()-t0;
   }
 
   function validate(o){
@@ -401,20 +432,27 @@ Responde solo con el JSON pedido.`;
     return {palabra, pistas, aceptadas};
   }
 
+  function recordTime(ms){
+    const prev = parseInt(store.get("c4p_avg")||"0",10);
+    store.set("c4p_avg", String(Math.round(prev ? prev*0.6+ms*0.4 : ms)));
+  }
+
   async function fetchRound(){
+    const t0 = performance.now();
     let lastErr = null;
     for(let i=0;i<3;i++){
       try{
         const r = validate(await callGemini());
         if(r){
           state.used.push(r.palabra);
+          recordTime(performance.now()-t0);
           return r;
         }
         lastErr = new Error("Gemini devolvió una ronda con pistas que delataban la palabra. Reintenta.");
       }catch(e){
         lastErr = e;
         // errores de clave/modelo/límite no se arreglan reintentando solo
-        if(/clave|403|modelo|límite/i.test(e.message)) break;
+        if(/clave|403|modelo|límite|conectar|saturado/i.test(e.message)) break;
       }
     }
     throw lastErr || new Error("No se pudo crear la ronda.");
@@ -423,6 +461,30 @@ Responde solo con el JSON pedido.`;
   function prefetch(){
     const g = state.gen;
     state.next = fetchRound().then(r=>({ok:r,g}),e=>({err:e,g}));
+  }
+
+  /* ---------- temporizador de carga ---------- */
+  let tmr = null;
+  function stopTimer(){ if(tmr){ clearInterval(tmr); tmr=null; } }
+  function startTimer(){
+    stopTimer();
+    const t0 = performance.now();
+    const est = parseInt(store.get("c4p_avg")||"0",10);
+    const base = est || 8000;
+    $("#loadBar").hidden = false;
+    $("#loadTime").hidden = false;
+    const tick = () => {
+      const el = performance.now()-t0;
+      const pct = Math.min(95, 100*(1-Math.exp(-1.6*el/base)));
+      $("#loadFill").style.width = pct+"%";
+      const sec = Math.floor(el/1000);
+      let txt = "Llevas "+sec+" s";
+      txt += est ? " · suele tardar unos "+Math.max(1,Math.round(est/1000))+" s" : " · la primera vez mide cuánto tarda";
+      if(el>12000 && el>base*2.2) txt = "Llevas "+sec+" s. Está tardando más de lo normal; si pasa de 30 s, reintenta.";
+      $("#loadTime").textContent = txt;
+    };
+    tick();
+    tmr = setInterval(tick,250);
   }
 
   /* ---------- flujo ---------- */
@@ -449,6 +511,7 @@ Responde solo con el JSON pedido.`;
     $("#loadActions").hidden = true;
     $("#loadingTxt").hidden = false;
     $("#loadingTxt").textContent = "Gemini está pensando una palabra…";
+    startTimer();
     const g = state.gen;
     let res;
     if(state.next){
@@ -457,8 +520,11 @@ Responde solo con el JSON pedido.`;
     }else{
       res = await fetchRound().then(r=>({ok:r,g}),e=>({err:e,g}));
     }
-    if(res.g!==g) return; // partida reiniciada
+    if(res.g!==g){ stopTimer(); return; } // partida reiniciada
+    stopTimer();
     if(res.err){
+      $("#loadBar").hidden = true;
+      $("#loadTime").hidden = true;
       $("#loadingTxt").hidden = true;
       $("#loadMsg").textContent = res.err.message;
       $("#loadActions").hidden = false;
@@ -613,7 +679,7 @@ Responde solo con el JSON pedido.`;
 
   $("#btnRetry").addEventListener("click", loadRound);
   $("#btnLoadSettings").addEventListener("click", openSettings);
-  $("#btnLoadBack").addEventListener("click",()=>{ state.gen++; state.next=null; show("screenStart"); });
+  $("#btnLoadBack").addEventListener("click",()=>{ stopTimer(); state.gen++; state.next=null; show("screenStart"); });
 
   /* ---------- ajustes ---------- */
   const dlg = $("#dlg");
@@ -624,6 +690,31 @@ Responde solo con el JSON pedido.`;
   }
   $("#btnSettings").addEventListener("click", openSettings);
   $("#dlgCancel").addEventListener("click",()=> dlg.close());
+  dlg.addEventListener("close",()=>{
+    state.key = store.get("c4p_key") || "";
+    state.model = store.get("c4p_model2") || DEFAULT_MODEL;
+    $("#testRes").textContent = "";
+  });
+  $("#dlgTest").addEventListener("click", async ()=>{
+    const out = $("#testRes");
+    const k = $("#inKey").value.trim();
+    if(!k){ out.className="testres err"; out.textContent="Pega primero tu clave de API."; return; }
+    state.key = k;
+    state.model = $("#inModel").value.trim() || DEFAULT_MODEL;
+    out.className = "testres";
+    out.textContent = "Probando…";
+    $("#dlgTest").disabled = true;
+    try{
+      const ms = await probarConexion();
+      $("#inModel").value = state.model;
+      out.className = "testres ok";
+      out.textContent = "Funciona: Gemini respondió en "+(ms/1000).toFixed(1).replace(".",",")+" s con "+state.model+".";
+    }catch(e){
+      out.className = "testres err";
+      out.textContent = e.message;
+    }
+    $("#dlgTest").disabled = false;
+  });
   $("#dlgSave").addEventListener("click",()=>{
     state.key = $("#inKey").value.trim();
     state.model = $("#inModel").value.trim() || DEFAULT_MODEL;

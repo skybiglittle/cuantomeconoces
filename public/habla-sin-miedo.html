@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Habla sin miedo</title>
+<style>
+:root{--bg:#f5f2ea;--card:#fff;--ink:#222;--mut:#777;--acc:#e0552b;--acc2:#2a7de1;--tile:#ece7da;--ok:#2e9e5b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181c;--card:#23252b;--ink:#eee;--mut:#9a9aa5;--tile:#33353d;--acc:#ff7a4d;--acc2:#5aa2ff}}
+:root[data-theme="dark"]{--bg:#17181c;--card:#23252b;--ink:#eee;--mut:#9a9aa5;--tile:#33353d;--acc:#ff7a4d;--acc2:#5aa2ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:520px;padding:16px}
+h1{font-size:1.5rem;margin:4px 0;text-align:center}
+.sub{color:var(--mut);text-align:center;font-size:.9rem;margin-bottom:14px}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.lab{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+#topic{font-size:1.6rem;font-weight:800;line-height:1.2}
+#cat{display:inline-block;font-size:.8rem;background:var(--tile);border-radius:20px;padding:2px 10px;margin-top:8px;color:var(--mut)}
+#chal{font-size:1.05rem}
+button,a.b{font:inherit;font-weight:600;font-size:.95rem;padding:10px 14px;border:0;border-radius:10px;background:var(--acc);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+button.s,a.b.s{background:var(--tile);color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row>*{flex:1;text-align:center;min-width:120px}
+.chips{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}.chips .chip{min-width:72px}
+.chip{flex:1;text-align:center;padding:10px 0;border-radius:10px;background:var(--tile);cursor:pointer;font-weight:700}
+.chip.on{background:var(--acc2);color:#fff}
+#run{display:none;text-align:center}
+#clock{font-size:4rem;font-weight:800;font-variant-numeric:tabular-nums}
+#mode{font-weight:700;color:var(--acc)}
+.bar{height:10px;background:var(--tile);border-radius:6px;overflow:hidden;margin:10px 0}
+#fill{height:100%;width:0;background:var(--acc)}
+.st{display:flex;gap:6px;margin:8px 0}
+.st div{flex:1;padding:8px 4px;border-radius:10px;background:var(--tile);font-size:.85rem;color:var(--mut)}
+.st div.on{background:var(--ok);color:#fff;font-weight:700}
+#tip{min-height:2.6em;font-size:.95rem;color:var(--mut)}
+.end{color:var(--ok);font-weight:700;font-size:1.1rem;margin-top:8px}
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.cats .chip{flex:none;padding:6px 12px;font-size:.85rem}
+#words span,#rwords span{display:inline-block;background:var(--tile);border-radius:20px;padding:4px 12px;margin:4px 4px 0 0;font-weight:700}
+#clock.red{color:#d64545}.rate{display:flex;gap:6px;margin-top:8px}.rate button{flex:1;font-size:1.2rem;padding:8px 0}
+#own{width:100%;font:inherit;padding:10px;border-radius:10px;border:2px solid var(--tile);background:var(--bg);color:var(--ink);margin-top:10px}
+#stats{font-size:.9rem;color:var(--mut);text-align:center;margin-bottom:10px;cursor:pointer}
+#hl{font-size:.85rem;text-align:left;display:none;background:var(--card);border-radius:12px;padding:10px;margin-bottom:10px}#hl div{padding:3px 0}
+#notes{width:100%;min-height:90px;font:inherit;padding:10px;border-radius:10px;border:2px solid var(--tile);background:var(--bg);color:var(--ink);resize:vertical;margin:8px 0}
+#twist{display:none;font-weight:800;color:#fff;background:var(--acc);border-radius:12px;padding:10px;margin:6px 0}
+#rnotes{display:none;text-align:left;white-space:pre-wrap;font-size:.9rem;background:var(--tile);border-radius:10px;padding:8px;margin:6px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>🎤 Habla sin miedo</h1>
+<div class="sub">Te toca un tema al azar, lo investigas y hablas sin parar con un reto creativo.</div>
+
+<div id="setup"><div id="stats"></div><div id="hl"></div>
+  <div class="card">
+    <div class="lab">Tu tema</div><div class="cats" id="cats"></div>
+    <div id="topic"></div><span id="cat"></span><input id="own" placeholder="...o escribe tu propio tema y pulsa Enter" maxlength="80">
+    <div class="row">
+      <button class="s" id="nt">🎲 Otro tema</button><button class="s" id="dd">📅 Tema del día</button>
+      <a class="b s" id="wiki" target="_blank" rel="noopener">📖 Wikipedia</a>
+      <a class="b s" id="goog" target="_blank" rel="noopener">🔎 Buscar</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="lab">Tu reto creativo</div>
+    <div id="chal"></div>
+    <div class="row"><button class="s" id="nc">🔄 Otro reto</button><button class="s" id="nw">🔤 Otras palabras</button></div><div class="lab" style="margin-top:12px">Palabras que debes meter en tu charla</div><div id="words"></div>
+  </div>
+  <div class="card">
+    <div class="lab">Tiempo para hablar</div>
+    <div class="chips" id="chips"></div><label style="display:block;margin-top:10px;font-size:.9rem"><input type="checkbox" id="mic" checked> 🎙 Escucharme para contar muletillas, palabras y ritmo</label><label style="display:block;margin-top:10px;font-size:.9rem">🏆 Modo: <select id="md" style="font:inherit;padding:4px;border-radius:8px"><option value="1">libre</option><option value="3">torneo (3 rondas o por turnos)</option></select></label><input id="pl" placeholder="Jugadores del torneo (opcional): Ana, Luis, Marta" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:2px solid var(--tile);background:var(--bg);color:var(--ink);margin-top:6px"><label style="display:block;margin-top:6px;font-size:.9rem"><input type="checkbox" id="rc" checked> 🎧 Grabarme para escucharme después</label><label style="display:block;margin-top:6px;font-size:.9rem">🌪 Giros sorpresa: <select id="tw" style="font:inherit;padding:4px;border-radius:8px"><option value="1">a mitad de charla</option><option value="2">cada 30 segundos</option><option value="4">cada minuto</option><option value="0">ninguno</option></select></label>
+    <div class="row">
+      <button class="s" id="prep">📚 Investigar (3 min)</button>
+      <button id="talk">🎤 ¡A hablar!</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="run">
+  <div id="mode"></div>
+  <div id="rtopic" style="font-weight:700;margin-top:4px"></div>
+  <div id="clock">0:00</div>
+  <div class="bar"><div id="fill"></div></div>
+  <div class="st" id="st"><div>1. Gancho</div><div>2. Desarrollo</div><div>3. Cierre</div></div>
+  <div id="tip"></div><div id="resc" style="font-weight:700;color:var(--acc2);margin:4px 0"></div><div id="twist"></div><textarea id="notes" placeholder="Apunta aquí tus ideas: 3 puntos, un dato curioso, una anécdota..." style="display:none"></textarea><div id="rnotes"></div>
+  <div id="rchal" style="margin:6px 0;font-size:.95rem"></div><div id="rwords" style="margin-bottom:6px"></div><div id="live" style="font-size:.85rem;color:var(--mut);min-height:2.4em;text-align:left"></div><div id="pace" style="font-weight:700;margin:4px 0"></div>
+  <div class="row">
+    <button class="s" id="mul">Muletilla: 0</button>
+    <button class="s" id="blank">😵 En blanco</button><button class="s" id="pause">⏸ Pausa</button>
+    <button class="s" id="stop">Terminar</button>
+  </div>
+  <div class="end" id="end"></div>
+</div>
+</main>
+<script>
+const TOPICS=[
+["Curiosidades","Por qué bostezamos"],["Curiosidades","El origen de las cosquillas"],["Curiosidades","Por qué el cielo es azul"],["Curiosidades","Los sueños: para qué sirven"],["Curiosidades","Por qué a veces se nos olvida una palabra que sabemos"],
+["Naturaleza","Las abejas y su comunicación con bailes"],["Naturaleza","Cómo sobreviven los pulpos"],["Naturaleza","Las migraciones de las aves"],["Naturaleza","Los árboles que «hablan» bajo tierra"],["Naturaleza","Las lagunas y los humedales: por qué importan"],["Naturaleza","Los murciélagos y su ecolocalización"],
+["Historia","Cómo se construyeron las pirámides de Egipto"],["Historia","La imprenta y cómo cambió el mundo"],["Historia","La vida diaria en la Edad Media"],["Historia","El Imperio romano y sus carreteras"],["Historia","El primer viaje alrededor del mundo"],["Historia","Cómo se inventó el dinero"],
+["Ciencia","Los agujeros negros"],["Ciencia","Cómo funciona un avión"],["Ciencia","El origen de la Luna"],["Ciencia","Por qué existen las estaciones"],["Ciencia","La inteligencia artificial: qué es y qué no es"],["Ciencia","Cómo funciona la memoria humana"],["Ciencia","El sonido: qué es y cómo viaja"],
+["Sociedad","Accesibilidad: un mundo pensado para todos"],["Sociedad","Por qué dormimos cada vez menos"],["Sociedad","El poder de los hábitos pequeños"],["Sociedad","Cómo influye la música en el estado de ánimo"],["Sociedad","La importancia de saber escuchar"],["Sociedad","El miedo a hablar en público"],["Sociedad","Por qué nos cuesta tanto cambiar de opinión"],
+["Cultura","El origen de los refranes"],["Cultura","Cómo nacen los idiomas"],["Cultura","El cine mudo y cómo se contaban historias sin voz"],["Cultura","La historia del ajedrez"],["Cultura","Los juegos de mesa a lo largo de la historia"],["Cultura","El origen de los nombres de los días de la semana"],
+["Absurdo","Si los gatos gobernaran el mundo"],["Absurdo","Por qué los calcetines desaparecen en la lavadora"],["Absurdo","Cómo sería la vida sin relojes"],["Absurdo","El invento más inútil que se te ocurra"],["Absurdo","Defiende que el lunes es el mejor día de la semana"],["Absurdo","Si pudieras añadir un color nuevo, ¿cómo sería?"],["Absurdo","Cómo explicarías internet a una persona del siglo XV"],
+["Comida","La historia del pan"],["Comida","Por qué el chocolate nos hace felices"],["Comida","De dónde viene el café"],["Comida","El origen de la paella"],
+["Tecnología","Cómo funciona el GPS"],["Tecnología","La historia del primer ordenador"],["Tecnología","Por qué el wifi llega mejor en unas zonas que en otras"],["Tecnología","Cómo funcionan los códigos QR"],
+["Deporte","El origen de los Juegos Olímpicos"],["Deporte","Por qué el fútbol gusta tanto en el mundo"],["Deporte","Los deportes más raros del planeta"],["Viajes","Por qué viajar cambia la forma de pensar"],["Viajes","El lugar más raro al que irías de vacaciones"],["Viajes","Cómo se viajaba antes de los aviones"],["Emociones","Por qué nos ponemos nerviosos"],["Emociones","El poder de decir gracias"],["Emociones","Cómo se vence el miedo al ridículo"],["Misterio","El Triángulo de las Bermudas: ¿mito o realidad?"],["Misterio","Las líneas de Nazca"],["Misterio","Por qué nos fascinan los misterios sin resolver"],["Futuro","Cómo serán las ciudades dentro de 50 años"],["Futuro","Si pudiéramos vivir 200 años"],["Futuro","Los coches que se conducen solos"],["Futuro","Viajar a Marte: ¿merece la pena?"],["Vida cotidiana","Por qué procrastinamos"],["Vida cotidiana","El arte de hacer una buena pregunta"],["Vida cotidiana","Cómo aprender cualquier cosa más rápido"],["Vida cotidiana","La importancia de aburrirse"],["Cultura","Por qué reímos con los chistes"],["Naturaleza","Cómo hablan los delfines"],["Ciencia","Por qué las cosas caen"],["Absurdo","Si los animales pudieran votar"],["Absurdo","Cómo sería un mundo donde nadie puede mentir"]
+];
+const CHAL=[
+"Empieza con una pregunta que enganche a cualquiera.","Cuéntalo como un presentador de documentales de la naturaleza.","Incluye una anécdota personal inventada (o real).","Usa al menos dos metáforas.","Explícalo como si hablaras con un niño de 7 años.","Habla como un reportero que da una noticia de última hora.","Incluye un dato sorprendente que nadie espere.","Cuéntalo como una historia con principio, nudo y desenlace.","Usa humor: haz que el público se ría al menos una vez.","Compara el tema con algo cotidiano, como cocinar o conducir.","Habla como un entrenador motivando a su equipo.","Haz una pausa dramática antes de la idea más importante.","Termina con una frase que se quede en la memoria.","Imagina que hablas desde el año 2100 mirando al pasado.","Defiende el tema como si fuera tu pasión desde siempre.","Usa tres adjetivos que nunca uses normalmente.","Haz que tu charla suene como un cuento antes de dormir.","Incluye una cifra o dato numérico que impacte.","Habla como si le contaras un secreto a un amigo.","Introduce un personaje inventado que viva el tema.","Haz una predicción sobre el futuro de este tema.","Usa la regla de tres: tres ideas, tres ejemplos o tres frases.","Pasa de lo pequeño a lo enorme: de un detalle al mundo entero."
+];
+const TIPS=[
+"Gancho: empieza fuerte con una pregunta, un dato o una imagen.","Desarrollo: da 2 o 3 ideas claras, cada una con un ejemplo.","Cierre: resume la idea principal y acaba con una frase redonda."
+];
+const $=id=>document.getElementById(id);
+const DURS=[30,60,120,180,300,600,900];let cat="Todas",words=[],dur=120,topic,chal,iv=null,left=0,total=0,mode="",paused=false,mul=0;
+function fmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+function newTopic(){const pool=cat==="Todas"?TOPICS:TOPICS.filter(x=>x[0]===cat);let t,n=0;do{t=pool[Math.floor(Math.random()*pool.length)];n++}while(topic&&t[1]===topic[1]&&n<20);topic=t;$("topic").textContent=t[1];$("cat").textContent=t[0];
+ const q=encodeURIComponent(t[1]);$("wiki").href="https://es.wikipedia.org/w/index.php?search="+q;$("goog").href="https://www.google.com/search?q="+q}
+function newChal(){let c;do{c=CHAL[Math.floor(Math.random()*CHAL.length)]}while(c===chal);chal=c;$("chal").textContent=c}
+function lab(d){return d<60?d+" s":(d/60)+" min"}
+function prepT(){return dur<=60?60:dur>=600?300:180}
+function setDur(d){dur=d;$("prep").textContent="📚 Investigar ("+lab(prepT())+")"}
+const NAMES={30:"⚡ ",600:"🏃 ",900:"🎓 "};
+DURS.forEach(d=>{const e=document.createElement("div");e.className="chip"+(d===dur?" on":"");e.textContent=(NAMES[d]||"")+lab(d);e.onclick=()=>{setDur(d);[...$("chips").children].forEach(x=>x.classList.remove("on"));e.classList.add("on")};$("chips").appendChild(e)});
+const cu=document.createElement("div");cu.className="chip";cu.textContent="✏️ Otro";cu.onclick=()=>{const v=parseFloat(String(prompt("¿Cuántos minutos quieres hablar? (de 0,5 a 60)","4")).replace(",","."));if(v>=0.5&&v<=60){setDur(Math.round(v*60));[...$("chips").children].forEach(x=>x.classList.remove("on"));cu.classList.add("on");cu.textContent="✏️ "+lab(dur)}};$("chips").appendChild(cu);setDur(dur);
+const WORDS=["ventana","reloj","tormenta","espejo","maleta","brújula","paraguas","semilla","escalera","faro","zapato","mariposa","tren","cuerda","isla","moneda","linterna","puente","ancla","globo","llave","sombra","cometa","tesoro","laberinto","nube","cohete","biblioteca","camino","trueno","puzle","violín","bufanda","desierto","castillo","volcán","hormiga","caracol","telón","sorpresa"];
+function newWords(){words=[];while(words.length<3){const w=WORDS[Math.floor(Math.random()*WORDS.length)];if(!words.includes(w))words.push(w)}$("words").innerHTML=words.map(w=>"<span>"+w+"</span>").join("")}
+function show(){$("topic").textContent=topic[1];$("cat").textContent=topic[0];const q=encodeURIComponent(topic[1]);$("wiki").href="https://es.wikipedia.org/w/index.php?search="+q;$("goog").href="https://www.google.com/search?q="+q}
+["Todas",...new Set(TOPICS.map(x=>x[0]))].forEach(c=>{const e=document.createElement("div");e.className="chip"+(c===cat?" on":"");e.textContent=c;e.onclick=()=>{cat=c;[...$("cats").children].forEach(x=>x.classList.remove("on"));e.classList.add("on");newTopic()};$("cats").appendChild(e)});
+$("own").addEventListener("keydown",e=>{const v=e.target.value.trim();if(e.key==="Enter"&&v){topic=["Tuyo",v];show();e.target.value="";e.target.blur()}});
+function hist(){try{return JSON.parse(localStorage.getItem("hsm")||"[]")}catch(e){return[]}}
+function put(h){try{localStorage.setItem("hsm",JSON.stringify(h.slice(-100)))}catch(e){}}
+function save(s,m){if(s<10)return[];const h=hist(),b=ach(h).filter(a=>a[2]).map(a=>a[0]);h.push({t:topic[1],s,m,r:0,d:Date.now()});put(h);return ach(h).filter(a=>a[2]&&!b.includes(a[0])).map(a=>a[0])}
+function rateLast(r){const h=hist();if(h.length){h[h.length-1].r=r;put(h)}stats()}
+function stats(){const h=hist();if(!h.length){$("stats").textContent="";$("hl").innerHTML="";return}const sec=h.reduce((a,x)=>a+x.s,0),mm=(h.reduce((a,x)=>a+x.m,0)/h.length).toFixed(1);const k=days(h);$("stats").textContent="📊 "+h.length+" charlas · "+Math.round(sec/60)+" min · "+mm+" muletillas de media"+(k>1?" · 🔥 racha de "+k+" días":"")+" (toca para ver historial)";$("hl").innerHTML="<div style='text-align:right'><button class='s' id='clr' style='padding:4px 8px;font-size:.75rem'>Borrar historial</button></div>"+h.slice(-6).reverse().map(x=>"<div>"+["·","😕","🙂","😄","🤩"][x.r||0]+" <b>"+String(x.t).replace(/[<>&]/g,"")+"</b> · "+fmt(x.s)+" · "+x.m+" muletillas</div>").join("")+"<div style='margin-top:8px'><b>Logros</b></div>"+ach(h).map(a=>"<div>"+(a[2]?"🏆":"🔒")+" <b>"+a[0]+"</b> · <span style='color:var(--mut)'>"+a[1]+"</span></div>").join("")}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,wc=0,used=new Set(),tx="";
+const FILL=/(?:^|\s)(eh+|em+|mm+|o sea|bueno|pues|vale|digamos|basicamente|en plan|a ver|como que)(?=\s|$|[,.])/g;
+const RESC=["Cuenta un ejemplo concreto, aunque sea inventado.","Hazle una pregunta al público y resóndela tú.","Compara el tema con algo cotidiano.","Repite la idea clave con otras palabras.","Imagina que alguien te pregunta: ¿y eso para qué sirve?","Cuéntalo como si fuera una pequeña historia.","Usa una de tus palabras obligatorias ahora mismo.","Di qué sorprende más de este tema y por qué.","Pregunta: ¿qué pasaría si esto no existiera?","Haz una pausa, respira y arranca con: «Lo más curioso es que...»"];
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function markWords(){$("rwords").querySelectorAll("span").forEach(s=>{const u=used.has(s.textContent);s.style.background=u?"var(--ok)":"";s.style.color=u?"#fff":""})}
+function report(){if(!SR||!wc)return"";const mins=Math.max((total-left)/60,.2);const w=Math.round(wc/mins);return" · "+w+" palabras/min ("+(w<100?"ritmo tranquilo":w<=160?"ritmo ideal":"ritmo rápido")+") · palabras usadas: "+used.size+"/"+words.length}
+function unlisten(){const r=rec;rec=null;if(r)try{r.stop()}catch(e){}}
+function listen(){
+ wc=0;used=new Set();tx="";$("live").textContent="";
+ if(!$("mic").checked)return;
+ if(!SR){$("live").textContent="Tu navegador no puede escucharte: usa el botón de muletillas.";return}
+ try{rec=new SR();rec.lang="es-ES";rec.continuous=true;rec.interimResults=true;
+ rec.onresult=ev=>{if(paused)return;let interim="";for(let i=ev.resultIndex;i<ev.results.length;i++){const t=ev.results[i][0].transcript;if(ev.results[i].isFinal){tx+=" "+t;wc+=t.trim().split(/\s+/).filter(Boolean).length;const m=norm(t).match(FILL);if(m){mul+=m.length;$("mul").textContent="Muletilla: "+mul}const n=norm(tx);words.forEach(w=>{if(n.includes(norm(w)))used.add(w)});markWords()}else interim+=t}$("live").textContent="🎙 ..."+(tx+" "+interim).slice(-110)};
+ rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){$("live").textContent="Sin permiso de micrófono: usa el botón de muletillas.";rec=null}};
+ rec.onend=()=>{if(rec&&iv)try{rec.start()}catch(e){}};
+ rec.start();$("live").textContent="🎙 Escuchando..."}catch(e){rec=null}
+}
+$("blank").onclick=()=>{$("resc").textContent="💡 "+RESC[Math.floor(Math.random()*RESC.length)]};
+let twShown=false,lastTw=-1;
+function ach(h){const sec=h.reduce((a,x)=>a+x.s,0),k=days(h);return[
+["Primera charla","Completa tu primera charla",h.length>=1],
+["Calentando","Haz 5 charlas",h.length>=5],
+["Diez de diez","Haz 10 charlas",h.length>=10],
+["Maratón","Una charla de 5 minutos",h.some(x=>x.s>=290)],
+["Resistencia","Una charla de 10 minutos",h.some(x=>x.s>=590)],
+["Charla limpia","Un minuto o más sin ninguna muletilla",h.some(x=>x.s>=60&&x.m===0)],
+["Constante","Practica 3 días seguidos",k>=3],
+["Imparable","Practica 7 días seguidos",k>=7],
+["Charlatán","30 minutos hablando en total",sec>=1800]]}
+const TWIST=["Ahora cuéntalo como si fuera una película de terror.","Ahora habla como un locutor deportivo narrando un gol.","Ahora explícaselo a un extraterrestre que no sabe nada de la Tierra.","Ahora susúrralo como si fuera un secreto.","Ahora continúa como si estuvieras en el año 3000.","Ahora conviértelo en un anuncio de televisión.","Ahora añade un villano a la historia.","Ahora cambia de opinión y defiende lo contrario."];
+function days(h){const s=new Set(h.map(x=>new Date(x.d).toDateString()));let n=0,d=new Date();if(!s.has(d.toDateString()))d.setDate(d.getDate()-1);while(s.has(d.toDateString())){n++;d.setDate(d.getDate()-1)}return n}
+$("stats").onclick=()=>{$("hl").style.display=$("hl").style.display==="block"?"none":"block"};
+const T={scores:[]};
+$("md").onchange=()=>{T.scores=[]};
+function plist(){return $("pl").value.split(",").map(x=>x.trim()).filter(Boolean)}
+function NN(){const p=plist();return p.length>=2?p.length:3}
+function label(){const p=plist(),k=T.scores.length+1;return p.length>=2?"🎤 Turno de "+p[k-1]+" ("+k+" de "+p.length+")":"🏆 Ronda "+k+" de 3"}
+function esc(x){return String(x).replace(/[<>&]/g,"")}
+$("pl").oninput=()=>{T.scores=[]};
+function tourney(spent){if($("md").value!=="3")return;const p=plist(),multi=p.length>=2,w=wc?used.size*10:15,comp=Math.round(50*Math.min(1,spent/total)),sc=Math.max(0,comp+w+20-Math.min(20,mul*2)),name=multi?p[T.scores.length]:"";T.scores.push({t:topic[1],sc,n:name,base:sc,v:0});const k=T.scores.length,N=NN(),last=k>=N;$("end").insertAdjacentHTML("afterbegin","<div id='sl'>"+(multi?esc(name)+": ":"Ronda "+k+" de "+N+": ")+"<b>"+sc+" puntos</b></div>"+(multi?"<div class='lab' style='margin-top:8px'>👏 El público vota la creatividad (obligatorio)</div><div class='rate' id='vote'>"+[1,2,3,4,5].map(v=>"<button class='s' data-v='"+v+"'>"+v+"⭐</button>").join("")+"</div>":""));
+if(multi){$("nx").disabled=true;$("nx").style.opacity=".5";document.querySelectorAll("#vote button").forEach(b=>b.onclick=()=>{const e=T.scores[k-1];e.v=+b.dataset.v;e.sc=e.base+e.v*4;$("sl").innerHTML=esc(name)+": <b>"+e.sc+" puntos</b> ("+e.v+"⭐ del público)";document.querySelectorAll("#vote button").forEach(x=>{x.style.background="";x.style.color=""});b.style.background="var(--ok)";b.style.color="#fff";$("nx").disabled=false;$("nx").style.opacity=""})}
+$("again").style.display="none";$("nx").textContent=last?"🏆 Resultado final":(multi?"Pasar a "+esc(p[k])+" ▶":"Siguiente ronda ▶");$("nx").onclick=()=>{if(last)fin();else{newTopic();newChal();newWords();$("notes").value="";back()}}}
+function fin(){const multi=plist().length>=2,tot=T.scores.reduce((a,x)=>a+x.sc,0);let h;if(multi){const r=[...T.scores].sort((a,b)=>b.sc-a.sc);h="<div style='font-size:1.4rem;font-weight:800'>🏆 ¡Gana "+esc(r[0].n)+"!</div>"+r.map((x,i)=>"<div>"+(["🥇","🥈","🥉"][i]||(i+1)+"º")+" "+esc(x.n)+" · "+esc(x.t)+" · <b>"+x.sc+"</b> ("+x.v+"⭐)</div>").join("")}else{const medal=tot>=240?"🥇":tot>=180?"🥈":tot>=100?"🥉":"💪";h="<div style='font-size:1.4rem;font-weight:800'>"+medal+" "+tot+" / 300 puntos</div>"+T.scores.map((x,i)=>"<div>Ronda "+(i+1)+": "+esc(x.t)+" · <b>"+x.sc+"</b></div>").join("")}$("end").innerHTML=h+"<div class='row'><button id='nt2'>Nuevo torneo</button></div>";$("nt2").onclick=()=>{T.scores=[];newTopic();newChal();newWords();$("notes").value="";back()}}
+let mr=null,chunks=[];
+function mrStart(){chunks=[];if(!$("rc").checked||!navigator.mediaDevices||!window.MediaRecorder)return;navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{if(!iv||mode!=="talk"){st.getTracks().forEach(t=>t.stop());return}const r=new MediaRecorder(st);mr=r;r.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};r.onstop=()=>{st.getTracks().forEach(t=>t.stop());const a=$("play");if(chunks.length&&a){a.src=URL.createObjectURL(new Blob(chunks,{type:chunks[0].type||"audio/webm"}));a.style.display="block"}};r.start()}).catch(()=>{})}
+function mrStop(){try{if(mr&&mr.state!=="inactive")mr.stop()}catch(e){}mr=null}
+$("dd").onclick=()=>{const d=new Date(),seed=d.getFullYear()*372+d.getMonth()*31+d.getDate();topic=TOPICS[seed%TOPICS.length];show();chal=CHAL[(seed*7)%CHAL.length];$("chal").textContent=chal};
+document.addEventListener("keydown",e=>{if(e.code==="Space"&&$("run").style.display==="block"&&mode==="talk"&&iv&&!/TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName)){e.preventDefault();$("pause").click()}});
+function stg(){return total>=480?{n:["Intro","Bloque 1","Bloque 2","Bloque 3","Cierre"],b:[0,.1,.4,.7,.9],t:["Introducción: engancha y anuncia de qué vas a hablar.","Bloque 1: tu primera idea, con un ejemplo.","Bloque 2: tu segunda idea; cambia de ritmo o de tono.","Bloque 3: la idea más potente o sorprendente.","Cierre: resume y termina con una frase memorable."]}:{n:["1. Gancho","2. Desarrollo","3. Cierre"],b:[0,.2,.8],t:TIPS}}
+$("hl").addEventListener("click",e=>{if(e.target.id==="clr"&&confirm("¿Borrar todo el historial y los logros?")){put([]);stats()}});
+function beep(n){try{navigator.vibrate&&navigator.vibrate(n*200)}catch(e){}try{const a=new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<n;i++){const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=660;g.gain.value=.2;o.start(a.currentTime+i*.4);o.stop(a.currentTime+i*.4+.25)}}catch(e){}}
+function start(m,secs){
+ clearInterval(iv);mode=m;total=left=secs;paused=false;mul=0;
+ $("setup").style.display="none";$("run").style.display="block";$("end").textContent="";
+ $("mode").textContent=m==="prep"?"📚 Investigando":"🎤 ¡Hablando!";
+ $("rtopic").textContent=topic[1];$("rchal").textContent="Reto: "+chal;$("rwords").innerHTML=m==="talk"?"<div class='lab'>Palabras obligatorias</div>"+words.map(w=>"<span>"+w+"</span>").join(""):"";try{navigator.wakeLock&&navigator.wakeLock.request("screen")}catch(e){}if(m==="talk"){listen();mrStart()}else unlisten();if(m==="talk"&&$("md").value==="3"){if(T.scores.length>=NN())T.scores=[];$("mode").textContent=label()}$("resc").textContent="";twShown=false;lastTw=-1;$("st").innerHTML=stg().n.map(x=>"<div>"+x+"</div>").join("");$("pace").textContent="";$("twist").style.display="none";$("notes").style.display=m==="prep"?"block":"none";const nt=$("notes").value.trim();$("rnotes").textContent=nt?"📝 "+nt:"";$("rnotes").style.display=nt&&m==="talk"?"block":"none";$("blank").style.display=m==="talk"?"block":"none";
+ $("st").style.display=m==="talk"?"flex":"none";
+ $("mul").style.display=m==="talk"?"block":"none";
+ $("mul").textContent="Muletilla: 0";$("pause").textContent="⏸ Pausa";
+ $("tip").textContent=m==="prep"?"Busca 3 datos curiosos y una anécdota o ejemplo. Anótalos mentalmente.":TIPS[0];
+ draw();iv=setInterval(()=>{if(paused)return;left--;if(left<=0){left=0;draw();finish(true)}else draw()},1000);
+}
+function draw(){
+ $("clock").textContent=fmt(left);$("clock").classList.toggle("red",left<=10&&left>0);if(mode==="talk"&&$("tw").value!=="0"){const el=total-left,due=$("tw").value==="1"?(!twShown&&el>=total/2):(el>0&&el%($("tw").value==="2"?30:60)===0&&el<total-5&&el!==lastTw);if(due){twShown=true;lastTw=el;$("twist").style.display="block";$("twist").textContent="🌪 GIRO: "+TWIST[Math.floor(Math.random()*TWIST.length)];beep(1)}}$("fill").style.width=(100*(total-left)/total)+"%";
+ if(mode==="talk"){const f=(total-left)/total,G=stg(),B=G.b;let i=0;while(i<B.length-1&&f>=B[i+1])i++;[...$("st").children].forEach((d,k)=>d.classList.toggle("on",k===i));$("tip").textContent=G.t[i];if(wc&&(total-left)>15){const w=Math.round(wc/((total-left)/60));$("pace").textContent="Ritmo: "+w+" palabras/min "+(w<100?"🐢 acelera un poco":w<=160?"✅ perfecto":"🐇 respira y frena")}}
+}
+function finish(ring){unlisten();mrStop();
+ clearInterval(iv);iv=null;if(ring)beep(3);
+ if(mode==="prep"){$("end").innerHTML="¡Tiempo de investigación terminado! 🎉 <div class='row'><button id='go'>🎤 ¡A hablar!</button><button class='s' id='back'>Volver</button></div>";
+  $("go").onclick=()=>start("talk",dur);$("back").onclick=back}
+ else{const spent=total-left;$("end").innerHTML="¡Genial, has hablado "+fmt(spent)+"! 👏<br><small>Muletillas contadas: "+mul+report()+"</small><audio id='play' controls style='display:none;width:100%;margin-top:8px'></audio><div class='lab' style='margin-top:10px'>¿Cómo te ha ido?</div><div class='rate'><button class='s' data-r='1'>😕</button><button class='s' data-r='2'>🙂</button><button class='s' data-r='3'>😄</button><button class='s' data-r='4'>🤩</button></div><div class='row'><button id='nx'>🎲 Nuevo tema</button><button class='s' id='again'>Repetir</button><button class='s' id='cp'>📋 Copiar resumen</button></div>";
+  $("cp").onclick=()=>{const t="🎤 Hablé "+fmt(spent)+" sobre «"+topic[1]+"» con "+mul+" muletillas"+report()+". Reto: "+chal;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$("cp").textContent="¡Copiado!"}).catch(()=>{$("cp").textContent="No se pudo copiar"})};const nb=save(spent,mul);if(nb.length)$("end").insertAdjacentHTML("beforeend","<div style='margin-top:8px'>🏆 Nuevo logro: "+nb.join(", ")+"</div>");document.querySelectorAll(".rate button").forEach(b=>b.onclick=()=>{rateLast(+b.dataset.r);document.querySelectorAll(".rate button").forEach(x=>{x.style.background="";x.style.color=""});b.style.background="var(--ok)";b.style.color="#fff"});$("nx").onclick=()=>{newTopic();newChal();newWords();$("notes").value="";back()};$("again").onclick=()=>start("talk",dur);tourney(spent)}
+}
+function back(){unlisten();mrStop();stats();clearInterval(iv);$("run").style.display="none";$("setup").style.display="block"}
+$("nt").onclick=newTopic;$("nc").onclick=newChal;$("nw").onclick=newWords;
+$("prep").onclick=()=>start("prep",prepT());$("talk").onclick=()=>start("talk",dur);
+$("mul").onclick=()=>{mul++;$("mul").textContent="Muletilla: "+mul};
+$("pause").onclick=()=>{paused=!paused;$("pause").textContent=paused?"▶ Seguir":"⏸ Pausa"};
+$("stop").onclick=()=>{if(iv)finish(false);else back()};
+newTopic();newChal();newWords();stats();
+</script>
+</body>
+</html>
